@@ -16,6 +16,8 @@ licence:
   url: https://www.ndrdgh.gov.in/NDR/pdf/data_policy.pdf
   redistribution: forbidden
   attribution: unknown
+  terms:
+    stated: "No resale of data is permitted by the entity with whom the data has been shared under the policy. Copy of the report generated as a result of value addition by the entity after getting data from NDR shall be submitted to NDR as per the defined timelines."
 kinds: [seismic-2d, seismic-3d, wellbore-headers, wellbore-logs, core, reports]
 region: {country: IN, basin: 26 Indian sedimentary basins, bbox: [66.0, 5.0, 97.5, 35.5]}
 size: {stated: "data storage capacity of 200 TB to store processed data & 720TB robotic tape library to store raw data"}
@@ -24,4 +26,5 @@ known_issues:
   - "\"No resale of data is permitted by the entity with whom the data has been shared under the policy\"; the confidentiality agreement forbids disclosure to third parties."
   - "bbox is India with its offshore, approximate."
   - "The bare host https://www.ndrdgh.gov.in/ answers with a redirect to /NDR; a client that does not follow redirects sees no answer."
+notes: "licence.terms.stated quotes clause 5.2.5 of the E&P Data Policy (https://www.ndrdgh.gov.in/NDR/pdf/data_policy.pdf, published 17.05.2017) as read on 23 Oct 2026; the policy states no licence duration and no review before publication (academic and government institutes share study reports with DGH within three months of completing a project, clauses 5.3.4 and 5.4.3)."
 added: 2026-10-23

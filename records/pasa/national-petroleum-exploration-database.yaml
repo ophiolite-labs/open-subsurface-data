@@ -17,8 +17,8 @@ licence:
   redistribution: forbidden
   attribution: unknown
   terms:
-    stated: "a purchase is a licence to use the data for at most 10 years, data must be returned when the agreement ends, and academic publications go to the Agency for review first"
-    duration: "at most 10 years from purchase"
+    stated: "The purchase of data constitutes a license to use the data for a maximum period of 10 years. The actual term of the agreement will depend on the amount of data and the extent of the area under review. [...] All data purchased under the DCDUA plus any Reprocessed Data needs to be returned at termination of the contract. [...] The supply of draft publications to the Agency for comments and review prior to publication."
+    duration: "a maximum period of 10 years"
     review_before_publication: true
     expires: null
 kinds: [wellbore-headers, wellbore-logs, core, seismic-2d, seismic-3d, geochemistry, reports]
@@ -28,5 +28,5 @@ listed_by: [publisher]
 known_issues:
   - "\"Data purchased from the Agency may not be sold\" and may not be supplied to any third party without written authorization."
   - "bbox is South Africa with its offshore, approximate."
-notes: "Wants (no schema field): a purchase is a licence to use the data for at most 10 years, data must be returned when the agreement ends, and academic publications go to the Agency for review first. Two tariffs: commercial, and copy cost for permit holders, SA government bodies and academic institutions."
+notes: "licence.terms.stated quotes https://www.petroleumagencysa.com/obtain-our-technical-data/ as read on 23 Oct 2026 (the first two sentences under Commercial and Service Providers, the return clause, and the academic provision on draft publications). Two tariffs: commercial, and copy cost for permit holders, SA government bodies and academic institutions; foreign academic institutions pay 10% of the commercial value (5% with a South African partner)."
 added: 2026-10-23

@@ -33,3 +33,13 @@ def test_outline_without_record_is_reported(tmp_records, tmp_outlines):
     (tmp_outlines / "acme__ghost.geojson").write_text('{"type":"FeatureCollection","features":[]}')
     msgs = [str(x) for x in validate_outlines(tmp_outlines, tmp_records)]
     assert any("no record 'acme/ghost'" in m for m in msgs), msgs
+
+
+def test_unquoted_yaml_terms_expires_reads_as_string(tmp_records):
+    from osd.records import load_record
+    p = tmp_records / "acme" / "demo.yaml"
+    p.write_text(p.read_text().replace(
+        "attribution: required}",
+        "attribution: required, terms: {stated: licence ends 31 December 2030, expires: 2030-12-31}}"))
+    assert load_record(p)["licence"]["terms"]["expires"] == "2030-12-31"
+    assert validate_records(tmp_records) == []

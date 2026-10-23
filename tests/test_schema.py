@@ -102,7 +102,7 @@ def test_record_2_files_validate_under_record_2():
             continue
         assert not list(RECORD_2.iter_errors(rec)), p
         old += 1
-    assert old == 86   # 92 records, the six of design 5 carry record/3 values
+    assert old >= 89   # at least 96 records (E20), seven carry record/3 values
 
 
 def test_the_six_records_state_the_new_values():
@@ -114,11 +114,12 @@ def test_the_six_records_state_the_new_values():
         assert recs[rid]["origin"]["access"] == "purchase", rid
     assert not any("Want" in k for k in recs["beg/stratton-3d"]["known_issues"])
     terms = recs["pasa/national-petroleum-exploration-database"]["licence"]["terms"]
-    assert terms["duration"] == "at most 10 years from purchase"
+    assert terms["duration"] == "a maximum period of 10 years"   # the publisher's words (E20)
     assert terms["review_before_publication"] is True and terms["expires"] is None
-    assert "at most 10 years" in terms["stated"] and "review" in terms["stated"]
-    assert [r for r in recs.values() if "terms" in r["licence"]] == [recs["pasa/national-petroleum-exploration-database"]]
-    assert validate_records() == [] and len(recs) == 92
+    assert "maximum period of 10 years" in terms["stated"] and "review prior to publication" in terms["stated"]
+    assert sorted(k for k, r in recs.items() if "terms" in r["licence"]) == [
+        "dgh/national-data-repository", "pasa/national-petroleum-exploration-database"]
+    assert validate_records() == [] and len(recs) >= 96
 
 
 # --- osd new: the scaffold's comment lists come from the schema -----------------------------------
