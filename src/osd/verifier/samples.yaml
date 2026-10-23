@@ -17,6 +17,8 @@ ar-energia/fractura-adjunto-iv: ["*/datos-de-fractura-de-pozos-de-hidrocarburos-
 ar-energia/produccion-por-pozo: ["*/listado-de-pozos-cargados-por-empresas-operadoras.csv"]   # datos.gob.ar dataset page (201 links): the operators' well list, not the yearly production files (hundreds of MB each); size not read
 ar-energia/trayectorias-vaca-muerta: ["*/trayectorias-de-pozo-vaca-muerta.csv"]   # datos.gob.ar dataset page (46 links): the trajectory CSV (not the zip); size not read
 bcer/well-surface-holes-permitted: ["*"]          # ArcGIS layer: one geojson export of at most maxRecordCount (2000) features
+bgs/single-onshore-borehole-index: ["*"]   # WPDM download: application/zip, attachment sobi-borehole.zip (a file by its headers); 75.58 MB as the page states, no length sent
+calgem/wellstar-oil-and-gas-wells: ["*/ef53080fdf894761858dd1728610b9a0/csv?layers=0"]   # data.ca.gov entry page: the Hub CSV download (302 to hub.arcgis.com, text/csv attachment, Last-Modified 2 Jul 2026, no length)
 cgs/vrtna-prozkoumanost: ["*"]   # ArcGIS layer 1: one geojson export of at most 3000 of 746,789 features (kept as partial), 2,669,877 bytes
 cnloer/data-information-hub: ["*/expdwts.xlsx"]   # page links spreadsheets; the exploration wells table, 146,789 bytes
 cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
@@ -47,6 +49,8 @@ nogcc/well-data: ["*/NebraskaWellData_Tops.zip"]   # page links 236 files; the w
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
 ns-energy/onshore-2d-seismic-navigation: ["*2017-11*Cumberland*region.zip"]   # atlas page: OFR 2017-11 Part 2 Cumberland shapefile zip, 1,954,295 bytes
 ns-energy/onshore-petroleum-well-log-database: ["*2017-09*Cape*Breton*region.zip"]   # atlas page: OFR 2017-09 Part 1 Cape Breton LAS zip, 4,837,104 bytes
+nysdec/oil-and-gas-annual-production: ["*"]   # Socrata view: its rows.csv export (generated; size not stated)
+nysdec/oil-gas-and-other-regulated-wells: ["*"]   # Socrata view: its rows.csv export (generated; size not stated)
 nzpam/petroleum-wells: ["*"]   # ArcGIS layer 4: one geojson export, all 1,302 features (maxRecordCount 2000), 977,308 bytes
 nzpam/seismic-surveys-2d: ["*"]   # ArcGIS layer 6: one geojson export, all 990 features (maxRecordCount 2000), 9,674,966 bytes
 ok-occ/oil-gas-data-files: ["*/esri/files/RBDMS_WELLS.zip"]   # page links many files; the RBDMS wells zip, 45,897,943 bytes
@@ -66,6 +70,9 @@ sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the explor
 soton/scanner-pockmark-velocity-models: ["*/1/FAST_Final_Tomo_Vp_GI_geo_SP"]   # ePrints page links six files; the tomographic model, 146,169,210 bytes
 spe/csp10-model-2: ["*por_perm_case2a.zip"]   # page links the corrected dataset, 19,476,344 bytes
 spe/csp11: ["*.geo"]   # GitHub contents API of geometries/: spe11a.geo 29,309 bytes, spe11b.geo 611 bytes
+swisstopo/deep-wells: ["*_2056.gpkg"]   # STAC item (generic JSON reader, 8 hrefs): the GeoPackage, 237,568 bytes
+swisstopo/reflection-seismic: ["*_2056.gpkg"]   # STAC item (generic JSON reader, 7 hrefs): the GeoPackage, 19,189,760 bytes
+tno/bro-geological-boreholes: ["*"]   # the GeoPackage the PDOK ATOM feed names (application/geopackage+sqlite3: a file by its headers), 158,920,704 bytes
 tudelft/egg-model: "the DOI metadata names no content URL, only the landing page"
 ukogl/uk-onshore-geophysical-library: ["*/UK-Onshore-BHT-Bottom-Hole.xlsx"]   # archives page: the bottom-hole temperature table, 214,639 bytes
 unisim/unisim-i: ["https://*/UNISIM-I-D-deterministic-OPM-Flow.zip"]   # case page: the OPM Flow deck, 1,042,091 bytes

@@ -9,7 +9,8 @@ publisher: {name: "California Department of Conservation, Geologic Energy Manage
 origin:
   url: https://data.ca.gov/dataset/wellstar-oil-and-gas-wells
   access: anonymous
-  notes: "Data.CA.gov entry of the California Department of Conservation; downloads from https://gis-cnra.hub.arcgis.com/datasets/cadoc::wellstar-oil-and-gas-wells, service https://gis.conservation.ca.gov/server/rest/services/WellSTAR/Wells/MapServer/0. www.conservation.ca.gov timed out from this host on 23 Oct 2026 (twice)."
+  manifest_url: https://data.ca.gov/dataset/wellstar-oil-and-gas-wells
+  notes: "Data.CA.gov entry of the California Department of Conservation; downloads from https://gis-cnra.hub.arcgis.com/datasets/cadoc::wellstar-oil-and-gas-wells, service https://gis.conservation.ca.gov/server/rest/services/WellSTAR/Wells/MapServer/0. www.conservation.ca.gov timed out from this host on 23 Oct 2026 (twice). Its CSV, SHP, GeoJSON and KML resources are ArcGIS Hub downloads."
 licence:
   name: Creative Commons Attribution (Data.CA.gov entry)
   spdx: null

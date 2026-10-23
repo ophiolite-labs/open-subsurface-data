@@ -6,7 +6,8 @@ publisher: {name: TNO Geological Survey of the Netherlands, url: https://www.geo
 origin:
   url: https://www.pdok.nl/introductie/-/article/bro-geologisch-booronderzoek-bhr-g-
   access: anonymous
-  notes: "PDOK serves WMS and ATOM download services; the same data are viewable on DINOloket (https://www.dinoloket.nl/en)."
+  manifest_url: https://service.pdok.nl/tno/bro-geologisch-booronderzoek/atom/downloads/brobhrgvolledigeset.gpkg
+  notes: "PDOK serves WMS and ATOM download services; the same data are viewable on DINOloket (https://www.dinoloket.nl/en). The ATOM dataset feed https://service.pdok.nl/tno/bro-geologisch-booronderzoek/atom/bro_geologisch_booronderzoek_bhrg.xml names one file, the GeoPackage brobhrgvolledigeset.gpkg (158,920,704 bytes, updated 25 Aug 2026); the manifest_url is that file."
 licence:
   name: CC-0 (1.0)
   spdx: CC0-1.0

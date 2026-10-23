@@ -8,6 +8,7 @@ publisher: {name: "New York State Department of Environmental Conservation, Divi
 origin:
   url: https://data.ny.gov/Energy-Environment/Oil-and-Gas-Annual-Production-Beginning-2001/mxea-iw3u
   access: anonymous
+  manifest_url: https://data.ny.gov/api/views/mxea-iw3u.json
   notes: "Companion Open NY datasets: 'Oil and Gas Annual Production: 1985 - 2000' (qcf2-zajk) and 'Oil and Gas Summary Production Data: 1967-1999' (8y5c-ebxg). DEC production search http://www.dec.ny.gov/cfmx/extapps/GasOil/search/production/index.cfm."
 licence:
   name: OPEN-NY Terms of Use
