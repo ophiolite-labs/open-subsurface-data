@@ -31,11 +31,14 @@ manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links th
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
+ns-energy/onshore-2d-seismic-navigation: ["*2017-11*Cumberland*region.zip"]   # atlas page: OFR 2017-11 Part 2 Cumberland shapefile zip, 1,954,295 bytes
+ns-energy/onshore-petroleum-well-log-database: ["*2017-09*Cape*Breton*region.zip"]   # atlas page: OFR 2017-09 Part 1 Cape Breton LAS zip, 4,837,104 bytes
 ok-occ/oil-gas-data-files: ["*/esri/files/RBDMS_WELLS.zip"]   # page links many files; the RBDMS wells zip, 45,897,943 bytes
 opm/norne: ["*.DATA"]                             # the simulation deck
 pgi/cbdg-boreholes: ["*"]   # ArcGIS layer: one geojson export of at most 1000 of 334,145 features (kept as partial)
 sgc/banco-informacion-petrolera-pozos: ["*"]      # ArcGIS layer: one geojson export of at most 2000 features
 sintef/johansen: ["*/Sector5.zip"]   # page links eight zips; the 5-layer sector model, 3,943,155 bytes
+sk-mer/vertical-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 119,595 features (kept as partial), 4,232,645 bytes
 sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the exploration wellbore table
 spe/csp10-model-2: ["*por_perm_case2a.zip"]   # page links the corrected dataset, 19,476,344 bytes
 spe/csp11: ["*.geo"]   # GitHub contents API of geometries/: spe11a.geo 29,309 bytes, spe11b.geo 611 bytes

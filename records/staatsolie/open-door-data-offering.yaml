@@ -1,0 +1,32 @@
+id: staatsolie/open-door-data-offering
+title: Staatsolie GeoPortal Special Open-Door Data Offering (Suriname offshore)
+summary: >-
+  As part of its Offshore Open-Door Offering Campaign, Staatsolie offers companies leases of its
+  Suriname exploration data by data type (all wells, all 2D seismic, all 3D seismic, all gravity
+  and magnetic data, all technical reports) through the GeoPortal LeaseStore, or access to all
+  data in a virtual data room. Location shapefiles of wells, 2D lines and 3D surveys available
+  for lease are offered as free downloads.
+publisher: {name: Staatsolie Maatschappij Suriname N.V., url: https://www.staatsolie.com/en/, country: SR}
+origin:
+  url: https://geoportal-staatsolie.hub.arcgis.com/pages/open-door-offering
+  access: purchase
+  notes: "Free location shapefiles (wells 7 KB, 2D seismic lines 1,611 KB, 3D surveys, Open-Door sectors, offshore blocks) on https://geoportal-staatsolie.hub.arcgis.com/pages/downloadables. Cart links go to geoportalstore.com (robots.txt disallows all). The Hub robots.txt asks for Crawl-delay: 60."
+licence:
+  name: Staatsolie data lease (no licence terms stated on the GeoPortal)
+  spdx: null
+  url: https://geoportal-staatsolie.hub.arcgis.com/pages/open-door-offering
+  redistribution: unknown
+  attribution: unknown
+  terms:
+    stated: "This special offer will remain available for a period of two (2) years, starting on November 24, 2025. [...] The discount applies when an entire data type is leased [...] All Wells USD 127,500 [...] All 2D Seismic USD 504,500 [...] All 3D Seismic USD 273,000 [...] All Gravity & Magnetic USD 7,500 [...] All Technical Reports USD 75,000 [...] Total USD 987,500 [...] Access to all data via Virtual Data Room [...] Cost: USD 110,000 per user per quarter, available for up to two (2) quarters."
+    duration: null
+    review_before_publication: null
+    expires: null
+kinds: [wellbore-headers, seismic-2d, seismic-3d, potential-fields, reports]
+region: {country: SR, basin: Guyana-Suriname Basin, bbox: [-58.1, 1.8, -53.9, 9.5]}
+listed_by: [publisher]
+known_issues:
+  - "Data are leased, not sold; no licence text, lease length or reuse terms are stated on the GeoPortal pages read. The 2025-2027 dates are the offer's validity, not a licence term."
+  - "Kinds follow the data types offered; wellbore-headers stands for \"All Wells\", whose contents are not itemised. bbox is Suriname with its offshore, approximate."
+notes: "licence.terms.stated quotes the Open-Door Offering page (ArcGIS Hub page item 262b5d99691a48c983b1de427bee60e1, updated 2026-06-23) as read on 23 Oct 2026. The page adds that data newly added to a leased type in the five years from 24 November 2025 is provided at the same discount rate."
+added: 2026-10-23
