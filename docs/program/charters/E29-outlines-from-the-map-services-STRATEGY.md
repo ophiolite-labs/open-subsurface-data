@@ -20,6 +20,12 @@ Lane-open facts measured 23 Oct from the VPS: `docs/program/evidence/e29/sources
   listing export is partial above `maxRecordCount`; listing reader out of scope), SGUDDS's page
   answers 403 to the runner. The live line reads "L3, or the first failing check named per record";
   the listing-reader paging is a follow-up slice after merge (supervisor, answer 1).
+- **Gate budget: four outlines committed, five held** (supervisor, answer 5; measurement in
+  `docs/program/evidence/e29/gate-budget.md`). SGUDDS, NZP&M x2 and WA DEMIRS carry outlines;
+  Virginia, BCER, SGC, UT DOGM and North Dakota carry inputs, period and rules only (all nine
+  outlines would take `make check` to ~6 min on CI). E32 lands the other five.
+- **Lines across the antimeridian are cut at ±180** (RFC 7946 §3.1.9; ten NZP&M 2D lines step from
+  179.9 to -179.9): `geometry.split_antimeridian`, test `test_lines_across_the_antimeridian_are_cut_there`.
 
 ## Design
 
