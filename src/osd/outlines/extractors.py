@@ -2,7 +2,8 @@
 
 Each takes (record input, input rule, parts) where parts is the ordered list of (name, bytes)
 the fetch stored, and returns features carrying geometry plus kind, name and the publisher's
-identifiers. derive() adds the identity every derived feature carries.
+identifiers, and the dates a register states for it when the rule names period_fields (E18).
+derive() adds the identity every derived feature carries.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import io
 import json
 import re
 import struct
+from datetime import UTC, datetime
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
@@ -42,6 +44,62 @@ def _ident(rule: dict, props: dict) -> dict:
     return out
 
 
+ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+ISO_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?")
+MDY = re.compile(r"(\d{1,2})/(\d{1,2})/(\d{4})(?: (\d{1,2}):(\d{2}):(\d{2}) ([AP]M))?")
+
+
+def period_instant(raw: str, bound: str, form: str = "iso") -> str | None:
+    """A publisher's date or timestamp as an RFC 3339 UTC instant, or None when it is not in the
+    form the rule names. A date is its first second for a start and its last for an end; a
+    timestamp without a zone is read as UTC. form: iso (YYYY-MM-DD, YYYY-MM-DDThh:mm:ss[.f][zone])
+    or m/d/y (FactMaps GeoJSON: M/D/YYYY[ h:mm:ss AM|PM])."""
+    try:
+        if form == "m/d/y":
+            m = MDY.fullmatch(raw)
+            if not m:
+                return None
+            mo, d, y, h, mi, sec, ampm = m.groups()
+            if h is None:
+                when, is_date = datetime(int(y), int(mo), int(d)), True
+            else:
+                if not 1 <= int(h) <= 12:
+                    return None
+                hour = int(h) % 12 + (12 if ampm == "PM" else 0)
+                when, is_date = datetime(int(y), int(mo), int(d), hour, int(mi), int(sec)), False
+        elif ISO_DATE.fullmatch(raw):
+            when, is_date = datetime.strptime(raw, "%Y-%m-%d"), True
+        elif ISO_TIME.fullmatch(raw):
+            when, is_date = datetime.fromisoformat(raw), False
+        else:
+            return None
+    except ValueError:
+        return None
+    if is_date:
+        return when.strftime("%Y-%m-%dT23:59:59Z" if bound == "end" else "%Y-%m-%dT00:00:00Z")
+    if when.tzinfo is not None:
+        when = when.astimezone(UTC)
+    return when.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _period(rule: dict, props: dict) -> dict:
+    """The feature's own start and end as the service states them (osd:period_*_raw, verbatim)
+    and normalised (osd:period_*), from the rule's period_fields; a value the rule lists in
+    period_placeholders, or one not in its period_format, keeps its raw string only."""
+    out = {}
+    for bound, field in (rule.get("period_fields") or {}).items():
+        raw = props.get(field)
+        if raw in (None, ""):
+            continue
+        out[f"osd:period_{bound}_raw"] = str(raw)
+        if str(raw) in [str(x) for x in rule.get("period_placeholders") or []]:
+            continue
+        instant = period_instant(str(raw), bound, rule.get("period_format", "iso"))
+        if instant:
+            out[f"osd:period_{bound}"] = instant
+    return out
+
+
 def _epsg(name: str) -> str | None:
     m = re.search(r"EPSG:+(\d+)$", name or "")
     return f"EPSG:{m.group(1)}" if m else None
@@ -64,11 +122,12 @@ def _features(rec_input: dict, rule: dict, collections: list[dict]) -> list[dict
                 continue
             g = feat.get("geometry") or {}
             if not g.get("coordinates") and rule.get("unplaced") == "report":
-                out.append({"kind": _kind(rule, props), **_ident(rule, props), "geometry": None})
+                out.append({"kind": _kind(rule, props), **_ident(rule, props), **_period(rule, props),
+                            "geometry": None})
                 continue
             if g.get("type") not in GEOMETRY_TYPES or not g.get("coordinates"):
                 raise Refused(f"{rec_input['name']}: a feature has geometry {g.get('type')!r}")
-            out.append({"kind": _kind(rule, props), **_ident(rule, props),
+            out.append({"kind": _kind(rule, props), **_ident(rule, props), **_period(rule, props),
                         "geometry": {"type": g["type"], "coordinates": map_positions(g["coordinates"], f)}})
     return out
 

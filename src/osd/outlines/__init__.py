@@ -194,6 +194,8 @@ def derive(rec: dict, rules: dict, inputs_dir: Path = INPUTS_DIR) -> dict:
         rule = rules[rid]["inputs"][i["name"]]
         parts = read_parts(_dir(inputs_dir, rid, i["name"]))
         used[i["name"]] = {"url": i["url"], "sha256": input_sha256(parts)}
+        if rule.get("period_fields"):  # outline/3: the service properties the dates were read from
+            used[i["name"]]["period_fields"] = dict(rule["period_fields"])
         for f in EXTRACTORS[rule["extractor"]](i, rule, parts):
             g = f.pop("geometry")
             key = f.get("publisher_id") or f.get("uwi") or i["name"]

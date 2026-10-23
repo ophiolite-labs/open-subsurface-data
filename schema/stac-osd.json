@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2",
-  "title": "Open Subsurface Data (osd) STAC extension, v2.0.0",
-  "description": "Collection fields state what our tools established about the whole record (record-level assurance, not per file or per feature). Item fields state how one feature's geometry was obtained. Enums are closed and no other osd: field is allowed. Offline validation maps this URL to schema/stac-osd.json (schema/stac/schema-map.json). v2 (E19): `osd:access` admits `purchase`; the identifier gains `?v=2`. The v1 identifier resolves to this same file online, so a document naming either identifier validates here; v1 is frozen at tests/fixtures/schema/stac-osd-1.json.",
+  "$id": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=3",
+  "title": "Open Subsurface Data (osd) STAC extension, v3.0.0",
+  "description": "Collection fields state what our tools established about the whole record (record-level assurance, not per file or per feature). Item fields state how one feature's geometry was obtained. Enums are closed and no other osd: field is allowed. Offline validation maps this URL to schema/stac-osd.json (schema/stac/schema-map.json). v2 (E19): `osd:access` admits `purchase`; the identifier gains `?v=2`. The v1 identifier resolves to this same file online, so a document naming either identifier validates here; v1 is frozen at tests/fixtures/schema/stac-osd-1.json. v3 (E18): Items gain `osd:period_source`; the identifier gains `?v=3`; a document naming the v1 or v2 identifier validates here too; v2 is frozen at tests/fixtures/schema/stac-osd-2.json.",
   "type": "object",
   "oneOf": [
     {
@@ -35,7 +35,7 @@
       "properties": {
         "stac_extensions": {
           "type": "array",
-          "contains": {"enum": ["https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2", "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"]}
+          "contains": {"enum": ["https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=3", "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2", "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"]}
         }
       }
     },
@@ -82,6 +82,10 @@
         "osd:input_sha256": {
           "type": "string", "pattern": "^[0-9a-f]{64}$",
           "description": "sha256 of the input the geometry was derived from, as the outline collection's inputs state it"
+        },
+        "osd:period_source": {
+          "type": "string", "enum": ["feature", "feature-start,collection-end", "collection"],
+          "description": "Where start_datetime and end_datetime come from: feature, the feature's own start and end as the publisher's service states them (the outline's osd:period_start, osd:period_end); feature-start,collection-end, the feature's start and the Collection's end when the feature states no usable end; collection, the Collection's period (the record's) when the feature states nothing usable"
         }
       },
       "patternProperties": {"^(?!osd:)": {}},

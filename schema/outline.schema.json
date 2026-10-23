@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/outline/2",
-  "title": "Outline feature properties, version 2",
-  "description": "Properties every feature in outlines/<record-id>.geojson carries; $defs.collection is the file's own members. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey or field (Polygon or MultiPolygon) or one line (LineString). Version 2: a derived feature (approximate: false) carries feature_id and the name of its input; the collection carries each input's identity once and the licence once (per feature only where it differs within a file). Every version-1 placeholder still validates.",
+  "$id": "https://open-subsurface-data.org/schema/outline/3",
+  "title": "Outline feature properties, version 3",
+  "description": "Properties every feature in outlines/<record-id>.geojson carries; $defs.collection is the file's own members. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey or field (Polygon or MultiPolygon) or one line (LineString). Version 2: a derived feature (approximate: false) carries feature_id and the name of its input; the collection carries each input's identity once and the licence once (per feature only where it differs within a file). Version 3: a feature from a register whose rule names period_fields carries the dates the service states for it, raw and normalised, and the collection names those fields per input. Every version-1 placeholder and every version-2 file still validates.",
   "type": "object",
   "required": [
     "record_id",
@@ -67,6 +67,28 @@
       "type": "integer",
       "minimum": 0,
       "description": "Rings of a derived polygon dropped because their area was below simplified_m squared (OSD-D16)"
+    },
+    "osd:period_start_raw": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The feature's start as the publisher's service states it, verbatim (the input's period_fields.start)"
+    },
+    "osd:period_end_raw": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The feature's end as the publisher's service states it, verbatim (the input's period_fields.end)"
+    },
+    "osd:period_start": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "format": "date-time",
+      "description": "osd:period_start_raw as an RFC 3339 UTC instant (a date: its first second; a timestamp without zone: read as UTC); absent when the raw value is a placeholder of the rule or not in its period_format"
+    },
+    "osd:period_end": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+      "format": "date-time",
+      "description": "osd:period_end_raw as an RFC 3339 UTC instant (a date: its last second); absent as for osd:period_start"
     }
   },
   "if": {
@@ -117,6 +139,22 @@
                 "type": "string",
                 "pattern": "^[0-9a-f]{64}$",
                 "description": "sha256 of the input's SHA256SUMS (one sha256sum line per fetched part, in fetch order)"
+              },
+              "period_fields": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "end": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "The service properties the features' osd:period_start_raw and osd:period_end_raw were read from (src/osd/outlines/rules.yaml)"
               }
             }
           }
@@ -131,5 +169,13 @@
         }
       }
     }
+  },
+  "dependentRequired": {
+    "osd:period_start": [
+      "osd:period_start_raw"
+    ],
+    "osd:period_end": [
+      "osd:period_end_raw"
+    ]
   }
 }

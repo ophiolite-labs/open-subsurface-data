@@ -5,7 +5,10 @@ Output (build/catalog/stac/), all links relative so the tree serves from any add
   <cid>/collection.json           one Collection per record: licence, level, access, the files E02
                                    checksummed as assets, temporal extent from the record's `period`
   <cid>/items/<name>.json         one Item per outline feature with a feature_id, only when the record
-                                   declares a `period` (OSD-D14); id = the outline's feature_id
+                                   declares a `period` (OSD-D14); id = the outline's feature_id; its
+                                   interval is the feature's own dates where the outline carries them
+                                   (E18, `osd:period_source`); validate() fails an Item whose
+                                   interval leaves its Collection's
 
 `<cid>` is the record id with '/' replaced by '--'. Collection fields carry record-level assurance
 from the verification record; Item fields carry the outline's provenance. Both are the `osd`
@@ -27,7 +30,7 @@ from .records import load_outline
 
 STAC_VERSION = "1.0.0"
 OSD_EXTENSION = ("https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/"
-                 "schema/stac-osd.json?v=2")   # v2 (E19): osd:access admits purchase; the v1 URL still validates
+                 "schema/stac-osd.json?v=3")   # OSD-D19; v2 (E19): purchase; v3 (E18): osd:period_source
 FILE_EXTENSION = "https://stac-extensions.github.io/file/v2.1.0/schema.json"
 ALTERNATE_EXTENSION = "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"
 MIRROR_TITLE = "Open Subsurface Data mirror"
@@ -103,10 +106,23 @@ def _assets(verification: dict | None, mirrored: dict[str, str] | None = None) -
     return out
 
 
+def item_period(props: dict, collection: list) -> tuple[list, str]:
+    """(interval, osd:period_source) of one outline feature in a Collection with that interval:
+    the feature's own normalised start and end when both are there in order; its start and the
+    Collection's end when it states no usable end and starts by then; otherwise the Collection's."""
+    start, end = props.get("osd:period_start"), props.get("osd:period_end")
+    if start and end and start <= end:
+        return [start, end], "feature"
+    if start and not end and collection[1] and start <= collection[1]:
+        return [start, collection[1]], "feature-start,collection-end"
+    return list(collection), "collection"
+
+
 def _item(rec: dict, cid: str, feature: dict, inputs: dict, when: list) -> dict:
     p = feature["properties"]
-    props = {"title": p["name"], "datetime": None, "start_datetime": when[0], "end_datetime": when[1],
-             "osd:approximate": p["approximate"], "osd:derivation": p["source"]}
+    period, source = item_period(p, when)
+    props = {"title": p["name"], "datetime": None, "start_datetime": period[0], "end_datetime": period[1],
+             "osd:period_source": source, "osd:approximate": p["approximate"], "osd:derivation": p["source"]}
     sha = inputs.get(p.get("input"), {}).get("sha256")
     if sha:
         props["osd:input_sha256"] = sha
@@ -212,7 +228,25 @@ def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MA
     fetch_and_parse_schema.cache_clear()   # a schema map change must not reuse a cached schema
     v = StacValidate(str(path), recursive=recursive, schema_config=str(schema_config))
     ok = v.run()
-    return ok and all(m.get("valid_stac") for m in v.message), v.message
+    messages = list(v.message)
+    if recursive and path.is_file() and json.loads(path.read_text()).get("type") == "Catalog":
+        messages += [{"path": problem, "valid_stac": False, "error_type": "containment",
+                      "error_message": problem} for problem in containment_problems(path.parent)]
+    return ok and all(m.get("valid_stac") for m in messages), messages
+
+
+def containment_problems(root: Path) -> list[str]:
+    """Every Item whose interval is not inside its Collection's temporal extent (E18)."""
+    out = []
+    for col_path in sorted(root.glob("*/collection.json")):
+        [[lo, hi]] = json.loads(col_path.read_text())["extent"]["temporal"]["interval"]
+        for it in sorted((col_path.parent / "items").glob("*.json")):
+            item = json.loads(it.read_text())
+            p = item["properties"]
+            start, end = p.get("start_datetime") or p.get("datetime"), p.get("end_datetime") or p.get("datetime")
+            if (lo and (start is None or start < lo)) or (hi and (end is None or end > hi)):
+                out.append(f"{item['id']}: {start} to {end} is outside its Collection's {lo} to {hi}")
+    return out
 
 
 def _links(path: Path) -> list[dict]:

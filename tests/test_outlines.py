@@ -334,7 +334,8 @@ def test_derived_features_carry_identity_and_licence(tmp_path):
         assert p["feature_id"] == f"sodir/factpages#wellbore/{p['publisher_id']}"
         assert p["input"] == "wellbores" and "licence" not in p
     assert fc["inputs"] == {"wellbores": {"url": RECS["sodir/factpages"]["inputs"][0]["url"],
-                                          "sha256": hashlib.sha256(sums).hexdigest()}}
+                                          "sha256": hashlib.sha256(sums).hexdigest(),
+                                          "period_fields": {"start": "Entered_date", "end": "Completed_date"}}}
     assert fc["licence"] == "Norwegian Licence for Open Government Data 2.0"  # OSD-D13, once per file
     assert sha is None  # no inputs.json: only fetch_inputs records what was fetched
     out = tmp_path / "outlines"
@@ -525,10 +526,10 @@ def test_every_version_1_record_validates_under_record_2():
         assert not list(v2.iter_errors(rec)), p
 
 
-def test_every_version_1_outline_validates_under_outline_2():
+def test_every_version_1_outline_validates_under_outline_2_and_3():
     v1 = Draft202012Validator(json.loads((FIX / "schema" / "outline-1.schema.json").read_text()))
     v2 = Draft202012Validator(json.loads((paths.SCHEMA_DIR / "outline.schema.json").read_text()))
-    assert v2.schema["$id"].endswith("/outline/2")
+    assert v2.schema["$id"].endswith("/outline/3")
     placeholders = [f for p in sorted(paths.OUTLINES_DIR.glob("*.geojson"))
                     for f in json.loads(p.read_text())["features"] if f["properties"]["approximate"]]
     assert placeholders
