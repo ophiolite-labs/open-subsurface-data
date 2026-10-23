@@ -19,4 +19,8 @@ region: {country: CO, bbox: [-81.68, 0.23, -68.02, 14.87]}
 listed_by: [publisher]
 known_issues:
   - "www.anh.gov.co and epis.anh.gov.co did not connect from this host on 23 Oct 2026; the SGC open data hub answers."
+period:
+  start: "2022-09-13"
+  end: "2022-09-13"
+  stated: "SGC open data hub DCAT-US feed entry for Banco de Información Petrolera: Pozos: issued 2022-09-13 (ArcGIS item created same timestamp)."
 added: 2026-10-23

@@ -20,4 +20,8 @@ listed_by: [publisher]
 known_issues:
   - "www.anh.gov.co did not connect from this host on 23 Oct 2026; datos.gov.co answers."
   - "Production is by field, not by well. bbox is the extent of Colombia, approximate."
+period:
+  start: "2014-01"
+  end: "2026-03"
+  stated: "datos.gov.co (Socrata) dataset fdvb-hsrf published by ANH: columns vigencia/mes run from 2014 month 1 to 2026 month 3; 'Frecuencia de Actualización: Trimestral'"
 added: 2026-10-23

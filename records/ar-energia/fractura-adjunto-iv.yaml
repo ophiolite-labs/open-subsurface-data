@@ -20,4 +20,8 @@ known_issues:
   - "The CSV is served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026; datos.gob.ar answers."
   - "pressure here is the maximum fracture treatment pressure per well, not reservoir pressure."
   - "bbox is the extent of Argentina, approximate."
+period:
+  start: "2019-10-25"
+  end: "2019-10-25"
+  stated: "datos.gob.ar dataset page and CKAN package_show: dataset_issued 2019-10-25 ('Fecha de publicación'); no temporal coverage stated"
 added: 2026-10-23

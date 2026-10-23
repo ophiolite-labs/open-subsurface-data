@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The files are served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026 (connection timeout); datos.gob.ar answers."
   - "bbox is the extent of Argentina, approximate."
+period:
+  start: "2006"
+  end: "2026-10-23"
+  stated: "datos.gob.ar catalogue lists yearly monthly-production files 'Producción de Pozos de Gas y Petróleo 2006' through '- 2026', updated 'R/P1M (mensualmente)'; first stated year 2006, continuing to today"
 added: 2026-10-23

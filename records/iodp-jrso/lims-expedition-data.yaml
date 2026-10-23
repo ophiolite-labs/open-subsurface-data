@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "Licence is per deposit: of 'IODP Expedition ...' deposits listed on 23 Oct 2026, 2295 state CC BY 4.0 and 689 CC0 (one listing page of 25 failed to load). The JRSO Licensing Statement names CC BY 4.0 for photos and publications only, and a one-year moratorium for new data."
   - "The LORE portal itself states no licence. No bbox: sites span all ocean basins."
+period:
+  start: "2009"
+  end: "2024"
+  stated: "JRSO Data Overview page: 'IODP Expeditions 317–403 (LIMS; 2009–2024)'; JRSO expeditions page: 317 'Nov 2009–Jan 2010', 403 'June–August 2024'"
 added: 2026-10-23
