@@ -49,6 +49,14 @@ def load_record(path: Path) -> dict:
                 period[k] = x.isoformat()
             elif isinstance(x, int) and not isinstance(x, bool):
                 period[k] = str(x)
+    # licence.terms.expires: unquoted 2030-12-31 is a date; the schema wants the string
+    terms = (data.get("licence") or {}).get("terms")
+    if isinstance(terms, dict):
+        x = terms.get("expires")
+        if hasattr(x, "isoformat"):
+            terms["expires"] = x.isoformat()
+        elif isinstance(x, int) and not isinstance(x, bool):
+            terms["expires"] = str(x)
     return data
 
 
