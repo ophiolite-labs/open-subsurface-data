@@ -1,0 +1,23 @@
+id: cpc/onshore-well-locations
+title: "探採研究所台灣陸域鑽井位置 (CPC onshore Taiwan well locations)"
+summary: >-
+  Onshore Taiwan drilling locations collected by CPC Corporation's Exploration and Production
+  Research Institute, in WGS84 degrees: well name, latitude, longitude, elevation and total depth.
+publisher: {name: "台灣中油股份有限公司 CPC Corporation, Taiwan (Exploration and Production Research Institute)", url: https://www.cpc.com.tw, country: TW}
+origin:
+  url: https://data.gov.tw/dataset/62919
+  access: anonymous
+  manifest_url: https://data.gov.tw/api/v2/rest/dataset/62919
+  notes: "CSV at https://www3.cpc.com.tw/opendata_f00/探採研究所台灣陸域鑽井位置.csv; www3.cpc.com.tw timed out from this host on 23 Oct 2026 (unreachable, possibly filtered by region)."
+licence:
+  name: "政府資料開放授權條款-第1版 (Open Government Data License, version 1.0)"
+  spdx: OGDL-Taiwan-1.0
+  url: https://data.gov.tw/license
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: TW, basin: Onshore Taiwan, bbox: [119.3, 21.8, 122.1, 25.4], crs: "EPSG:4326"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is Taiwan, approximate; the metadata states no spatial coverage."
+added: 2026-10-23

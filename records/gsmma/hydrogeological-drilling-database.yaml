@@ -1,0 +1,25 @@
+id: gsmma/hydrogeological-drilling-database
+title: "水文地質鑽探資料庫 (Hydrogeological drilling database)"
+summary: >-
+  Geological drilling base data, core records and geophysical well logs from Taiwan's
+  hydrogeological drilling programme: well location (TWD97 coordinates, site), core lithology by
+  depth, and logs of spontaneous potential, 16-inch and 64-inch resistivity and natural gamma.
+publisher: {name: "經濟部地質調查及礦業管理中心 Geological Survey and Mining Management Agency (GSMMA), MOEA", url: https://www.gsmma.gov.tw, country: TW}
+origin:
+  url: https://data.gov.tw/dataset/16799
+  access: anonymous
+  manifest_url: https://data.gov.tw/api/v2/rest/dataset/16799
+  notes: "CSV at https://www.gsmma.gov.tw/uploads/17503844515568fWuXe2C.csv (fields 井號, 井名, 縣市, 鄉鎮, TWD97二度分帶X/Y, 井深, 井頂高程, 建置年分, 井址, 地下水分區, 流域); www.gsmma.gov.tw answered a Cloudflare challenge (403) to this host on 23 Oct 2026."
+licence:
+  name: "政府資料開放授權條款-第1版 (Open Government Data License, version 1.0)"
+  spdx: OGDL-Taiwan-1.0
+  url: https://data.gov.tw/license
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, wellbore-logs, core]
+region: {country: TW, basin: Taiwan plains and mountain hydrogeological areas, bbox: [119.3, 21.8, 122.1, 25.4]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is Taiwan with Penghu, approximate; the metadata states no spatial coverage. Coordinates are TWD97 二度分帶 (TM2) as the CSV header names them."
+  - "The metadata cites a fee rule (計費法令依據) but marks the dataset 免費 (free)."
+added: 2026-10-23

@@ -1,0 +1,30 @@
+id: tudelft/egg-model
+title: The Egg Model - data files
+summary: >-
+  A synthetic reservoir model of an ensemble of 101 relatively small three-dimensional
+  realizations of a channelized reservoir produced under water flooding with eight injectors and
+  four producers; this deposit is the standard version meant to serve as a test case, with input
+  files for Dynamo/MoReS, Eclipse, AD-GPRS and MRST.
+publisher: {name: "TU Delft (J.D. Jansen, Faculty of Civil Engineering and Geosciences), via 4TU.ResearchData", url: https://data.4tu.nl, country: NL}
+origin:
+  url: https://doi.org/10.4121/uuid:916c86cd-3558-4672-829a-105c62985ab2
+  access: anonymous
+  manifest_url: https://api.datacite.org/dois/10.4121/uuid:916c86cd-3558-4672-829a-105c62985ab2
+  notes: "The DOI resolves to https://data.4tu.nl/articles/_/12707642/1. data.4tu.nl did not answer from this host on 23 Oct 2026 (TCP timeout), so access is the repository's open deposit as DataCite describes it, not seen on the day. Paper: Jansen et al., Geoscience Data Journal, doi:10.1002/gdj3.21."
+licence:
+  name: 4TU General Terms of Use
+  spdx: null
+  url: https://doi.org/10.4121/resource:terms_of_use
+  redistribution: unknown
+  attribution: unknown
+kinds: [reservoir-model]
+region: {basin: "Synthetic (channelized reservoir)"}
+listed_by: [community]
+known_issues:
+  - "The terms of use page is on data.4tu.nl, unreachable from this host on 23 Oct 2026; redistribution is not inferred."
+  - "DataCite gives geoLocationPlace \"Netherlands\" for a synthetic model; no region country or bbox."
+period:
+  start: "2013-11-12"
+  end: "2013-11-12"
+  stated: "DataCite: dates [{date: 2013-11-12, dateType: Issued}], publicationYear 2013 (release)"
+added: 2026-10-23

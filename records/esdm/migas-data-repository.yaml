@@ -1,0 +1,26 @@
+id: esdm/migas-data-repository
+title: MDR | Migas Data Repository (Indonesia)
+summary: >-
+  Indonesia's upstream oil and gas data repository run by the Ministry of Energy and Mineral
+  Resources data centre (Pusdatin ESDM), holding physical and digital well logs, processed 2D
+  and 3D seismic, well samples and cores across the country's working areas, with a public
+  well and seismic availability map on the ESDM One Map geoportal.
+publisher: {name: "Pusat Data dan Teknologi Informasi (Pusdatin), Kementerian Energi dan Sumber Daya Mineral", url: https://datamigas.esdm.go.id, country: ID}
+origin:
+  url: https://datamigas.esdm.go.id/home
+  access: request
+  notes: "Membership system with login and MFA; non-members apply to Pusdatin ESDM. Public availability maps (Peta Well, Peta Seismic 2D and 3D) at https://geoportal.esdm.go.id/home/map/migas. Physical export abroad needs ministerial approval."
+licence:
+  name: "Syarat dan Ketentuan Pemanfaatan Data dalam Sistem Keanggotaan (Edaran Nomor 2.E/03/SJD.2/2020)"
+  spdx: null
+  url: https://datamigas.esdm.go.id/docsviewer/DocumentView.aspx?filename=termandco
+  redistribution: forbidden
+  attribution: unknown
+kinds: [wellbore-headers, wellbore-logs, core, seismic-2d, seismic-3d, reports]
+region: {country: ID, basin: "Indonesian working areas (e.g. Natuna Sea, Kutai, Barito, Central Sumatra)", bbox: [94.0, -11.5, 141.1, 6.5]}
+size: {stated: "Digital Well Log 169.875 records; 2D Seismic Processed Digital Data 386.597 records; 3D Seismic Processed Digital Data 49.253 records; Well Sample and Well Core Sample 60.610 box (updated 30 September 2026)"}
+listed_by: [publisher]
+known_issues:
+  - "Members keep the data confidential, use it only internally and may not commercialise it without Pusdatin ESDM's approval."
+  - "bbox is Indonesia with its offshore, approximate."
+added: 2026-10-23

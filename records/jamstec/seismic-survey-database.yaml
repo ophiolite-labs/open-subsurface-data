@@ -1,0 +1,31 @@
+id: jamstec/seismic-survey-database
+title: JAMSTEC Seismic Survey Database
+summary: >-
+  Crustal structure data from JAMSTEC research programmes since 1997: multi-channel seismic
+  reflection (MCS) and refraction and wide-angle reflection data by ocean bottom seismograph (OBS)
+  around Japan and the western Pacific. All MCS and OBS data are available for academic use via a
+  data request form.
+publisher: {name: Japan Agency for Marine-Earth Science and Technology (JAMSTEC), url: https://www.jamstec.go.jp, country: JP}
+origin:
+  url: https://www.jamstec.go.jp/obsmcs_db/e/
+  access: request
+  manifest_url: https://www.jamstec.go.jp/obsmcs_db/e/survey/db/list_cruise.json
+  notes: "DOI 10.17596/0002069. Request form: https://www.jamstec.go.jp/obsmcs_db/form/obsmcs_db_entry_e/index.html. The manifest lists 215 cruises with type, dates and survey area."
+licence:
+  name: Site policy and data policy of JAMSTEC Seismic Survey DB
+  spdx: null
+  url: https://www.jamstec.go.jp/obsmcs_db/e/policy.html
+  redistribution: forbidden
+  attribution: required
+  statement: "JAMSTEC (2004) JAMSTEC Seismic Survey Database. JAMSTEC. doi:10.17596/0002069"
+kinds: [seismic-2d]
+region: {country: JP, basin: "Izu-Bonin-Mariana, Japan Sea, Japan/Kuril Trench, Nankai-Boso, Ryukyu, Western Pacific"}
+listed_by: [publisher]
+known_issues:
+  - "Data may be viewed freely but not provided to other people; requested data is for academic and educational use, basically not commercial; publication needs an application."
+  - "No extent is stated (survey areas are named, not bounded); no bbox."
+period:
+  start: "1997-05-02"
+  end: "2025-10-21"
+  stated: "Publisher's cruise list: first cruise KR97-02_Leg4 period sdate 1997/05/02; latest edate 2025/10/21 (KM25-10C)"
+added: 2026-10-23

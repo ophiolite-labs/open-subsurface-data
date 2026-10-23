@@ -1,0 +1,30 @@
+id: spe/csp11
+title: The 11th Society of Petroleum Engineers Comparative Solution Project (SPE11)
+summary: >-
+  A comparative solution project motivated by the simulation challenges of CO2 storage in
+  geological settings, in three versions: 11A, a 2D laboratory-scale geometry; 11B, the same at
+  field scale; and 11C, extruded to a full 3D field model. Geometries, input decks,
+  thermodynamic and evaluation scripts are in the associated GitHub repository.
+publisher: {name: Society of Petroleum Engineers, url: https://www.spe.org, country: US}
+origin:
+  url: https://www.spe.org/en/csp/
+  access: anonymous
+  manifest_url: https://github.com/Simulation-Benchmarks/11thSPE-CSP
+  notes: "Prepared by Nordbotten, Fernø (U Bergen), Kovscek (Stanford), Lie (SINTEF) and Flemisch (U Stuttgart). The README's https://spe.org/csp/spe11/ answered 403 on 23 Oct 2026; www.spe.org/en/csp/ answered."
+licence:
+  name: Creative Commons Attribution 4.0 International (Zenodo release); files licensed individually (REUSE)
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [reservoir-model]
+region: {basin: "Synthetic (CO2 storage geometry)"}
+listed_by: [community]
+known_issues:
+  - "No single licence: the description PDF is CC-BY-4.0, geometry files MIT and some data CC0-1.0, per the repository's REUSE.toml; the Zenodo release (10.5281/zenodo.20760402) states CC BY 4.0."
+  - "Synthetic model; no bbox."
+period:
+  start: "2023-03-29"
+  end: "2023-03-29"
+  stated: "SPE CSP page: \"29 March 2023 Official announcement at 2023 SPE Reservoir Simulation Conference\" (release)"
+added: 2026-10-23

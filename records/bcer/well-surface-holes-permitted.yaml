@@ -1,0 +1,26 @@
+id: bcer/well-surface-holes-permitted
+title: Well Surface Hole (Permitted)
+summary: >-
+  Non-confidential information about the surface location of every permitted well in British
+  Columbia from the BC Energy Regulator, with a status view giving the current status of the
+  surface hole. Data is updated nightly.
+publisher: {name: BC Energy Regulator (BCER), url: https://www.bc-er.ca, country: CA}
+origin:
+  url: https://data-bc-er.opendata.arcgis.com/datasets/657b609ee3314adf91da5ab86d42cda7_0
+  access: anonymous
+  manifest_url: https://geoweb-ags.bc-er.ca/arcgis/rest/services/PASR/PASR_WELL_SURFACE_STATE_PT/MapServer/0?f=json
+  notes: "BCER GIS Open Data Portal, linked from https://www.bc-er.ca/data-reports/data-centre/ (Data Centre name: Well Surface Hole Locations (Permitted) [BCOGC-44513]). The REST layer serves EPSG:3005."
+licence:
+  name: BC Energy Regulator Open Data Licence
+  spdx: null
+  url: https://www.bc-er.ca/files/gis/BCER-Open-Data-Licence.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Contains information licenced under the BC Energy Regulator Open Data Licence"
+kinds: [wellbore-headers]
+region: {country: CA, basin: British Columbia, bbox: [-134.1905, 47.9913, -110.8406, 60.1147], crs: "EPSG:3005"}
+listed_by: [publisher]
+known_issues:
+  - "The licence depends on the channel: the same layer on the BC Data Catalogue is Access Only under BC copyright, and the BCER Data Centre downloads (iris.bcogc.ca) carry terms that say they may not be reproduced or redistributed. This record is the open data portal item."
+  - "bbox is the extent stated in the publisher's ArcGIS item; its east edge (-110.84) lies east of British Columbia."
+added: 2026-10-23

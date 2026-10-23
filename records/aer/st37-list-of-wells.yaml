@@ -1,0 +1,26 @@
+id: aer/st37-list-of-wells
+title: "ST37: List of Wells in Alberta"
+summary: >-
+  The Alberta Energy Regulator's list of wells reflecting the life cycle of wells within Alberta as
+  reported to the AER, in Excel, Shapefile and Geodatabase format. The zip packages include bottom
+  holes, surface holes, production strings and geometry information; updated monthly.
+publisher: {name: Alberta Energy Regulator (AER), url: https://www.aer.ca, country: CA}
+origin:
+  url: https://www.aer.ca/data-and-performance-reports/statistical-reports/st37
+  access: anonymous
+  notes: "Downloads on the page: ST_37_GeoDB.zip, ST_37_Excel.zip, ST37_Shapefiles.zip and ST37_ReferenceGuide.pdf. The page says the shapefile format will be retired after a three-month transition to geodatabase."
+licence:
+  name: AER Copyright and Disclaimer
+  spdx: null
+  url: https://www.aer.ca/copyright-and-disclaimer
+  redistribution: restricted
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: CA, basin: Alberta, bbox: [-120.0, 49.0, -110.0, 60.0]}
+size: {stated: "Geodatabase [ZIP, 1.23 GB] Excel [ZIP, 170 MB] Shapefile [ZIP, 532 MB]"}
+listed_by: [publisher]
+known_issues:
+  - "The AER does not use the Alberta Open Government Licence for this list; its copyright page allows non-commercial reproduction with the AER named as the source and prohibits commercial redistribution without written permission."
+  - "bbox is the Province of Alberta, approximate."
+notes: "Reference guide (June 2026) lists Well_UWI, Final_Total_Depth, Max_True_Vertical_Depth, Kelly_Bushing_Elevation, Spud_Date and bottom-hole latitude/longitude; the page states no start year for the list."
+added: 2026-10-23
