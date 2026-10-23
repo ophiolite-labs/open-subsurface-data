@@ -28,6 +28,19 @@ The levels are a ladder: a dataset reaches a level only after it has passed ever
 </table>
 <p><span class="stale">stale</span> next to a level means the last check is more than 30 days old. The
 level was true then; it may not be now.</p>
+<p id="why">The <b>Why this level</b> row of a dataset, and the Why column of the
+<a href="status.html">status page</a>, give the verifier's own sentence and the day it checked. Below
+L2 it names the check that stopped the climb: <i>never verified</i> (no check has run yet);
+<i>no file address is published to us</i> (the record names no file listing; a publisher can publish
+one, a CKAN package, a file index or a direct download); <i>the listing names no files</i> (the listing
+answers but lists no downloadable file; a publisher can add the file addresses to it);
+<i>robots.txt disallows the listing</i> (a publisher can allow the agent osd-verifier in robots.txt);
+<i>answers a browser, not the verifier</i>, or <i>blocked from this runner</i> with a 403 or a
+challenge page (the origin refuses automated requests, which is not the same as the data being gone;
+a publisher can answer robots the same as browsers); <i>HTTP 502</i>, 404 or no answer at all (the
+origin is down or gone; it rises again when it answers). At L2 and above the sentence is the
+evidence: how many files were hashed, the outline derived or the conversion. A <b>blocked</b> dataset
+shows the date the refusal began instead of a level, because it awards none.</p>
 <p>A <b>dashed</b> outline is a placeholder drawn by hand to show roughly where the data lies. It is
 not taken from the data, and it keeps the dataset at L1 or below. A <b>blue dashed rectangle</b> is
 the area the record states, not the data's real footprint. Green circles are wellbores; where they
