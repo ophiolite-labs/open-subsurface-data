@@ -23,6 +23,7 @@ Screenshot for a surface lane (Playwright from the Ophiolite web tree):
 
 E02 merged (PR #3, 37c010c), verify dispatched on main: 3 at L2, 17 at L1, SEG wiki blocked. E05 merged (PR #2, 6c232cf): the required `check` job now also runs the offline Playwright site tests (about 30 s). E03 (osd-e03), E08 (osd-e08) and E13 (osd-e13, records) in lane.
 E13 merged (PR #4): 42 records. E13 findings for the planner: CO2 DataShare licences carry a no-sale clause (in `notes`, no schema field); a publisher-type field would make the spread count mechanical; BRGM, NRCan GDR, CNSOER, Queensland GSQ, AOGCC, SEAM/Stratton/Viking Graben unreachable or blocked on 23 Oct (reasons in the PR body). Records slot free; no records lane chartered yet.
+E08 rulings (inbox note answered): CODEOWNERS names the single collaborator; GitHub teams `records-maintainers` and `kernel-maintainers` come when there are people; required code-owner review stays off, the gate stays `check`. The two outside PRs for E08's acceptance are owner evidence, owner action 101.
 
 Codex round (OSD-D8) run on E02, E03 and E04 charters with `tools/review-charter.sh`; all three REWORK.
 E02's review is dispositioned by its lane in the charter before its PR. E03 and E04 charters were
