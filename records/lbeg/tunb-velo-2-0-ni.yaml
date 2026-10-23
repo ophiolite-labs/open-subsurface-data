@@ -17,12 +17,12 @@ licence:
   redistribution: allowed
   attribution: required
   statement: "NIBIS® Kartenserver (<year of download>): <theme, and which data were changed>. - Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover."
-kinds: [time-depth]
+kinds: [velocity-model]
 region: {country: DE, basin: North German Basin (Lower Saxony and Bremen), bbox: [6.6, 51.3, 11.6, 53.9]}
 listed_by: [publisher]
 known_issues:
   - "No model for southern Lower Saxony and the Osnabrück area (\"aufgrund unzureichender Datengrundlagen\")."
   - "The CC BY 4.0 terms cover data on the NIBIS map server; the page states no separate terms for the files supplied on request."
   - "bbox is Lower Saxony and Bremen, approximate."
-notes: "Want: a velocity-model kind; time-depth is the nearest (the publisher names time-depth conversion of seismic data as a use). The page names 2026 in the model title and gives no other date, so no period is written."
+notes: "The page names 2026 in the model title and gives no other date, so no period is written."
 added: 2026-10-23

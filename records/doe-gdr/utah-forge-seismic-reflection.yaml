@@ -17,7 +17,7 @@ licence:
   url: https://creativecommons.org/licenses/by/4.0/
   redistribution: allowed
   attribution: required
-kinds: [seismic-3d, seismic-2d]
+kinds: [seismic-3d, seismic-2d, velocity-model]
 region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
 size: {bytes_estimate: 849510000, stated: "849.51 MB — 3 files"}
 listed_by: [publisher]
@@ -27,5 +27,5 @@ period:
   start: "2018"
   end: "2019"
   stated: "Resource paper titled \"2018-2019 reprocessing of the 2D and 3D multichannel seismic surveys at the FORGE Utah EGS Laboratory\" (reprocessing); 'Data from Jun 19, 2019'"
-notes: "Want: a velocity-model kind; the migration velocity model ships with the SEG-Y volumes and has no kind. The acquisition years of the original surveys are not stated on the page."
+notes: "The acquisition years of the original surveys are not stated on the page."
 added: 2026-10-23

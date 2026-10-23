@@ -16,7 +16,7 @@ licence:
   url: https://creativecommons.org/licenses/by/4.0/
   redistribution: allowed
   attribution: required
-kinds: [potential-fields]
+kinds: [potential-fields, geological-model]
 region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
 size: {bytes_estimate: 11240000, stated: "11.24 MB — 2 files"}
 listed_by: [publisher]
@@ -26,5 +26,5 @@ period:
   start: "2019-06-24"
   end: "2019-06-24"
   stated: "GDR page: 'Data from Jun 24, 2019', submitted Jun 24, 2019 (release); no acquisition dates stated"
-notes: "The files are a 3D density model from gravity inversion, nearest kind potential-fields. Want: a kind for a geological 3D model or derived property model."
+notes: "The files are a 3D density model from gravity inversion, nearest kind potential-fields."
 added: 2026-10-23

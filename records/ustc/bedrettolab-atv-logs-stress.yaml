@@ -18,7 +18,7 @@ licence:
   url: https://creativecommons.org/licenses/by/4.0/legalcode
   redistribution: allowed
   attribution: required
-kinds: [wellbore-logs]
+kinds: [wellbore-logs, stress]
 region: {country: CH, basin: "Bedretto Underground Laboratory (BedrettoLab), Bedretto tunnel, Ticino, Swiss Alps"}
 size: {bytes_estimate: 2447545577, stated: "ATV.zip, ellipticity.zip, stress_inversion.zip"}
 listed_by: [community]
@@ -28,5 +28,5 @@ period:
   start: "2025-06-24"
   end: "2025-06-24"
   stated: "Zenodo record 15725567: publication_date 2025-06-24 (release); no logging dates stated"
-notes: "Geothermal (EGS) research laboratory under up to 1.5 km of overburden. Stress inversion results have no kind (nearest: wellbore-logs, from which they are derived)."
+notes: "Geothermal (EGS) research laboratory under up to 1.5 km of overburden."
 added: 2026-10-23
