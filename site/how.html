@@ -32,6 +32,11 @@ level was true then; it may not be now.</p>
 not taken from the data, and it keeps the dataset at L1 or below. A <b>blue dashed rectangle</b> is
 the area the record states, not the data's real footprint. Green circles are wellbores; where they
 are dense they are grouped into one circle with a count until you zoom in.</p>
+<p>The <b>years</b> under the list's publisher name, and the <b>When</b> row of a dataset, are the
+period the publisher states for the dataset as a whole, with where they state it. They are not the
+dates of single wells or surveys; those are in the dataset's STAC Items. The From and To years on the
+map show the datasets whose period overlaps them; a dataset whose publisher states no period stays
+listed unless you tick "only dated datasets".</p>
 
 <h2>Taking a layer into your own tools</h2>
 <p>Every outline on the map is in one GeoJSON file, in longitude and latitude (EPSG:4326). Each
