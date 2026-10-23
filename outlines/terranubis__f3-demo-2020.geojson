@@ -1,0 +1,4 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"record_id":"terranubis/f3-demo-2020","kind":"survey-3d","name":"F3 3D survey","approximate":true,"source":"hand placed from publisher map; placeholder until E03 derives it from the survey definition"},
+ "geometry":{"type":"Polygon","coordinates":[[[4.62,54.77],[5.02,54.77],[5.02,54.93],[4.62,54.93],[4.62,54.77]]]}}
+]}

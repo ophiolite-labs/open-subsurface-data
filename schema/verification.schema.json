@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/verification/1",
+  "title": "Verification record, version 1",
+  "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_id", "checked_at", "tool_version", "level", "checks"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "tool_version": {"type": "string"},
+    "level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+              "description": "L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted to a canonical type with a fidelity record"},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "level", "outcome"],
+        "properties": {
+          "name": {"type": "string"},
+          "level": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
+          "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+          "detail": {"type": "string", "maxLength": 500}
+        }
+      }
+    },
+    "origin": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "http_status": {"type": "integer"},
+        "final_url": {"type": "string"},
+        "content_type": {"type": "string"},
+        "elapsed_ms": {"type": "integer"}
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+        "properties": {"path": {"type": "string"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+      }
+    },
+    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

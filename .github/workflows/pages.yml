@@ -1,0 +1,34 @@
+# Publish the site from main. Continuous: every merge is a release. No version numbers,
+# no qualification step; the check on the pull request was the proof.
+# Levels come from the `verification-results` branch the verify workflow writes (OSD-D5).
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions: { contents: read, pages: write, id-token: write }
+concurrency: { group: pages, cancel-in-progress: true }
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: astral-sh/setup-uv@v3
+        with: { python-version: "3.12" }
+      - run: uv sync
+      - name: latest verification results
+        run: |
+          if git ls-remote --exit-code origin verification-results >/dev/null; then
+            git fetch -q origin verification-results
+            mkdir -p build/verification
+            git archive origin/verification-results | tar -x -C build/verification
+          fi
+      - run: make build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+      - id: deploy
+        uses: actions/deploy-pages@v4

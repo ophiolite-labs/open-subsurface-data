@@ -1,0 +1,26 @@
+# The one required check. Offline, under two minutes, GitHub-hosted. Nothing else gates a merge.
+name: check
+on:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with: { python-version: "3.12" }
+      - run: uv sync --frozen || uv sync
+      - run: make check
+      - name: site smoke (every data file the page fetches exists and parses)
+        run: |
+          test -s site/data/records.json && test -s site/data/outlines.geojson
+          python3 -c "import json;json.load(open('site/data/records.json'));json.load(open('site/data/outlines.geojson'))"
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with: { name: site, path: site, retention-days: 7 }

@@ -1,0 +1,20 @@
+id: seg/open-data-wiki
+title: SEG Wiki, Open data
+summary: >-
+  The Society of Exploration Geophysicists' community-maintained list of open geophysical
+  data sets. The seed list for this catalogue; several of its links are dead.
+publisher: {name: Society of Exploration Geophysicists, url: https://wiki.seg.org, country: US}
+origin:
+  url: https://wiki.seg.org/wiki/Open_data
+  access: anonymous
+licence:
+  name: Creative Commons Attribution-ShareAlike 3.0 (wiki text)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [source-list]
+region: {}
+listed_by: [community]
+added: 2026-10-23

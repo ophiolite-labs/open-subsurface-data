@@ -1,0 +1,21 @@
+id: nlog/nlog
+title: NLOG, Netherlands Oil and Gas Portal
+summary: >-
+  The Dutch public register of boreholes, seismic surveys, fields and production,
+  with released well logs and seismic data under the Mining Act.
+publisher: {name: "TNO Geological Survey of the Netherlands", url: https://www.nlog.nl, country: NL}
+origin:
+  url: https://www.nlog.nl/en/data
+  access: anonymous
+licence:
+  name: NLOG terms of use (public data under the Dutch Mining Act)
+  spdx: null
+  url: https://www.nlog.nl/en/disclaimer
+  redistribution: unknown
+  attribution: required
+kinds: [wellbore-headers, wellbore-logs, wellbore-paths, tops, seismic-2d, seismic-3d, production, reports]
+region: {country: NL, basin: Netherlands onshore and offshore, bbox: [2.5, 50.7, 7.3, 55.9], crs: "EPSG:28992"}
+listed_by: [publisher, community]
+known_issues:
+  - Ophiolite already ships an NLOG sample in its try-it image (E79); keep the two consistent at L4.
+added: 2026-10-23

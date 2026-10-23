@@ -1,0 +1,58 @@
+# Network verification. Never a required check: a publisher's outage must not stop merges.
+# Pull requests touching records: verify the changed records, comment the levels.
+# Dispatch on main: verify (all or some), store the results on the `verification-results`
+# branch (OSD-D5: no bucket, no secret), then republish the site so the map shows them.
+name: verify
+on:
+  workflow_dispatch:
+    inputs:
+      ids: { description: "record ids, space separated (empty = all)", required: false, default: "" }
+  pull_request:
+    paths: ["records/**", "outlines/**"]
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions: { contents: write, pull-requests: write, actions: write }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: astral-sh/setup-uv@v3
+        with: { python-version: "3.12" }
+      - run: uv sync
+      - name: earlier results (so a partial run keeps the others)
+        run: |
+          if git ls-remote --exit-code origin verification-results >/dev/null; then
+            git fetch -q origin verification-results
+            mkdir -p build/verification
+            git archive origin/verification-results | tar -x -C build/verification
+          fi
+      - name: pick ids
+        id: ids
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            ids=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- records | sed -n 's|^records/\(.*\)\.yaml$|\1|p' | grep -v '^_' | tr '\n' ' ')
+          else
+            ids="${{ inputs.ids }}"
+          fi
+          echo "ids=$ids" >> "$GITHUB_OUTPUT"
+      - run: uv run osd verify ${{ steps.ids.outputs.ids }} | tee verify.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: verification, path: build/verification }
+      - name: comment on the pull request
+        if: github.event_name == 'pull_request'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          { echo '### Verification'; echo '```'; cat verify.txt; echo '```'; } > body.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file body.md || true
+      - name: store results and republish
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          cd build/verification
+          git init -q -b verification-results
+          git config user.name "osd-verifier"; git config user.email "osd-verifier@users.noreply.github.com"
+          git add -A
+          git commit -q -m "verification $(date -u +%FT%TZ) run ${{ github.run_id }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" verification-results
+          gh workflow run pages.yml --repo ${{ github.repository }} --ref main

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open Subsurface Data</title>
+<meta name="description" content="A verified catalogue of open subsurface datasets on one map.">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="map"></div>
+
+<aside id="side">
+  <header>
+    <h1>Open Subsurface Data</h1>
+    <p class="sub">Open datasets, verified, on one map. <a href="https://github.com/ophiolite-labs/open-subsurface-data" target="_blank" rel="noopener">Contribute</a></p>
+    <input id="q" type="search" placeholder="Search dataset, publisher, basin" autocomplete="off">
+  </header>
+
+  <section id="filters">
+    <h2>Show</h2>
+    <div id="kinds" class="chips"></div>
+    <div class="row">
+      <label>Level at least <select id="minlevel">
+        <option value="0">L0 listed</option><option value="1">L1 reachable</option>
+        <option value="2">L2 checksummed</option><option value="3">L3 outlined</option><option value="4">L4 converted</option>
+      </select></label>
+      <label><input type="checkbox" id="extents" checked> dataset extents</label>
+      <label><input type="checkbox" id="approx" checked> placeholder outlines</label>
+    </div>
+  </section>
+
+  <section id="list"><h2>Datasets <span id="count"></span></h2><ul></ul></section>
+
+  <section id="detail" hidden></section>
+
+  <footer id="key">
+    <h2>Key</h2>
+    <div><i class="sw survey"></i> 3D / 2D survey</div>
+    <div><i class="sw field"></i> field or block</div>
+    <div><i class="sw well"></i> wellbore</div>
+    <div><i class="sw extent"></i> dataset extent (from the record, not the data)</div>
+    <div><i class="sw approx"></i> dashed: placeholder, not yet derived from the data</div>
+    <div class="levels"><b>L0</b> listed <b>L1</b> reachable <b>L2</b> checksummed <b>L3</b> outlined <b>L4</b> converted</div>
+  </footer>
+</aside>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

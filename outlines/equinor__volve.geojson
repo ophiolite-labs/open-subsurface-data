@@ -1,0 +1,4 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"record_id":"equinor/volve","kind":"field","name":"Volve field","approximate":true,"source":"hand placed from Sodir FactMaps; placeholder until E03 reads the Sodir field outline"},
+ "geometry":{"type":"Polygon","coordinates":[[[1.80,58.40],[1.95,58.40],[1.95,58.50],[1.80,58.50],[1.80,58.40]]]}}
+]}

@@ -1,0 +1,23 @@
+id: sodir/factpages
+title: Sodir FactPages and FactMaps (Norwegian continental shelf)
+summary: >-
+  The Norwegian Offshore Directorate's register of every wellbore, field, discovery,
+  licence and seismic survey on the Norwegian continental shelf, with coordinates and
+  map layers. Metadata and outlines, not the underlying logs or seismic.
+publisher: {name: Norwegian Offshore Directorate (Sodir), url: https://www.sodir.no, country: "NO"}
+origin:
+  url: https://factpages.sodir.no
+  access: api
+  manifest_url: https://factpages.sodir.no/en/wellbore/TableView/Exploration/All
+  notes: Tables download as CSV; FactMaps serves WMS/WFS layers.
+licence:
+  name: Norwegian Licence for Open Government Data 2.0
+  spdx: NLOD-2.0
+  url: https://data.norge.no/nlod/en/2.0
+  redistribution: allowed
+  attribution: required
+  statement: "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by the Norwegian Offshore Directorate"
+kinds: [wellbore-headers, wellbore-paths, tops, production, source-list]
+region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0]}
+listed_by: [publisher]
+added: 2026-10-23

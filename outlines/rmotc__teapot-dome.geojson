@@ -1,0 +1,4 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"record_id":"rmotc/teapot-dome","kind":"survey-3d","name":"Teapot Dome 3D","approximate":true,"source":"hand placed from publisher map; placeholder until E03 derives it from SEG-Y trace headers"},
+ "geometry":{"type":"Polygon","coordinates":[[[-106.27,43.23],[-106.13,43.23],[-106.13,43.37],[-106.27,43.37],[-106.27,43.23]]]}}
+]}

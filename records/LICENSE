@@ -1,0 +1,6 @@
+The records (records/**.yaml), outlines (outlines/*.geojson) and the generated catalogue
+(build/catalog/) are dedicated to the public domain under CC0 1.0 Universal:
+https://creativecommons.org/publicdomain/zero/1.0/
+
+They are facts about datasets published by others. Each dataset keeps its publisher's
+licence, named in its record; nothing here changes it.

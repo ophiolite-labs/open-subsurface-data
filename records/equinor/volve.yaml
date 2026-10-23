@@ -1,0 +1,26 @@
+id: equinor/volve
+title: Volve field data village
+summary: >-
+  The complete subsurface and production data set of the Volve field in the Norwegian
+  North Sea, released by Equinor in 2018: wells with logs, seismic (3D and 4D), reservoir
+  models, production data and reports.
+publisher: {name: Equinor, url: https://www.equinor.com, country: "NO"}
+origin:
+  url: https://www.equinor.com/energy/volve-data-sharing
+  access: registration
+  notes: Files are served from data.equinor.com after a free sign-in.
+licence:
+  name: Equinor Open Data Licence
+  spdx: null
+  url: https://www.equinor.com/energy/volve-data-sharing
+  redistribution: unknown
+  attribution: required
+  statement: "Data courtesy of Equinor and the Volve licence partners"
+kinds: [wellbore-headers, wellbore-logs, wellbore-paths, tops, seismic-3d, seismic-4d, horizons, surfaces, reservoir-model, production, reports]
+region: {country: "NO", basin: North Sea (Viking Graben), bbox: [1.7, 58.35, 2.05, 58.55], crs: "EPSG:23031"}
+size: {stated: "about 5 TB including seismic"}
+listed_by: [seg-wiki, publisher, osdu]
+osdu: {notes: "Volve is the reference data set of several OSDU test environments; identifiers to be recorded at L4."}
+known_issues:
+  - Licence redistribution terms not yet captured by the verifier (L2 pending).
+added: 2026-10-23

@@ -1,0 +1,23 @@
+id: rmotc/teapot-dome
+title: Teapot Dome 3D survey and wells
+summary: >-
+  The Naval Petroleum Reserve No. 3 (Teapot Dome, Wyoming) data set released by the US
+  Department of Energy's Rocky Mountain Oilfield Testing Center: a 3D seismic survey,
+  well logs, well headers and production history.
+publisher: {name: "US Department of Energy, RMOTC", url: https://www.energy.gov, country: US}
+origin:
+  url: https://wiki.seg.org/wiki/Teapot_dome_3D_survey
+  access: anonymous
+  notes: RMOTC closed in 2014; the SEG wiki page is the surviving index of mirrors.
+licence:
+  name: US Government work (public domain)
+  spdx: null
+  url: https://www.usa.gov/government-copyright
+  redistribution: allowed
+  attribution: not-required
+kinds: [seismic-3d, wellbore-logs, wellbore-headers, tops, production]
+region: {country: US, basin: Powder River Basin (Wyoming), bbox: [-106.3, 43.2, -106.1, 43.4], crs: "EPSG:32056"}
+listed_by: [seg-wiki]
+known_issues:
+  - Origin is a wiki page of mirrors; the verifier must record which mirror it checksummed.
+added: 2026-10-23

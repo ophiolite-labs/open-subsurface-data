@@ -1,0 +1,14 @@
+name: Suggest a dataset
+description: A public subsurface dataset that should be in the catalogue
+labels: [record]
+body:
+  - type: input
+    id: url
+    attributes: { label: Where is it published?, placeholder: "https://..." }
+    validations: { required: true }
+  - type: input
+    id: licence
+    attributes: { label: Licence, as the publisher names it }
+  - type: textarea
+    id: holds
+    attributes: { label: What does it hold? (wells, seismic, horizons, production...) }

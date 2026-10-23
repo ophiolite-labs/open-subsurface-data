@@ -1,0 +1,4 @@
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"record_id":"nzpam/parihaka","kind":"survey-3d","name":"Parihaka 3D","approximate":true,"source":"hand placed from publisher map; placeholder until E03"},
+ "geometry":{"type":"Polygon","coordinates":[[[173.8,-39.3],[174.3,-39.3],[174.3,-38.9],[173.8,-38.9],[173.8,-39.3]]]}}
+]}

@@ -1,0 +1,21 @@
+# Copy to records/<publisher>/<dataset>.yaml. The id must equal the path without ".yaml".
+# Write what the publisher states; leave out what you do not know rather than guessing.
+# Do not write a verification level: the verifier produces it.
+id: publisher-slug/dataset-slug
+title: Dataset title as the publisher names it
+summary: >-
+  Two or three sentences in the publisher's own terms.
+publisher: {name: Publisher name, url: https://publisher.example, country: NL}
+origin:
+  url: https://publisher.example/dataset          # the page a person opens; not an expiring link
+  access: anonymous                               # anonymous | registration | api | request
+licence:
+  name: Licence as the publisher names it
+  spdx: null                                      # CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0 or null
+  url: https://publisher.example/licence
+  redistribution: unknown                         # allowed | restricted | forbidden | unknown
+  attribution: unknown                            # required | not-required | unknown
+kinds: [seismic-3d]                               # see schema/record.schema.json
+region: {country: NL, basin: Basin name, bbox: [west, south, east, north]}
+listed_by: [community]                            # seg-wiki | publisher | osdu | community
+added: 2026-10-23

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/record/1",
+  "title": "Open Subsurface Data record, version 1",
+  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "publisher-slug/dataset-slug; stable forever, also the file path records/<id>.yaml"
+    },
+    "title": {"type": "string", "minLength": 3, "maxLength": 120},
+    "summary": {"type": "string", "maxLength": 600, "description": "Two or three sentences in the publisher's own terms."},
+    "publisher": {
+      "type": "object", "additionalProperties": false, "required": ["name", "url"],
+      "properties": {
+        "name": {"type": "string"},
+        "url": {"type": "string", "format": "uri"},
+        "country": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2"}
+      }
+    },
+    "origin": {
+      "type": "object", "additionalProperties": false, "required": ["url", "access"],
+      "properties": {
+        "url": {"type": "string", "format": "uri", "description": "The page a person opens to get the data. Never a deep link that expires."},
+        "access": {"type": "string", "enum": ["anonymous", "registration", "api", "request"],
+                   "description": "anonymous: a download needs no account; registration: a free account; api: a documented service; request: a human approves"},
+        "manifest_url": {"type": "string", "format": "uri", "description": "Optional machine-readable listing of files (index, API, bucket listing) the verifier can checksum against."},
+        "notes": {"type": "string", "maxLength": 400}
+      }
+    },
+    "licence": {
+      "type": "object", "additionalProperties": false, "required": ["name", "redistribution", "attribution"],
+      "properties": {
+        "name": {"type": "string", "description": "The licence as the publisher names it."},
+        "spdx": {"type": ["string", "null"], "description": "SPDX identifier when one exists (CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0); null for bespoke licences."},
+        "url": {"type": "string", "format": "uri"},
+        "redistribution": {"type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+                           "description": "May a third party host a copy? Decides whether the mirror store may hold this dataset."},
+        "attribution": {"type": "string", "enum": ["required", "not-required", "unknown"]},
+        "share_alike": {"type": "boolean", "description": "Derived products must carry the same licence (CC BY-SA and kin)."},
+        "statement": {"type": "string", "maxLength": 300, "description": "The attribution line a derived product must carry, verbatim when the publisher prescribes one."}
+      }
+    },
+    "kinds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "enum": [
+        "wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth",
+        "seismic-3d", "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults",
+        "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list"
+      ]},
+      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets."
+    },
+    "region": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "country": {"type": "string", "pattern": "^[A-Z]{2}$"},
+        "basin": {"type": "string"},
+        "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"},
+                 "description": "[west, south, east, north] in WGS84 decimal degrees, approximate, for the map's first zoom only."},
+        "crs": {"type": "string", "description": "The dataset's own CRS as the publisher states it, e.g. EPSG:23031."}
+      }
+    },
+    "size": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "bytes_estimate": {"type": "integer", "minimum": 0},
+        "stated": {"type": "string", "description": "As the publisher states it, e.g. '~5 TB including seismic'."}
+      }
+    },
+    "listed_by": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"type": "string", "enum": ["seg-wiki", "publisher", "osdu", "community"]},
+      "description": "Where we found it; seg-wiki means https://wiki.seg.org/wiki/Open_data"
+    },
+    "osdu": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"reference_id": {"type": "string"}, "notes": {"type": "string"}},
+      "description": "Identifiers in the OSDU reference data where the same dataset is carried."
+    },
+    "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}},
+    "notes": {"type": "string", "maxLength": 1200},
+    "added": {"type": "string", "format": "date"},
+    "contacts": {"type": "array", "items": {"type": "string", "format": "uri"}}
+  }
+}

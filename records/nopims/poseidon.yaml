@@ -1,0 +1,21 @@
+id: nopims/poseidon
+title: Poseidon 3D (Browse Basin)
+summary: >-
+  The Poseidon 3D seismic survey and associated wells on the North West Shelf of Australia,
+  released through the National Offshore Petroleum Information Management System.
+publisher: {name: Geoscience Australia / NOPTA (NOPIMS), url: https://nopims.dmp.wa.gov.au/nopims, country: AU}
+origin:
+  url: https://wiki.seg.org/wiki/Poseidon_3D
+  access: anonymous
+licence:
+  name: Creative Commons Attribution 4.0 (Commonwealth of Australia)
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-3d, wellbore-logs, wellbore-headers]
+region: {country: AU, basin: Browse Basin, bbox: [122.4, -13.6, 123.6, -12.4]}
+listed_by: [seg-wiki]
+known_issues:
+  - Licence to be confirmed against the NOPIMS terms page by the verifier (L2).
+added: 2026-10-23

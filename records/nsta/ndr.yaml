@@ -1,0 +1,21 @@
+id: nsta/ndr
+title: UK National Data Repository
+summary: >-
+  The North Sea Transition Authority's repository of released UK continental shelf well,
+  seismic and field data.
+publisher: {name: North Sea Transition Authority, url: https://www.nstauthority.co.uk, country: GB}
+origin:
+  url: https://ndr.nstauthority.co.uk
+  access: registration
+licence:
+  name: NSTA Open User Licence
+  spdx: null
+  url: https://www.nstauthority.co.uk/data-centre/
+  redistribution: unknown
+  attribution: required
+kinds: [wellbore-headers, wellbore-logs, seismic-2d, seismic-3d, reports]
+region: {country: GB, basin: UK continental shelf, bbox: [-12.0, 49.5, 3.5, 62.0]}
+listed_by: [publisher, community]
+known_issues:
+  - Bulk downloads are terabyte scale; the catalogue points, never mirrors.
+added: 2026-10-23
