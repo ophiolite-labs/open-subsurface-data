@@ -20,4 +20,8 @@ listed_by: [publisher]
 known_issues:
   - "The seismic terms and conditions do not mention well data. The site-wide DNR copyright notice forbids republication of department material without permission; whether it covers operator well submittals is not stated."
   - "bbox is the State of Alaska, approximate."
+period:
+  start: "2004-02-11"
+  end: "2018-07-14"
+  stated: "DGGS GMCTaxCreditData FeatureServer layer 0 'Tax Credit Well Data' (feeds the order page well list): CompletedDate range over 102 wells 2004-02-11 to 2018-07-14; completion dates only, no spud dates (ReleaseYear 2016-2020)"
 added: 2026-10-23

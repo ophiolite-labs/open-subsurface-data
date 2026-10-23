@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "Site policy permits copying and distribution for noncommercial use only, content unaltered. Hence restricted."
   - "bbox is the State of Texas, approximate; the page states no extent."
+period:
+  start: "1993"
+  end: "2026-10-23"
+  stated: "RRC data sets page, details for Production Data Query Dump: 'This data set contains production from 1993 to current.' (updated last Saturday each month)"
 added: 2026-10-23

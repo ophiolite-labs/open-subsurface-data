@@ -19,4 +19,8 @@ region: {country: CA, basin: Scotian Shelf, bbox: [-60.4, 43.9, -59.7, 44.4]}
 listed_by: [publisher]
 known_issues:
   - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+period:
+  start: "1992"
+  end: "1992"
+  stated: "TerraNubis data info page, General block: 'Acquisition: 1992'"
 added: 2026-10-23

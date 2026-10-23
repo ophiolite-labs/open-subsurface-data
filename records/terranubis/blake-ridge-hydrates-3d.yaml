@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
   - "The page text gives coordinates W 74 43 but its map link points near W 76.7; bbox follows the map link."
+period:
+  start: "2000"
+  end: "2000"
+  stated: "TerraNubis data info, General: \"Acquisition: 2000\"."
 added: 2026-10-23
