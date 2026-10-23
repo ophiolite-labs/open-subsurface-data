@@ -4,6 +4,7 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 
 ## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
 
+- E34 merged (PR #47, main 2a4e75a): periods for 10 of the 22 newest records without one (below the charter's 11; the other 12 state none, said per record), bbox for 11 of 22 (BOEM planning areas, C-NLOER land tenure regions, GeotIS WMS extent, CO2 DataShare points, Falklands designated area); 11 keep their no-bbox reason. mem.gob.gt and noc.ly answered 403 on the day. Verify dispatched on main.
 - E34 chartered and opened (periods and extents for the 36 records of E31 and E33; lane osd-e34).
 - E33 merged (PR #44, main 2752137): 196 records; E31's four held-back records restored (Falklands, PNG, Sri Lanka, South Dakota) plus 16 new (Washington Geological Survey x5, Ile-de-France geothermal, Svelvik CO2, Northern Lights core tests, Guatemala, Liberia and others); six new countries; `unknown` cap reached (45 in all); 106 records with a manifest_url.
 - E29 merged (PR #43, main d0e3241): record/5 (`format: arcgis`), ArcGIS adapter paged by object id with identity checks; nine registers carry inputs, periods and rules; outlines committed for SGUDDS, NZP&M wells and 2D lines, WA DEMIRS (6,970 features); WA DEMIRS at L3; SGUDDS and NZP&M answer 403 to the runner (L0, finding); Virginia, BCER, SGC, UT DOGM, North Dakota wait for E32 (gate budget, tippecanoe 2.49 feature_id corruption reproduced). make check 2m36 locally on the branch. Verify dispatched on main.
