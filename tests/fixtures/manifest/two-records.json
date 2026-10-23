@@ -1,0 +1,74 @@
+{
+  "format": "osd.manifest/1",
+  "created": "2026-10-23T12:00:00Z",
+  "catalog_url": "https://opensubsurfacedata.org/data/stac/catalog.json",
+  "selection": "collections",
+  "entries": [
+    {
+      "collection_id": "acme--alpha",
+      "record_id": "acme/alpha",
+      "title": "Title of acme/alpha",
+      "origin_url": "https://acme.example/acme/alpha",
+      "access": "anonymous",
+      "licence": {
+        "name": "CC BY-SA 4.0",
+        "spdx": "CC-BY-SA-4.0",
+        "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": true,
+        "statement": "Contains Alpha data \u00a9 Acme 2019, CC BY-SA 4.0"
+      },
+      "assets": {
+        "one.bin": {
+          "href": "https://files.example/a/one.bin",
+          "title": "one.bin",
+          "roles": [
+            "data"
+          ],
+          "file:size": 1200,
+          "file:checksum": "12206d415890b26deba5a3fa2b5c9a935c29a2949c0b445c07cb594853d04f780d4c"
+        },
+        "sub/two.bin": {
+          "href": "https://files.example/a/sub/two.bin",
+          "title": "sub/two.bin",
+          "roles": [
+            "data"
+          ],
+          "file:size": 600,
+          "file:checksum": "1220e85e7be17914a6ef43dfe8cbea3cd831a39e64e346461c131cc0ef63e44e5002"
+        }
+      },
+      "coverage": "sampled"
+    },
+    {
+      "collection_id": "beta-co--beta",
+      "record_id": "beta-co/beta",
+      "title": "Title of beta-co/beta",
+      "origin_url": "https://acme.example/beta-co/beta",
+      "access": "anonymous",
+      "licence": {
+        "name": "Beta open licence",
+        "spdx": null,
+        "redistribution": "unknown",
+        "attribution": "required",
+        "statement": "Courtesy of Beta Co. and partners"
+      },
+      "known_issues": [
+        "Terms page forbids resale of the data."
+      ],
+      "assets": {
+        "three.dat": {
+          "href": "https://files.example/b/three.dat",
+          "title": "three.dat",
+          "roles": [
+            "data"
+          ],
+          "file:size": 1024,
+          "file:checksum": "1220785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+        }
+      },
+      "coverage": "sampled"
+    }
+  ]
+}

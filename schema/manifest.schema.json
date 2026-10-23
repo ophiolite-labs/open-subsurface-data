@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/manifest/1",
+  "title": "Retrieval manifest, version 1 (osd.manifest/1)",
+  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "created", "catalog_url", "selection", "entries"],
+  "properties": {
+    "format": {"const": "osd.manifest/1"},
+    "created": {"type": "string", "format": "date-time"},
+    "catalog_url": {"type": "string", "format": "uri", "description": "The STAC root the ids resolve against"},
+    "selection": {"enum": ["collections", "items"], "description": "Collection selection or Item selection, never a mix"},
+    "entries": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/entry"}}
+  },
+  "$defs": {
+    "href": {
+      "type": "string",
+      "pattern": "^https?://[^/?#@]+(/|$)",
+      "not": {"pattern": "(?i)[?&](x-amz-signature|x-amz-credential|signature|sig|token|access_token|api_key|apikey|key|password)="},
+      "description": "http(s), no userinfo, no signature or token in the query"
+    },
+    "asset": {
+      "type": "object", "additionalProperties": false, "required": ["href"],
+      "properties": {
+        "href": {"$ref": "#/$defs/href"},
+        "title": {"type": "string"},
+        "roles": {"type": "array", "items": {"type": "string"}},
+        "file:size": {"type": "integer", "minimum": 0},
+        "file:checksum": {"type": "string", "pattern": "^([0-9a-f]{2})+$", "minLength": 6,
+                          "description": "Multihash as the STAC File extension states it; osd get accepts sha2-256 (1220…) only and refuses others loudly"}
+      }
+    },
+    "licence": {
+      "type": "object", "additionalProperties": false, "required": ["name", "redistribution", "attribution"],
+      "description": "The record's licence object, copied whole; absent fields stay absent (unknown), nothing is invented",
+      "properties": {
+        "name": {"type": "string"},
+        "spdx": {"type": ["string", "null"]},
+        "url": {"type": "string", "format": "uri"},
+        "redistribution": {"enum": ["allowed", "restricted", "forbidden", "unknown"]},
+        "attribution": {"enum": ["required", "not-required", "unknown"]},
+        "share_alike": {"type": "boolean"},
+        "statement": {"type": "string", "maxLength": 300}
+      }
+    },
+    "entry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["collection_id", "record_id", "title", "origin_url", "access", "licence", "assets"],
+      "properties": {
+        "collection_id": {"type": "string", "pattern": "^[a-z0-9-]+--[a-z0-9-]+$"},
+        "record_id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$"},
+        "item_id": {"type": ["string", "null"], "description": "Item selection: the STAC Item id, or null when the feature has no Item"},
+        "feature_id": {"type": "string", "description": "Item selection: the map feature that was selected"},
+        "title": {"type": "string"},
+        "origin_url": {"type": "string", "format": "uri", "description": "The publisher's page; the to-do address when assets are empty"},
+        "access": {"enum": ["anonymous", "registration", "api", "request"]},
+        "licence": {"$ref": "#/$defs/licence"},
+        "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}, "description": "The record's known_issues, verbatim (publisher restrictions live here and in licence.redistribution)"},
+        "assets": {"type": "object", "additionalProperties": {"$ref": "#/$defs/asset"},
+                   "propertyNames": {"pattern": "^[^/\\\\][^\\\\]*$", "not": {"pattern": "(^|/)\\.\\.?(/|$)"}},
+                   "description": "STAC asset key (a relative path) to asset; keys become paths under --dest/<collection_id>/"},
+        "coverage": {"enum": ["sampled", "complete"], "description": "sampled: the files the verifier hashed, not the whole dataset"},
+        "unresolved": {"type": "string", "minLength": 1, "description": "Why no asset is listed; the origin page is the to-do"}
+      },
+      "if": {"properties": {"assets": {"maxProperties": 0}}},
+      "then": {"required": ["unresolved"]},
+      "else": {"required": ["coverage"]}
+    }
+  }
+}
