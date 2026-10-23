@@ -60,6 +60,7 @@ manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links th
 mase-unmig/videpi-seismic: ["*/sgy/1.sgy"]   # page links 171 SEG-Y lines; 1.sgy, 82,208,512 bytes (application/SEG-Y)
 mase-unmig/videpi-wells: ["*/las/55.las"]   # LAS/LIS list page (44 LAS, 4 LIS); 55.las, 577,512 bytes
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
+mem-gt/produccion-de-hidrocarburos: ["*/PRODUCCION-DE-HIDROCARBUROS-2025.xlsx"]   # production page links 14 yearly workbooks; the 2025 one, 53,687 bytes (robots 200: User-agent: * Allow: /, Content-Signal use=reference)
 nbmg/oil-gas-wells-through-2013: ["*"]   # ArcGIS layer 1: one geojson export of at most 1,000 of 1,061 features (maxRecordCount 1000), 422,720 bytes
 nd-dmr/wells: ["*"]   # ArcGIS layer: one geojson export of at most 2000 of 44,018 features (kept as partial), 1,118,791 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
@@ -86,6 +87,8 @@ sgu/tyngdkraft: ["*/geofysik-mark-tyngdkraft.zip"]   # page links three zips; th
 sgudds/register-geotermalnych-vrtov: ["*"]   # ArcGIS layer 2: one geojson export, all 307 features (maxRecordCount 1000), 392,511 bytes
 sintef/johansen: ["*/Sector5.zip"]   # page links eight zips; the 5-layer sector model, 3,943,155 bytes
 sk-mer/drill-core: ["*"]   # ArcGIS layer 2: one geojson export of at most 2000 of 104,754 features (kept as partial), 1,388,053 bytes
+sk-mer/drill-cuttings: ["*"]   # ArcGIS layer 3: one geojson export of at most 2000 of 73,632 features (kept as partial); size not read (robots 404)
+sk-mer/non-vertical-wells: ["*"]   # ArcGIS layer 1: one geojson export of at most 2000 of 68,000 features (kept as partial); size not read (robots 404)
 sk-mer/vertical-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 119,595 features (kept as partial), 4,232,645 bytes
 sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the exploration wellbore table
 soton/scanner-pockmark-velocity-models: ["*/1/FAST_Final_Tomo_Vp_GI_geo_SP"]   # ePrints page links six files; the tomographic model, 146,169,210 bytes

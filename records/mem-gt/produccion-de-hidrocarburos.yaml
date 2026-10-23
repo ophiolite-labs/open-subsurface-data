@@ -1,0 +1,28 @@
+id: mem-gt/produccion-de-hidrocarburos
+title: Producción de hidrocarburos (Ministerio de Energía y Minas, Guatemala)
+summary: >-
+  Guatemala's hydrocarbon production statistics, one workbook per year from 2012 to 2025 ("Producción
+  de hidrocarburos 2025" … "2012"), published by the Ministry's upstream hydrocarbons directorate
+  under Explotación.
+publisher: {name: "Ministerio de Energía y Minas de Guatemala (MEM)", url: https://mem.gob.gt, country: GT}
+origin:
+  url: https://mem.gob.gt/que-hacemos/hidrocarburos/hidrocarburos-upstream/explotacion/produccion/
+  access: anonymous
+  manifest_url: https://mem.gob.gt/que-hacemos/hidrocarburos/hidrocarburos-upstream/explotacion/produccion/
+  notes: "The page links 14 .xlsx files PRODUCCION-DE-HIDROCARBUROS-2012 to -2025 under /wp-content/uploads/; the 2025 workbook was 53,687 bytes on 23 Oct 2026."
+licence:
+  name: Not stated
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [production]
+region: {country: GT}
+listed_by: [publisher]
+known_issues:
+  - "No licence or terms page found on mem.gob.gt; robots.txt carries a Cloudflare content signal 'search=yes,ai-train=no,use=reference'."
+  - "No bbox: the page states no extent and names no basin."
+period:
+  start: "2012"
+  end: "2025"
+  stated: "Workbooks listed 'Producción de hidrocarburos 2012' to 'Producción de hidrocarburos 2025'"
+added: 2026-10-23

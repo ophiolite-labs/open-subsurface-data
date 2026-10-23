@@ -1,0 +1,30 @@
+id: orogo/geoscience-programs
+title: Geoscience Data (OROGO geoscience programs, Northwest Territories)
+summary: >-
+  "This page gives access to the results of geoscience programs carried out in OROGO’s jurisdiction
+  between 1943 and 2013 (no programs have been carried out since then). Geoscience programs cover all
+  non-drilling oil and gas research and include seismic programs, geological field research,
+  aeromagnetic surveys, and more."
+publisher: {name: "Office of the Regulator of Oil and Gas Operations (OROGO), Northwest Territories", url: https://www.orogo.gov.nt.ca, country: CA}
+origin:
+  url: https://www.orogo.gov.nt.ca/en/geophysical-programs
+  access: anonymous
+  notes: "1,201 programs listed on 23 Oct 2026 (Seismic 566, Gravity 58, aeromagnetic and field programs), each with its reports. No manifest_url: the list links program pages, not files."
+licence:
+  name: Government of the Northwest Territories website Terms of Use (copyright)
+  spdx: null
+  url: https://www.orogo.gov.nt.ca/en/terms-use
+  redistribution: restricted
+  attribution: required
+kinds: [reports, seismic-2d, potential-fields]
+region: {country: CA, basin: "Northwest Territories (OROGO jurisdiction)"}
+listed_by: [publisher]
+known_issues:
+  - "\"Material may not be used or reproduced for commercial purposes without the prior written consent ... If it is reproduced or redistributed for non-commercial purposes, the Government of the Northwest Territories copyright is to be acknowledged.\""
+  - "The kinds name the program types; the page offers program results as reports, and does not say whether seismic sections or field data are included."
+  - "No bbox: 'Location information is available for some geoscience programs'; the page states no overall extent."
+period:
+  start: "1943"
+  end: "2013"
+  stated: "'results of geoscience programs carried out in OROGO’s jurisdiction between 1943 and 2013 (no programs have been carried out since then)'"
+added: 2026-10-23
