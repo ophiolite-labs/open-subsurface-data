@@ -104,6 +104,11 @@ ustc/bedrettolab-atv-logs-stress: ["*/files/stress_inversion.zip?download=1"]   
 ut-dogm/oil-gas-wells: ["*"]                      # ArcGIS layer: one geojson export of at most 2000 features
 va-energy/gas-oil-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 8,605 features (kept as partial), 1,185,609 bytes
 wa-demirs/petroleum-wells: ["*"]   # ArcGIS layer 13: one geojson export, all 4,371 features (maxRecordCount 10000), 1,978,900 bytes
+wa-dnr/geophysics-database: ["*"]   # ArcGIS layer 2 (gravity observations): one geojson export of at most 2000 of 7,577 features; size not read (gis.dnr.wa.gov robots 404)
+wa-dnr/geothermal-wells: ["*"]   # ArcGIS layer 7 (measured geothermal gradient): one geojson export, all 489 features (maxRecordCount 2000); size not read (robots 404)
+wa-dnr/groundwater-chemistry: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 features (1,501 listed, all fit); size not read (robots 404)
+wa-dnr/oil-gas-wells: ["*"]   # ArcGIS layer 1: one geojson export, all 830 features (maxRecordCount 2000); size not read (robots 404)
+wa-dnr/shear-wave-database: ["*"]   # ArcGIS layer 12 (study locations): one geojson export, all 599 features (maxRecordCount 2000); size not read (robots 404)
 
 # Mirror rules (E07): the files `osd mirror put` copies, keyed by record id. The verifier hashes every
 # entry of the listing a rule selects (its `inventory`), within the same budget as the sample.

@@ -1,0 +1,32 @@
+id: wa-dnr/shear-wave-database
+title: Shear Wave Database (Washington Geological Survey, Digital Data Series 17)
+summary: >-
+  "A compilation of shear-wave data from studies performed by the Washington Geological Survey, the
+  U.S. Geological Survey, and the Environmental and Engineering Geophysical Society": strong-motion
+  sensor site locations with Vs30 and two related tables of S-wave and P-wave velocity data obtained
+  at those sites.
+publisher: {name: "Washington State Department of Natural Resources, Washington Geological Survey", url: https://dnr.wa.gov/washington-geological-survey, country: US}
+origin:
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/geology-gis-data-and-databases
+  access: anonymous
+  manifest_url: https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Shearwave_Data/MapServer/12?f=json
+  notes: "The GIS data page lists 'Shear Wave Database Jun. 2021 4 MB'. Layer 12 'Study Locations' of the Shearwave_Data map service holds 599 sites; tables 13 and 14 hold the P-wave and S-wave data."
+licence:
+  name: Washington Geological Survey Disclaimers and Citation Guidelines
+  spdx: null
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/disclaimers-and-citation-guidelines
+  redistribution: allowed
+  attribution: required
+  statement: "Washington Geological Survey, 2021, Shear wave database--GIS data: Washington Geological Survey Digital Data Series 17, version 1.3, previously released June, 2019"
+kinds: [velocity-model]
+region: {country: US, basin: "Washington State (sites also in Oregon)", bbox: [-124.71, 43.96, -116.97, 48.97], crs: "EPSG:2927"}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimers and Citation Guidelines: \"All of the materials we produce (publications, digital content, posters, videos) are free for you to use in any way you choose, for both commercial and non-commercial purposes, including modifying or adapting anything, as long as you cite us.\""
+  - "bbox is the map layer's extent (EPSG:2927) converted to WGS84, not a stated extent; it reaches into Oregon."
+  - "Near-surface velocity profiles at sensor sites, used for NEHRP site classes and ShakeMaps."
+period:
+  start: "2007-02-26"
+  end: "2021-04-29"
+  stated: "Layer 12 field Date_Acquired: min 2007-02-26, max 2021-04-29, set on 257 of 599 sites (23 Oct 2026)"
+added: 2026-10-23
