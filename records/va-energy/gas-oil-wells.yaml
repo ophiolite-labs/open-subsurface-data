@@ -1,0 +1,24 @@
+id: va-energy/gas-oil-wells
+title: Gas & Oil Wells (Virginia Division of Gas and Oil)
+summary: >-
+  "Gas wells in Virginia, also includes inspector areas": the Division of Gas and Oil's map service
+  of active wells, pending wells, pending well modifications, facility permits and permitted undrilled
+  wells, with file number, elevation, company, farm, completion dates and total depth.
+publisher: {name: "Virginia Department of Energy, Division of Gas and Oil", url: https://energy.virginia.gov, country: US}
+origin:
+  url: https://energy.virginia.gov/gas-oil/GasOil.shtml
+  access: anonymous
+  manifest_url: https://energy.virginia.gov/gis/rest/services/DGO/DGO_wells/MapServer/0?f=json
+  notes: "Layer 0 of the DGO/DGO_wells map service (8,605 features on 23 Oct 2026); the page's map is https://vadmme.maps.arcgis.com/apps/instant/lookup/index.html?appid=32bf460d0f1f411fa9afe7ca34009557."
+licence:
+  name: No licence stated (service copyright text 'VA DMME')
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: US, basin: Appalachian Basin (southwest Virginia), bbox: [-83.68, 36.54, -81.5, 37.55]}
+listed_by: [publisher]
+known_issues:
+  - "The layer and its export answered HTTP 500 several times on 23 Oct 2026 (16:11-16:12 UTC) before answering normally."
+  - "bbox is the southwest Virginia gas counties, approximate."
+added: 2026-10-23

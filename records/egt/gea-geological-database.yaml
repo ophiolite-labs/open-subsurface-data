@@ -1,0 +1,27 @@
+id: egt/gea-geological-database
+title: Geoloogiliste andmete teenus GEA API (Estonian geological database)
+summary: >-
+  "GEA API kaudu on kättesaadavad Eesti Geoloogiateenistuses kogutavad geoloogiliste objektide
+  (sealhulgas puuraugud -ja südamikud, proovid ja analüüside tulemused) andmed." (Through the GEA API
+  the Geological Survey of Estonia's data on geological objects are available: boreholes and drill
+  cores, samples and analysis results.)
+publisher: {name: Eesti Geoloogiateenistus (Geological Survey of Estonia), url: https://www.egt.ee, country: EE}
+origin:
+  url: https://gis.egt.ee/geoportaal/teenused
+  access: api
+  notes: "API https://gea-api.egt.ee (OpenAPI 'GEA API', 'Geoloogia Andmebaasi avalik API.'): tables puurauk (boreholes with geological units by depth), puursydamik_kastis (core boxes), proov (samples), analyys_tulem and analyys_mootmine (analyses), manus (attachments, e.g. core-box photos, /manus/{id}/download)."
+licence:
+  name: Eesti Geoloogiateenistuse ruumiandmete litsents (CC BY 4.0 with special conditions)
+  spdx: null
+  url: https://www.egt.ee/sites/default/files/documents/2024-12/Eesti%20Geoloogiateenistuse%20ruumiandmete%20litsents.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Geological Data: Geological Survey of Estonia <year>"
+kinds: [wellbore-headers, core, tops, geochemistry]
+region: {country: EE, basin: "Estonia (Baltic Basin, northern margin)", bbox: [21.76, 57.51, 28.21, 59.69]}
+listed_by: [publisher]
+known_issues:
+  - "The licence applies CC BY 4.0 with priority conditions: name the licensor, the data and its age or extract date when publishing. It names EGT's spatial data; the GEA API page does not repeat it."
+  - "No manifest_url: the API answers JSON records, not a list of files; the Survey's WFS host (maps.egt.ee) answered robots.txt with HTTP 503 on 23 Oct 2026."
+  - "bbox is Estonia, approximate."
+added: 2026-10-23

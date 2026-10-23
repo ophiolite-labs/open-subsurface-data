@@ -1,0 +1,26 @@
+id: fl-dep/oil-gas-permit-database
+title: Oil and Gas Permit Database
+summary: >-
+  "This spreadsheet is a compilation of information on all permitted wells in the state. The
+  spreadsheet provides a quick search tool on the "Facility Information" tab, relevant well
+  information on the "Wells" tab which can be sorted or filtered as needed, and some general
+  statistics on the "Totals" tab." Updated quarterly or as needed; last updated September 8, 2026.
+publisher: {name: "Florida Department of Environmental Protection, Oil and Gas Program", url: https://floridadep.gov/water/oil-gas, country: US}
+origin:
+  url: https://floridadep.gov/water/oil-gas/documents/oil-and-gas-permit-database
+  access: anonymous
+  manifest_url: https://floridadep.gov/water/oil-gas/documents/oil-and-gas-permit-database
+  notes: "The page links OG_WELLS_WEBSITE_4.xlsx (703,015 bytes on 23 Oct 2026). A map layer of 1,478 permitted wells is at https://ca.dep.state.fl.us/arcgis/rest/services/OpenData/OIL_WELLS/MapServer/0."
+licence:
+  name: FDEP GIS data disclaimer (no licence stated on the page)
+  spdx: null
+  url: https://www.arcgis.com/home/item.html?id=b63958cdd6ff4c679a2086d6994ef183
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: US, basin: "South Florida Basin (Sunniland trend) and the Florida Panhandle", bbox: [-87.63, 24.4, -80.03, 31.0]}
+listed_by: [publisher]
+known_issues:
+  - "The disclaimer is on the FDEP ArcGIS item of the well layer: 'The data are presented \"as is\", without a warranty of any kind'; the spreadsheet page states no terms."
+  - "bbox is the State of Florida, approximate."
+added: 2026-10-23

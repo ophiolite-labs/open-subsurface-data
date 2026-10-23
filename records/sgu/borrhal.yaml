@@ -1,0 +1,26 @@
+id: sgu/borrhal
+title: Borrkärnor och borrhål (Borrhål)
+summary: >-
+  "Produkten Borrhål visar koordinatsatt information om borrhål och borrkärnor. Data finns även från
+  skannade och analyserade borrkärnor från SGU:s arkiv." (The product shows georeferenced boreholes
+  and drill cores, from exploration and construction drilling across Sweden, with links to cores
+  photographed and scanned with hyperspectral infrared from SGU's archive.)
+publisher: {name: Sveriges geologiska undersökning (SGU), url: https://www.sgu.se, country: SE}
+origin:
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/malmer-och-mineral--geologiska-data/borrkarnor-och-borrhal/
+  access: anonymous
+  manifest_url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/malmer-och-mineral--geologiska-data/borrkarnor-och-borrhal/
+  notes: "The page links borrhal.zip (GeoPackage, 3,361,908 bytes on 23 Oct 2026), the INSPIRE GE_SGU_Borehole_epsg4258.zip (137,913,271 bytes) and a description PDF; an OGC API Features service is at https://api.sgu.se/oppnadata/borrhal/ogc/features/v1."
+licence:
+  name: Creative Commons Noll (CC0)
+  spdx: CC0-1.0
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/om-geologiska-data/licensvillkor/
+  redistribution: allowed
+  attribution: not-required
+kinds: [wellbore-headers, core]
+region: {country: SE, basin: Sweden (Fennoscandian Shield and Phanerozoic cover), bbox: [10.96, 55.34, 24.17, 69.06]}
+listed_by: [publisher]
+known_issues:
+  - "Mostly mineral-exploration and construction boreholes, not petroleum wells."
+  - "bbox is Sweden, approximate; the page states no extent."
+added: 2026-10-23

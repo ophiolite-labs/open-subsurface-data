@@ -7,7 +7,7 @@ publisher: {name: "台灣中油股份有限公司 CPC Corporation, Taiwan (Explo
 origin:
   url: https://data.gov.tw/dataset/62919
   access: anonymous
-  manifest_url: https://data.gov.tw/api/v2/rest/dataset/62919
+  manifest_url: https://www3.cpc.com.tw/opendata_f00/%E6%8E%A2%E6%8E%A1%E7%A0%94%E7%A9%B6%E6%89%80%E5%8F%B0%E7%81%A3%E9%99%B8%E5%9F%9F%E9%91%BD%E4%BA%95%E4%BD%8D%E7%BD%AE.csv
   notes: "CSV at https://www3.cpc.com.tw/opendata_f00/探採研究所台灣陸域鑽井位置.csv; www3.cpc.com.tw timed out from this host on 23 Oct 2026 (unreachable, possibly filtered by region)."
 licence:
   name: "政府資料開放授權條款-第1版 (Open Government Data License, version 1.0)"
@@ -20,5 +20,5 @@ region: {country: TW, basin: Onshore Taiwan, bbox: [119.3, 21.8, 122.1, 25.4], c
 listed_by: [publisher]
 known_issues:
   - "bbox is Taiwan, approximate; the metadata states no spatial coverage."
-  - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (404 to curl's), which RFC 9309 treats as disallow; the CSV the package names is on www3.cpc.com.tw, which answered a Cloudflare 403 page or nothing to automated requests that day, so the listing is left as it is."
+  - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (RFC 9309: disallow), so the manifest_url is the one CSV the package names; www3.cpc.com.tw timed out to automated requests that day."
 added: 2026-10-23

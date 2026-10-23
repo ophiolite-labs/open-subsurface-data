@@ -1,0 +1,26 @@
+id: gsv/faults-latrobe-group-gippsland
+title: Interpreted Faults, Latrobe Group, Gippsland Basin
+summary: >-
+  "This dataset consists of geological faults for the Top Latrobe Group interpreted from industry
+  seismic data compiled by the Department of Environment and Primary Industries (DEPI)." Compiled by
+  GHD for the report "Potential Influences of Geological Structures on Groundwater Flow Systems" of
+  DEPI's Secure Allocation Future Entitlements (SAFE) Project.
+publisher: {name: "Geological Survey of Victoria (Department of Energy, Environment and Climate Action)", url: https://www.deeca.vic.gov.au, country: AU}
+origin:
+  url: https://discover.data.vic.gov.au/dataset/interpreted-faults-latrobe-group-gippsland-basin
+  access: anonymous
+  manifest_url: https://opendata.maps.vic.gov.au/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=open-data-platform:faults_latrobe_gp&outputFormat=application/json
+  notes: "The dataset page's download goes to the Vicmap DataShare order form; the manifest_url is the WFS GetFeature of layer open-data-platform:faults_latrobe_gp on the open-data GeoServer whose WMS the page previews (47 features on 23 Oct 2026). Sibling layers there: Golden Beach, Strzelecki and Wangerrip group faults."
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [faults]
+region: {country: AU, basin: Gippsland Basin, bbox: [146.36, -39.19, 149.54, -37.76]}
+listed_by: [publisher]
+known_issues:
+  - "Fault traces at Top Latrobe Group (map lines), interpreted for a groundwater study; no fault surfaces or throws."
+  - "bbox is the extent of the 47 features as served on 23 Oct 2026."
+added: 2026-10-23

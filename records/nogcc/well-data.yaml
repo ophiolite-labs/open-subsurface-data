@@ -1,0 +1,25 @@
+id: nogcc/well-data
+title: Well Data including formation tops (NOGCC Data & Publications)
+summary: >-
+  The Nebraska Oil and Gas Conservation Commission's statewide well data as Access 2003 databases,
+  "Well Data" and "Well Data including formation tops" (6/4/2026). "The information here is mostly
+  summary information for activity analysis and similar pursuits." "All published coordinates are
+  corrected to the NAD 83 standard."
+publisher: {name: Nebraska Oil and Gas Conservation Commission, url: http://nogcc.ne.gov, country: US}
+origin:
+  url: http://nogcc.ne.gov/NOGCCPublications.aspx
+  access: anonymous
+  manifest_url: http://nogcc.ne.gov/NOGCCPublications.aspx
+  notes: "Files on the page (23 Oct 2026): Publications/NebraskaWellData.zip 1,619,864 bytes, Publications/NebraskaWellData_Tops.zip 5,438,416 bytes, and monthly production by lease per year Nebraska2005Production.zip to Nebraska2025Production.zip. Scout tickets and logs are in 'GIS Data Mining' (datamining.nogcc.ne.gov)."
+licence:
+  name: No licence or terms stated on the site
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, tops, production]
+region: {country: US, basin: "Nebraska (DJ Basin, Cambridge Arch, Forest City and Salina basins)", bbox: [-104.05, 40.0, -95.31, 43.0], crs: "NAD 83"}
+listed_by: [publisher]
+known_issues:
+  - "The site answers only over http://; https:// was refused on 23 Oct 2026."
+  - "bbox is the State of Nebraska, approximate."
+added: 2026-10-23

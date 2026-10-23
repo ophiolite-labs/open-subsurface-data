@@ -1,0 +1,31 @@
+id: gsnsw/drillholes-petroleum
+title: NSW Drillholes Petroleum
+summary: >-
+  "Information about and locations of wells drilled to explore for and assess geology and/or
+  potential petroleum resources. The petroleum drillholes dataset stores information about
+  conventional petroleum wells within NSW." It holds location, total depth, azimuth and dip,
+  wireline logs, core availability and library location and DIGS references for each drillhole.
+publisher: {name: "Geological Survey of New South Wales (Department of Primary Industries and Regional Development)", url: https://www.regional.nsw.gov.au/meg/geoscience, country: AU}
+origin:
+  url: https://data.nsw.gov.au/data/dataset/nsw-drillholes-petroleum
+  access: anonymous
+  manifest_url: https://public-gs.geoscience.nsw.gov.au/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=drilling:drilling_drillholes_petroleum&outputFormat=application/json
+  notes: "The data.nsw entry is harvested from SEED (https://datasets.seed.nsw.gov.au/dataset/nsw-drillholes-petroleum) and names the GSNSW WMS and WFS services; the manifest_url is the WFS GetFeature of layer drilling:drilling_drillholes_petroleum (1,221 features on 23 Oct 2026). Coal seam gas wells are drilling:drilling_drillholes_csg."
+licence:
+  name: Creative Commons Attribution
+  spdx: null
+  url: http://www.opendefinition.org/licenses/cc-by
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, core]
+region: {country: AU, basin: "Sydney, Gunnedah, Clarence-Moreton, Surat and Darling basins (New South Wales)", bbox: [141.0, -37.7, 154.0, -28.8]}
+listed_by: [publisher]
+known_issues:
+  - "The licence is named 'Creative Commons Attribution' with no version (CKAN licence id cc-by)."
+  - "bbox is the State of New South Wales as the catalogue states it."
+  - "SEED, the source catalogue, answered an empty HTTP 202 (a CloudFront challenge) to automated requests on 23 Oct 2026."
+period:
+  start: "1961-11-11"
+  end: "2026-10-23"
+  stated: "data.nsw dataset page: 'Temporal Coverage From 11/11/1961', no end date, 'Update Frequency Daily' (read 23 Oct 2026)"
+added: 2026-10-23

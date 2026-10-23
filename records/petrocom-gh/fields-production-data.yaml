@@ -1,0 +1,28 @@
+id: petrocom-gh/fields-production-data
+title: Fields Production Data (Production Volume)
+summary: >-
+  The Petroleum Commission's monthly production by field for Jubilee, TEN and OCTP / Sankofa-Gye
+  Nyame: oil production (bbl/d), gas production, gas re-injected, fuel gas, flared gas and gas
+  exported to GNGC (MMscf/d), with liftings by lifting party. Yearly workbooks "2025 Fields
+  Production Data" and "2024 Fields Production Data" are offered for download.
+publisher: {name: "Petroleum Commission, Ghana", url: https://petrocom.gov.gh, country: GH}
+origin:
+  url: https://petrocom.gov.gh/production-volume/
+  access: anonymous
+  manifest_url: https://petrocom.gov.gh/download/2025-fields-production-data/?wpdmdl=24377
+  notes: "The page's download buttons carry the file address in a data-downloadurl attribute, not a link, so the manifest_url is the 2025 workbook itself (xlsx, 597,225 bytes on 23 Oct 2026). The 2024 workbook is /download/2023-fields-production-data-2/?wpdmdl=23866."
+licence:
+  name: "No data licence stated (site footer: Copyright © 2026 Petroleum Commission, All rights reserved)"
+  spdx: null
+  url: https://petrocom.gov.gh/production-volume/
+  redistribution: restricted
+  attribution: unknown
+kinds: [production]
+region: {country: GH, basin: "Tano Basin (Western Basin, offshore Ghana)", bbox: [-3.3, 4.2, -2.4, 5.0]}
+size: {stated: "2025 Fields Production Data 583.23 KB; 2024 Fields Production Data 583 KB"}
+listed_by: [publisher]
+known_issues:
+  - "No licence for the data is published; 'All rights reserved' in the footer is read as restricted redistribution."
+  - "The manifest_url names one year's workbook; a new year is a new address."
+  - "bbox is the area of the Jubilee, TEN and OCTP fields, approximate."
+added: 2026-10-23

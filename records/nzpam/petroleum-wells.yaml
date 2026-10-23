@@ -1,0 +1,26 @@
+id: nzpam/petroleum-wells
+title: Petroleum Wells (NZP&M Geodata Catalogue layers)
+summary: >-
+  "Spatial representation of all boreholes in New Zealand, including petroleum, mineral, and coal
+  boreholes. Well header and bore information supplied by industry." Compiled from technical
+  submissions provided to NZP&M by permit operators, with UWI, operator, permit, dates, total depth
+  and result for each well.
+publisher: {name: New Zealand Petroleum and Minerals, url: https://www.nzpam.govt.nz, country: NZ}
+origin:
+  url: https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/4
+  access: api
+  manifest_url: https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/4?f=json
+  notes: "Layer 4 of the GeodataCatalogue_Layers map service that NZP&M publishes on its 'Using web services' page (https://www.nzpam.govt.nz/maps-geoscience/using-web-services); 1,302 features on 23 Oct 2026, maxRecordCount 2000."
+licence:
+  name: New Zealand Crown copyright (no dataset licence stated on the service)
+  spdx: null
+  url: https://www.nzpam.govt.nz/about/copyright
+  redistribution: unknown
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: NZ, basin: "Taranaki, East Coast, Canterbury, Great South and other New Zealand basins", bbox: [167.15, -49.61, 178.46, -35.11]}
+listed_by: [publisher]
+known_issues:
+  - "The copyright page says Crown copyright material on the website may be reproduced free of charge with the source acknowledged; it does not name the map services, and the service's licence field is empty."
+  - "The layer includes mineral and coal boreholes as well as petroleum wells."
+added: 2026-10-23

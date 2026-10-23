@@ -1,0 +1,25 @@
+id: sgu/tyngdkraft
+title: Tyngdkraft (gravity data)
+summary: >-
+  "Dataprodukterna visar uppmätta variationer i jordskorpans massfördelning. Dessa variationer beror
+  på skillnader i markens och berggrundens sammansättning." Ground gravity measurements (a Bouguer
+  anomaly map, RG82, in mGal, from SGU, Lantmäteriet and other organisations), an interpolated
+  overview grid, and airborne gravity and gradiometry around Kiruna.
+publisher: {name: Sveriges geologiska undersökning (SGU), url: https://www.sgu.se, country: SE}
+origin:
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/geofysik--geologiska-data/tyngdkraft/
+  access: anonymous
+  manifest_url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/geofysik--geologiska-data/tyngdkraft/
+  notes: "Downloads on the page (23 Oct 2026): geofysik-mark-tyngdkraft.zip 28,212,306 bytes, geofysik-mark-tyngdkraft-interpolerad.zip 33,725,013 bytes, geofysik-flyg-tyngdkraft-kiruna2013.zip 21,128,372 bytes."
+licence:
+  name: Creative Commons Noll (CC0)
+  spdx: CC0-1.0
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/om-geologiska-data/licensvillkor/
+  redistribution: allowed
+  attribution: not-required
+kinds: [potential-fields]
+region: {country: SE, basin: Sweden, bbox: [10.96, 55.34, 24.17, 69.06]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is Sweden, approximate; the airborne surveys cover only the Kiruna area."
+added: 2026-10-23

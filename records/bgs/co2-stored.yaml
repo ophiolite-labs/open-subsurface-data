@@ -1,0 +1,28 @@
+id: bgs/co2-stored
+title: CO2 Stored (the UK CO2 Storage Evaluation Database)
+summary: >-
+  "CO2 Stored provides access to world-leading overview data for over 500 potential CO2 storage sites
+  around offshore UK", including storage units in saline aquifers, oil fields and gas fields. Hosted
+  and developed by the British Geological Survey with The Crown Estate; the original data came from
+  the ETI-funded UK Storage Appraisal Project (UKSAP).
+publisher: {name: British Geological Survey, url: https://www.bgs.ac.uk, country: GB}
+origin:
+  url: https://www.co2stored.co.uk/home/index
+  access: registration
+  notes: "Subscription page https://www.co2stored.co.uk/home/about_subscription: 'Access to the CO2 Stored database is by Licence Agreement and is now free to access by all subscribers.'"
+licence:
+  name: CO2Stored Database Service Digital Data Licence Agreement (user groups 3 and 4)
+  spdx: null
+  url: https://www.co2stored.co.uk/application/downloads/licencepdf/user-group-3.pdf
+  redistribution: forbidden
+  attribution: unknown
+  terms:
+    stated: "Universities, research organisations, environmental NGOs, Regulators: Free, under licence. Commercial organisations: Free, under licence. Licence 8.3: 'Such Intellectual Property Rights may not be published or transferred to any other party, whether in whole or in part, without the prior written permission of the owning party(ies).'"
+kinds: [reservoir-model, reports]
+region: {country: GB, basin: UK Continental Shelf, bbox: [-12.0, 49.0, 4.0, 62.0]}
+listed_by: [publisher]
+known_issues:
+  - "Storage-unit properties and capacity estimates, not gridded models; reservoir-model is the nearest kind."
+  - "No files without a login, so no manifest_url."
+  - "bbox is the UK Continental Shelf, approximate."
+added: 2026-10-23

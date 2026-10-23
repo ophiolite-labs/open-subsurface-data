@@ -8,7 +8,7 @@ publisher: {name: "經濟部地質調查及礦業管理中心 Geological Survey 
 origin:
   url: https://data.gov.tw/dataset/16799
   access: anonymous
-  manifest_url: https://data.gov.tw/api/v2/rest/dataset/16799
+  manifest_url: https://www.gsmma.gov.tw/uploads/17503844515568fWuXe2C.csv
   notes: "CSV at https://www.gsmma.gov.tw/uploads/17503844515568fWuXe2C.csv (fields 井號, 井名, 縣市, 鄉鎮, TWD97二度分帶X/Y, 井深, 井頂高程, 建置年分, 井址, 地下水分區, 流域); www.gsmma.gov.tw answered a Cloudflare challenge (403) to this host on 23 Oct 2026."
 licence:
   name: "政府資料開放授權條款-第1版 (Open Government Data License, version 1.0)"
@@ -22,5 +22,5 @@ listed_by: [publisher]
 known_issues:
   - "bbox is Taiwan with Penghu, approximate; the metadata states no spatial coverage. Coordinates are TWD97 二度分帶 (TM2) as the CSV header names them."
   - "The metadata cites a fee rule (計費法令依據) but marks the dataset 免費 (free)."
-  - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (404 to curl's), which RFC 9309 treats as disallow; the CSV the package names is on www.gsmma.gov.tw, which answered a Cloudflare 403 page or nothing to automated requests that day, so the listing is left as it is."
+  - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (RFC 9309: disallow), so the manifest_url is the one CSV the package names; www.gsmma.gov.tw answered a Cloudflare 403 page to automated requests that day."
 added: 2026-10-23
