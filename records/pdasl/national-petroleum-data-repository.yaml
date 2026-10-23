@@ -1,0 +1,25 @@
+id: pdasl/national-petroleum-data-repository
+title: National Petroleum Data Repository (Sri Lanka's Upstream Petroleum Database)
+summary: >-
+  PDASL "manages Sri Lanka's complete upstream petroleum data lifecycle", with "historic and modern
+  datasets covering seismic, well, gravity, magnetic, environmental, and Mannar Basin gas discovery
+  data": 2D and 3D seismic, well logs, 530+ surveys and 2M+ kilometres of data, accessed through its
+  Data Room in Colombo.
+publisher: {name: Petroleum Development Authority of Sri Lanka (PDASL), url: https://www.pdasl.gov.lk, country: LK}
+origin:
+  url: https://www.pdasl.gov.lk/data-management
+  access: request
+  notes: "'Offers qualified operators free technical evaluation access through the PDASL Data Room in Colombo.' The page links 'Access Data Room' and 'Request Data Access'; contact exploresrilanka@pdasl.gov.lk. Multi-client data are licensed from partners: 13,080 km of broadband 2D seismic (Schlumberger, since 2018) and airborne gravity and magnetic data (Bell Geospace)."
+licence:
+  name: Not stated on the data management page
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [seismic-2d, seismic-3d, wellbore-logs, potential-fields, reports]
+region: {country: LK, basin: "Sri Lanka offshore basins (Mannar Basin)"}
+listed_by: [publisher]
+known_issues:
+  - "Access is for 'qualified operators' in the Data Room; the page states no terms for other users."
+  - "No bbox: the page states no extent."
+notes: "No period stated. PDASL was 'established by the Petroleum Resources Act No. 21 of 2021'."
+added: 2026-10-23

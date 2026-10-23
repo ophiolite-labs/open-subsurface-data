@@ -1,0 +1,27 @@
+id: anh-bo/exploracion-y-explotacion
+title: Exploración y Explotación (ANH Bolivia upstream maps and field sheets)
+summary: >-
+  The Agencia Nacional de Hidrocarburos' "Documentación actualizada e histórica sobre el Upstream en
+  Bolivia": maps of reserved areas, geological structures, the geological map, well drilling (Perforación
+  de Pozos), gas processing plants and the chronostratigraphic scale, and one sheet per field in
+  operation (Campos en Operación, 55 fields) with location map and generalised stratigraphic column.
+publisher: {name: Agencia Nacional de Hidrocarburos (ANH), url: https://www.anh.gob.bo, country: BO}
+origin:
+  url: https://www.anh.gob.bo/w2026/contenido.php?s=10
+  access: anonymous
+  manifest_url: https://www.anh.gob.bo/w2026/contenido.php?s=10
+  notes: "Each field sheet is a PDF under /InsideFiles/Documentos/ (Campo de Explotación Ñapuco, Documentos_Id-592-220412-0757-0.pdf, 2,607,508 bytes on 23 Oct 2026), linked twice: 'Abrir' (the file) and 'Descargar' (/g.php?myfile=...). The maps are PDFs under /InsideFiles/Inicio/Banner/."
+licence:
+  name: Not stated on the page
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [reports]
+region: {country: BO, basin: Bolivia}
+listed_by: [publisher]
+known_issues:
+  - "The site states no licence or terms of use."
+  - "The file server sends no Content-Type or Content-Length for the PDFs."
+  - "No bbox: the page states no extent."
+notes: "No period stated."
+added: 2026-10-23

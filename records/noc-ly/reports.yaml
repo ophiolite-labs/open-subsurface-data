@@ -1,0 +1,29 @@
+id: noc-ly/reports
+title: التقارير (Reports, National Oil Corporation of Libya)
+summary: >-
+  The National Oil Corporation's reports page: "أحدث تقاريرنا والبيانات المالية ورؤى الاستكشاف والإنتاج"
+  (our latest reports, financial statements and exploration and production insights). Reports are typed
+  بيانات الإنتاج (production data) or تقرير مالي (financial report): monthly production and revenue
+  summaries, the annual report of quantities produced and the annual technical statistical report.
+publisher: {name: "المؤسسة الوطنية للنفط (National Oil Corporation, NOC)", url: https://noc.ly, country: LY}
+origin:
+  url: https://noc.ly/reports/
+  access: anonymous
+  manifest_url: https://noc.ly/reports/
+  notes: "The page links PDFs under /wp-content/uploads/: the June 2026 production and revenue summary NOC-SHORT-REPORT-OF-JUN-.pdf (4,712,018 bytes on 23 Oct 2026), the annual technical statistical report for 2025 NOCR2025AR.pdf (45,864,047 bytes), and Arabic-named monthly and annual reports from 2024."
+licence:
+  name: Not stated on the reports page
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [production, reports]
+region: {country: LY, basin: Libya}
+listed_by: [publisher]
+known_issues:
+  - "The site states no licence or terms of use; the privacy policy covers personal data only."
+  - "No bbox: the page states no extent."
+period:
+  start: "2014"
+  end: "2026-06"
+  stated: "Year filter on the reports page: 2014, 2023, 2024, 2026; the latest report is the production and revenue summary for June 2026 (ملخص الإنتاج والإيرادات المستلمة لشهر يونيو, 2026)"
+added: 2026-10-23

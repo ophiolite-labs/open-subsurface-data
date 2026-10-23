@@ -12,6 +12,7 @@ agl/marmousi2: ["vp_marmousi-ii.segy.gz"]   # directory index; the P-wave veloci
 ak-dggs/tax-credit-well-data: ["*BadamiUnitB1-11A*.zip"]   # directory index of well zips; this one 413 KB
 al-ogb/wells: ["*"]   # the bare wells.zip the GIS page links (application/x-zip-compressed: a file by its headers), 3,562,207 bytes
 ancap/bouguer-anomaly-map-of-uruguay: ["*/bouguer_anomaly.rar"]   # page links one archive; size not stated by the server
+anh-bo/exploracion-y-explotacion: ["https://www.anh.gob.bo/InsideFiles/Documentos/Documentos_Id-592-*.pdf"]   # page links 55 field sheets twice ('Abrir' and /g.php 'Descargar'); the Ñapuco sheet itself, 2,607,508 bytes (no Content-Type or length sent)
 anh/produccion-fiscalizada-crudo: ["*"]          # Socrata view: its rows.csv export, a few MB
 anpg/historico-de-producao: {file: true, sample: ["*"]}   # the site's own JSON API of the annual series (application/json: a file only by this flag), 71 rows, 29,783 bytes
 ar-energia/fractura-adjunto-iv: ["*/datos-de-fractura-de-pozos-de-hidrocarburos-adjunto-iv-*.csv"]   # datos.gob.ar dataset page (47 links): the daily fracture CSV on datos.energia.gob.ar; size not read (host timed out 23 Oct)
@@ -54,6 +55,7 @@ mase-unmig/videpi-wells: ["*/las/55.las"]   # LAS/LIS list page (44 LAS, 4 LIS);
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 nd-dmr/wells: ["*"]   # ArcGIS layer: one geojson export of at most 2000 of 44,018 features (kept as partial), 1,118,791 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
+noc-ly/reports: ["*/NOC-SHORT-REPORT-OF-JUN-.pdf"]   # page links the reports' PDFs; the June 2026 production and revenue summary, 4,712,018 bytes
 nock/wells-drilled: ["*/pdf/Wells__Drilled.pdf"]   # page links one PDF table: Wells__Drilled.pdf, 266,101 bytes
 nogcc/well-data: ["*/NebraskaWellData_Tops.zip"]   # page links 236 files; the well data with formation tops, 5,438,416 bytes
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
