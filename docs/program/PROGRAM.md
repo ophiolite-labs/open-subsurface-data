@@ -31,7 +31,7 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 22 | E22 Records, fifth twenty (US states, Iberia and the Alps, Latin America, Africa, geothermal and CO2 sites) | Records | MERGED (PR #30, 23 Oct; main 595a30f; 121 records, ten new countries, seven US states) | E20 | The map lists 116 datasets with the open US state regulators and five more countries |
 | 23 | E23 More datasets checksummed | Kernel | MERGED (PR #31, 23 Oct; main 3ece7a2; verification/4, ten listing readers, publisher checksums, a reason per record below L2) | E02, E07 | Every listed dataset has its sample attempted each run; passes show L2, the rest say which check stopped them |
 | 24 | E24 Records: files the verifier can reach, and the sixth twenty | Records | IN LANE (osd-e24, 23 Oct) | E22, E23 | More datasets at L2 because their records point at listable files; 136 datasets on the map |
-| H1 | H1 Origins that recover, and origins that hide from robots | Kernel (hardening) | IN LANE (osd-h1, 23 Oct; charter reworked after its Codex round) | E08, E23 | Origin-dead issues close themselves; publishers that hide from the verifier are called blocked, not dead |
+| H1 | H1 Origins that recover, and origins that hide from robots | Kernel (hardening) | MERGED (PR #33, 23 Oct; main 5cbe7af; OSD-D20; issues close on recovery; single-file listings) | E08, E23 | Origin-dead issues close themselves; publishers that hide from the verifier are called blocked, not dead |
 | 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
 
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
