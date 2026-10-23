@@ -184,6 +184,41 @@ def test_tiles_hold_every_feature_with_its_properties_at_max_zoom(tmp_path, full
         assert got == p, k
 
 
+@_needs_tippecanoe
+def test_crossing_strings_keep_their_own_features(tmp_path):
+    """E32: two registers whose strings collide in tippecanoe's string pool before 2.55.0 (the
+    fixture's README); the tile keeps every property of every feature. Red on 2.49.0 and 2.53.0."""
+    out = tmp_path / "catalog"
+    out.mkdir()
+    shutil.copyfile(Path(__file__).parent / "fixtures" / "tiles" / "crossing.geojson", out / "outlines.geojson")
+    tiles = write_tiles(out, cache_dir=tmp_path / "tiles")
+    want = {(f["properties"]["record_id"], f["properties"]["name"]): f["properties"]
+            for f in json.loads((out / "outlines.geojson").read_text())["features"]}
+    seen = {}
+    for tile in _tiles_at(tiles, 12):
+        for _, props in _features(tile):
+            seen.setdefault((props["record_id"], props["name"]), props)
+    assert seen.keys() == want.keys()
+    for k, p in want.items():
+        got = {a: json.loads(v) if isinstance(p.get(a), list) else v for a, v in seen[k].items()}
+        assert got == p, k
+
+
+def test_both_workflows_install_the_pinned_tippecanoe():
+    """E32: the check and the published site tile with the same release, the one TIPPECANOE_PIN names."""
+    import re
+
+    from osd.build import TIPPECANOE_PIN
+    pins = set()
+    for wf in ("ci.yml", "pages.yml"):
+        text = (Path(__file__).parents[1] / ".github" / "workflows" / wf).read_text()
+        deb = re.findall(r"tippecanoe_([0-9.]+)-[^/\s]*_amd64\.deb", text)
+        sha = re.findall(r'echo "([0-9a-f]{64})  /tmp/tippecanoe\.deb" \| sha256sum -c', text)
+        assert len(deb) == len(sha) == 1, wf
+        pins.add((deb[0], sha[0]))
+    assert len(pins) == 1 and next(iter(pins))[0] == TIPPECANOE_PIN
+
+
 def test_build_without_tippecanoe_prints_the_notice_and_writes_no_tiles(tmp_path, monkeypatch, capsys, full_build):
     out = _outlines_only(tmp_path, full_build)
     (out / "outlines.pmtiles").write_bytes(b"stale")

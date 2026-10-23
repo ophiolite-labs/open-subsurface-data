@@ -1,0 +1,117 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "crossing/register-a#1",
+   "properties": {
+    "record_id": "crossing/register-a",
+    "kind": "well",
+    "name": "A-001377 WELL",
+    "approximate": false,
+    "source": "arcgis-layer:wells",
+    "feature_id": "crossing/register-a#1",
+    "input": "wells",
+    "title": "Register A wells",
+    "publisher": "Publisher A",
+    "kinds": [
+     "well-header"
+    ],
+    "licence": "Fixture licence",
+    "redistribution": "allowed",
+    "level": "L0"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -120.5,
+     56.25
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "crossing/register-a#2",
+   "properties": {
+    "record_id": "crossing/register-a",
+    "kind": "well",
+    "name": "A-002095 WELL",
+    "approximate": false,
+    "source": "arcgis-layer:wells",
+    "feature_id": "crossing/register-a#2",
+    "input": "wells",
+    "title": "Register A wells",
+    "publisher": "Publisher A",
+    "kinds": [
+     "well-header"
+    ],
+    "licence": "Fixture licence",
+    "redistribution": "allowed",
+    "level": "L0"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -120.25,
+     56.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "crossing/register-b#900540",
+   "properties": {
+    "record_id": "crossing/register-b",
+    "kind": "well",
+    "name": "B well 900540",
+    "approximate": false,
+    "source": "arcgis-layer:wells",
+    "feature_id": "crossing/register-b#900540",
+    "input": "wells",
+    "title": "Register B wells",
+    "publisher": "Publisher B",
+    "kinds": [
+     "well-header"
+    ],
+    "licence": "Fixture licence",
+    "redistribution": "allowed",
+    "level": "L0"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -101.5,
+     47.75
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "crossing/register-b#904407",
+   "properties": {
+    "record_id": "crossing/register-b",
+    "kind": "well",
+    "name": "B well 904407",
+    "approximate": false,
+    "source": "arcgis-layer:wells",
+    "feature_id": "crossing/register-b#904407",
+    "input": "wells",
+    "title": "Register B wells",
+    "publisher": "Publisher B",
+    "kinds": [
+     "well-header"
+    ],
+    "licence": "Fixture licence",
+    "redistribution": "allowed",
+    "level": "L0"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -101.25,
+     48.125
+    ]
+   }
+  }
+ ]
+}

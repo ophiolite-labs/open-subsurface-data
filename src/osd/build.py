@@ -140,8 +140,9 @@ def print_sizes(out_dir: Path) -> None:
 
 # Tiling (E15). One source layer, "outlines", every GeoJSON property kept. Points are kept at every
 # zoom (-r1) and clustered by the page; polygons are simplified by tippecanoe below zoom 8 only, so
-# z0-7 and z8-12 are two runs joined. Pinned in CI: Ubuntu 24.04 tippecanoe 2.49.0-1build1.
-TIPPECANOE_PIN = "2.49.0"
+# z0-7 and z8-12 are two runs joined. Pinned in CI: Ubuntu tippecanoe 2.79.0-1 (E32: before 2.55.0 the
+# string pool wrote one string for another whose hash shared its low 32 bits, tests/fixtures/tiles/).
+TIPPECANOE_PIN = "2.79.0"
 TILE_RUNS = (
     ["-Z0", "-z7"],
     ["-Z8", "-z12", "--no-line-simplification"],
