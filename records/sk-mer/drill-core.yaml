@@ -23,4 +23,5 @@ listed_by: [publisher]
 known_issues:
   - "An inventory of cored intervals held at the Subsurface Geological Laboratory, not core measurements; the metadata page itself carries only a use disclaimer, the licence is the GeoAtlas data licence."
   - "The map service caps a query at 2000 features; a full copy takes paged queries."
+notes: "No period stated: the metadata has no time period, and the layer has no drilling or coring date."
 added: 2026-10-23

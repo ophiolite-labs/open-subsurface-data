@@ -20,4 +20,5 @@ listed_by: [community]
 known_issues:
   - "The SPE CSP pages state no licence or terms of use; redistribution is unknown."
   - "Synthetic model with no geographic location; no bbox."
+notes: "No period stated: the dataset page gives no release or acquisition date. No bbox: a synthetic model on a cartesian grid."
 added: 2026-10-23

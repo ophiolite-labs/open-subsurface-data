@@ -24,4 +24,8 @@ listed_by: [publisher]
 known_issues:
   - "The licence excludes \"third party rights the Information Provider is not authorized to license\" and data licensed exclusively to Information Services Corporation."
   - "The map service caps a query at 2000 features; a full copy takes paged queries."
+period:
+  start: "1901-01-01"
+  end: "2026-10-21"
+  stated: "GeoAtlas Petroleum layer 0 'Vertical Wells' field WellDerivedSpudDate: min 1901-01-01 (7 wells, next 1907-08-01), max 2026-10-21; metadata 'Update frequency as needed'"
 added: 2026-10-23
