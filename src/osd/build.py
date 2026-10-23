@@ -81,7 +81,9 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         op = paths.outline_path(rid)
         if op.exists():
             for f in load_outline(op)["features"]:
-                props = dict(f["properties"])
+                # E18: a feature's dates are its STAC Item's, not map attributes (tippecanoe 2.49
+                # wrote other features' values into three tiles with them: evidence/e18/registers.md)
+                props = {k: v for k, v in f["properties"].items() if not k.startswith("osd:period_")}
                 props.update({
                     "title": rec["title"], "publisher": rec["publisher"]["name"],
                     "kinds": rec["kinds"], "licence": rec["licence"]["name"],
