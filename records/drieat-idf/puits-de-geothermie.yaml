@@ -24,5 +24,9 @@ listed_by: [publisher]
 known_issues:
   - "Point positions of well heads ('Tete') and reservoir impacts ('Impact'), not trajectories or logs."
   - "The bbox is the data.gouv.fr spatial extent of the record (the Île-de-France region)."
-notes: "No period stated: the metadata dates the dataset 2019-07-25 (creation and last revision), not the wells."
+notes: "Period is the dataset's issue date (2019-07-25, also its creation and last revision); the metadata gives no dates for the wells."
+period:
+  start: "2019-07-25"
+  end: "2019-07-25"
+  stated: "data.gouv.fr record harvested from geo-ide: issued_at 2019-07-25 (also created_at and last_modified 2019-07-25); temporal_coverage none, frequency unknown"
 added: 2026-10-23

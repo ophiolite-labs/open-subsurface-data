@@ -25,5 +25,9 @@ known_issues:
   - "Disclaimers and Citation Guidelines: \"All of the materials we produce (publications, digital content, posters, videos) are free for you to use in any way you choose, for both commercial and non-commercial purposes, including modifying or adapting anything, as long as you cite us.\""
   - "bbox is the gravity layer's extent (EPSG:2927) converted to WGS84, not a stated extent."
   - "Seismic profiles are active and passive near-surface profiles (reflection, refraction, tomography) as described by the layer, not exploration surveys."
-notes: "No period stated: ACQUISTION_DATE is empty on every gravity observation (23 Oct 2026)."
+notes: "Period is the database's release on the GIS data page ('Updated Apr. 2023'); ACQUISTION_DATE is empty on every gravity observation (23 Oct 2026)."
+period:
+  start: "2023-04"
+  end: "2023-04"
+  stated: "GIS data page, 'Geophysical and Subsurface Data': 'Geophysics Database | Updated Apr. 2023 | 61 MB' (the database release)"
 added: 2026-10-23

@@ -26,5 +26,9 @@ known_issues:
   - "Metadata: 'elk commercieel of niet-commercieel hergebruik voor onbepaalde duur is toegelaten, zonder dat daar kosten aan verbonden zijn. Als enige gebruiksvoorwaarde geldt een bronvermeldingsplicht.'"
   - "bbox is the layer's WGS84BoundingBox in the WFS capabilities."
   - "The client field is withheld: opdrachtgever reads '[afgeschermd]'."
-notes: "No period: the layer states a start ('aanvangsdatum vanaf 01-01-2017'; metadata beginPosition 2017-01-01) and an end of 'unknown'."
+notes: "Period from the metadata ('met aanvangsdatum vanaf 01-01-2017', status onGoing); the layer also holds a few earlier boreholes, the first dated 1980-07-27."
+period:
+  start: "2017-01-01"
+  end: "2026-10-23"
+  stated: "Metadata 95ee5bfe: 'Deze laag toont enkel de boringen met als doel Geothermie met aanvangsdatum vanaf 01-01-2017'; temporal extent begin 2017-01-01, end unknown; status onGoing, continual"
 added: 2026-10-23

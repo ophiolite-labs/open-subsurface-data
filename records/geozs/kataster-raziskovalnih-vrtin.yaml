@@ -21,5 +21,9 @@ region: {country: SI, basin: Slovenia, bbox: [13.3835, 45.4258, 16.6079, 46.8763
 listed_by: [publisher]
 known_issues:
   - "useLimitation: 'Data is available under a Creative Commons - Attribution 4.0 International (CC BY 4.0) license.'"
-notes: "No period: the record's temporal extent states an end (2008-11-13) and no beginning; its reference dates are 2005-10-31 and 2006-11-10."
+notes: "Period is the record's publication date; its temporal extent states only an end (2008-11-13) and its lineage 'datum zajema: 1999-2010, datum zadnjega ažuriranja: 2010'."
+period:
+  start: "2005-10-31"
+  end: "2005-10-31"
+  stated: "eGeologija metadata 54cebfc7: citation dates 2005-10-31 (creation, publication) and 2006-11-10 (revision)"
 added: 2026-10-23

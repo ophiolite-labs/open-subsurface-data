@@ -26,5 +26,9 @@ known_issues:
   - "Metadata: 'elk commercieel of niet-commercieel hergebruik voor onbepaalde duur is toegelaten, zonder dat daar kosten aan verbonden zijn. Als enige gebruiksvoorwaarde geldt een bronvermeldingsplicht.'"
   - "bbox is the layer's WGS84BoundingBox in the WFS capabilities."
   - "The WFS layer gives one row per interpretation; the intervals themselves are on the linked sheets."
-notes: "No period stated."
+notes: "Period is the dataset's publication date in its metadata; the interpretations carry no dates of their own in the WFS layer."
+period:
+  start: "2017-03-06"
+  end: "2017-03-06"
+  stated: "Metadata 212af8cd: dataset citation date 2017-03-06 (publication)"
 added: 2026-10-23

@@ -25,5 +25,9 @@ known_issues:
   - "The terms page also says to read the access and use conditions in each dataset's metadata."
   - "bbox is the layer's WGS84BoundingBox in the WFS capabilities (it reaches beyond Flanders)."
   - "Many boreholes are surface observations: 'In de databank staan er dan ook verschillende boringen met een diepte van 0 meter.'"
-notes: "No period stated."
+notes: "Period from the WFS field datum_aanvang: earliest 1800-01-01, latest real date 2026-10-21; three boreholes carry dates in 2042 and 2205."
+period:
+  start: "1800"
+  end: "2026-10-23"
+  stated: "WFS dov-pub:Boringen sorted on datum_aanvang: earliest 1800-01-01 (BGD088W0060, Jette), next 1829-01-01; latest real 2026-10-21 (2001-B2026097, Berlaar); continuously updated, so 1800 to today"
 added: 2026-10-23
