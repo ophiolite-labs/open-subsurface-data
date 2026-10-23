@@ -1,5 +1,5 @@
-/* Open Subsurface Data map. Static: reads what `make build` puts in data/ (records.json,
-   outlines.geojson, and outlines.pmtiles or wellbores.geojson when the build produces them).
+/* Open Subsurface Data map. Static: reads what `make build` puts in data/ (records.json, and
+   outlines.pmtiles when the build wrote it, else outlines.geojson; wellbores.geojson if present).
    No framework; one file on purpose (ENGINEERING.md, "surface"). The URL hash is the only state. */
 (async function () {
   // Basemap: OSD-D3. Positron until a dark basemap without a key is confirmed; never add a key.
@@ -10,13 +10,20 @@
   // data/files.txt lists what the build wrote, so optional files are known without a 404 probe.
   const files = (await fetch('data/files.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split('\n');
   const has = f => files.includes(f);
-  const pmtilesMode = has('outlines.pmtiles') && await new Promise(ok => {
+  // Tiles (E15) when the build wrote them and the server answers range requests (GitHub Pages does,
+  // `python3 -m http.server` does not); otherwise the one GeoJSON, whole.
+  const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
+  const tiles = has('outlines.pmtiles') && await new Promise(ok => {
     const s = document.createElement('script'); s.src = 'https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js';
     s.onload = () => ok(true); s.onerror = () => ok(false); document.head.appendChild(s);
-  });
+  }) && new pmtiles.PMTiles(base + 'data/outlines.pmtiles');
+  const pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
 
   const records = (await (await fetch('data/records.json')).json()).records;
   const outlines = pmtilesMode ? null : await (await fetch('data/outlines.geojson')).json();
+  // Clustering stays on the page: on the tile path the clustered source is fed the wellbores of the
+  // tiles loaded so far (below CLUSTER_BELOW_ZOOM every tile keeps every point), keyed by feature_id.
+  const tileWells = new Map();
   const wellPoints = has('wellbores.geojson')
     ? (await (await fetch('data/wellbores.geojson')).json()).features
     : (outlines ? outlines.features.filter(f => f.properties.kind === 'wellbore' && f.geometry.type === 'Point') : []);
@@ -70,7 +77,10 @@
   const view = readHash();
   let moved = !!view;
 
-  if (pmtilesMode) maplibregl.addProtocol('pmtiles', new pmtiles.Protocol().tile);
+  if (pmtilesMode) {
+    const protocol = new pmtiles.Protocol(); protocol.add(tiles); // reuses the header already read
+    maplibregl.addProtocol('pmtiles', protocol.tile);
+  }
   const map = new maplibregl.Map({
     container: 'map', style: BASEMAP,
     center: view ? view.center : [5, 55], zoom: view ? view.zoom : 3.2, attributionControl: { compact: false }
@@ -110,8 +120,10 @@
     }
     // Clustered sources cannot be filtered per feature after clustering, so the wells source
     // gets the filtered points.
+    if (pmtilesMode) map.setFilter('wells-tiles', ['all', WELL, idFilter, approxFilter]);
+    const points = pmtilesMode ? [...tileWells.values()] : wellPoints;
     map.getSource('wells').setData({ type: 'FeatureCollection',
-      features: wellPoints.filter(f => idSet.has(f.properties.record_id) && (state.approx || !f.properties.approximate)) });
+      features: points.filter(f => idSet.has(f.properties.record_id) && (state.approx || !f.properties.approximate)) });
   }
 
   // line-dasharray takes no data expression in MapLibre 4, so derived and placeholder
@@ -120,6 +132,7 @@
   const FIELD = ['in', ['get', 'kind'], ['literal', ['field', 'block']]];
   const DERIVED = ['!', ['get', 'approximate']];
   const PLACEHOLDER = ['==', ['get', 'approximate'], true];
+  const WELL = ['all', ['==', ['get', 'kind'], 'wellbore'], ['==', ['geometry-type'], 'Point']];
   const LAYER_BASE = {
     'surveys-fill': SURVEY, 'surveys-line': ['all', SURVEY, DERIVED], 'surveys-dash': ['all', SURVEY, PLACEHOLDER],
     'fields-fill': FIELD, 'fields-line': ['all', FIELD, DERIVED], 'fields-dash': ['all', FIELD, PLACEHOLDER],
@@ -128,9 +141,9 @@
   map.on('load', () => {
     // Outlines: PMTiles (source-layer "outlines", same properties as the GeoJSON) when the build
     // wrote data/outlines.pmtiles, else the one GeoJSON.
-    const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
+    // feature_id is the tile feature id (promoteId), as it is the GeoJSON feature's identity.
     map.addSource('outlines', pmtilesMode
-      ? { type: 'vector', url: 'pmtiles://' + base + 'data/outlines.pmtiles' }
+      ? { type: 'vector', url: 'pmtiles://' + base + 'data/outlines.pmtiles', promoteId: { outlines: 'feature_id' } }
       : { type: 'geojson', data: outlines });
     const src = pmtilesMode ? { source: 'outlines', 'source-layer': 'outlines' } : { source: 'outlines' };
     map.addSource('extents', { type: 'geojson', data: extents });
@@ -150,10 +163,29 @@
     if (map.getStyle().glyphs) map.addLayer({ id: 'wells-count', type: 'symbol', source: 'wells', filter: ['has', 'point_count'],
       layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 11, 'text-font': ['Noto Sans Regular'] },
       paint: { 'text-color': '#0f1419' } });
-    map.addLayer({ id: 'wells', type: 'circle', source: 'wells', filter: ['!', ['has', 'point_count']],
-      paint: { 'circle-color': '#3dd68c', 'circle-radius': 4, 'circle-stroke-color': '#0f1419', 'circle-stroke-width': 1 } });
+    const WELL_PAINT = { 'circle-color': '#3dd68c', 'circle-radius': 4, 'circle-stroke-color': '#0f1419', 'circle-stroke-width': 1 };
+    // On the tile path single wells come from the tiles from CLUSTER_BELOW_ZOOM up (exact positions);
+    // below it from the clustered source, like every cluster.
+    map.addLayer({ id: 'wells', type: 'circle', source: 'wells', filter: ['!', ['has', 'point_count']], paint: WELL_PAINT,
+      ...(pmtilesMode ? { maxzoom: CLUSTER_BELOW_ZOOM } : {}) });
+    if (pmtilesMode) {
+      map.addLayer({ id: 'wells-tiles', type: 'circle', ...src, filter: WELL, minzoom: CLUSTER_BELOW_ZOOM, paint: WELL_PAINT });
+      let fresh = false;
+      map.on('sourcedata', e => { if (e.sourceId === 'outlines' && e.tile) fresh = true; });
+      map.on('idle', () => {
+        if (!fresh || map.getZoom() >= CLUSTER_BELOW_ZOOM) return;
+        fresh = false;
+        const before = tileWells.size;
+        for (const f of map.querySourceFeatures('outlines', { sourceLayer: 'outlines', filter: WELL })) {
+          const p = f.properties;
+          if (!tileWells.has(p.feature_id)) tileWells.set(p.feature_id, { type: 'Feature', geometry: f.geometry,
+            properties: { record_id: p.record_id, kind: p.kind, name: p.name, approximate: p.approximate, feature_id: p.feature_id } });
+        }
+        if (tileWells.size > before) applyFilters();
+      });
+    }
 
-    for (const l of ['surveys-fill', 'fields-fill', 'wells', 'extents-fill']) {
+    for (const l of ['surveys-fill', 'fields-fill', 'wells', 'extents-fill', ...(pmtilesMode ? ['wells-tiles'] : [])]) {
       map.on('click', l, e => select(e.features[0].properties.record_id));
     }
     map.on('click', 'wells-cluster', async e => {
@@ -161,7 +193,7 @@
       const zoom = await map.getSource('wells').getClusterExpansionZoom(f.properties.cluster_id);
       map.easeTo({ center: f.geometry.coordinates, zoom });
     });
-    for (const l of ['surveys-fill', 'fields-fill', 'wells', 'wells-cluster', 'extents-fill']) {
+    for (const l of ['surveys-fill', 'fields-fill', 'wells', 'wells-cluster', 'extents-fill', ...(pmtilesMode ? ['wells-tiles'] : [])]) {
       map.on('mouseenter', l, () => map.getCanvas().style.cursor = 'pointer');
       map.on('mouseleave', l, () => map.getCanvas().style.cursor = '');
     }
@@ -214,7 +246,6 @@
     renderList(visibleIds());
     writeHash();
     const d = $('detail'); d.hidden = false;
-    const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
     const geo = base + 'data/outlines.geojson';
     const issues = (r.known_issues || []).map(x => `<li>${esc(x)}</li>`).join('');
     d.innerHTML = `

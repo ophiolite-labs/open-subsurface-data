@@ -26,6 +26,11 @@ jobs:
             mkdir -p build/verification
             git archive origin/verification-results | tar -x -C build/verification
           fi
+      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+        run: |
+          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
       - run: make build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

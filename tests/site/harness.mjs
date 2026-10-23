@@ -19,7 +19,14 @@ export async function serve() {
     if (!file.startsWith(SITE)) { res.writeHead(403).end(); return; }
     try {
       const body = await readFile(file);
-      res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' }).end(body);
+      const type = TYPES[extname(file)] || 'application/octet-stream';
+      // Byte ranges, as GitHub Pages serves them: the PMTiles reader asks for nothing else (E15).
+      const range = /^bytes=(\d+)-(\d*)$/.exec(req.headers.range || '');
+      if (range) {
+        const start = Number(range[1]), end = Math.min(range[2] ? Number(range[2]) : body.length - 1, body.length - 1);
+        res.writeHead(206, { 'content-type': type, 'content-range': `bytes ${start}-${end}/${body.length}`,
+          'accept-ranges': 'bytes', 'content-length': end - start + 1 }).end(body.subarray(start, end + 1));
+      } else res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes' }).end(body);
     } catch { res.writeHead(404).end(); }
   });
   await new Promise(ok => server.listen(0, '127.0.0.1', ok));
@@ -30,6 +37,7 @@ export const launch = () => chromium.launch({ args: ['--use-gl=swiftshader', '--
 
 const BLANK_STYLE = { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#e8eaed' } }] };
 const MAPLIBRE = join(ROOT, 'node_modules', 'maplibre-gl', 'dist');
+const PMTILES = join(ROOT, 'node_modules', 'pmtiles', 'dist');
 
 // Offline unless OSD_SITE_ONLINE=1. Any other request off the local server fails the run.
 export async function offline(context, unexpected = []) {
@@ -39,6 +47,10 @@ export async function offline(context, unexpected = []) {
     if (u.host === 'unpkg.com' && u.pathname.startsWith('/maplibre-gl@4.7.1/dist/')) {
       const f = u.pathname.split('/').pop();
       return route.fulfill({ body: await readFile(join(MAPLIBRE, f)), contentType: TYPES[extname(f)] });
+    }
+    if (u.host === 'unpkg.com' && u.pathname.startsWith('/pmtiles@4.5.0/dist/')) {
+      const f = u.pathname.split('/').pop();
+      return route.fulfill({ body: await readFile(join(PMTILES, f)), contentType: TYPES[extname(f)] });
     }
     if (u.host === 'tiles.openfreemap.org' && u.pathname.startsWith('/styles/')) return route.fulfill({ json: BLANK_STYLE });
     unexpected.push(u.href);

@@ -1,0 +1,26 @@
+$ uv run pytest -q -s tests/test_build.py -k tiles_hold
+features at z12 per kind: {'wellbore': 16543, 'survey-2d': 769, 'survey-3d': 1123, 'field': 1} geojson: {'field': 1, 'survey-3d': 1123, 'wellbore': 16543, 'survey-2d': 769}
+1 passed, 2 deselected in 12.36s
+
+$ make site-test   (with tippecanoe 2.49.0)
+✔ no console error on load, map and how page (1975.352686ms)
+✔ #q=volve lists one dataset (1199.60012ms)
+# shared view #k=production&sel=ar-energia/produccion-por-pozo&map=3.64/-40.4696/-63.6000 {"count":"(9 OF 68)","items":9,"title":"Producción de petróleo y gas por pozo (Capítulo IV)","zoom":"3.6"}
+✔ a hash with a kind filter and a selection renders the same view in a second context (3634.927316ms)
+✔ stale: checked_at older than 30 days shows "stale" next to the level (1179.098293ms)
+# 10k wellbores at zoom 5: {"zoom":5,"clusters":45,"singles":3,"points":10178} frame after moveend (ms): 43.2, 38.4, 69.6, 37.4, 51.1
+✔ 10,000 wellbores cluster at zoom 5 and the frame after moveend arrives under 100 ms (4567.153392ms)
+✔ phone width: the panel is a bottom sheet (1079.765421ms)
+# tiles, load #: site 602578 bytes (pmtiles 6 ranges, 446901 bytes), libraries off-site 888927 bytes (uncompressed here, served by unpkg)
+# tiles, load #q=sodir: site 602578 bytes (pmtiles 6 ranges, 446901 bytes), libraries off-site 888927 bytes (uncompressed here, served by unpkg)
+# tiles, load #map=5/59/5: site 604188 bytes (pmtiles 8 ranges, 448511 bytes), libraries off-site 888927 bytes (uncompressed here, served by unpkg)
+✔ tiles: the page loads tiles for the viewport, under 1 MB from the site, and never outlines.geojson (4478.326774ms)
+# wellbore sodir/factpages#wellbore/1238 tiles: Sodir FactPages and FactMaps (Norwegian continental shelf) | geojson: Sodir FactPages and FactMaps (Norwegian continental shelf)
+✔ tiles: #q=sodir, a click on a wellbore shows the same detail title as the GeoJSON path (2504.058493ms)
+✔ tiles: a server without byte ranges (python3 -m http.server) falls back to outlines.geojson (1791.968872ms)
+✔ tiles: phone width with tiles, Sodir wells clustered (1147.007817ms)
+✔ status.html lists every record with its level and the date it was checked (571.385301ms)
+✔ the built catalogue renders: a record never checked says so (135.101902ms)
+✔ a column header sorts, a second click reverses (288.130097ms)
+ℹ pass 13
+ℹ fail 0

@@ -12,10 +12,9 @@ test:
 validate:                                ## every record and outline against its schema
 	uv run osd validate
 
-build:                                   ## build/catalog/*.json + site/data/ from records + outlines
+build:                                   ## build/catalog/*.json, outlines.pmtiles (tippecanoe) + site/data/
 	uv run osd build
-	mkdir -p site/data && rm -rf site/data/stac && cp -R build/catalog/. site/data/   # stac/ is a tree
-	cp build/catalog/*.pmtiles site/data/ 2>/dev/null || true
+	mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
 	ls site/data | grep -vx files.txt > site/data/files.txt   # the map reads optional files from this list
 
 verify:                                  ## network: reach origins, record levels (not part of `check`)
