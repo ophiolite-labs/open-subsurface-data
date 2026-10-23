@@ -13,6 +13,7 @@ ak-dggs/tax-credit-well-data: ["*BadamiUnitB1-11A*.zip"]   # directory index of 
 al-ogb/wells: ["*"]   # the bare wells.zip the GIS page links (application/x-zip-compressed: a file by its headers), 3,562,207 bytes
 ancap/bouguer-anomaly-map-of-uruguay: ["*/bouguer_anomaly.rar"]   # page links one archive; size not stated by the server
 anh/produccion-fiscalizada-crudo: ["*"]          # Socrata view: its rows.csv export, a few MB
+anpg/historico-de-producao: {file: true, sample: ["*"]}   # the site's own JSON API of the annual series (application/json: a file only by this flag), 71 rows, 29,783 bytes
 ar-energia/fractura-adjunto-iv: ["*/datos-de-fractura-de-pozos-de-hidrocarburos-adjunto-iv-*.csv"]   # datos.gob.ar dataset page (47 links): the daily fracture CSV on datos.energia.gob.ar; size not read (host timed out 23 Oct)
 ar-energia/produccion-por-pozo: ["*/listado-de-pozos-cargados-por-empresas-operadoras.csv"]   # datos.gob.ar dataset page (201 links): the operators' well list, not the yearly production files (hundreds of MB each); size not read
 ar-energia/trayectorias-vaca-muerta: ["*/trayectorias-de-pozo-vaca-muerta.csv"]   # datos.gob.ar dataset page (46 links): the trajectory CSV (not the zip); size not read
@@ -35,12 +36,15 @@ gsv/faults-latrobe-group-gippsland: {file: true, sample: ["*"]}   # WFS GetFeatu
 helsinki-univ/outokumpu-deep-hole-vocs: ["*/files/*.xlsx?download=1"]   # Zenodo record page (the /api path is disallowed): two spreadsheets, 27,237 and 24,059 bytes
 ibm-research/netherlands-f3-interpretation: ["*/files/horizons.tar.gz?download=1"]   # Zenodo record page: the horizons archive, 95,320,034 bytes
 ie-pad/offshore-exploration-wells: ["*/Exploration_Wells_Irish_Offshore.csv.zip"]   # data.gov.ie page: the CSV zip, 10,487 bytes
+inp-mz/actividade-de-pesquisa-e-producao: ["*"]   # ArcGIS layer 0 'Poços': one geojson export, all 255 features (maxRecordCount 1000), 98,427 bytes
 jamstec/seismic-survey-database: "the listing is a cruise index with no file addresses"
 jardfeingi/well-data: ["*FO_Offshore_Wells.zip"]   # page links the offshore wells zip, 3,204 bytes
 kgs/oil-gas-wells: ["*/Ora_Archive/ks_wells.zip"]   # page links the statewide well zip, 44,028,388 bytes
 kigam/marine-geological-map-korea-strait: "the listing is a search result with no file addresses"
 lgt/geologiniai-tyrimai: ["*/GeologinisTyrimas/csv/download/"]   # data.gov.lt dataset page (66 links): the CSV export of the report catalogue (302 to get.data.gov.lt, text/csv, no length stated)
 manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links the weekly well list, 1,233,013 bytes
+mase-unmig/videpi-seismic: ["*/sgy/1.sgy"]   # page links 171 SEG-Y lines; 1.sgy, 82,208,512 bytes (application/SEG-Y)
+mase-unmig/videpi-wells: ["*/las/55.las"]   # LAS/LIS list page (44 LAS, 4 LIS); 55.las, 577,512 bytes
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 nd-dmr/wells: ["*"]   # ArcGIS layer: one geojson export of at most 2000 of 44,018 features (kept as partial), 1,118,791 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB

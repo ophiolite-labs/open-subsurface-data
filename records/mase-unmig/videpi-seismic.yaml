@@ -6,6 +6,7 @@ publisher: {name: "Ministero dell'ambiente e della sicurezza energetica (UNMIG),
 origin:
   url: https://www.videpi.com/videpi/cessati/sgy.asp
   access: anonymous
+  manifest_url: https://www.videpi.com/videpi/cessati/sgy.asp
   notes: PDF lines at https://www.videpi.com/videpi/cessati/sismica_titoli.asp, marine reconnaissance at /videpi/sismica/sismica.asp, CROP at /videpi/crop/crop.asp. SEG-Y files download directly (e.g. /deposito/videpi/sgy/1.sgy).
 licence:
   name: Creative Commons Attribuzione 4.0 Internazionale

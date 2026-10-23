@@ -6,6 +6,7 @@ publisher: {name: "Ministero dell'ambiente e della sicurezza energetica (UNMIG),
 origin:
   url: https://www.videpi.com/videpi/cessati/pdf.asp
   access: anonymous
+  manifest_url: https://www.videpi.com/videpi/cessati/las.asp
   notes: LAS/LIS list at https://www.videpi.com/videpi/cessati/las.asp; files download directly (e.g. /deposito/videpi/las/55.las). Project page https://www.videpi.com/videpi/progetto.asp.
 licence:
   name: Creative Commons Attribuzione 4.0 Internazionale
