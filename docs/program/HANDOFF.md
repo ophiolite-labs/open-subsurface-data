@@ -9,6 +9,7 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 - E16 (PR #11) found two gate reds outside its claim: the record/1 test pops only `inputs` (period is also record/2), and full STAC validation of 18,432 Items takes 115 s. OSD-D18: gate validates Collections and an Item sample; `make check-full` runs in the verify workflow on main. E16's claim extended to land both.
 - E06 slice 2 (site select mode: tick datasets, download a manifest) opened as lane osd-e06b after E15 freed `site/app.js`.
 - Owner action 103 added (bucket and keys); items 102 and 103 are not yet on the Mac (ssh to the Mac times out; a retry loop runs every five minutes until it prints mac-ok).
+- Hardening (supervisor, main): the E05 performance test asserts the median of its five pans instead of the maximum; PR #11 failed on one 110.5 ms frame beside four under 98 ms on the shared runner. Budget unchanged at 100 ms.
 - Known red: a worker whose branch is deleted by `gh pr merge --delete-branch` sees its worktree path reported as deleted; run `git worktree prune` after closing the pane.
 
 ## Commands
