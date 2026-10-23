@@ -28,4 +28,5 @@ period:
   start: "2013-09-24"
   end: "2013-10-01"
   stated: "UNISIM-I-D page: \"UNISIM-I-D-deterministic.zip 24-SEP-2013 ... UNISIM-I-D-HistoryData-t1-2013-OCT-01.zip 01-OCT-2013\" (release)"
+notes: "No bbox: a synthetic benchmark model (based on the Namorado field); no coordinates stated."
 added: 2026-10-23

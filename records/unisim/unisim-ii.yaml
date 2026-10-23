@@ -28,4 +28,5 @@ period:
   start: "2018-04-03"
   end: "2018-04-03"
   stated: "UNISIM-II-D page: \"UNISIM-II-D-BO_deterministic.ZIP 03-ABR-2018 new ... UNISIM-II-D_uncertainties.zip 03-ABR-2018 new\" (release)"
+notes: "No bbox: a synthetic model."
 added: 2026-10-23

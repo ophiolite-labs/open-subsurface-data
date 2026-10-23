@@ -20,4 +20,5 @@ listed_by: [publisher]
 known_issues:
   - "No licence or terms page found; the web map is a JavaScript application, so whether downloads need an account was not established."
   - "bbox is approximate (Great Britain onshore)."
+notes: "No period stated: the archives page gives volumes but no acquisition dates."
 added: 2026-10-23
