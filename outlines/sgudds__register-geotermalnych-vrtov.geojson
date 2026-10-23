@@ -1,5 +1,5 @@
 {"type":"FeatureCollection","licence":"Creative Commons BY 4.0",
-"inputs":{"boreholes":{"url":"https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2","sha256":"d76a58072966364ed4b7450b55aa6430acde455cf7fa7e3f457a0ef375f5a6e3"}},
+"inputs":{"boreholes":{"url":"https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2","sha256":"7b35b36ef9991b028bed5ee0736110dd4c0a32ad03d963423601213f6f0a17d5"}},
 "features":[
 {"type":"Feature","properties":{"record_id":"sgudds/register-geotermalnych-vrtov","kind":"wellbore","name":"FGKr-1","approximate":false,"source":"register-arcgis (boreholes)","publisher_id":"1","feature_id":"sgudds/register-geotermalnych-vrtov#1","input":"boreholes"},"geometry":{"type":"Point","coordinates":[18.505671,47.759847]}},
 {"type":"Feature","properties":{"record_id":"sgudds/register-geotermalnych-vrtov","kind":"wellbore","name":"HVB-1","approximate":false,"source":"register-arcgis (boreholes)","publisher_id":"10","feature_id":"sgudds/register-geotermalnych-vrtov#10","input":"boreholes"},"geometry":{"type":"Point","coordinates":[18.319208,47.75148]}},

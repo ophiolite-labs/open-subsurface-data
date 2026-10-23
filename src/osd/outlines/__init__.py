@@ -26,6 +26,7 @@ from .extractors import (
     EXTRACTORS,
     arcgis_count,
     arcgis_layer,
+    arcgis_layer_facts,
     arcgis_out_fields,
     geojson_page,
     mdio_header_chunks,
@@ -139,7 +140,7 @@ def fetch_parts(rec_input: dict, rule: dict, opener, robots) -> list[tuple[str, 
                 return parts
         raise Refused(f"{rec_input['name']}: more than {MAX_PAGES} pages")
     if fmt == "arcgis":   # E29: description, the day's count, then every page in object id order
-        layer = _get(_with(url, {"f": "json"}), opener, robots)
+        layer = arcgis_layer_facts(_get(_with(url, {"f": "json"}), opener, robots))
         oid, size = arcgis_layer(layer)
         count = _get(_with(url + "/query", {"where": "1=1", "returnCountOnly": "true", "f": "json"}), opener, robots)
         parts = [("layer", layer), ("count", count)]

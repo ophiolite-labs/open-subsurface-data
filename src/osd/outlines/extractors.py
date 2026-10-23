@@ -211,6 +211,22 @@ def arcgis_layer(b: bytes) -> tuple[str, int]:
     return oid, size
 
 
+def arcgis_layer_facts(b: bytes) -> bytes:
+    """The stored layer part: the description reduced to the facts the derivation reads, canonical.
+    The whole description is not an identity: load-balanced nodes serve different `drawingInfo`
+    (WA SLIP, 23 Oct), which would change the input sha256 with no change to any feature."""
+    d = _json(b, "the layer description")
+    _arcgis_error(d, "the layer description")
+    aq = d.get("advancedQueryCapabilities") or {}
+    facts = {k: d[k] for k in ("supportsPagination", "objectIdField", "maxRecordCount", "geometryType",
+                               "spatialReference") if k in d}
+    if "supportsPagination" in aq:
+        facts["advancedQueryCapabilities"] = {"supportsPagination": aq["supportsPagination"]}
+    facts["fields"] = [{"name": f.get("name"), "type": f.get("type")} for f in d.get("fields") or []
+                       if isinstance(f, dict) and f.get("type") == "esriFieldTypeOID"]
+    return json.dumps(facts, sort_keys=True, separators=(",", ":")).encode()
+
+
 def arcgis_count(b: bytes) -> int:
     """The layer's feature count on the day (returnCountOnly=true), within the cap."""
     d = _json(b, "the count")

@@ -24,6 +24,10 @@ Lane-open facts measured 23 Oct from the VPS: `docs/program/evidence/e29/sources
   `docs/program/evidence/e29/gate-budget.md`). SGUDDS, NZP&M x2 and WA DEMIRS carry outlines;
   Virginia, BCER, SGC, UT DOGM and North Dakota carry inputs, period and rules only (all nine
   outlines would take `make check` to ~6 min on CI). E32 lands the other five.
+- **The stored layer part is the description's facts, not its bytes**: object id field, OID fields,
+  pagination, maxRecordCount, geometry type, spatial reference, canonical JSON. WA SLIP's
+  load-balanced nodes serve different `drawingInfo` (seen 23 Oct: the dispatch failed WA's
+  `outline-derived` with identical features); test `test_arcgis_input_identity_ignores_the_description_beyond_its_facts`.
 - **Lines across the antimeridian are cut at ±180** (RFC 7946 §3.1.9; ten NZP&M 2D lines step from
   179.9 to -179.9): `geometry.split_antimeridian`, test `test_lines_across_the_antimeridian_are_cut_there`.
 

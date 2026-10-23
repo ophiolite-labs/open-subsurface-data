@@ -780,6 +780,22 @@ def test_arcgis_pages_reassemble_the_object_id_set(tmp_path):
     assert (by["40"]["name"], by["40"]["uwi"], by["40"]["kind"]) == ("MA-10A", "100000762213", "wellbore")
 
 
+def test_arcgis_input_identity_ignores_the_description_beyond_its_facts(tmp_path):
+    lay = json.loads((ARC / "layer.json").read_text())
+    restyled = {**lay, "drawingInfo": {"renderer": {"type": "simple", "symbol": {"color": [215, 0, 0, 255]}}},
+                "description": "a node that serves another style"}
+    sums = []
+    for name, layer in (("a", lay), ("b", restyled)):
+        arcgis_derive(tmp_path / name, layer=layer)
+        sums.append((tmp_path / name / "fixture__arcgis-register" / "wells" / "SHA256SUMS").read_text())
+    assert sums[0] == sums[1]   # load-balanced nodes differ in drawingInfo (WA SLIP, 23 Oct)
+    stored = json.loads((tmp_path / "a" / "fixture__arcgis-register" / "wells" / "layer").read_bytes())
+    assert stored["maxRecordCount"] == 2 and stored["fields"] == [{"name": "OBJECTID", "type": "esriFieldTypeOID"}]
+    moved = {**lay, "maxRecordCount": 3}
+    arcgis_derive(tmp_path / "c", layer=moved)
+    assert (tmp_path / "c" / "fixture__arcgis-register" / "wells" / "SHA256SUMS").read_text() != sums[0]
+
+
 def test_arcgis_duplicate_object_ids_are_refused(tmp_path):
     with pytest.raises(Refused, match="object id 40 served twice"):   # a server that ignores resultOffset
         arcgis_derive(tmp_path, repeat_at=2)
