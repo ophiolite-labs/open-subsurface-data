@@ -1,0 +1,22 @@
+id: tx-rrc/full-wellbore
+title: Full Wellbore (Railroad Commission of Texas)
+summary: >-
+  Dump of the RRC Wellbore database. Records for each hole drilled are set up by API number and contain completion, plugging, formation and other information related to the well bore; information on most of the wells ever drilled in Texas is contained in the Full Well Bore file.
+publisher: {name: Railroad Commission of Texas, url: https://www.rrc.texas.gov, country: US}
+origin:
+  url: https://www.rrc.texas.gov/resource-center/research/data-sets-available-for-download/
+  access: anonymous
+  notes: "Listed under 'Oil and Gas Well Data' on the free data sets page ('available ... free of charge'); the download is a link on mft.rrc.texas.gov. ASCII/EBCDIC layouts described in the RRC manual linked beside it."
+licence:
+  name: RRC website disclaimer (permission to copy and distribute for noncommercial use, content unaltered)
+  spdx: null
+  url: https://www.rrc.texas.gov/site-policies/
+  redistribution: restricted
+  attribution: not-required
+kinds: [wellbore-headers]
+region: {country: US, basin: "Texas (all districts)", bbox: [-106.65, 25.84, -93.51, 36.50]}
+listed_by: [publisher]
+known_issues:
+  - "Site policy: 'Unless otherwise noted ... RRC grants permission to copy and distribute the information on its website for noncommercial use, as long as the content remains unaltered'. Hence restricted. RRC 'would appreciate acknowledgment', not a requirement."
+  - "bbox is the State of Texas, approximate; the page states no extent."
+added: 2026-10-23

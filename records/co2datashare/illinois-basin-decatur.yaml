@@ -1,0 +1,24 @@
+id: co2datashare/illinois-basin-decatur
+title: Illinois Basin - Decatur Project Dataset
+summary: >-
+  Reference dataset containing subsurface data, monitoring data, geomodels, geomechanical data and reports related to assessment and CO2 injection at the Archer Daniels Midland site in Decatur, Illinois: a high-resolution 3D seismic survey, time-lapse VSP, an induced microseismicity catalogue, well information for CCS1, VW1 and GM1, Petrel horizons and faults, and the final Petrel static model.
+publisher: {name: Illinois State Geological Survey via CO2 DataShare, url: https://co2datashare.org, country: US}
+origin:
+  url: https://co2datashare.org/dataset/illinois-basin-decatur-project-dataset
+  access: anonymous
+  notes: "Each part downloads after ticking the licence-acceptance box; no login. DOI 10.11582/2022.00017. Produced under the Midwest Geological Sequestration Consortium (MGSC) Phase III, DOE Cooperative Agreement DE-FC26-05NT42588."
+licence:
+  name: Illinois Basin - Decatur Project (IBDP) CO2 Injection Datasets License
+  spdx: null
+  url: https://co2datashare.org/view/license/e27b2b34-a3fc-463f-adbf-bd14c83640f4
+  redistribution: allowed
+  attribution: required
+  statement: "Illinois State Geological Survey (ISGS), Illinois Basin - Decatur Project (IBDP) CO2 Injection Monitoring Data, April 30, 2021. Midwest Geological Sequestration Consortium (MGSC) Phase III Data Sets. DOE Cooperative Agreement No. DE-FC26-05NT42588."
+kinds: [seismic-3d, wellbore-headers, wellbore-logs, horizons, faults, reservoir-model, reports]
+region: {country: US, basin: Illinois Basin (Mt Simon Sandstone), bbox: [-88.95, 39.83, -88.83, 39.91]}
+size: {bytes_estimate: 67200000000, stated: "eight parts; the static model 37.8 GB and seismic 15.4 GB"}
+listed_by: [publisher]
+notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Users must link the terms and cite the DOI. Well log content is inferred from the 'Well Information' part description, which names the three deep wells; the page does not list log curves."
+known_issues:
+  - "The portal states one point (39.87 N, 88.89 W); bbox is an approximate box around it."
+added: 2026-10-23

@@ -1,0 +1,24 @@
+id: gfz/ketzin-brine-injection
+title: Dataset of the Brine Injection at the CO2 Storage Pilot Site Ketzin, Germany
+summary: >-
+  Operational data (flow rate, cumulative mass, density, injection temperature, electrical conductivity and in-well pressure) recorded during a field experiment on brine injection at the Ketzin CO2 storage pilot site, where 67 kt of CO2 were injected into the Stuttgart Formation saline aquifer (630 m to 650 m) between June 2008 and August 2013.
+publisher: {name: GFZ Helmholtz Centre for Geosciences (GFZ Data Services), url: https://www.gfz.de, country: DE}
+origin:
+  url: https://dataservices.gfz.de/10.5880/gfz.6.3.2016.001/dataset-of-the-brine-injection-at-the-co2
+  access: anonymous
+  notes: DOI 10.5880/gfz.6.3.2016.001.
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [pressure]
+region: {country: DE, basin: "North German Basin (Ketzin anticline, Brandenburg)", bbox: [12.85, 52.48, 12.89, 52.50]}
+listed_by: [publisher]
+known_issues:
+  - "The page names only 'Location of the Ketzin Pilot Site'; bbox is a small box around the Ketzin point (52.4913 N, 12.8686 E) stated by the same publisher on the yearly operational datasets, DOI 10.5880/gfz.b103-12066.2013."
+  - "The page states the experiment ran 'October 2015 to January 2015' (sic)."
+notes: >-
+  The description adds: "Anyone should feel free to make use of the published data for any ethical purpose (civil use)". Recorded here, no schema field.
+added: 2026-10-23

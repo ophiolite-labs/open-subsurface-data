@@ -1,0 +1,22 @@
+id: ldeo-brg/logdb
+title: LogDB scientific ocean drilling downhole logging data (DSDP, ODP, IODP)
+summary: >-
+  Downhole logging data collected and processed by the Borehole Research Group at Lamont-Doherty Earth Observatory for DSDP, ODP and IODP holes: wireline and logging-while-drilling measurements (resistivity, gamma radiation, velocity, density, borehole images), in original and processed DLIS and as text or CSV.
+publisher: {name: "Lamont-Doherty Earth Observatory, Borehole Research Group (Columbia University)", url: https://mlp.ldeo.columbia.edu, country: US}
+origin:
+  url: https://mlp.ldeo.columbia.edu/logdb/scientific_ocean_drilling/
+  access: anonymous
+  notes: "Per-hole data are also deposited in the Zenodo community 'Scientific Well Logging (LogDB)', https://zenodo.org/communities/logdb, one record per hole (712 records on 23 Oct 2026), linked from the IODP JRSO data page."
+licence:
+  name: Creative Commons Zero v1.0 Universal (stated on each LogDB record in the Zenodo LogDB community)
+  spdx: CC0-1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+  redistribution: allowed
+  attribution: not-required
+kinds: [wellbore-logs]
+region: {basin: "Global ocean basins (DSDP, ODP and IODP holes)"}
+listed_by: [publisher]
+known_issues:
+  - "The LogDB site itself states no licence; CC0 is stated on all 712 Zenodo LogDB records listed on 23 Oct 2026. Holes inside the one-year IODP moratorium are password-protected on LogDB."
+  - "No bbox: holes span all ocean basins."
+added: 2026-10-23

@@ -1,0 +1,23 @@
+id: mase-unmig/videpi-wells
+title: ViDEPI wells drilled in expired mining titles (final well profiles and LAS/LIS logs)
+summary: >-
+  ViDEPI (Visibilità dei dati afferenti all'attività di esplorazione petrolifera in Italia) publishes the technical documents of expired hydrocarbon titles deposited with UNMIG since 1957: 2,339 final well profiles in PDF and digital logs of 56 wells in LAS/LIS format, documents of titles expired up to 31 December 2021.
+publisher: {name: "Ministero dell'ambiente e della sicurezza energetica (UNMIG), ViDEPI project", url: https://www.mase.gov.it, country: IT}
+origin:
+  url: https://www.videpi.com/videpi/cessati/pdf.asp
+  access: anonymous
+  notes: LAS/LIS list at https://www.videpi.com/videpi/cessati/las.asp; files download directly (e.g. /deposito/videpi/las/55.las). Project page https://www.videpi.com/videpi/progetto.asp.
+licence:
+  name: Creative Commons Attribuzione 4.0 Internazionale
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/by/4.0/deed.it
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-logs, reports]
+region: {country: IT, basin: Italian onshore and offshore basins, bbox: [6.6, 35.5, 18.6, 47.1]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the extent of Italy and its offshore, approximate; the wells are georeferenced in the ViDEPI map but the list pages state no extent."
+notes: >-
+  Project led by Società Geologica Italiana, funded by Assorisorse; the Ministry publishes and updates it (2009 first release, updates 2015 and 2025). Logs are a small subset (56 wells); most wells are final well profiles as scanned PDF.
+added: 2026-10-23
