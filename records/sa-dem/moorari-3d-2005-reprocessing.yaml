@@ -18,5 +18,6 @@ region: {country: AU, basin: Cooper Basin, bbox: [139.5, -28.0, 141.0, -27.0]}
 size: {bytes_estimate: 600159523, stated: "zip 600108689 bytes and PDF 50834 bytes"}
 listed_by: [publisher]
 known_issues:
+  - "SARIG catalogue blocked for automated requests since 2026-10-23 (HTTP 403 to non-browser user agents, including the verifier); a browser-like fetch answers 200 (OSD-D9)."
   - "The stated extent is a one-by-1.5-degree cell, much larger than the 66 sq km survey."
 added: 2026-10-23
