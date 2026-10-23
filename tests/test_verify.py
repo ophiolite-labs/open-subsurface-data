@@ -356,7 +356,7 @@ def test_stale_after_30_days():
     assert is_stale(None, NOW)
 
 
-def test_records_json_levels_equal_status_levels(tmp_path):
+def test_records_json_levels_equal_status_levels(tmp_path, records_subset):
     vdir = tmp_path / "verification"
     vdir.mkdir()
     levels = {"equinor/volve": "L1", "sodir/factpages": "L2", "seg/open-data-wiki": "L0"}
@@ -366,11 +366,12 @@ def test_records_json_levels_equal_status_levels(tmp_path):
             {"record_id": rid, "checked_at": "2026-08-01T00:00:00+00:00", "tool_version": "t",
              "level": lv, "checks": [], "origin": origin}))
     out = tmp_path / "catalog"
-    build(out, vdir, now=NOW)
+    recs_dir = records_subset([*levels, "terranubis/f3-demo-2020"])
+    build(out, vdir, now=NOW, records_dir=recs_dir)
     published = {r["id"]: (r["level"], r["stale"], (r["blocked_since"] or "")[:10])
                  for r in json.loads((out / "records.json").read_text())["records"]}
     printed = {}
-    for line in status_lines(vdir, now=NOW)[1:]:
+    for line in status_lines(vdir, now=NOW, records_dir=recs_dir)[1:]:
         lv, rid, *_ = line.split()
         m = re.search(r"blocked since (\S+)", line)
         printed[rid] = (lv, "stale" in line, m.group(1) if m else "")

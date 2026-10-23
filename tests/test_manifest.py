@@ -539,13 +539,14 @@ def test_manifest_without_snapshot_stays_v1(tmp_path):
     assert doc["format"] == "osd.manifest/1" and "metadata" not in doc
 
 
-def test_norne_manifest_3(tmp_path):
+def test_norne_manifest_3(tmp_path, records_subset):
     """The real-record case: Norne's record, with the verification E07 recorded for it."""
     vdir = tmp_path / "verification"
     vdir.mkdir()
     shutil.copy(ROOT / "tests" / "fixtures" / "mirror" / "verification-2-norne.json", vdir / "opm__norne.json")
     out = tmp_path / "catalog"
-    build(out, vdir, now=NOW, mirror_dir=tmp_path / "no-mirror", source_commit="1" * 40, verification_commit=None)
+    build(out, vdir, now=NOW, mirror_dir=tmp_path / "no-mirror", source_commit="1" * 40, verification_commit=None,
+          records_dir=records_subset(["opm/norne"]))
     doc = mf.from_catalog(["opm/norne"], out, now=NOW)
     assert doc["format"] == "osd.manifest/3"
     assert doc["metadata"]["catalog"] == json.loads((out / "records.json").read_text())["catalog"]

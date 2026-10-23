@@ -83,10 +83,16 @@ def _items(catalog: Path) -> dict[str, dict]:
 
 
 # --- the published tree: real records, staged as `make build` stages it -------------------------
+# `full_build` (tests/conftest.py) is the real catalogue, built once per session (E32); `staged` is a
+# small build of three real records with this module's own verification inputs.
 
 @pytest.fixture(scope="module")
 def staged(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("staged")
+    records = tmp / "records"
+    for rid in ("equinor/volve", "nlog/nlog", "seg/open-data-wiki"):   # L2, L1, L0
+        (records / rid.split("/")[0]).mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / "records" / f"{rid}.yaml", records / f"{rid}.yaml")
     vdir = tmp / "verification"
     vdir.mkdir()
     (vdir / "equinor__volve.json").write_text(json.dumps(
@@ -98,7 +104,7 @@ def staged(tmp_path_factory):
         {"record_id": "nlog/nlog", "checked_at": "2026-10-23T12:00:00+00:00", "tool_version": "t",
          "level": "L1", "checks": []}))
     catalog = tmp / "build" / "catalog"
-    build(catalog, vdir)
+    build(catalog, vdir, records_dir=records)
     site_data = tmp / "site" / "data"
     shutil.copytree(catalog, site_data, dirs_exist_ok=True)   # the Makefile's `cp -R build/catalog/.`
     return site_data
@@ -135,9 +141,9 @@ def test_item_sample_is_bounded_and_fixed(tmp_path):
     assert len(item_sample(tmp_path / "c")) == 3
 
 
-def test_staged_catalog_collections_and_item_sample_validate_offline(staged, no_network):
+def test_staged_catalog_collections_and_item_sample_validate_offline(full_build, no_network):
     """OSD-D18: the catalog, every Collection, and per Collection first, last and a seeded sample of Items."""
-    stac_dir = staged / "stac"
+    stac_dir = full_build / "stac"
     cols = sorted(stac_dir.glob("*/collection.json"))
     assert len(cols) == len(load_records())
     targets = [stac_dir / "catalog.json", *cols, *(i for c in cols for i in item_sample(c.parent))]
@@ -168,12 +174,12 @@ def test_validator_needs_the_bundled_schemas(staged, no_network, tmp_path):
     assert not ok
 
 
-def test_staged_links_resolve(staged):
-    assert stac.link_problems(staged / "stac") == []
+def test_staged_links_resolve(full_build):
+    assert stac.link_problems(full_build / "stac") == []
 
 
-def test_reachable_collections_equal_record_ids(staged):
-    reached = stac.reachable(staged / "stac" / "catalog.json")
+def test_reachable_collections_equal_record_ids(full_build):
+    reached = stac.reachable(full_build / "stac" / "catalog.json")
     assert reached["collections"] == {stac.collection_id(rid) for rid in load_records()}
 
 
@@ -185,15 +191,16 @@ def test_collection_levels_equal_records_json(staged):
         assert col["osd:level"] == level, rid
 
 
-def test_licence_mapping_every_record(staged):
+def test_licence_mapping_every_record(full_build):
     for rid, rec in load_records().items():
-        col = json.loads((staged / "stac" / stac.collection_id(rid) / "collection.json").read_text())
+        col = json.loads((full_build / "stac" / stac.collection_id(rid) / "collection.json").read_text())
         spdx = rec["licence"].get("spdx")
         assert col["license"] == (spdx or "other"), rid
         lic = [x for x in col["links"] if x["rel"] == "license"]
         assert len(lic) == 1 and lic[0]["href"] == rec["licence"].get("url", rec["origin"]["url"]), rid
-    for p in staged.rglob("*.json"):
-        assert '"proprietary"' not in p.read_text(), p
+    for p in full_build.rglob("*.json"):   # Items carry no licence; every other file is read
+        if p.parent.name != "items":
+            assert '"proprietary"' not in p.read_text(), p
 
 
 def test_collection_assets_from_verified_files(staged):
@@ -205,8 +212,8 @@ def test_collection_assets_from_verified_files(staged):
     assert stac.FILE_EXTENSION in col["stac_extensions"]
 
 
-def test_outlines_geojson_carries_feature_id(staged):
-    fc = json.loads((staged / "outlines.geojson").read_text())
+def test_outlines_geojson_carries_feature_id(full_build):
+    fc = json.loads((full_build / "outlines.geojson").read_text())
     with_id = [f for f in fc["features"] if "feature_id" in f["properties"]]
     assert with_id and all(f["id"] == f["properties"]["feature_id"] for f in with_id)
     assert all("id" not in f for f in fc["features"] if "feature_id" not in f["properties"])

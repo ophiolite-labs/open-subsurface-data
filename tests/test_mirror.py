@@ -453,7 +453,7 @@ def test_remove_unknown_digest_refused(tmp_path):
 
 # --- the build regenerates the public index ------------------------------------------------------
 
-def test_build_writes_public_index_from_custody(tmp_path):
+def test_build_writes_public_index_from_custody(tmp_path, records_subset):
     rec = load_record(paths.RECORDS_DIR / "opm" / "norne.yaml")
     rule = mirror.load_rules()["opm/norne"]
     files = {"norne/README": b"r" * 687}
@@ -466,7 +466,7 @@ def test_build_writes_public_index_from_custody(tmp_path):
     vdir.mkdir()
     (vdir / "opm__norne.json").write_text(json.dumps(v))
     out = tmp_path / "catalog"
-    build(out, vdir, mirror_dir=s.root)
+    build(out, vdir, mirror_dir=s.root, records_dir=records_subset(["opm/norne"]))
     index = json.loads((out / "mirror.json").read_text())
     assert [(c["record_id"], c["path"]) for c in index["copies"]] == [("opm/norne", "norne/README")]
     col = json.loads((out / "stac" / "opm--norne" / "collection.json").read_text())

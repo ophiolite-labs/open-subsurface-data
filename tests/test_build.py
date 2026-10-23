@@ -10,15 +10,16 @@ from osd.build import build, write_tiles
 from osd.records import load_records
 
 
-def test_build_joins_records_outlines_and_levels(tmp_path):
+def test_build_joins_records_outlines_and_levels(tmp_path, records_subset):
+    recs_dir = records_subset(["equinor/volve", "nlog/nlog", "terranubis/force-ml-2020-synthetic"])
     vdir = tmp_path / "verification"
     vdir.mkdir()
     (vdir / "equinor__volve.json").write_text(json.dumps(
         {"record_id": "equinor/volve", "checked_at": "2026-10-23T12:00:00+00:00",
          "tool_version": "t", "level": "L1", "checks": []}))
     out = tmp_path / "catalog"
-    n = build(out, vdir)
-    assert n["records"] == len(load_records())
+    n = build(out, vdir, records_dir=recs_dir)
+    assert n["records"] == len(load_records(recs_dir)) == 3
     recs = {r["id"]: r for r in json.loads((out / "records.json").read_text())["records"]}
     assert recs["equinor/volve"]["level"] == "L1"
     assert recs["nlog/nlog"]["level"] == "L0"
@@ -147,14 +148,21 @@ def _identity(p):
     return p.get("feature_id") or (p["record_id"], p["kind"], p["name"])
 
 
+def _outlines_only(tmp_path, full_build):
+    """A catalogue directory holding the session build's outlines.geojson, for tiling (E32)."""
+    out = tmp_path / "catalog"
+    out.mkdir()
+    shutil.copyfile(full_build / "outlines.geojson", out / "outlines.geojson")
+    return out
+
+
 _needs_tippecanoe = pytest.mark.skipif(not (shutil.which("tippecanoe") or os.environ.get("CI")),
                                        reason="tippecanoe not installed (CI installs it)")
 
 
 @_needs_tippecanoe
-def test_tiles_hold_every_feature_with_its_properties_at_max_zoom(tmp_path):
-    out = tmp_path / "catalog"
-    build(out)  # the real catalogue, as `make build` writes it; tiling is cached by content
+def test_tiles_hold_every_feature_with_its_properties_at_max_zoom(tmp_path, full_build):
+    out = _outlines_only(tmp_path, full_build)  # the real catalogue's; tiling is cached by content
     tiles = write_tiles(out)
     assert tiles is not None, "tippecanoe must be installed where CI is set"
     want = {}
@@ -176,9 +184,8 @@ def test_tiles_hold_every_feature_with_its_properties_at_max_zoom(tmp_path):
         assert got == p, k
 
 
-def test_build_without_tippecanoe_prints_the_notice_and_writes_no_tiles(tmp_path, monkeypatch, capsys):
-    out = tmp_path / "catalog"
-    build(out)
+def test_build_without_tippecanoe_prints_the_notice_and_writes_no_tiles(tmp_path, monkeypatch, capsys, full_build):
+    out = _outlines_only(tmp_path, full_build)
     (out / "outlines.pmtiles").write_bytes(b"stale")
     monkeypatch.setenv("PATH", str(tmp_path))  # no tippecanoe on it
     assert write_tiles(out, cache_dir=tmp_path / "tiles") is None
@@ -287,19 +294,29 @@ def test_site_fixture_verifications_validate():
         _validator().validate(json.loads(p.read_text()))
 
 
-def test_records_json_reason_is_the_status_reason(tmp_path):
+def test_records_json_reason_is_the_status_reason(tmp_path, records_subset):
     # mutation: build.py formats its own sentence (the E23 l2_reason copied in) -> L2 and up differ, red
     from osd.cli import status_lines
     vdir = tmp_path / "verification"
     shutil.copytree(SITE_VDIR, vdir)
     (vdir / "opm__norne.json").write_text(json.dumps(L4))
-    build(tmp_path / "catalog", vdir)
+    recs_dir = records_subset(WHY)
+    build(tmp_path / "catalog", vdir, records_dir=recs_dir)
     built = json.loads((tmp_path / "catalog" / "records.json").read_text())
     recs, why = {r["id"]: r for r in built["records"]}, built["reasons"]
-    status = dict(zip(recs, status_lines(vdir)[1:]))   # one line per record, in the same order
+    status = dict(zip(recs, status_lines(vdir, records_dir=recs_dir)[1:]))   # one line per record, in the same order
     assert why.keys() == recs.keys()
     for rid in recs:
         assert f" {rid} " in status[rid] and why[rid] and status[rid].endswith(" " + why[rid]), rid
     assert {rid: why[rid] for rid in WHY} == WHY
     assert {recs[rid]["level"] for rid in WHY} == {"L0", "L1", "L2", "L3", "L4"}
     assert recs["nm-ocd/oil-and-gas-wells"]["blocked_since"] and recs["equinor/volve"]["checked_at"] is None
+
+
+# E32: the real catalogue is built once per session (tests/conftest.py `full_build`); every other
+# build reads a records subset. This test runs last (conftest orders it).
+
+def test_one_real_build_per_session():
+    # mutation: `full_build` scope "function" -> one real build per consumer, red
+    from conftest import FULL_BUILD_USED, REAL_BUILDS
+    assert len(REAL_BUILDS) == (1 if FULL_BUILD_USED else 0), REAL_BUILDS
