@@ -1,0 +1,23 @@
+id: co2datashare/sleipner-4d-seismic
+title: Sleipner 4D Seismic Dataset
+summary: >-
+  A reference dataset from the Sleipner CO2 storage site: processed 4D seismic cubes from the 1994 baseline (before injection) to 2010, in twelve vintage and processing parts, released by Equinor on behalf of the Sleipner group through the CO2 DataShare portal.
+publisher: {name: Equinor (Sleipner group) via CO2 DataShare, url: https://co2datashare.org, country: "NO"}
+origin:
+  url: https://co2datashare.org/dataset/sleipner-4d-seismic-dataset
+  access: anonymous
+  notes: "Each part downloads after ticking the licence-acceptance box; no login. DOI 10.11582/2020.00005. CO2 DataShare is managed by SINTEF and hosted by Sigma2."
+licence:
+  name: Sleipner CO2 Reference Dataset License
+  spdx: null
+  url: https://co2datashare.org/view/license/5c681b1f-04af-4c09-8ec0-febb16ce6fc8
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-4d, seismic-3d]
+region: {country: "NO", basin: "North Sea (Sleipner, Utsira Formation)", bbox: [1.85, 58.33, 1.97, 58.40], crs: ED50 UTM}
+size: {stated: "12 zip parts of 1.5 to 3.2 GiB each (about 24 GiB)"}
+listed_by: [publisher]
+notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Sharing is allowed; credit to the Sleipner group and a link to the terms are required."
+known_issues:
+  - "The portal states one point (58.361 N, 1.91 E); bbox is a small box around it."
+added: 2026-10-23

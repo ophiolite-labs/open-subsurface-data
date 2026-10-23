@@ -1,0 +1,21 @@
+id: ak-dggs/tax-credit-seismic-data
+title: Alaska tax credit seismic data (Geologic Materials Center)
+summary: >-
+  Seismic data acquired under the Alaska exploration tax credit program (AS 43.55) and distributed by the DGGS Geologic Materials Center. Data are ordered by form and invoiced; qualifying research, educational or government institutions may receive them at no cost.
+publisher: {name: Alaska Division of Geological & Geophysical Surveys, url: https://dggs.alaska.gov, country: US}
+origin:
+  url: https://dggs.alaska.gov/gmc/seismic-order.html
+  access: request
+licence:
+  name: Alaska DNR Tax Credit Seismic Data Terms and Conditions (updated 07/19/23)
+  spdx: null
+  url: https://dggs.alaska.gov/gmc/download/AK-DNR-Seismic-Data-Terms-and-Conditions.pdf
+  redistribution: restricted
+  attribution: required
+kinds: [seismic-2d, seismic-3d]
+region: {country: US, basin: "Alaska (North Slope, Cook Inlet and others)", bbox: [-170.0, 54.0, -140.0, 71.5]}
+listed_by: [publisher]
+known_issues:
+  - "Terms: purchased data carry no licensing restrictions but derived products must cite the source and the terms must accompany any further distribution; data obtained without charge may NOT be reproduced without permission and charge. Hence restricted."
+  - "bbox is the State of Alaska, approximate; the order page lists surveys but no extent."
+added: 2026-10-23

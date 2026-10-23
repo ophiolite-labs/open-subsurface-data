@@ -1,0 +1,21 @@
+id: geus/formation-tops-denmark
+title: Formation tops for deep exploration wells drilled in Denmark
+summary: >-
+  Compilation of lithostratigraphic tops in deep Danish exploration wells with information on source of data (version 1.6, GEUS Dataverse).
+publisher: {name: Geological Survey of Denmark and Greenland (GEUS), url: https://eng.geus.dk, country: DK}
+origin:
+  url: https://dataverse.geus.dk/dataset.xhtml?persistentId=doi:10.22008/FK2/RJ35BW
+  access: anonymous
+licence:
+  name: CC-BY 4.0
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/by/4.0
+  redistribution: allowed
+  attribution: required
+kinds: [tops]
+region: {country: DK, basin: Danish onshore and North Sea, bbox: [3.0, 54.5, 15.5, 58.0]}
+size: {bytes_estimate: 238546, stated: one file}
+listed_by: [publisher]
+known_issues:
+  - "bbox is approximate (Danish deep wells onshore and offshore); the Dataverse record carries no geographic extent."
+added: 2026-10-23

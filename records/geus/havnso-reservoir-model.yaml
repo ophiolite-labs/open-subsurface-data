@@ -1,0 +1,21 @@
+id: geus/havnso-reservoir-model
+title: 3D static reservoir model of the Havnsø structure (Petrel, v. 2020)
+summary: >-
+  3D numerical reservoir model of the Gassum Formation in the Havnsø structure (western Zealand, Denmark) in Petrel format, based on a simplistic facies model and two synthetic wells for high and low net-to-gross scenarios.
+publisher: {name: Geological Survey of Denmark and Greenland (GEUS), url: https://eng.geus.dk, country: DK}
+origin:
+  url: https://dataverse.geus.dk/dataset.xhtml?persistentId=doi:10.22008/FK2/44TKZR
+  access: anonymous
+licence:
+  name: GEUS terms for free Danish subsurface data (custom terms of use on the Dataverse record)
+  spdx: null
+  url: https://data.geus.dk/ugdata2d3d/terms_20230919.pdf
+  redistribution: restricted
+  attribution: required
+kinds: [reservoir-model]
+region: {country: DK, basin: "Danish Basin (Havnsø, Zealand)", bbox: [11.17, 55.635, 11.42, 55.815]}
+size: {bytes_estimate: 133117652, stated: one file}
+listed_by: [publisher]
+known_issues:
+  - "The Dataverse record has no standard licence; its terms of use are the GEUS terms for free subsurface data (redistribution only free of charge, in specific cases, GEUS' rights kept)."
+added: 2026-10-23

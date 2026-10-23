@@ -1,0 +1,22 @@
+id: kgs/oil-gas-wells
+title: Kansas Geological Survey oil and gas well databases
+summary: >-
+  The KGS master list of all oil and gas wells in Kansas, linked to wireline log headers, LAS files, scanned logs, core and core analyses, rotary cuttings, tops, DST data and scanned well forms, with oil and gas production data received monthly from the Kansas Department of Revenue.
+publisher: {name: Kansas Geological Survey, url: https://www.kgs.ku.edu, country: US}
+origin:
+  url: https://www.kgs.ku.edu/PRS/petroDB.html
+  access: anonymous
+licence:
+  name: KGS website Terms of Use
+  spdx: null
+  url: https://www.kgs.ku.edu/General/copyright.html
+  redistribution: allowed
+  attribution: required
+  statement: "The source of this material is the Kansas Geological Survey website at http://www.kgs.ku.edu/. All Rights Reserved."
+kinds: [wellbore-headers, wellbore-logs, tops, core, pressure, production, source-list]
+region: {country: US, basin: Kansas, bbox: [-102.05, 36.99, -94.59, 40.0]}
+listed_by: [publisher]
+known_issues:
+  - "The Terms of Use grant the right to publish, distribute and modify the information on the website; they do not name the databases separately. KGS asks that data be acquired directly from a KGS server."
+  - "bbox is the State of Kansas, approximate."
+added: 2026-10-23

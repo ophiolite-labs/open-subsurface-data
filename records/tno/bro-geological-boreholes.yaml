@@ -1,0 +1,22 @@
+id: tno/bro-geological-boreholes
+title: BRO Geologisch booronderzoek (BHR-G)
+summary: >-
+  Geological borehole research in the Dutch Key Register of the Subsurface (BRO): borehole sample descriptions and, where present, sample analyses (grain size, carbonate, organic matter and sulphur content, permeability, density) from geologically oriented borings used for mapping and modelling.
+publisher: {name: TNO Geological Survey of the Netherlands, url: https://www.geologischedienst.nl, country: NL}
+origin:
+  url: https://www.pdok.nl/introductie/-/article/bro-geologisch-booronderzoek-bhr-g-
+  access: anonymous
+  notes: "PDOK serves WMS and ATOM download services; the same data are viewable on DINOloket (https://www.dinoloket.nl/en)."
+licence:
+  name: CC-0 (1.0)
+  spdx: CC0-1.0
+  url: https://data.overheid.nl/dataset/84003-bro---geologisch-booronderzoek--bhr-g--as-is
+  redistribution: allowed
+  attribution: not-required
+kinds: [wellbore-headers, core]
+region: {country: NL, basin: Netherlands onshore, bbox: [3.3, 50.7, 7.3, 53.6]}
+listed_by: [publisher]
+known_issues:
+  - "The licence is stated on the data.overheid.nl entry for the dataset, not on the PDOK page."
+  - "bbox is approximate (the Netherlands); no extent stated on the PDOK page."
+added: 2026-10-23

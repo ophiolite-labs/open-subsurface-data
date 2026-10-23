@@ -1,0 +1,22 @@
+id: co2datashare/sleipner-2019-benchmark-model
+title: Sleipner 2019 Benchmark Model
+summary: >-
+  A reference model of the Sleipner CO2 storage site (Utsira Formation): simulation grid in ECLIPSE and RESCUE formats with petrophysical properties, wells 15/9-A-16 and 15/9-13, CO2 plume outlines per sandstone layer, feeders, velocity maps and depth horizons, released January 2020 by Equinor.
+publisher: {name: Equinor (Sleipner group) via CO2 DataShare, url: https://co2datashare.org, country: "NO"}
+origin:
+  url: https://co2datashare.org/dataset/sleipner-2019-benchmark-model
+  access: anonymous
+  notes: Each part downloads after ticking the licence-acceptance box; no login.
+licence:
+  name: Sleipner CO2 Reference Dataset License
+  spdx: null
+  url: https://co2datashare.org/view/license/5c681b1f-04af-4c09-8ec0-febb16ce6fc8
+  redistribution: allowed
+  attribution: required
+kinds: [reservoir-model, wellbore-logs, surfaces, horizons]
+region: {country: "NO", basin: "North Sea (Sleipner, Utsira Formation)", bbox: [1.85, 58.33, 1.97, 58.40]}
+listed_by: [publisher]
+notes: "Same licence as the Sleipner 4D seismic: CC BY 4.0 based, may not be sold."
+known_issues:
+  - "The portal states one point (58.36 N, 1.91 E); bbox is a small box around it."
+added: 2026-10-23
