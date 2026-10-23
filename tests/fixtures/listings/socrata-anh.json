@@ -1,0 +1,1307 @@
+{
+  "id" : "fdvb-hsrf",
+  "name" : "Produccion Fiscalizada Crudo Consolidada",
+  "assetType" : "dataset",
+  "attribution" : "Agencia Nacional de Hidrocarburos - ANH, Bogotá D.C.",
+  "attributionLink" : "https://solarvorp.anh.gov.co/app2",
+  "averageRating" : 0,
+  "category" : "Minas y Energía",
+  "createdAt" : 1726671453,
+  "description" : "Producción de petróleo (Crudo) fiscalizada extraída del Sistema de Información en donde se registra la producción oficial reportada por las empresas Operadoras",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 1568,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "licenseId" : "CC_40_BY_SA",
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 41664123,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1759836451,
+  "publicationGroup" : 19652560,
+  "publicationStage" : "published",
+  "resourceName" : "ANH_ProduccionCrudoConsolidada",
+  "rowsUpdatedAt" : 1780432964,
+  "rowsUpdatedBy" : "2tjs-kskk",
+  "tableId" : 20115354,
+  "totalTimesRated" : 0,
+  "viewCount" : 5470,
+  "viewLastModified" : 1780432934,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1727213653,
+    "reviewedAutomatically" : false,
+    "state" : "approved",
+    "submissionId" : 7149278,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1727212878,
+    "targetAudience" : "public",
+    "workflowId" : 2188,
+    "reviewer" : {
+      "id" : "vc9x-zjzh",
+      "displayName" : "soporteccc"
+    },
+    "submissionDetails" : {
+      "permissionType" : "read"
+    },
+    "submissionOutcomeApplication" : {
+      "endedAt" : 1727213653,
+      "failureCount" : 0,
+      "startedAt" : 1727213653,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "2tjs-kskk",
+      "displayName" : "Agencia Nacional de Hidrocarburos - ANH - Oficina de Tecnologías de la Información"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 618840735,
+    "name" : "Vigencia",
+    "dataTypeName" : "number",
+    "description" : "Año de la producción",
+    "fieldName" : "vigencia",
+    "position" : 1,
+    "renderTypeName" : "number",
+    "tableColumnId" : 154885666,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "2026",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2014",
+        "count" : "4834"
+      }, {
+        "item" : "2019",
+        "count" : "4791"
+      }, {
+        "item" : "2018",
+        "count" : "4673"
+      }, {
+        "item" : "2017",
+        "count" : "4503"
+      }, {
+        "item" : "2015",
+        "count" : "4474"
+      }, {
+        "item" : "2022",
+        "count" : "4345"
+      }, {
+        "item" : "2023",
+        "count" : "4308"
+      }, {
+        "item" : "2024",
+        "count" : "4246"
+      }, {
+        "item" : "2021",
+        "count" : "4159"
+      }, {
+        "item" : "2016",
+        "count" : "4058"
+      }, {
+        "item" : "2020",
+        "count" : "4030"
+      }, {
+        "item" : "2025",
+        "count" : "3834"
+      }, {
+        "item" : "2026",
+        "count" : "982"
+      } ],
+      "smallest" : "2014",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 618840736,
+    "name" : "Mes",
+    "dataTypeName" : "number",
+    "description" : "Mes de la producción",
+    "fieldName" : "mes",
+    "position" : 2,
+    "renderTypeName" : "number",
+    "tableColumnId" : 154885667,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "12",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1",
+        "count" : "4769"
+      }, {
+        "item" : "3",
+        "count" : "4745"
+      }, {
+        "item" : "2",
+        "count" : "4743"
+      }, {
+        "item" : "12",
+        "count" : "4404"
+      }, {
+        "item" : "10",
+        "count" : "4386"
+      }, {
+        "item" : "9",
+        "count" : "4363"
+      }, {
+        "item" : "8",
+        "count" : "4360"
+      }, {
+        "item" : "4",
+        "count" : "4358"
+      }, {
+        "item" : "7",
+        "count" : "4332"
+      }, {
+        "item" : "5",
+        "count" : "4318"
+      }, {
+        "item" : "6",
+        "count" : "4304"
+      }, {
+        "item" : "11",
+        "count" : "4155"
+      } ],
+      "smallest" : "1",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 618840737,
+    "name" : "NombreMes",
+    "dataTypeName" : "text",
+    "description" : "Nombre del mes (Ejemplo: Enero)",
+    "fieldName" : "nombre_mes",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 154885668,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "Septiembre",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Enero",
+        "count" : "4769"
+      }, {
+        "item" : "Marzo",
+        "count" : "4745"
+      }, {
+        "item" : "Febrero",
+        "count" : "4743"
+      }, {
+        "item" : "Diciembre",
+        "count" : "4404"
+      }, {
+        "item" : "Octubre",
+        "count" : "4386"
+      }, {
+        "item" : "Septiembre",
+        "count" : "4363"
+      }, {
+        "item" : "Agosto",
+        "count" : "4360"
+      }, {
+        "item" : "Abril",
+        "count" : "4358"
+      }, {
+        "item" : "Julio",
+        "count" : "4332"
+      }, {
+        "item" : "Mayo",
+        "count" : "4318"
+      }, {
+        "item" : "Junio",
+        "count" : "4304"
+      }, {
+        "item" : "Noviembre",
+        "count" : "4155"
+      } ],
+      "smallest" : "Abril",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840738,
+    "name" : "CodDaneDepartamento",
+    "dataTypeName" : "number",
+    "description" : "Código que el DANE establece para los departamentos del país",
+    "fieldName" : "cod_dane_departamento",
+    "position" : 4,
+    "renderTypeName" : "number",
+    "tableColumnId" : 154885669,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "99",
+      "null" : "0",
+      "top" : [ {
+        "item" : "85",
+        "count" : "19974"
+      }, {
+        "item" : "50",
+        "count" : "9211"
+      }, {
+        "item" : "68",
+        "count" : "3808"
+      }, {
+        "item" : "41",
+        "count" : "3617"
+      }, {
+        "item" : "86",
+        "count" : "3318"
+      }, {
+        "item" : "81",
+        "count" : "3137"
+      }, {
+        "item" : "73",
+        "count" : "2747"
+      }, {
+        "item" : "20",
+        "count" : "1626"
+      }, {
+        "item" : "15",
+        "count" : "1587"
+      }, {
+        "item" : "5",
+        "count" : "1026"
+      }, {
+        "item" : "54",
+        "count" : "645"
+      }, {
+        "item" : "13",
+        "count" : "528"
+      }, {
+        "item" : "70",
+        "count" : "409"
+      }, {
+        "item" : "47",
+        "count" : "385"
+      }, {
+        "item" : "19",
+        "count" : "327"
+      }, {
+        "item" : "90",
+        "count" : "213"
+      }, {
+        "item" : "25",
+        "count" : "203"
+      }, {
+        "item" : "23",
+        "count" : "174"
+      }, {
+        "item" : "8",
+        "count" : "130"
+      }, {
+        "item" : "52",
+        "count" : "117"
+      } ],
+      "smallest" : "5",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 618840739,
+    "name" : "Departamento",
+    "dataTypeName" : "text",
+    "description" : "Nombre del departamento (Ej: Santander)",
+    "fieldName" : "departamento",
+    "position" : 5,
+    "renderTypeName" : "text",
+    "tableColumnId" : 154885670,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "VICHADA",
+      "null" : "0",
+      "top" : [ {
+        "item" : "CASANARE",
+        "count" : "19974"
+      }, {
+        "item" : "META",
+        "count" : "9211"
+      }, {
+        "item" : "SANTANDER",
+        "count" : "3808"
+      }, {
+        "item" : "HUILA",
+        "count" : "3617"
+      }, {
+        "item" : "PUTUMAYO",
+        "count" : "3318"
+      }, {
+        "item" : "ARAUCA",
+        "count" : "3137"
+      }, {
+        "item" : "TOLIMA",
+        "count" : "2747"
+      }, {
+        "item" : "CESAR",
+        "count" : "1626"
+      }, {
+        "item" : "BOYACA",
+        "count" : "1587"
+      }, {
+        "item" : "ANTIOQUIA",
+        "count" : "1026"
+      }, {
+        "item" : "NORTE DE SANTANDER",
+        "count" : "645"
+      }, {
+        "item" : "BOLIVAR",
+        "count" : "528"
+      }, {
+        "item" : "SUCRE",
+        "count" : "409"
+      }, {
+        "item" : "MAGDALENA",
+        "count" : "385"
+      }, {
+        "item" : "CAUCA",
+        "count" : "327"
+      }, {
+        "item" : "DEPARTAMENTO NN",
+        "count" : "213"
+      }, {
+        "item" : "CUNDINAMARCA",
+        "count" : "203"
+      }, {
+        "item" : "CORDOBA",
+        "count" : "174"
+      }, {
+        "item" : "ATLANTICO",
+        "count" : "130"
+      }, {
+        "item" : "NARIÑO",
+        "count" : "117"
+      } ],
+      "smallest" : "ANTIOQUIA",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840740,
+    "name" : "CodDaneMunicipio",
+    "dataTypeName" : "number",
+    "description" : "Código que el DANE establece para los municipios del país",
+    "fieldName" : "cod_dane_municipio",
+    "position" : 6,
+    "renderTypeName" : "number",
+    "tableColumnId" : 154885671,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "99",
+      "null" : "0",
+      "top" : [ {
+        "item" : "85",
+        "count" : "19974"
+      }, {
+        "item" : "50",
+        "count" : "9211"
+      }, {
+        "item" : "68",
+        "count" : "3808"
+      }, {
+        "item" : "41",
+        "count" : "3617"
+      }, {
+        "item" : "86",
+        "count" : "3318"
+      }, {
+        "item" : "81",
+        "count" : "3137"
+      }, {
+        "item" : "73",
+        "count" : "2747"
+      }, {
+        "item" : "20",
+        "count" : "1626"
+      }, {
+        "item" : "15",
+        "count" : "1587"
+      }, {
+        "item" : "5",
+        "count" : "1026"
+      }, {
+        "item" : "54",
+        "count" : "645"
+      }, {
+        "item" : "13",
+        "count" : "528"
+      }, {
+        "item" : "70",
+        "count" : "409"
+      }, {
+        "item" : "47",
+        "count" : "385"
+      }, {
+        "item" : "19",
+        "count" : "327"
+      }, {
+        "item" : "90",
+        "count" : "213"
+      }, {
+        "item" : "25",
+        "count" : "203"
+      }, {
+        "item" : "23",
+        "count" : "174"
+      }, {
+        "item" : "8",
+        "count" : "130"
+      }, {
+        "item" : "52",
+        "count" : "117"
+      } ],
+      "smallest" : "5",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 618840741,
+    "name" : "Municipio",
+    "dataTypeName" : "text",
+    "description" : "Nombre del municipio (Ej: Puerto Nare)",
+    "fieldName" : "municipio",
+    "position" : 7,
+    "renderTypeName" : "text",
+    "tableColumnId" : 154885672,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "YOPAL",
+      "null" : "0",
+      "top" : [ {
+        "item" : "OROCUE",
+        "count" : "5022"
+      }, {
+        "item" : "PUERTO GAITAN",
+        "count" : "3745"
+      }, {
+        "item" : "SAN LUIS DE PALENQUE",
+        "count" : "2907"
+      }, {
+        "item" : "PAZ DE ARIPORO",
+        "count" : "2389"
+      }, {
+        "item" : "ARAUQUITA",
+        "count" : "2076"
+      }, {
+        "item" : "TAURAMENA",
+        "count" : "1977"
+      }, {
+        "item" : "YOPAL",
+        "count" : "1738"
+      }, {
+        "item" : "MANI",
+        "count" : "1710"
+      }, {
+        "item" : "VILLAVICENCIO",
+        "count" : "1584"
+      }, {
+        "item" : "TRINIDAD",
+        "count" : "1486"
+      }, {
+        "item" : "CABUYARO",
+        "count" : "1421"
+      }, {
+        "item" : "PUERTO BOYACA",
+        "count" : "1243"
+      }, {
+        "item" : "AIPE",
+        "count" : "1231"
+      }, {
+        "item" : "SABANA DE TORRES",
+        "count" : "1187"
+      }, {
+        "item" : "NEIVA",
+        "count" : "1146"
+      }, {
+        "item" : "AGUAZUL",
+        "count" : "1129"
+      }, {
+        "item" : "VILLA NUEVA",
+        "count" : "902"
+      }, {
+        "item" : "ORITO",
+        "count" : "896"
+      }, {
+        "item" : "ARAUCA",
+        "count" : "766"
+      }, {
+        "item" : "PUERTO ASIS",
+        "count" : "752"
+      } ],
+      "smallest" : "ACACIAS",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840742,
+    "name" : "Operadora",
+    "dataTypeName" : "text",
+    "description" : "Nombre de la Operadora que tiene a cargo el campo de hidrocarburos",
+    "fieldName" : "operadora",
+    "position" : 8,
+    "renderTypeName" : "text",
+    "tableColumnId" : 154885673,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "WELL LOGGING",
+      "null" : "0",
+      "top" : [ {
+        "item" : "ECOPETROL S.A.",
+        "count" : "12631"
+      }, {
+        "item" : "PERENCO COLOMBIA LIMITED",
+        "count" : "4733"
+      }, {
+        "item" : "FRONTERA ENERGY COLOMBIA CORP., SUCURSAL COLOMBIA",
+        "count" : "3299"
+      }, {
+        "item" : "HOCOL S.A.",
+        "count" : "3109"
+      }, {
+        "item" : "SIERRACOL ENERGY ARAUCA LLC",
+        "count" : "2861"
+      }, {
+        "item" : "CEPSA COLOMBIA S.A.",
+        "count" : "1945"
+      }, {
+        "item" : "GRAN TIERRA ENERGY COLOMBIA GMBH SUCURSAL COLOMBIA",
+        "count" : "1931"
+      }, {
+        "item" : "PAREX RESOURCES COLOMBIA LTD. SUCURSAL",
+        "count" : "1649"
+      }, {
+        "item" : "PETROMINERALES COLOMBIA LTD SUCURSAL COLOMBIA",
+        "count" : "1431"
+      }, {
+        "item" : "GEOPARK COLOMBIA S.A.S.",
+        "count" : "1157"
+      }, {
+        "item" : "ECOPETROL ALTO MAGDALENA",
+        "count" : "1110"
+      }, {
+        "item" : "EMERALD ENERGY PLC SUCURSAL COLOMBIA",
+        "count" : "1057"
+      }, {
+        "item" : "COLOMBIA ENERGY DEVELOPMENT CO ANTES HARKEN DE COLOMBIA II LIMITADA SUCURSAL COLOMBIA",
+        "count" : "1000"
+      }, {
+        "item" : "NEW GRANADA ENERGY CORPORATION SUCURSAL COLOMBIA",
+        "count" : "885"
+      }, {
+        "item" : "PACIFIC STRATUS ENERGY COLOMBIA CORP",
+        "count" : "839"
+      }, {
+        "item" : "MANSAROVAR ENERGY COLOMBIA LTD",
+        "count" : "814"
+      }, {
+        "item" : "PETROSANTANDER COLOMBIA  GMBH",
+        "count" : "783"
+      }, {
+        "item" : "GRUPO C&C ENERGIA (BARBADOS) SUCURSAL COLOMBIA",
+        "count" : "638"
+      }, {
+        "item" : "INTEROIL COLOMBIA EXPLORATION AND PRODUCTION ANTES MERCANTILE COLOMBIA OIL AND GAS MCOG",
+        "count" : "624"
+      }, {
+        "item" : "PERENCO OIL AND GAS COLOMBIA LIMITED.",
+        "count" : "598"
+      } ],
+      "smallest" : "ALANGE ENERGY CORP SUCURSAL COLOMBIA",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840743,
+    "name" : "Contrato",
+    "dataTypeName" : "text",
+    "description" : "Nombre del Contrato de hidrocarburos",
+    "fieldName" : "contrato",
+    "position" : 9,
+    "renderTypeName" : "text",
+    "tableColumnId" : 154885674,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "YAMU",
+      "null" : "0",
+      "top" : [ {
+        "item" : "PIJAO-POTRERILLO",
+        "count" : "1761"
+      }, {
+        "item" : "CARACARA",
+        "count" : "1745"
+      }, {
+        "item" : "APIAY",
+        "count" : "1648"
+      }, {
+        "item" : "CASANARE",
+        "count" : "1487"
+      }, {
+        "item" : "LLA 34",
+        "count" : "1388"
+      }, {
+        "item" : "CUBIRO",
+        "count" : "1320"
+      }, {
+        "item" : "ORITO",
+        "count" : "1187"
+      }, {
+        "item" : "GARCERO",
+        "count" : "1159"
+      }, {
+        "item" : "CUBARRAL",
+        "count" : "1045"
+      }, {
+        "item" : "CORCEL",
+        "count" : "1013"
+      }, {
+        "item" : "NARE",
+        "count" : "1012"
+      }, {
+        "item" : "CHIPIRÓN",
+        "count" : "966"
+      }, {
+        "item" : "COSECHA",
+        "count" : "886"
+      }, {
+        "item" : "COROCORA",
+        "count" : "852"
+      }, {
+        "item" : "CACHICAMO",
+        "count" : "764"
+      }, {
+        "item" : "CRAVOVIEJO",
+        "count" : "731"
+      }, {
+        "item" : "CARARE LAS MONAS",
+        "count" : "728"
+      }, {
+        "item" : "CRAVO NORTE",
+        "count" : "717"
+      }, {
+        "item" : "DE MARES",
+        "count" : "710"
+      }, {
+        "item" : "CAMPO RICO",
+        "count" : "647"
+      } ],
+      "smallest" : "ABANICO",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840744,
+    "name" : "TipoContrato",
+    "dataTypeName" : "text",
+    "description" : "Tipo de Contrato de Hidrocarburos (Ejemplo: E&P, Contratos de Asociación)",
+    "fieldName" : "tipo_contrato",
+    "position" : 10,
+    "renderTypeName" : "text",
+    "tableColumnId" : 154885675,
+    "cachedContents" : {
+      "non_null" : "53236",
+      "largest" : "PROPIEDAD PRIVADA",
+      "null" : "1",
+      "top" : [ {
+        "item" : "CONVENIOS DE EXPLOTACIÓN",
+        "count" : "15352"
+      }, {
+        "item" : "CONTRATOS DE ASOCIACIÓN",
+        "count" : "14556"
+      }, {
+        "item" : "E&P",
+        "count" : "12789"
+      }, {
+        "item" : "E&E",
+        "count" : "6792"
+      }, {
+        "item" : "CONVENIOS DE EXPLORACIÓN Y EXPLOTACIÓN",
+        "count" : "3063"
+      }, {
+        "item" : "NO REGISTRA",
+        "count" : "231"
+      }, {
+        "item" : "PROPIEDAD PRIVADA",
+        "count" : "147"
+      }, {
+        "item" : "CONVENIOS DE EXPLORACIÓN Y PRODUCCIÓN",
+        "count" : "147"
+      }, {
+        "item" : "CONCESION",
+        "count" : "117"
+      }, {
+        "item" : "CDND/I",
+        "count" : "30"
+      }, {
+        "item" : "CRUDO PROPIO",
+        "count" : "12"
+      } ],
+      "smallest" : "CDND/I",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840745,
+    "name" : "Campo",
+    "dataTypeName" : "text",
+    "description" : "Campo de hidrocarburos de donde proviene la producción de crudo",
+    "fieldName" : "campo",
+    "position" : 11,
+    "renderTypeName" : "text",
+    "tableColumnId" : 154885676,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "ZORZAL",
+      "null" : "0",
+      "top" : [ {
+        "item" : "YARIGUÍ-CANTAGALLO",
+        "count" : "294"
+      }, {
+        "item" : "SAN FRANCISCO",
+        "count" : "294"
+      }, {
+        "item" : "CUSIANA",
+        "count" : "292"
+      }, {
+        "item" : "AREA TECA-COCORNA",
+        "count" : "291"
+      }, {
+        "item" : "MATACHÍN SUR",
+        "count" : "291"
+      }, {
+        "item" : "CAÑO LIMÓN",
+        "count" : "289"
+      }, {
+        "item" : "CHICHIMENE SW",
+        "count" : "285"
+      }, {
+        "item" : "CICUCO",
+        "count" : "284"
+      }, {
+        "item" : "LA GLORIA",
+        "count" : "282"
+      }, {
+        "item" : "CHIPIRÓN",
+        "count" : "280"
+      }, {
+        "item" : "UNDERRIVER",
+        "count" : "280"
+      }, {
+        "item" : "LORO",
+        "count" : "275"
+      }, {
+        "item" : "CASTILLA NORTE",
+        "count" : "236"
+      }, {
+        "item" : "Canaguay",
+        "count" : "231"
+      }, {
+        "item" : "AKACIAS",
+        "count" : "230"
+      }, {
+        "item" : "CURITO",
+        "count" : "225"
+      }, {
+        "item" : "CASTILLA",
+        "count" : "215"
+      }, {
+        "item" : "RANCHO HERMOSO",
+        "count" : "214"
+      }, {
+        "item" : "VIGIA SUR",
+        "count" : "206"
+      }, {
+        "item" : "PACANDE",
+        "count" : "204"
+      } ],
+      "smallest" : "ABANICO",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840746,
+    "name" : "Longitud",
+    "dataTypeName" : "text",
+    "description" : "Campo Longitud de Geolocalización del campo de hidrocarburos",
+    "fieldName" : "longitud",
+    "position" : 12,
+    "renderTypeName" : "text",
+    "tableColumnId" : 162191097,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "-77.16603508",
+      "null" : "0",
+      "top" : [ {
+        "item" : "-73.920238",
+        "count" : "294"
+      }, {
+        "item" : "-75.38654901931035",
+        "count" : "292"
+      }, {
+        "item" : "-74.866406",
+        "count" : "291"
+      }, {
+        "item" : "-74.611941",
+        "count" : "291"
+      }, {
+        "item" : "-71.09548",
+        "count" : "289"
+      }, {
+        "item" : "-74.63748573",
+        "count" : "284"
+      }, {
+        "item" : "-73.72769854672597",
+        "count" : "283"
+      }, {
+        "item" : "-72.35172983489208",
+        "count" : "280"
+      }, {
+        "item" : "-74.58692106",
+        "count" : "280"
+      }, {
+        "item" : "-71.1577369999999",
+        "count" : "278"
+      }, {
+        "item" : "-72.704824",
+        "count" : "231"
+      }, {
+        "item" : "-73.72589043964602",
+        "count" : "228"
+      }, {
+        "item" : "-71.84587371",
+        "count" : "225"
+      }, {
+        "item" : "-73.652229572",
+        "count" : "222"
+      }, {
+        "item" : "-71.9674229904762",
+        "count" : "212"
+      }, {
+        "item" : "-73.6768368",
+        "count" : "206"
+      }, {
+        "item" : "-72.15813796158416",
+        "count" : "204"
+      }, {
+        "item" : "-75.16844718054726",
+        "count" : "203"
+      }, {
+        "item" : "-73.68184999025253",
+        "count" : "199"
+      }, {
+        "item" : "-76.91214176",
+        "count" : "178"
+      } ],
+      "smallest" : "0",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 618840747,
+    "name" : "Latitud",
+    "dataTypeName" : "text",
+    "description" : "Campo Latitud de Geolocalización del campo de hidrocarburos",
+    "fieldName" : "latitud",
+    "position" : 13,
+    "renderTypeName" : "text",
+    "tableColumnId" : 162191098,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "9.915331",
+      "null" : "0",
+      "top" : [ {
+        "item" : "7.362492",
+        "count" : "294"
+      }, {
+        "item" : "3.0573581351724135",
+        "count" : "292"
+      }, {
+        "item" : "6.032039",
+        "count" : "291"
+      }, {
+        "item" : "3.82967",
+        "count" : "291"
+      }, {
+        "item" : "6.959206",
+        "count" : "289"
+      }, {
+        "item" : "3.905214816761566",
+        "count" : "283"
+      }, {
+        "item" : "9.248706932500001",
+        "count" : "282"
+      }, {
+        "item" : "5.035823339928058",
+        "count" : "280"
+      }, {
+        "item" : "6.08836941",
+        "count" : "280"
+      }, {
+        "item" : "6.87880299999999",
+        "count" : "278"
+      }, {
+        "item" : "4.764446",
+        "count" : "231"
+      }, {
+        "item" : "3.9495498184070796",
+        "count" : "228"
+      }, {
+        "item" : "5.10905799",
+        "count" : "225"
+      }, {
+        "item" : "3.887507833663636",
+        "count" : "222"
+      }, {
+        "item" : "5.03547329047619",
+        "count" : "212"
+      }, {
+        "item" : "3.83671951",
+        "count" : "206"
+      }, {
+        "item" : "4.898482673465346",
+        "count" : "204"
+      }, {
+        "item" : "4.0015427244278605",
+        "count" : "203"
+      }, {
+        "item" : "3.945433883030303",
+        "count" : "199"
+      }, {
+        "item" : "0.37643353",
+        "count" : "178"
+      } ],
+      "smallest" : "0",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 618840748,
+    "name" : "ProduccionBls",
+    "dataTypeName" : "text",
+    "description" : "Barriles de crudo producidos en el mes",
+    "fieldName" : "produccion_bls",
+    "position" : 14,
+    "renderTypeName" : "text",
+    "tableColumnId" : 162191099,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "largest" : "9,999.00",
+      "null" : "0",
+      "top" : [ {
+        "item" : "10.00",
+        "count" : "39"
+      }, {
+        "item" : "8.00",
+        "count" : "29"
+      }, {
+        "item" : "2.00",
+        "count" : "25"
+      }, {
+        "item" : "7.00",
+        "count" : "24"
+      }, {
+        "item" : "4.00",
+        "count" : "23"
+      }, {
+        "item" : "9.00",
+        "count" : "23"
+      }, {
+        "item" : "20.00",
+        "count" : "22"
+      }, {
+        "item" : "17.00",
+        "count" : "20"
+      }, {
+        "item" : "3.00",
+        "count" : "20"
+      }, {
+        "item" : "14.00",
+        "count" : "17"
+      }, {
+        "item" : "1.00",
+        "count" : "15"
+      }, {
+        "item" : "5.00",
+        "count" : "15"
+      }, {
+        "item" : "48.00",
+        "count" : "15"
+      }, {
+        "item" : "35.00",
+        "count" : "15"
+      }, {
+        "item" : "70.00",
+        "count" : "15"
+      }, {
+        "item" : "29.00",
+        "count" : "14"
+      }, {
+        "item" : "37.00",
+        "count" : "14"
+      }, {
+        "item" : "25.00",
+        "count" : "14"
+      }, {
+        "item" : "33.00",
+        "count" : "14"
+      }, {
+        "item" : "52.00",
+        "count" : "14"
+      } ],
+      "smallest" : "0.00",
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : {
+      "decimalSeparator" : ".",
+      "groupSeparator" : ","
+    }
+  }, {
+    "id" : 618840749,
+    "name" : "Geolocalizacion",
+    "dataTypeName" : "point",
+    "description" : "Campo de geolocalización conformado por Latitud y Longitud del campo hidrocarburos",
+    "fieldName" : "geolocalizacion",
+    "position" : 15,
+    "renderTypeName" : "point",
+    "tableColumnId" : 154885680,
+    "cachedContents" : {
+      "non_null" : "53237",
+      "null" : "0",
+      "top" : [ {
+        "item" : {
+          "coordinates" : [ -73.920238, 7.362492 ],
+          "type" : "Point"
+        },
+        "count" : "294"
+      }, {
+        "item" : {
+          "coordinates" : [ -75.38654901931035, 3.0573581351724135 ],
+          "type" : "Point"
+        },
+        "count" : "292"
+      }, {
+        "item" : {
+          "coordinates" : [ -74.866406, 3.82967 ],
+          "type" : "Point"
+        },
+        "count" : "291"
+      }, {
+        "item" : {
+          "coordinates" : [ -74.611941, 6.032039 ],
+          "type" : "Point"
+        },
+        "count" : "291"
+      }, {
+        "item" : {
+          "coordinates" : [ -71.09548, 6.959206 ],
+          "type" : "Point"
+        },
+        "count" : "289"
+      }, {
+        "item" : {
+          "coordinates" : [ -73.72769854672597, 3.905214816761566 ],
+          "type" : "Point"
+        },
+        "count" : "283"
+      }, {
+        "item" : {
+          "coordinates" : [ -74.63748573, 9.248706932500001 ],
+          "type" : "Point"
+        },
+        "count" : "282"
+      }, {
+        "item" : {
+          "coordinates" : [ -74.58692106, 6.08836941 ],
+          "type" : "Point"
+        },
+        "count" : "280"
+      }, {
+        "item" : {
+          "coordinates" : [ -72.35172983489208, 5.035823339928058 ],
+          "type" : "Point"
+        },
+        "count" : "280"
+      }, {
+        "item" : {
+          "coordinates" : [ -71.1577369999999, 6.87880299999999 ],
+          "type" : "Point"
+        },
+        "count" : "278"
+      }, {
+        "item" : {
+          "coordinates" : [ -72.704824, 4.764446 ],
+          "type" : "Point"
+        },
+        "count" : "231"
+      }, {
+        "item" : {
+          "coordinates" : [ -73.72589043964602, 3.9495498184070796 ],
+          "type" : "Point"
+        },
+        "count" : "228"
+      }, {
+        "item" : {
+          "coordinates" : [ -71.84587371, 5.10905799 ],
+          "type" : "Point"
+        },
+        "count" : "225"
+      }, {
+        "item" : {
+          "coordinates" : [ -73.652229572, 3.887507833663636 ],
+          "type" : "Point"
+        },
+        "count" : "222"
+      }, {
+        "item" : {
+          "coordinates" : [ -71.9674229904762, 5.03547329047619 ],
+          "type" : "Point"
+        },
+        "count" : "212"
+      }, {
+        "item" : {
+          "coordinates" : [ -73.6768368, 3.83671951 ],
+          "type" : "Point"
+        },
+        "count" : "206"
+      }, {
+        "item" : {
+          "coordinates" : [ -72.15813796158416, 4.898482673465346 ],
+          "type" : "Point"
+        },
+        "count" : "204"
+      }, {
+        "item" : {
+          "coordinates" : [ -75.16844718054726, 4.0015427244278605 ],
+          "type" : "Point"
+        },
+        "count" : "203"
+      }, {
+        "item" : {
+          "coordinates" : [ -73.68184999025253, 3.945433883030303 ],
+          "type" : "Point"
+        },
+        "count" : "199"
+      }, {
+        "item" : {
+          "coordinates" : [ -76.91214176, 0.37643353 ],
+          "type" : "Point"
+        },
+        "count" : "178"
+      } ],
+      "count" : "53237",
+      "cardinality" : "53237"
+    },
+    "format" : { }
+  }, {
+    "id" : 618840750,
+    "name" : "Departamentos Colombia",
+    "dataTypeName" : "number",
+    "description" : "This column was automatically created in order to record in what polygon from the dataset 'Departamentos Colombia' (iaad-a2mp) the point in column 'geolocalizacion' is located.  This enables the creation of region maps (choropleths) in the visualization canvas and data lens.",
+    "fieldName" : ":@computed_region_iaad_a2mp",
+    "position" : 16,
+    "renderTypeName" : "number",
+    "tableColumnId" : 162315986,
+    "computationStrategy" : {
+      "source_columns" : [ "geolocalizacion" ],
+      "type" : "georegion_match_on_point",
+      "parameters" : {
+        "region" : "_iaad-a2mp",
+        "primary_key" : "_feature_id"
+      }
+    },
+    "format" : { }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "license" : {
+    "name" : "Creative Commons Attribution | Share Alike 4.0 International",
+    "logoUrl" : "images/licenses/cc30bysa.png",
+    "termsLink" : "http://creativecommons.org/licenses/by-sa/4.0/legalcode"
+  },
+  "metadata" : {
+    "custom_fields" : {
+      "Información de la Entidad" : {
+        "Municipio" : "Bogotá D.C.",
+        "Nombre de la Entidad" : "Agencia Nacional de Hidrocarburos - ANH, Bogotá D.C.",
+        "DIVIPOLA Municipio" : "11001",
+        "Orden" : "Nacional",
+        "Sector" : "Minas y Energía",
+        "Área o dependencia" : "Vicepresidencia de Operaciones, Regalías y Participaciones, Oficina de Tecnologías de la Información",
+        "Departamento" : "Bogotá D.C."
+      },
+      "Información de Datos" : {
+        "Cobertura Geográfica" : "Nacional",
+        "Idioma" : "Español",
+        "Frecuencia de Actualización" : "Trimestral"
+      }
+    },
+    "rowLabel" : "Producción de crudo fiscalizada por campo por mes",
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ]
+  },
+  "owner" : {
+    "id" : "2tjs-kskk",
+    "displayName" : "Agencia Nacional de Hidrocarburos - ANH - Oficina de Tecnologías de la Información",
+    "profileImageUrlLarge" : "/api/users/2tjs-kskk/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/2tjs-kskk/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/2tjs-kskk/profile_images/TINY",
+    "screenName" : "Agencia Nacional de Hidrocarburos - ANH - Oficina de Tecnologías de la Información",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "query" : { },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "2tjs-kskk",
+    "displayName" : "Agencia Nacional de Hidrocarburos - ANH - Oficina de Tecnologías de la Información",
+    "profileImageUrlLarge" : "/api/users/2tjs-kskk/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/2tjs-kskk/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/2tjs-kskk/profile_images/TINY",
+    "screenName" : "Agencia Nacional de Hidrocarburos - ANH - Oficina de Tecnologías de la Información",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "tags" : [ "hidrocarburos", "producción", "fiscalizada", "petróleo" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

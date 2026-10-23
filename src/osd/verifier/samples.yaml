@@ -1,14 +1,36 @@
 # Verifier sampling policy (OSD-D11): tool configuration, never a record field.
-# Keyed by record id; the record must declare origin.manifest_url. Each value lists shell globs
-# matched against every entry of that listing, as listed or as an absolute URL. Matching files
-# are hashed for L2, at most 2 GB per run across all records.
-sodir/factpages: ["*rs:Format=CSV*"]          # the CSV export of the exploration wellbore table
-opm/norne: ["*.DATA"]                          # the simulation deck
-nopims/poseidon: ["*/.zattrs", "*/.zgroup"]    # MDIO metadata objects, a few hundred bytes
-nlog/nlog: ["*thematische_data_boringen.zip"]   # the borehole page's thematic data download, ~57 MB
+# Keyed by record id; the record must declare origin.manifest_url, and every record that declares one
+# has an entry here (tests/test_verify.py). A value is either a list of shell globs, matched against
+# every entry of that listing as listed or as an absolute URL, or a sentence saying why the listing has
+# nothing to hash (osd status prints it as the reason). Matching files are hashed for L2, at most
+# 512 MiB per record and 2 GiB per run. A listing that names one object samples that object ("*").
+# Listing shapes are read by osd.verifier.listings; sizes below are as listed on 23 Oct 2026.
+ak-dggs/tax-credit-well-data: ["*BadamiUnitB1-11A*.zip"]   # directory index of well zips; this one 413 KB
+anh/produccion-fiscalizada-crudo: ["*"]          # Socrata view: its rows.csv export, a few MB
+ar-energia/fractura-adjunto-iv: ["*.csv"]         # CKAN: the daily fracture CSV (the PDF infographic is not sampled)
+ar-energia/produccion-por-pozo: ["Listado de pozos cargados*"]   # CKAN: the operators' well list, not the yearly production files (hundreds of MB each)
+ar-energia/trayectorias-vaca-muerta: ["*.csv"]    # CKAN: the trajectory CSV
+bcer/well-surface-holes-permitted: ["*"]          # ArcGIS layer: one geojson export of at most maxRecordCount (2000) features
+cpc/onshore-well-locations: ["*"]                 # data.gov.tw: the CSV of six onshore wells, under 1 KB
+gsmma/hydrogeological-drilling-database: ["*"]    # data.gov.tw: the distribution files, tabular
+gsmma/sw-offshore-core-stations-2008-2011: ["*"]  # data.gov.tw: the core station table
+gsmma/sw-offshore-seismic-lines-2008-2011: ["*"]  # data.gov.tw: the seismic line table (line ids, dates, lengths)
+gsq/qped: "the CKAN package lists no resources (23 Oct 2026); QPED files are reached through its own application"
+jamstec/seismic-survey-database: "the listing is a cruise index with no file addresses"
+kigam/marine-geological-map-korea-strait: "the listing is a search result with no file addresses"
+nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
+nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
+opm/norne: ["*.DATA"]                             # the simulation deck
+pgi/cbdg-boreholes: "the dataset lists web applications and WMS/WFS services, no files"
+sgc/banco-informacion-petrolera-pozos: ["*"]      # ArcGIS layer: one geojson export of at most 2000 features
+sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the exploration wellbore table
+spe/csp11: "the listing is the repository's HTML page, which links pages, not files (the GitHub contents API would list files)"
+tudelft/egg-model: "the DOI metadata names no content URL, only the landing page"
+ut-dogm/oil-gas-wells: ["*"]                      # ArcGIS layer: one geojson export of at most 2000 features
+wa-demirs/petroleum-wells: "the package lists web services and a download application page, no files"
 
 # Mirror rules (E07): the files `osd mirror put` copies, keyed by record id. The verifier hashes every
-# entry of the listing a rule selects (its `inventory`), within the same 2 GB run budget in slice 1.
+# entry of the listing a rule selects (its `inventory`), within the same budget as the sample.
 # A record is mirrored only when eligible (OSD-D6; osd.mirror.eligibility). Norne only in slice 1.
 mirror:
   opm/norne: ["norne/*"]                       # the five files of the norne/ listing (not INCLUDE/)
