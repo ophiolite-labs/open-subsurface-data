@@ -1,7 +1,8 @@
 /* Open Subsurface Data map. Static: reads what `make build` puts in data/ (records.json, and
    outlines.pmtiles when the build wrote it, else outlines.geojson; wellbores.geojson if present).
    No framework; one file on purpose (ENGINEERING.md, "surface"). The URL hash is the only state.
-   Select mode (E06): tick datasets, download an osd.manifest/1 file that `osd get` reads. */
+   Select mode (E06): tick datasets, download an osd.manifest/1 file (/4 when a dataset is sold or
+   states terms, E19) that `osd get` reads. */
 (async function () {
   // Basemap: OSD-D3. Positron until a dark basemap without a key is confirmed; never add a key.
   const BASEMAP = 'https://tiles.openfreemap.org/styles/positron';
@@ -20,7 +21,8 @@
   }) && new pmtiles.PMTiles(base + 'data/outlines.pmtiles');
   const pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
 
-  const records = (await (await fetch('data/records.json')).json()).records;
+  const built = await (await fetch('data/records.json')).json();
+  const records = built.records;
   const outlines = pmtilesMode ? null : await (await fetch('data/outlines.geojson')).json();
   // Clustering stays on the page: on the tile path the clustered source is fed the wellbores of the
   // tiles loaded so far (below CLUSTER_BELOW_ZOOM every tile keeps every point), keyed by feature_id.
@@ -283,10 +285,12 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
 
   // ---- Select mode (E06 slice 2). Deletable: this block, the `pick` hash key, #pickmode, #basket,
   // the picked-line layer and the tick() calls. The file it writes is osd.manifest/1 as
-  // src/osd/manifest.py writes it for a Collection selection (schema/manifest.schema.json); the
-  // site test checks the two agree entry for entry and that `osd get` reads it.
+  // src/osd/manifest.py writes it for a Collection selection (schema/manifest.schema.json), or /4 with
+  // the catalogue snapshot when an entry is sold or states terms (E19); the site test checks the two
+  // agree entry for entry and that `osd get` reads it. `terms` is copied whole, as the record states it.
   const MANIFEST_FORMAT = 'osd.manifest/1';
-  const LICENCE_FIELDS = ['name', 'spdx', 'url', 'redistribution', 'attribution', 'share_alike', 'statement'];
+  const MANIFEST_FORMAT_4 = 'osd.manifest/4';
+  const LICENCE_FIELDS = ['name', 'spdx', 'url', 'redistribution', 'attribution', 'share_alike', 'statement', 'terms'];
   const ASSET_FIELDS = ['href', 'title', 'roles', 'file:size', 'file:checksum'];
   const collectionId = id => id.replaceAll('/', '--');
   let collections = null; // data/collections.json, fetched on the first tick: assets are the verifier's files
@@ -299,6 +303,7 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
     const a = r.origin.access;
     return a === 'registration' || a === 'request'
       ? `access ${a}: sign in or ask at the origin page; no file address is published to us`
+      : a === 'purchase' ? 'access purchase: the publisher sells the files; buy them at the origin page'
       : 'the verifier has hashed no file with a fetch address for this record; get the files at the origin page';
   }
 
@@ -313,9 +318,12 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
 
   async function buildManifest() {
     const cols = await loadCollections();
-    return { format: MANIFEST_FORMAT, created: new Date().toISOString().replace(/\.\d+Z$/, 'Z'),
-      catalog_url: base + 'data/stac/catalog.json', selection: 'collections',
-      entries: state.pick.map(id => manifestEntry(byId[id], cols[collectionId(id)])) };
+    const entries = state.pick.map(id => manifestEntry(byId[id], cols[collectionId(id)]));
+    const v4 = entries.some(e => e.access === 'purchase' || 'terms' in e.licence);
+    const doc = { format: v4 ? MANIFEST_FORMAT_4 : MANIFEST_FORMAT, created: new Date().toISOString().replace(/\.\d+Z$/, 'Z'),
+      catalog_url: base + 'data/stac/catalog.json', selection: 'collections', entries };
+    if (v4) doc.metadata = { catalog: { ...built.catalog } };
+    return doc;
   }
 
   async function download() {
@@ -340,7 +348,8 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   }
 
   // What the person sees before the download: per dataset its licence, the publisher's statement
-  // verbatim (or that none is stated), the files and their digests or the to-do; then share-alike.
+  // verbatim (or that none is stated), the stated terms (E19), the files and their digests or the to-do;
+  // then share-alike.
   function renderBasket() {
     const b = $('basket'), on = !!state.pick;
     b.hidden = !on;
@@ -357,6 +366,7 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
         : l.share_alike === false ? 'share-alike: no' : 'share-alike: not stated';
       return `<li data-id="${esc(id)}"><b>${esc(r.title)}</b> <span class="x" title="remove">✕</span>
         <div class="lic">${esc(l.name)}${l.spdx ? ' (' + esc(l.spdx) + ')' : ''} · attribution ${esc(l.attribution)} · ${sa}</div>
+        ${l.terms ? `<div class="lic terms">terms, as the record states them: ${esc(l.terms.stated)}</div>` : ''}
         ${l.statement ? `<blockquote class="stmt">${esc(l.statement)}</blockquote>` : '<div class="stmt none">No attribution statement stated by the publisher in the record.</div>'}
         <div class="files" data-files="${esc(id)}">files: …</div></li>`;
     }).join('');
