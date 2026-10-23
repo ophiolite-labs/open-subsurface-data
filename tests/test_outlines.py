@@ -958,3 +958,18 @@ def test_arcgis_register_items_equal_the_object_ids(tmp_path):
         p = items[f"fixture/arcgis-register#{oid}"]
         assert (p["start_datetime"], p["end_datetime"], p["osd:period_source"]) == (s, e, "feature"), oid
     assert stac.containment_problems(root) == []
+
+
+def test_lines_across_the_antimeridian_are_cut_there():
+    """NZP&M 2D lines east of New Zealand step from 179.99 E to 179.99 W; drawn as served they cross the
+    whole map. Cut at 180 (RFC 7946 3.1.9) at the interpolated latitude; lines that stay on one side
+    are unchanged."""
+    from osd.outlines.geometry import split_antimeridian
+    g = {"type": "LineString", "coordinates": [[179.0, -37.0], [179.5, -37.0], [-179.5, -38.0], [-179.0, -38.0]]}
+    assert split_antimeridian(g) == {"type": "MultiLineString", "coordinates": [
+        [[179.0, -37.0], [179.5, -37.0], [180.0, -37.5]], [[-180.0, -37.5], [-179.5, -38.0], [-179.0, -38.0]]]}
+    west = {"type": "MultiLineString", "coordinates": [[[-179.5, -38.0], [179.5, -37.0]], [[170.0, -40.0], [171.0, -41.0]]]}
+    assert split_antimeridian(west)["coordinates"] == [[[-179.5, -38.0], [-180.0, -37.5]], [[180.0, -37.5], [179.5, -37.0]],
+                                                       [[170.0, -40.0], [171.0, -41.0]]]
+    one_side = {"type": "LineString", "coordinates": [[170.0, -40.0], [171.0, -41.0]]}
+    assert split_antimeridian(one_side) == one_side

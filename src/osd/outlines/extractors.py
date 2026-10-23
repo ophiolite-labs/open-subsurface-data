@@ -21,7 +21,7 @@ from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
 from .codecs import blosc_decode
-from .geometry import Refused, closed_ring, convex_hull, map_positions, to_wgs84
+from .geometry import Refused, closed_ring, convex_hull, map_positions, split_antimeridian, to_wgs84
 
 GEOMETRY_TYPES = {"Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"}
 
@@ -139,7 +139,7 @@ def _features(rec_input: dict, rule: dict, collections: list[dict]) -> list[dict
             if g.get("type") not in GEOMETRY_TYPES or not g.get("coordinates"):
                 raise Refused(f"{rec_input['name']}: a feature has geometry {g.get('type')!r}")
             out.append({"kind": _kind(rule, props), **_ident(rule, props), **_period(rule, props),
-                        "geometry": {"type": g["type"], "coordinates": map_positions(g["coordinates"], f)}})
+                        "geometry": split_antimeridian({"type": g["type"], "coordinates": map_positions(g["coordinates"], f)})})
     return out
 
 
