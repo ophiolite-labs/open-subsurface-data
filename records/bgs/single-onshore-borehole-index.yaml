@@ -20,4 +20,8 @@ listed_by: [publisher]
 known_issues:
   - "The scanned borehole records reached from the index are a separate service whose licence is not stated on the SOBI page; this record covers the index only."
   - "bbox is Great Britain, approximate."
+period:
+  start: "1790"
+  end: "2026-10-23"
+  stated: "BGS SOBI dataset page: 'dating back to at least 1790' and 'Each year thousands of new records are added' (continuously updated), so 1790 to today"
 added: 2026-10-23

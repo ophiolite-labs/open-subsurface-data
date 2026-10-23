@@ -19,4 +19,8 @@ size: {bytes_estimate: 51296, stated: two xlsx files}
 listed_by: [community]
 known_issues:
   - "No bbox: the Zenodo record states no location coordinates. The ICDP Outokumpu site pages (icdp-online.org, data.icdp-online.org) timed out from this host on 23 Oct 2026."
+period:
+  start: "2024-12-20"
+  end: "2024-12-20"
+  stated: "Zenodo record 14534965 (the publisher's deposit): publication_date 2024-12-20; no sampling dates or temporal fields stated"
 added: 2026-10-23

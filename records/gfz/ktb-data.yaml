@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The data host data.icdp-online.org timed out on 23 Oct 2026 (connection timeout, 40 s); the GFZ landing page answers 200."
   - "bbox is a small box around the two stated well points (49.815 N, 12.1205 E and 49.8153 N, 12.118 E)."
+period:
+  start: "1987"
+  end: "1994"
+  stated: "GFZ Data Services landing page abstract: pilot hole drilled 'From 1987 to 1990', main hole drilling started 1990, TD 'reached in 1994'; DataCite Issued 2020"
 added: 2026-10-23

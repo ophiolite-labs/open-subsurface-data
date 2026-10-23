@@ -20,4 +20,8 @@ known_issues:
   - "bbox is the extent of Italy and its offshore, approximate; the wells are georeferenced in the ViDEPI map but the list pages state no extent."
 notes: >-
   Project led by Società Geologica Italiana, funded by Assorisorse; the Ministry publishes and updates it (2009 first release, updates 2015 and 2025). Logs are a small subset (56 wells); most wells are final well profiles as scanned PDF.
+period:
+  start: "1957"
+  end: "2021-12-31"
+  stated: "ViDEPI home: documents of expired titles \"depositata a partire dal 1957\"; project page (progetto.asp): \"i documenti afferenti ai titoli cessati al 31/12/2021\" (2025 update added titles expired 2014-2021)."
 added: 2026-10-23
