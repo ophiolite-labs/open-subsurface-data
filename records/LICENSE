@@ -1,6 +1,10 @@
-The records (records/**.yaml), outlines (outlines/*.geojson) and the generated catalogue
-(build/catalog/) are dedicated to the public domain under CC0 1.0 Universal:
+The hand-written records (records/**.yaml) and the catalogue metadata generated from them are
+dedicated to the public domain under CC0 1.0 Universal:
 https://creativecommons.org/publicdomain/zero/1.0/
 
-They are facts about datasets published by others. Each dataset keeps its publisher's
-licence, named in its record; nothing here changes it.
+They are facts about datasets published by others. Each dataset keeps its publisher's licence,
+named in its record; nothing here changes it.
+
+Outlines (outlines/*.geojson) that were derived from a publisher's data carry that publisher's
+licence, named in each feature's `licence` property, with the attribution the record states.
+Hand-placed placeholder outlines (`approximate: true`) are CC0 like the records.

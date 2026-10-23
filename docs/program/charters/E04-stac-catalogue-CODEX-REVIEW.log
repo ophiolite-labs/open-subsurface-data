@@ -1232,3 +1232,371 @@ collections.json
 outlines.geojson
 records.json
 
+exec
+/bin/bash -lc 'head -65 build/catalog/collections.json; cat docs/program/charters/E01-twenty-records.md docs/program/charters/E08-curation-that-runs-itself.md docs/program/charters/E10-seismic-slices.md docs/program/charters/E11-hosting-and-domain.md docs/program/charters/E12-catalogue-into-a-workspace.md; git diff HEAD -- src tests schema Makefile pyproject.toml docs/program/charters/E04-stac-catalogue.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+{
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.0.0",
+      "id": "equinor--volve",
+      "title": "Volve field data village",
+      "description": "The complete subsurface and production data set of the Volve field in the Norwegian North Sea, released by Equinor in 2018: wells with logs, seismic (3D and 4D), reservoir models, production data and reports.",
+      "license": "proprietary",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              1.7,
+              58.35,
+              2.05,
+              58.55
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "keywords": [
+        "wellbore-headers",
+        "wellbore-logs",
+        "wellbore-paths",
+        "tops",
+        "seismic-3d",
+        "seismic-4d",
+        "horizons",
+        "surfaces",
+        "reservoir-model",
+        "production",
+        "reports"
+      ],
+      "providers": [
+        {
+          "name": "Equinor",
+          "roles": [
+            "producer",
+            "licensor"
+          ],
+          "url": "https://www.equinor.com"
+        }
+      ],
+      "links": [
+        {
+          "rel": "about",
+          "href": "https://www.equinor.com/energy/volve-data-sharing"
+        },
+        {
+          "rel": "license",
+          "href": "https://www.equinor.com/energy/volve-data-sharing"
+        }
+      ],
+      "osd:level": "L1",
+      "osd:access": "registration"
+    },
+## E01 Twenty records from the open lists — QUEUED, next · Records · no strategy
+
+Authority: owner direction 23 Oct 2026 ("combine the SEG open data list and the national
+registers, verify the sources, show the real data"); this charter.
+
+**Outcome.** The map lists at least twenty datasets. Each record states publisher, origin, access
+mode, licence (name, redistribution, attribution) and kinds in the publisher's words, and each
+origin was opened by a person on the day the record was written.
+
+**Context today (verified 23 Oct, scaffold commit).** Nine records exist in `records/`
+(equinor/volve, terranubis/f3-demo-2020, rmotc/teapot-dome, nopims/poseidon, nzpam/parihaka,
+sodir/factpages, nlog/nlog, nsta/ndr, seg/open-data-wiki). `osd validate` passes. Licence
+`redistribution` is `unknown` on five of them. The SEG wiki page cannot be fetched from the VPS
+(HTTP 403, OSD-D9); it opens in an ordinary browser.
+
+**The design the lane must map to.**
+1. One record per dataset, never per file; a register (Sodir, NLOG, NDR, NOPIMS) is one record
+   with `source-list` among its kinds plus one record per named dataset it carries that the SEG
+   list names.
+2. Candidates, in this order until twenty: the SEG open-data list entries whose origin still
+   answers; Penobscot, Kerry 3D, Stratton, Groningen (NAM/NLOG), Netherlands F3 wells, Norne
+   (NTNU), SEAM Phase I, Marmousi (synthetic, flagged in `notes`), Dutch and Danish (GEUS) registers,
+   Geoscience Australia NOPIMS 3D surveys beyond Poseidon.
+3. A dead origin is still a record: `known_issues` says "origin dead on <date>; last mirror
+   <url>", and the record stays at L0. Dead links are the point of a verified list.
+4. Licence fields: `unknown` when the publisher's page does not state it; never inferred from a
+   country. `share_alike: true` whenever the licence is a BY-SA family.
+5. Each record's `added` is the day the origin was opened by the author; the PR says who opened it.
+
+**Acceptance.**
+- `osd validate` reports `>= 20 records, 0 problems` (counted from `records/*/*.yaml`).
+- Every record has `licence.redistribution` in {allowed, restricted, forbidden, unknown} and a
+  `licence.url`; at most 8 of the twenty are `unknown` (hand count in the PR).
+- `kinds` of every record intersect the Ophiolite E55 registry vocabulary (the schema enum).
+- At least 12 records carry a `region.bbox` (the map's extent rectangles).
+- The `verify` workflow comment on the PR lists every changed record with a level.
+- Validity is three separate tests, each with a mutation, already in `tests/test_records.py`;
+  the lane adds none unless the schema changes.
+
+**Out of scope.** Outlines (E03), checksums (E02), mirrors (E07), any schema change (if one is
+needed, stop and open a D item).
+
+**Stop rules.** A publisher's page says redistribution is forbidden: record it, do not mirror,
+continue. A licence page needs a login to read: `unknown`, note it, continue. More than three
+candidates from the SEG list are dead: continue, they are records at L0.
+
+**Ownership and dependencies.** Records lane; paths `records/**`. No dependency.
+
+**Evidence to inspect.** `uv run osd status` output in the PR; the verify comment; a screenshot
+of the map list showing the count.
+## E08 Curation that runs itself — QUEUED · Surface · no strategy
+
+Authority: `CONTRIBUTING.md`; analogues named 23 Oct (Registry of Open Data on AWS, conda-forge).
+
+**Outcome.** An outside contributor's record merges the same day with one human reading the
+licence fields; a dead origin becomes an issue with the date it died; a visitor sees when each
+record was last verified and by what.
+
+**Context today (verified 23 Oct).** `CONTRIBUTING.md`, a PR template and a dataset issue
+template exist. The `verify` workflow comments levels on records PRs. No CODEOWNERS, no dead-link
+report, no status page, no outside contribution yet.
+
+**The design the lane must map to.**
+1. `CODEOWNERS`: `records/**` to the records maintainers, `schema/**` and `src/**` to the kernel
+   maintainers.
+2. Dead-link report: a dispatch of `verify` over all records ends with one issue per record
+   that fell from L1+ to L0 since the last stored result, titled "origin dead: <id>", with the
+   HTTP class and date; blocked (403) never opens an issue (OSD-D9).
+3. `site/status.html`: the `osd status` table with `checked_at`, sortable, from `records.json`.
+4. A "Suggest a dataset" issue is turned into a record PR by a maintainer with `osd new <url>`,
+   which scaffolds the YAML from the template and the page title.
+5. First outside contribution: the lane asks two named people from the Software Underground
+   community to add one record each and records the elapsed time from PR open to merge.
+
+**Acceptance.**
+- Two outside PRs merged, each under 24 h from open to merge (dates in the PR descriptions).
+- A fixture run where one record's fetcher returns 404 after a stored L1 opens exactly one issue
+  (dry-run output in the test).
+- `status.html` lists every record with level and date (screenshot).
+- `osd new https://example.org/x` writes a file that fails validation only on the fields a human
+  must fill (test asserts the exact problem list).
+
+**Out of scope.** Automated licence detection, scheduled runs (R6: on demand), moderation tooling.
+
+**Stop rules.** No outside contributor answers within a week: record it, merge the rest, leave
+the acceptance line open in PROGRAM.md rather than faking a contribution.
+
+**Ownership and dependencies.** Coding lane; paths `.github/**` (announced), `site/status.html`,
+`src/osd/new.py`, `src/osd/report.py`, `tests/test_report.py`. Depends on E02 (stored results).
+
+**Evidence to inspect.** The two PR links; the status screenshot.
+## E10 Seismic slices — DEFERRED · Kernel · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("only a slice from a 3D cube rather than the entire dataset");
+Ophiolite E100 (ranged reads at a resolution).
+
+**Outcome.** In a notebook, a person reads one inline, crossline or time slice of a mirrored
+seismic volume through an HTTP byte-range read, without downloading the cube and without a
+server of ours running.
+
+**Context today (verified 23 Oct).** Nothing. E07 would hold mirrored SEG-Y, which cannot be
+sliced without a full read. The analogue is Zarr over object storage (Pangeo); the subsurface
+form is MDIO (Zarr-based) or OpenVDS (OSDU). Ophiolite reads ZGY (E123).
+
+**The design the lane must map to.**
+1. One chunked store format for mirrored volumes, Zarr-based, chosen at lane open with a
+   measured comparison on F3 (file count, bytes, slice latency from the bucket): MDIO is the
+   default candidate.
+2. Conversion is an E07 mirror step with a fidelity check: 100 random traces compared sample by
+   sample to the SEG-Y original, zero differences.
+3. Reader: `osd.seismic.open(item_id)` returns an xarray-like object; a slice reads only the
+   chunks it needs (asserted by counting HTTP requests in the test).
+4. Cost line: bytes stored per volume and egress per slice, by hand, in the PR.
+
+**Acceptance.**
+- A time slice of F3 from the bucket completes in under 3 s on the VPS and issues fewer than
+  (volume chunks / 10) range requests.
+- The fidelity check passes on F3 and fails on a fixture with one altered sample (mutation).
+- The notebook in `examples/` runs top to bottom in CI against a local store.
+
+**Out of scope.** Hosted compute, interpretation, anything beyond slicing.
+
+**Stop rules.** F3's licence (CC BY-SA) requires the converted store to carry the same licence:
+record it in custody; if any candidate volume is `redistribution: unknown`, it is not converted.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/seismic/**`, `examples/**`, tests.
+Depends on E07 and OSD-D6. Deferred until E07 is merged and a second volume with `allowed` exists.
+
+**Evidence to inspect.** The comparison table at lane open; the request count; the cost line.
+## E11 Hosting and domain — IN PROGRESS · Ops · no strategy
+
+Authority: `DECISIONS.md` OSD-D1 (public repository), OSD-D4 (opensubsurfacedata.org, bought at
+Spaceship 23 Oct), OSD-D5 (results on a branch, bucket only for mirrors).
+
+**Outcome.** The site answers at https://opensubsurfacedata.org with real verification levels,
+and nothing about hosting needs a secret.
+
+**Context today (23 Oct).** Repository public at `ophiolite-labs/open-subsurface-data`; `pages.yml`
+publishes `site/` on every merge and reads the `verification-results` branch that a dispatched
+`verify` run force-pushes. GitHub Pages serves from the github.io address until DNS points at it.
+
+**The design the lane must map to.**
+1. Apex `opensubsurfacedata.org` on GitHub Pages: four A and four AAAA records at Spaceship, a
+   `www` CNAME to `ophiolite-labs.github.io`, the custom domain set on the repository's Pages
+   settings, HTTPS enforced once the certificate is issued.
+2. Domain verified for the ophiolite-labs organisation (a TXT record) so no other account can
+   claim the name on Pages.
+3. Verification results: the `verification-results` branch; no bucket, no key.
+4. No analytics, no cookies; a plain `robots.txt` that allows indexing.
+5. Mirrors (E07) get a bucket in a separate Hetzner project when that lane opens; nothing here.
+
+**Acceptance.**
+- `curl -sI https://opensubsurfacedata.org/` returns 200; `http://` redirects to `https://`.
+- `www.opensubsurfacedata.org` redirects to the apex.
+- After a dispatched verify run, the published `data/records.json` shows `L1` for
+  `sodir/factpages` with that run's date.
+- `dig TXT _github-pages-challenge-ophiolite-labs.opensubsurfacedata.org` returns the value the
+  organisation settings show.
+
+**Out of scope.** CDN beyond Pages, mirrors, uptime monitoring.
+
+**Stop rules.** DNS not yet entered: everything else is done; the domain lines wait on the owner.
+
+**Ownership and dependencies.** Supervisor; paths `.github/workflows/**`, `site/robots.txt`,
+`docs/program/**`. Owner actions: the DNS records and the TXT record.
+
+**Evidence to inspect.** The curl and dig outputs; the published `records.json`.
+## E12 Catalogue into a workspace — DEFERRED · Kernel, cross-repo · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("pull references of that data into their private workspace …
+read-only access … derive products … push back"); Ophiolite E72a (source bindings), E73/E65
+(fixed address per version), E69 (versions), E36/E79/E80 (where a person's workspace runs).
+
+**Outcome.** A person binds a catalogue collection to their Ophiolite project as a read-only
+source, works on a curve or a slice without copying the dataset, derives a new asset and keeps it
+in their own project with provenance pointing at the catalogue item and version. The read is
+intentional (check, get), nothing updates itself.
+
+**Context today (23 Oct, from program memory; verify at lane open).** Ophiolite source bindings
+exist for connected databases (E39–E42) and remote sources (E100a's Workspace remote source);
+E36 public tenancy is deferred; E79 gives a local instance, E80 an own instance. Cross-instance
+binding does not exist and is out of scope here: the catalogue is static HTTP, so any instance
+can read it.
+
+**The design the lane must map to.**
+1. A catalogue collection is a source kind in Ophiolite ("Open Subsurface Data"), bound by the
+   STAC collection address; items are read on demand through E06's manifest reader and, for
+   curves, E100's ranged reads over mirrored files.
+2. Derived assets are ordinary E69 versions whose E122 provenance names catalogue item id and
+   `catalog_version`; "check" compares `catalog_version` and shows what changed, applies nothing.
+3. Rights follow E09's mapping; a derived asset from a share-alike item inherits the licence in
+   its rights-basis.
+4. Where it runs: the E79 try-it instance first (no hosted sign-up needed), E80 second, hosted
+   when E36 lands.
+
+**Acceptance (frozen at lane open from the Ophiolite journey fixtures, by hand).**
+- Bind F3, open one well's gamma-ray curve through a ranged read (request count below the
+  file's chunk count), run a notebook cell that derives a smoothed curve, save it: the new
+  version's provenance names the F3 item id and the catalogue commit.
+- Change the catalogue fixture's commit: "check" lists F3 as changed; nothing in the project moves.
+- A derived asset from F3 shows CC-BY-SA-4.0 in its rights-basis; one from Teapot Dome shows
+  public domain with no attribution requirement.
+
+**Out of scope.** Cross-instance bindings, hosted compute next to the data, seismic beyond E10.
+
+**Stop rules.** Ophiolite E36 and E79 both unavailable to the lane: stop, the epic stays
+deferred.
+
+**Ownership and dependencies.** One Ophiolite lane (chartered in the Ophiolite program) and a small
+lane here for whatever the reader needs. Depends on E09, E10 for slices, and Ophiolite E36 or E79.
+
+**Evidence to inspect.** The Ophiolite journey test; the provenance record; the rights-basis views.
+
+web search: 
+web search: 'datetime MUST'
+codex
+Verified against HEAD **`e58e2f547715fc46d94a7e778eb142190578803c`**. No files modified. References below are repository-relative; E04 means `docs/program/charters/E04-stac-catalogue.md`.
+
+**1. Verdict: REWORK**
+
+The charter leaves temporal metadata and feature identity undefined, contradicts itself on L0 items, and does not specify how validation remains offline.
+
+**2. Factual errors about current code**
+
+- Context is substantively correct, but `collections.json` is a bespoke `{"collections": [...]}` wrapper, not itself a STAC object (`src/osd/build.py:63`).
+- Verified every listed collection field: `type`, `stac_version`, `id`, `license`, `extent`, `providers`, `links` are emitted at `src/osd/build.py:48–56`.
+- Verified absence of items/root: the builder emits only records, outlines and the collections wrapper (`src/osd/build.py:59–64`).
+- Verified “unvalidated”: `osd validate` checks records/outlines only (`src/osd/cli.py:15`); the build test checks one collection licence, not STAC validity (`tests/test_build.py:23–24`).
+- Verified bare `osd:level`/`osd:access` at `src/osd/build.py:57`; opened all three existing schemas—none defines a STAC extension.
+- Outside Context, “same feature ids” assumes an absent contract: the builder emits no GeoJSON `id` (`src/osd/build.py:45`), and outline properties require neither `uwi` nor `publisher_id` (`schema/outline.schema.json:7–15`).
+
+**3. Design objections and concrete alternatives**
+
+- **Offline validation (E04:22,28,37):** a public schema URL does not supply an offline resolver. Pin the validator dependency, bundle core/transitive schemas, map the versioned extension URL to its local file, and test with network access denied within existing pytest/build targets. Claim dependency/schema-resource paths too. The validator supports [local schema mapping](https://github.com/StacLabs/stac-validator#--schema-map).
+- **Missing time contract (E04:15–19):** STAC Items require a meaningful `datetime`, or bounded start/end times when it is null; current outline inputs supply none. Define publisher-sourced temporal metadata and a missing-time policy before promising one Item per feature; never substitute verification time. Any input-schema change needs the prescribed version/compatibility treatment. See [STAC 1.0 Item requirements](https://github.com/radiantearth/stac-spec/blob/v1.0.0/item-spec/item-spec.md#properties-object).
+- **Conflicting item eligibility (E04:15,29–31):** L0 does not imply absent outlines; the builder defaults to L0 and still includes them (`src/osd/build.py:32–45`). Make empty collections depend on absent eligible outlines, and retain existing outlines when reachability falls to L0.
+- **Identity ownership (E04:24):** define stable, collection-scoped feature keys, collision rejection and reorder stability; emit the same key in GeoJSON and STAC. Assign the upstream identity contract explicitly to E03 or claim its schema changes here.
+- **Assets (E04:16–17):** origin pages alone do not satisfy E06’s file-address dependency (`E06-retrieval-by-manifest.md:11–21`). Keep landing pages as links; map E02’s known files to data assets only where their relationship to an Item is established. Preserve collection-level assets for dataset-wide files.
+- **Extension semantics (E04:18–19):** specify Collection fields versus Item `properties`, enum constraints, missing verification dates, and record-level versus feature-level assurance. Copying a dataset level must not imply every well/file was checked. Preserve `approximate` explicitly.
+- **Publication (E04:15,40):** nested STAC files would be omitted by the current flat copy (`Makefile:17`). Specify either a flat layout or recursive publication, then validate links from staged `site/data`, which Pages actually publishes (`.github/workflows/pages.yml:32`).
+
+**4. Acceptance weaknesses**
+
+- **Recursive validation:** removing child/item links can leave valid but undiscoverable objects. Assert the reachable collection/item sets against independent input expectations; mutate a link away.
+- **Count equality:** deleting both outputs yields `0 == 0`; duplicating one feature while omitting another preserves counts. Assert a nonempty fixture’s exact IDs, geometry, bbox and collection membership.
+- **L0 empty collection:** an emitter that suppresses every Item passes this isolated test. Pair outline-free L0 with L0-with-outline and populated collection cases.
+- **QGIS screenshot:** collections can display while Items, licence, level or access mode are absent. Require opening an Item and showing the promised metadata using the staged publication tree.
+- **Missing-level mutation:** a schema requiring a field but accepting nonsense values passes this guard; hardcoding every level to L0 also passes. Add invalid-enum and wrong-source-value mutations, plus extension-declaration coverage.
+- **Uncovered licence rule:** retaining today’s `proprietary` fallback can pass core validation. Assert exact SPDX and bespoke-licence mappings and links.
+- “Two collections and three items” is only a fixture description; require the actual builder to produce them and prove every guard’s mutation fails.
+
+**5. Scope creep / neighbouring boundaries**
+
+- E04:8 promises Ophiolite consumption, owned by **E09**; limit E04’s outcome to publishing its interoperable input contract.
+- E04:24 risks absorbing feature-level map selection from **E05/E06**; E04 should establish matching identifiers, leaving UI behaviour there.
+- Mirror implementation remains **E07**. E04 may establish asset structure, but must not implement copying or mirror preference.
+- Stable feature identity needs an explicit **E03 → E04** handoff; neither charter currently guarantees it.
+tokens used
+41,863
+Verified against HEAD **`e58e2f547715fc46d94a7e778eb142190578803c`**. No files modified. References below are repository-relative; E04 means `docs/program/charters/E04-stac-catalogue.md`.
+
+**1. Verdict: REWORK**
+
+The charter leaves temporal metadata and feature identity undefined, contradicts itself on L0 items, and does not specify how validation remains offline.
+
+**2. Factual errors about current code**
+
+- Context is substantively correct, but `collections.json` is a bespoke `{"collections": [...]}` wrapper, not itself a STAC object (`src/osd/build.py:63`).
+- Verified every listed collection field: `type`, `stac_version`, `id`, `license`, `extent`, `providers`, `links` are emitted at `src/osd/build.py:48–56`.
+- Verified absence of items/root: the builder emits only records, outlines and the collections wrapper (`src/osd/build.py:59–64`).
+- Verified “unvalidated”: `osd validate` checks records/outlines only (`src/osd/cli.py:15`); the build test checks one collection licence, not STAC validity (`tests/test_build.py:23–24`).
+- Verified bare `osd:level`/`osd:access` at `src/osd/build.py:57`; opened all three existing schemas—none defines a STAC extension.
+- Outside Context, “same feature ids” assumes an absent contract: the builder emits no GeoJSON `id` (`src/osd/build.py:45`), and outline properties require neither `uwi` nor `publisher_id` (`schema/outline.schema.json:7–15`).
+
+**3. Design objections and concrete alternatives**
+
+- **Offline validation (E04:22,28,37):** a public schema URL does not supply an offline resolver. Pin the validator dependency, bundle core/transitive schemas, map the versioned extension URL to its local file, and test with network access denied within existing pytest/build targets. Claim dependency/schema-resource paths too. The validator supports [local schema mapping](https://github.com/StacLabs/stac-validator#--schema-map).
+- **Missing time contract (E04:15–19):** STAC Items require a meaningful `datetime`, or bounded start/end times when it is null; current outline inputs supply none. Define publisher-sourced temporal metadata and a missing-time policy before promising one Item per feature; never substitute verification time. Any input-schema change needs the prescribed version/compatibility treatment. See [STAC 1.0 Item requirements](https://github.com/radiantearth/stac-spec/blob/v1.0.0/item-spec/item-spec.md#properties-object).
+- **Conflicting item eligibility (E04:15,29–31):** L0 does not imply absent outlines; the builder defaults to L0 and still includes them (`src/osd/build.py:32–45`). Make empty collections depend on absent eligible outlines, and retain existing outlines when reachability falls to L0.
+- **Identity ownership (E04:24):** define stable, collection-scoped feature keys, collision rejection and reorder stability; emit the same key in GeoJSON and STAC. Assign the upstream identity contract explicitly to E03 or claim its schema changes here.
+- **Assets (E04:16–17):** origin pages alone do not satisfy E06’s file-address dependency (`E06-retrieval-by-manifest.md:11–21`). Keep landing pages as links; map E02’s known files to data assets only where their relationship to an Item is established. Preserve collection-level assets for dataset-wide files.
+- **Extension semantics (E04:18–19):** specify Collection fields versus Item `properties`, enum constraints, missing verification dates, and record-level versus feature-level assurance. Copying a dataset level must not imply every well/file was checked. Preserve `approximate` explicitly.
+- **Publication (E04:15,40):** nested STAC files would be omitted by the current flat copy (`Makefile:17`). Specify either a flat layout or recursive publication, then validate links from staged `site/data`, which Pages actually publishes (`.github/workflows/pages.yml:32`).
+
+**4. Acceptance weaknesses**
+
+- **Recursive validation:** removing child/item links can leave valid but undiscoverable objects. Assert the reachable collection/item sets against independent input expectations; mutate a link away.
+- **Count equality:** deleting both outputs yields `0 == 0`; duplicating one feature while omitting another preserves counts. Assert a nonempty fixture’s exact IDs, geometry, bbox and collection membership.
+- **L0 empty collection:** an emitter that suppresses every Item passes this isolated test. Pair outline-free L0 with L0-with-outline and populated collection cases.
+- **QGIS screenshot:** collections can display while Items, licence, level or access mode are absent. Require opening an Item and showing the promised metadata using the staged publication tree.
+- **Missing-level mutation:** a schema requiring a field but accepting nonsense values passes this guard; hardcoding every level to L0 also passes. Add invalid-enum and wrong-source-value mutations, plus extension-declaration coverage.
+- **Uncovered licence rule:** retaining today’s `proprietary` fallback can pass core validation. Assert exact SPDX and bespoke-licence mappings and links.
+- “Two collections and three items” is only a fixture description; require the actual builder to produce them and prove every guard’s mutation fails.
+
+**5. Scope creep / neighbouring boundaries**
+
+- E04:8 promises Ophiolite consumption, owned by **E09**; limit E04’s outcome to publishing its interoperable input contract.
+- E04:24 risks absorbing feature-level map selection from **E05/E06**; E04 should establish matching identifiers, leaving UI behaviour there.
+- Mirror implementation remains **E07**. E04 may establish asset structure, but must not implement copying or mirror preference.
+- Stable feature identity needs an explicit **E03 → E04** handoff; neither charter currently guarantees it.
