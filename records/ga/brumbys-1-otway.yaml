@@ -1,0 +1,20 @@
+id: ga/brumbys-1-otway
+title: Brumbys 1 logs, geochemistry and foram dataset
+summary: >-
+  Brumbys 1 was an appraisal well drilled and cored through Brumbys Fault at the CO2CRC Otway International Test Centre in 2018. The dataset compiles analysis of the core: core log, foraminifera, palaeodepth, carbonate, XRF, ICP-MS, XRD, grain size, density, surface area and gamma, sampled at 1-2 m intervals.
+publisher: {name: Geoscience Australia, url: https://www.ga.gov.au, country: AU}
+origin:
+  url: https://ecat.ga.gov.au/geonetwork/srv/api/records/eb786367-42ed-4667-8a85-d79b84ec5d82
+  access: anonymous
+  notes: "DOI 10.26186/146045. One spreadsheet download. Outcome of CO2CRC project SRD 3.3 'Prediction and Verification of Shallow CO2 Migration' (2018-2019)."
+licence:
+  name: Creative Commons Attribution 4.0 International Licence
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/
+  redistribution: allowed
+  attribution: required
+kinds: [core, geochemistry, wellbore-logs]
+region: {country: AU, basin: "Otway Basin (CO2CRC Otway International Test Centre, Victoria)", bbox: [142.0, -39.0, 143.0, -38.0]}
+size: {bytes_estimate: 337628, stated: one XLSX workbook}
+listed_by: [publisher]
+added: 2026-10-23

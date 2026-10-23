@@ -1,0 +1,23 @@
+id: co2datashare/eos-31-5-7-rock-mechanics
+title: Rock mechanics data for 31/5-7 Eos well core
+summary: >-
+  Results of a rock mechanical testing programme performed by NGI for Equinor on sandstone and shale core from CCS exploration well 31/5-7 (Eos) in EL 001 (Northern Lights): triaxial, hydrostatic, uniaxial and Brazilian tests on Cook and Johansen sandstones and permeability and undrained triaxial tests on Intra-Drake shale, as spreadsheets with figures and sample photos.
+publisher: {name: Northern Lights JV via CO2 DataShare, url: https://co2datashare.org, country: "NO"}
+origin:
+  url: https://co2datashare.org/dataset/rock-mechanics-data-for-31-5-7-eos-well-core
+  access: anonymous
+  notes: "Each part downloads after ticking the licence-acceptance box; no login. DOI 10.11582/2023.00113. A companion set on the thermo-mechanical response of the same core is on the same portal."
+licence:
+  name: Northern Lights Eos 31/5-7 Rock Mechanical Data License
+  spdx: null
+  url: https://co2datashare.org/view/license/8ce3e4ab-3f67-467b-aff5-2385fd55c76a
+  redistribution: allowed
+  attribution: required
+kinds: [core]
+region: {country: "NO", basin: "North Sea (Horda Platform, Aurora/EL 001)", bbox: [3.35, 60.53, 3.55, 60.62]}
+size: {bytes_estimate: 305771458, stated: "Excel data 117 MB, figures and photos 189 MB"}
+listed_by: [publisher]
+notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Credit to Northern Lights JV DA and a link to the terms are required."
+known_issues:
+  - "The portal states one point (60.576 N, 3.4434 E); bbox is an approximate box around it."
+added: 2026-10-23
