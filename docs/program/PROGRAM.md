@@ -29,6 +29,7 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 20 | E20 Records: the retry and the publishers' sentences | Records | MERGED (PR #21, 23 Oct; main a1f8832; 96 records, NRCan potential-fields, PASA/DGH publisher sentences; six hosts still refuse) | E17, E19 | Unreached publishers are listed when they answer; purchase records carry the publisher's own licence sentence |
 | 21 | E21 The map says when | Surface | MERGED (PR #22, 23 Oct; main 3d5841c; period filter `t=`/`dated=1`, When row, journey tests) | E05, E16 | A person filters the map by acquisition years and reads when a dataset was acquired, in the publisher's words |
 | 22 | E22 Records, fifth twenty (US states, Iberia and the Alps, Latin America, Africa, geothermal and CO2 sites) | Records | IN LANE (osd-e22, 23 Oct) | E20 | The map lists 116 datasets with the open US state regulators and five more countries |
+| 23 | E23 More datasets checksummed | Kernel | IN LANE (osd-e23, 23 Oct; charter reworked after its Codex round) | E02, E07 | Every listed dataset has its sample attempted each run; passes show L2, the rest say which check stopped them |
 | 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
 
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
