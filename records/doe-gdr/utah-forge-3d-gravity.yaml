@@ -1,0 +1,30 @@
+id: doe-gdr/utah-forge-3d-gravity
+title: "Utah FORGE: 3D Gravity Data"
+summary: >-
+  3D geophysical inversion modelling of gravity data at the Utah FORGE site near Milford, Utah,
+  to characterise the subsurface geologic framework and test the existing 3D geologic model:
+  a readme and a report on model parameters, data used and geologic constraints, with two 3D
+  density models as output.
+publisher: {name: "Energy and Geoscience Institute at the University of Utah (Utah FORGE), via the DOE Geothermal Data Repository", url: https://gdr.openei.org, country: US}
+origin:
+  url: https://gdr.openei.org/submissions/1144
+  access: anonymous
+  notes: "Authors Christian Hardwick (Utah Geological Survey) and Jeff Witter (Innovate Geothermal Ltd.). 'Download All Resources 11.24 MB — 2 files'."
+licence:
+  name: Creative Commons Attribution 4.0 (CC BY 4.0)
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [potential-fields]
+region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
+size: {bytes_estimate: 11240000, stated: "11.24 MB — 2 files"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the box the page's metadata gives for the files (FORGE site); the gravity model extent is not stated."
+period:
+  start: "2019-06-24"
+  end: "2019-06-24"
+  stated: "GDR page: 'Data from Jun 24, 2019', submitted Jun 24, 2019 (release); no acquisition dates stated"
+notes: "The files are a 3D density model from gravity inversion, nearest kind potential-fields. Want: a kind for a geological 3D model or derived property model."
+added: 2026-10-23

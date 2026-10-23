@@ -1,0 +1,31 @@
+id: doe-gdr/utah-forge-seismic-reflection
+title: "Utah FORGE: Seismic Reflection Data"
+summary: >-
+  2D and 3D seismic reflection data from the Utah FORGE site near Roosevelt Hot Springs,
+  reprocessed during Phase 2c and output as SEG-Y: unmigrated time, prestack time migration and
+  prestack depth migration (unenhanced and enhanced), and the velocity model used for migration,
+  with a readme and the reprocessing paper. The raw and initially processed shot gathers are in
+  the linked submission 1015.
+publisher: {name: "Energy and Geoscience Institute at the University of Utah (Utah FORGE), via the DOE Geothermal Data Repository", url: https://gdr.openei.org, country: US}
+origin:
+  url: https://gdr.openei.org/submissions/1141
+  access: anonymous
+  notes: "Author John Miller (geophysical consultant). 'Download All Resources 849.51 MB — 3 files'. Raw and initially processed 2D and 3D data (1122 3D shot-gather SEG-Y files, navigation, stack, velocities): https://gdr.openei.org/submissions/1015."
+licence:
+  name: Creative Commons Attribution 4.0 (CC BY 4.0)
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-3d, seismic-2d]
+region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
+size: {bytes_estimate: 849510000, stated: "849.51 MB — 3 files"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the box the page's metadata gives for the files (FORGE site); the 2D lines extend beyond it (submission 1015 gives 38.2867 to 38.6867 N, -113.0528 to -112.6528 E for some of its files)."
+period:
+  start: "2018"
+  end: "2019"
+  stated: "Resource paper titled \"2018-2019 reprocessing of the 2D and 3D multichannel seismic surveys at the FORGE Utah EGS Laboratory\" (reprocessing); 'Data from Jun 19, 2019'"
+notes: "Want: a velocity-model kind; the migration velocity model ships with the SEG-Y volumes and has no kind. The acquisition years of the original surveys are not stated on the page."
+added: 2026-10-23

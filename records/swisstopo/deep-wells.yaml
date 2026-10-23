@@ -1,0 +1,30 @@
+id: swisstopo/deep-wells
+title: Deep wells (Tiefbohrungen, ch.swisstopo.geologie-bohrungen_tiefer_500)
+summary: >-
+  swisstopo's map of the deep wells in Switzerland (layer of wells deeper than 500 m), with data
+  from swisstopo, universities, cantons and private companies. Metadata are public; the
+  associated documents, when free for publication, are accessible through the federal geoportal
+  map.geo.admin.ch. Depths are given as MD, TVD and TD.
+publisher: {name: Federal Office of Topography swisstopo, url: https://www.swisstopo.admin.ch, country: CH}
+origin:
+  url: https://opendata.swiss/en/dataset/tiefe-bohrungen
+  access: anonymous
+  notes: "Resources on the catalogue page: WMS and WMTS layer ch.swisstopo.geologie-bohrungen_tiefer_500, the geo.admin.ch REST API, the map.geo.admin.ch preview and a download. Landing page https://www.swisstopo.admin.ch/de/landesgeologie."
+licence:
+  name: "opendata.swiss terms of use: Open use. Must provide the source."
+  spdx: null
+  url: https://opendata.swiss/en/terms-of-use
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, reports]
+region: {country: CH, basin: "Switzerland with border areas (Molasse Basin, Jura, Alps)", bbox: [5.9, 45.8, 10.5, 47.8]}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes. You must provide the source (author, title and link to the dataset).' The terms speak of use; they do not name redistribution separately."
+  - "Documents are published only 'when they are free for publication'; for others the page says to contact the rights holder directly. The map 'does not purport to be complete'."
+  - "bbox is Switzerland, approximate; the catalogue states 'Schweiz (mit grenznahem Ausland)'."
+period:
+  start: "2017-07-14"
+  end: "2026-07-28"
+  stated: "opendata.swiss: Issued date July 14, 2017; Modified date July 28, 2026; update interval Quarterly; Temporal coverage '-' (release)"
+added: 2026-10-23

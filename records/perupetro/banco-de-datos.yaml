@@ -1,0 +1,26 @@
+id: perupetro/banco-de-datos
+title: PERUPETRO Data Bank Portal (Banco de Datos)
+summary: >-
+  PERUPETRO S.A.'s Data Bank Portal for Peru's hydrocarbon exploration and production information
+  from various sources, offered to interested companies for their own research and evaluation: the
+  data bank, a Geoportal, promotional packages and areas, and block data rooms (Block Z-69, Block
+  207, Northwest Block).
+publisher: {name: PERUPETRO S.A., url: https://www.perupetro.com.pe, country: PE}
+origin:
+  url: https://bancodedatos.perupetro.com.pe/
+  access: request
+  notes: "Linked as 'Web Catalog' under Data Bank on the PERUPETRO site. \"To access this information, you must be registered and have access to the database enabled.\" The certificate chain of www.perupetro.com.pe and bancodedatos.perupetro.com.pe did not verify from this host (23 Oct 2026)."
+licence:
+  name: PERUPETRO Data Bank Portal conditions
+  spdx: null
+  url: https://bancodedatos.perupetro.com.pe/
+  redistribution: unknown
+  attribution: unknown
+kinds: [source-list]
+region: {country: PE, basin: "Peruvian sedimentary basins (onshore and offshore)", bbox: [-81.4, -18.4, -68.6, -0.0]}
+listed_by: [publisher]
+known_issues:
+  - "The portal's conditions say the information \"is for reference purposes only\" and that PERUPETRO \"reserves the right to initiate appropriate legal action in cases where improper use of the information contained in the Database is verified\"; they name no licence and no terms for reuse."
+  - "bbox is Peru with its offshore, approximate."
+notes: "The public part of the portal does not list what the data bank holds, so no kind beyond source-list is written; the catalogue sits behind registration."
+added: 2026-10-23

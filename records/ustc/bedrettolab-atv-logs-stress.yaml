@@ -1,0 +1,31 @@
+id: ustc/bedrettolab-atv-logs-stress
+title: ATV logs, ellipticity data, and stress inversion results from boreholes in the BedrettoLab
+summary: >-
+  Acoustic televiewer (ATV) logs from boreholes CB1 (MB1), CB2 (MB2), CB3 (MB3), MB4, MB5, MB8,
+  ST1 and ST2 in the Bedretto Underground Laboratory for Geosciences and Geoenergies (Swiss Alps):
+  acoustic amplitudes, traveltimes, traveltime-derived borehole radii and masks of breakouts,
+  keyseats and pre-existing fractures, the ellipticity data derived from them, and the stress
+  orientations and relative magnitudes inverted from the ellipticity.
+publisher: {name: "Guangyu Wang, University of Science and Technology of China (deposited on Zenodo)", url: https://zenodo.org, country: CN}
+origin:
+  url: https://zenodo.org/records/15725567
+  access: anonymous
+  notes: "DOI 10.5281/zenodo.15725567. Three files: ATV.zip (2.41 GB), ellipticity.zip, stress_inversion.zip. The lab's own data page (https://bedrettolab.ethz.ch/en/research/Data-access/, ETH Zurich / Swiss Seismological Service) links its datasets in the ETH Research Collection."
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-logs]
+region: {country: CH, basin: "Bedretto Underground Laboratory (BedrettoLab), Bedretto tunnel, Ticino, Swiss Alps"}
+size: {bytes_estimate: 2447545577, stated: "ATV.zip, ellipticity.zip, stress_inversion.zip"}
+listed_by: [community]
+known_issues:
+  - "No bbox: neither the Zenodo record nor the BedrettoLab pages opened state coordinates."
+period:
+  start: "2025-06-24"
+  end: "2025-06-24"
+  stated: "Zenodo record 15725567: publication_date 2025-06-24 (release); no logging dates stated"
+notes: "Geothermal (EGS) research laboratory under up to 1.5 km of overburden. Stress inversion results have no kind (nearest: wellbore-logs, from which they are derived)."
+added: 2026-10-23

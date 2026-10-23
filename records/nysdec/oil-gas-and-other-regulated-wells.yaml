@@ -1,0 +1,30 @@
+id: nysdec/oil-gas-and-other-regulated-wells
+title: "Oil, Gas, & Other Regulated Wells: Beginning 1860"
+summary: >-
+  Information on oil, gas, storage, solution salt, stratigraphic and geothermal wells in New York
+  State from the Department of Environmental Conservation, Division of Mineral Resources, which
+  maintains data on more than 40,000 wells regulated under Article 23; posted quarterly on Open
+  NY, with a daily-updated feature service.
+publisher: {name: "New York State Department of Environmental Conservation, Division of Mineral Resources", url: https://dec.ny.gov, country: US}
+origin:
+  url: https://data.ny.gov/Energy-Environment/Oil-Gas-Other-Regulated-Wells-Beginning-1860/szye-wmt3
+  access: anonymous
+  notes: "Feature service https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Oil_Gas_and_Other_Regulated_Wells/FeatureServer (\"Service layer is updated daily\"); DEC well search http://www.dec.ny.gov/cfmx/extapps/GasOil/."
+licence:
+  name: "NYS DEC data terms on the wells layer (\"Secondary Distribution of the data is not allowed\")"
+  spdx: null
+  url: https://www.arcgis.com/home/item.html?id=b7a08a1be2c141dd9d432b737da608ed
+  redistribution: restricted
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: US, basin: "New York (Appalachian Basin)", bbox: [-79.97, 40.55, -70.15, 44.72]}
+listed_by: [publisher]
+known_issues:
+  - "Terms on DEC's wells layer: \"1.The NYS DEC asks to be credited in derived products. 2.Secondary Distribution of the data is not allowed. 3.Any documentation provided is an integral part of the data set.\""
+  - "The Open NY Terms of Use that cover data.ny.gov say the opposite (no attribution, no restriction on re-posting; \"you may use it as you wish\"). The record carries the DEC's own wording; recorded, not resolved."
+  - "bbox is the wells layer's stated extent, approximate."
+period:
+  start: "1860"
+  end: "2026-10-23"
+  stated: "Open NY dataset 'Time Period': \"Beginning 1860\"; posting frequency quarterly (rows updated 23 Oct 2026); end = date read 2026-10-23"
+added: 2026-10-23

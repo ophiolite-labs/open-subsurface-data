@@ -1,0 +1,25 @@
+id: jardfeingi/well-data
+title: Boridátur (well data releases, Faroe Islands)
+summary: >-
+  Jarðfeingi's overview of the data releases for all wells on the Faroese map, 9 offshore wells
+  and 3 onshore wells: per well a PDF of well information (location, datum, depths, spud and
+  completion dates, licence, operator) and lists of the released analog logs, digital logs (LAS)
+  and reports, with zip files of the offshore and onshore well locations.
+publisher: {name: "Jarðfeingi (Faroese Geological Survey)", url: https://jf.fo, country: FO}
+origin:
+  url: https://jf.fo/datur/boridatur/
+  access: anonymous
+  notes: "The released logs and reports themselves come in the Data-package (https://jf.fo/datur/data-package/: 3D and 2D seismic and well data of the former 5th round area), ordered with an administration fee of £400 under terms and conditions whose PDF is not linked from the page."
+licence:
+  name: No licence stated
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: FO, basin: Faroe-Shetland Basin and Faroe Islands, bbox: [-9.0, 60.0, -4.0, 63.0]}
+listed_by: [publisher]
+known_issues:
+  - "No licence or terms on the well data page; the Data-package terms PDF is referenced but not linked."
+  - "bbox is the Faroese area, approximate."
+notes: "Want: the Data-package (seismic and well data, fee £400) could be a separate purchase record once its terms are readable."
+added: 2026-10-23

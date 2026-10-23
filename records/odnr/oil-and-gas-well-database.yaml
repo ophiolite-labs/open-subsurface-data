@@ -1,0 +1,27 @@
+id: odnr/oil-and-gas-well-database
+title: Oil & Gas Well Database (RBDMS)
+summary: >-
+  The Ohio Department of Natural Resources, Division of Oil and Gas Resources Management, Risk
+  Based Data Management System (RBDMS): well records including completion, permit and production
+  information for over 100,000 wells permitted since 1980, with historical well card information
+  for wells permitted before 1980, as an online search and a downloadable Microsoft Access
+  database.
+publisher: {name: "Ohio Department of Natural Resources, Division of Oil and Gas Resources Management", url: https://ohiodnr.gov, country: US}
+origin:
+  url: https://ohiodnr.gov/discover-and-learn/safety-conservation/about-ODNR/oil-gas/oil-gas-resources/featured-content-3
+  access: anonymous
+  notes: "Downloadable database https://dam.assets.ohio.gov/raw/upload/ohiodnr.gov/documents/oil-gas/rbdms/Rbdmsd97Weekly.zip (304 MB, last modified 22 Oct 2026; needs Microsoft Access); online search https://apps.ohiodnr.gov/oilgas/rbdmsreports/. Well locations also as ArcGIS service 'Oil And Gas Wells' (ODNR_GISAPPDEV)."
+licence:
+  name: No licence stated (ODNR liability statement)
+  spdx: null
+  url: https://www.arcgis.com/home/item.html?id=e03ec46046af49c49d879ab9be07f980
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, production]
+region: {country: US, basin: "Ohio (Appalachian Basin)", bbox: [-84.90, 38.38, -80.32, 41.98]}
+listed_by: [publisher]
+known_issues:
+  - "\"Please Note: The Oil and Gas Well Database is not accessible to locations outside the United States.\" (online search); the download is also \"available free on CD\"."
+  - "The wells service carries only a liability statement (\"provides this geographic data 'as is.'\"); no terms of use for the database found on 23 Oct 2026."
+  - "bbox is the wells service's stated extent (Ohio), approximate."
+added: 2026-10-23

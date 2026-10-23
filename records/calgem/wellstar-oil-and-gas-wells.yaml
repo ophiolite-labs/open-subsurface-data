@@ -1,0 +1,27 @@
+id: calgem/wellstar-oil-and-gas-wells
+title: "WellSTAR: Oil and Gas Wells"
+summary: >-
+  Oil and gas wells in the Well Statewide Tracking and Reporting System (WellSTAR) of CalGEM, the
+  Geologic Energy Management Division of the California Department of Conservation (formerly the
+  Division of Oil, Gas, and Geothermal Resources), displayed by well type and well status, with
+  CSV, shapefile, GeoJSON and KML downloads and an ArcGIS map service.
+publisher: {name: "California Department of Conservation, Geologic Energy Management Division (CalGEM)", url: https://www.conservation.ca.gov/calgem, country: US}
+origin:
+  url: https://data.ca.gov/dataset/wellstar-oil-and-gas-wells
+  access: anonymous
+  notes: "Data.CA.gov entry of the California Department of Conservation; downloads from https://gis-cnra.hub.arcgis.com/datasets/cadoc::wellstar-oil-and-gas-wells, service https://gis.conservation.ca.gov/server/rest/services/WellSTAR/Wells/MapServer/0. www.conservation.ca.gov timed out from this host on 23 Oct 2026 (twice)."
+licence:
+  name: Creative Commons Attribution (Data.CA.gov entry)
+  spdx: null
+  url: http://www.opendefinition.org/licenses/cc-by
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: US, basin: "California (San Joaquin, Los Angeles, Sacramento, Ventura basins and others)", bbox: [-124.48, 32.53, -114.13, 42.01]}
+listed_by: [publisher]
+known_issues:
+  - "Data.CA.gov names 'Creative Commons Attribution' without a version; no SPDX id is inferred."
+  - "The ArcGIS item behind the entry carries CalGEM's data disclaimer instead ('provides the data contained in this website for informational purposes', no warranty). Recorded, not resolved (OSD-D15)."
+  - "The disclaimer refers to the Department of Conservation 'Conditions of Use' policy, which could not be opened (host timed out, 23 Oct 2026)."
+  - "bbox is the State of California, approximate."
+added: 2026-10-23

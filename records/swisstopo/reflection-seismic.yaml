@@ -1,0 +1,30 @@
+id: swisstopo/reflection-seismic
+title: 2D and 3D reflection seismic in Switzerland (ch.swisstopo.geologie-reflexionsseismik)
+summary: >-
+  swisstopo's map of the reflection seismic data acquired in Switzerland for exploration of the
+  geological subsurface: mostly 2D lines along the profile traces shown, and 3D surveys within the
+  shown perimeters, searchable by line or survey name. Download is possible for many of the
+  processed seismic datasets that are publicly available.
+publisher: {name: Federal Office of Topography swisstopo, url: https://www.swisstopo.admin.ch, country: CH}
+origin:
+  url: https://opendata.swiss/en/dataset/2d-und-3d-reflexionsseismik-in-der-schweiz
+  access: anonymous
+  notes: "Resources: WMS and WMTS layer ch.swisstopo.geologie-reflexionsseismik, a RESTful API, the map preview and downloads. For raw and non-public seismic data the page says to contact the rights holder directly."
+licence:
+  name: "opendata.swiss terms of use: Open use. Must provide the source."
+  spdx: null
+  url: https://opendata.swiss/en/terms-of-use
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-2d, seismic-3d]
+region: {country: CH, basin: "Switzerland with border areas (Swiss Molasse Basin, Tabular Jura)", bbox: [5.9, 45.8, 10.5, 47.8]}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes. You must provide the source (author, title and link to the dataset).' The terms speak of use; they do not name redistribution separately."
+  - "Only part of the processed data are downloadable ('many of the processed seismic datasets that are publicly available'); the map 'does not claim to be complete'."
+  - "bbox is Switzerland, approximate; the catalogue states 'Schweiz (mit grenznahem Ausland)'."
+period:
+  start: "2023-09-08"
+  end: "2025-11-24"
+  stated: "opendata.swiss: Issued date September 8, 2023; Modified date November 24, 2025; update interval Semiannual; Temporal coverage '-' (release)"
+added: 2026-10-23

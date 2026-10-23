@@ -1,0 +1,29 @@
+id: wvges/pipeline-oil-and-gas-well-data
+title: "WVGES Oil and Gas Well Data (\"Pipeline\", scanned and digitized logs)"
+summary: >-
+  The West Virginia Geological and Economic Survey's oil and gas well data for over 154,000
+  wells: locations, completions, operators, pays and shows, formation tops and thicknesses,
+  monthly and annual production generally since 1979, plugging, logs and samples, searched one
+  well at a time in "Pipeline" and "Pipeline-Plus", with file repositories of scanned well logs,
+  digitized LAS logs and scanned well records.
+publisher: {name: West Virginia Geological and Economic Survey (WVGES), url: https://www.wvgs.wvnet.edu, country: US}
+origin:
+  url: https://www.wvgs.wvnet.edu/www/datastat/datastat.htm
+  access: anonymous
+  notes: "Repositories http://downloads.wvgs.wvnet.edu/welllogs/, http://downloads.wvgs.wvnet.edu/diglogs/ and http://downloads.wvgs.wvnet.edu/BatchInfo/; Pipeline https://www.wvgs.wvnet.edu/oginfo/pipeline/pipeline2_intro.asp. The well data DVD and the Atlas of Major Appalachian Gas Plays database are ordered separately."
+licence:
+  name: No licence stated (WVGES disclaimer regarding the release of data)
+  spdx: null
+  url: https://www.wvgs.wvnet.edu/oginfo/pipeline/pipeline2_intro.asp
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, wellbore-logs, tops, production]
+region: {country: US, basin: "West Virginia (Appalachian Basin)", bbox: [-82.64, 37.20, -77.72, 40.64]}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimer: WVGES \"makes basic data available to the public from its computerized databases on mineral resources under the following conditions\" (no warranty, no liability); nothing on redistribution or attribution."
+  - "\"These data are provided as a service to the State of West Virginia through the WVGES for the purpose of research and development efforts.\""
+  - "Pipeline \"provides data for one well at a time and cannot be searched by any data fields other than county and permit number\"."
+  - "Production data are stated \"1979 through latest available\"; the well records are older, so no period is written for the dataset."
+  - "bbox is the State of West Virginia, approximate."
+added: 2026-10-23

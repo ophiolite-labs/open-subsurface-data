@@ -1,0 +1,29 @@
+id: ancap/bouguer-anomaly-map-of-uruguay
+title: New Bouguer Anomaly map of Uruguay
+summary: >-
+  ANCAP's updated Bouguer gravity anomaly map of Uruguay, presented at the X Uruguayan Geology
+  Congress (2022), prepared from gravimetric stations measured between 1950 and 2018 by ANCAP, the
+  Military Geographic Service, DINAMIGE with BGR, the College of Engineering of the University of
+  the Republic and Campo Alegría; the grid used is offered for download with the article and map.
+publisher: {name: "Administración Nacional de Combustibles, Alcohol y Pórtland (ANCAP), Exploration and Production", url: https://exploracionyproduccion.ancap.com.uy, country: UY}
+origin:
+  url: https://exploracionyproduccion.ancap.com.uy/15944/3/new-bouguer-anomaly-map-of-uruguay.html
+  access: anonymous
+  notes: "Downloads on the page: the grid https://exploracionyproduccion.ancap.com.uy/innovaportal/file/15944/1/bouguer_anomaly.rar, the article (PDF) and the map (JPG)."
+licence:
+  name: none stated
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [potential-fields]
+region: {country: UY, basin: Uruguay (onshore), bbox: [-58.5, -35.0, -53.1, -30.1]}
+period:
+  start: "1950"
+  end: "2018"
+  stated: "\"data obtained from gravimetric stations measured, between 1950 and 2018\" (acquisition)"
+listed_by: [publisher]
+known_issues:
+  - "The page states no licence or terms of use for the grid."
+  - "bbox is mainland Uruguay, approximate; the page states no extent."
+notes: "ANCAP's offshore seismic, CSEM, gravity and magnetic and well data are sold by price list (https://exploracionyproduccion.ancap.com.uy/2586/3/data-library.html, offshore_data_ancap_v6.pdf, Feb 2025) and through TGS, PGS and SLB; that offer names a licensee but states no licence terms and is not recorded here."
+added: 2026-10-23
