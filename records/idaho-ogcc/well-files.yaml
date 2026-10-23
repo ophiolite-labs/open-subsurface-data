@@ -1,0 +1,26 @@
+id: idaho-ogcc/well-files
+title: Well & Facilities Files (Idaho Oil and Gas Conservation Commission)
+summary: >-
+  The Idaho OGCC's well and facility files, one page per well by county and US well number (Bonneville,
+  Canyon and Payette counties; 34 wells) and for two facilities, and "LAS files for wells drilled 2007 and
+  later that are available for release" in one compressed zip file.
+publisher: {name: Idaho Oil and Gas Conservation Commission (OGCC), url: https://ogcc.idaho.gov, country: US}
+origin:
+  url: https://ogcc.idaho.gov/well-files/
+  access: anonymous
+  manifest_url: https://ogcc.idaho.gov/well-files/
+  notes: "The page links LASFiles.zip on gis1.idl.idaho.gov (36,017,299 bytes, Last-Modified 16 Apr 2026, on 23 Oct 2026) and one page per well with its documents. The Data Explorer (https://welldata.ogcc.idaho.gov/) searches and downloads well information; wells drilled before 2007 are on the Idaho Geological Survey interactive map."
+licence:
+  name: Not stated on the page
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-logs, reports]
+region: {country: US, basin: "Idaho (Bonneville, Canyon and Payette counties)"}
+listed_by: [publisher]
+known_issues:
+  - "'Some documents included on the OGCC website have been marked “confidential” by the person submitting the document'; the OGCC posts them where they are 'subject to public disclosure under the Idaho Oil and Gas Conservation Act ... and the Idaho Public Records Act'."
+  - "Data Explorer: 'the Department makes no warranties as to the completeness, accuracy, reliability or sustainability of the data'."
+  - "No bbox: the page names counties, not an extent."
+notes: "No period: the LAS zip is 'for wells drilled 2007 and later'; the page states no end."
+added: 2026-10-23

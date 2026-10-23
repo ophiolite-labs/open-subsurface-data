@@ -1,0 +1,29 @@
+id: nbmg/oil-gas-wells-through-2013
+title: "Oil and Gas: Wells Through 2013"
+summary: >-
+  "This layer shows the location of oil and gas wells through 2013 in Nevada", from the Nevada Bureau of
+  Mines and Geology's oil and gas well database, "compiled from various data sources including drilling
+  permits, drilling reports, completion reports, lithologic and drillers logs, electric logs" and company
+  transmittals. Each well carries API number, county, operator, name, status, total depth, tests, logs,
+  samples, shows and field.
+publisher: {name: "Nevada Bureau of Mines and Geology (NBMG), University of Nevada, Reno", url: https://nbmg.unr.edu, country: US}
+origin:
+  url: https://data-nbmg.opendata.arcgis.com/datasets/6ff6ac80f79548249a27a8244b41c6a6
+  access: anonymous
+  manifest_url: "https://gisweb.unr.edu/nbmg/rest/services/MineralsAndEnergy/OilAndGas/MapServer/1?f=json"
+  notes: "NBMG Open Data item 6ff6ac80f79548249a27a8244b41c6a6 (created 2017-05-03, modified 2017-08-07) points to MapServer layer 1 'Oil and Gas Wells through 2013' (Feature Layer, maxRecordCount 1000, 1,061 features on 23 Oct 2026). Well logs, scanned production and injection reports: https://nbmg.unr.edu/Oil&Gas/NVWellInfo.html."
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: US, basin: Nevada, bbox: [-120.0006, 35.5107, -113.9011, 41.6345]}
+listed_by: [publisher]
+known_issues:
+  - "Licence: 'Please credit the Nevada Bureau of Mines and Geology, University of Nevada, Reno when using any of our products. We request that you observe any copyright or disclaimer notices that may accompany these data in addition to the Creative Commons license.'"
+  - "A newer item 'Oil and Gas Wells' points to https://gisweb.unr.edu/nbmg/rest/services/MineralsAndEnergy/OilGasWells/MapServer/0, which answered 'Service not found' on 23 Oct 2026."
+  - "bbox is the open data item's extent."
+notes: "No period: the layer is 'through 2013' and states no start."
+added: 2026-10-23
