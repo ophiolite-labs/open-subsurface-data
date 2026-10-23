@@ -1,0 +1,9 @@
+id: gamma/three
+title: gamma/three
+publisher: {name: gamma, url: https://gamma.example}
+origin: {url: https://gamma.example/data, access: anonymous}
+licence: {name: CC BY 4.0, redistribution: allowed, attribution: required}
+kinds: [wells]
+region: {}
+listed_by: [community]
+added: 2026-10-23

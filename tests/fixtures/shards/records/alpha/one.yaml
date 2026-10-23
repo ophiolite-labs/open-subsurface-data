@@ -1,0 +1,9 @@
+id: alpha/one
+title: alpha/one
+publisher: {name: alpha, url: https://alpha.example}
+origin: {url: https://alpha.example/data, access: anonymous}
+licence: {name: CC BY 4.0, redistribution: allowed, attribution: required}
+kinds: [wells]
+region: {}
+listed_by: [community]
+added: 2026-10-23

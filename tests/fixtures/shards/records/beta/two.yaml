@@ -1,0 +1,9 @@
+id: beta/two
+title: beta/two
+publisher: {name: beta, url: https://beta.example}
+origin: {url: https://beta.example/data, access: anonymous}
+licence: {name: CC BY 4.0, redistribution: allowed, attribution: required}
+kinds: [wells]
+region: {}
+listed_by: [community]
+added: 2026-10-23

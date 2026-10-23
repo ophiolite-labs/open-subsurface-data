@@ -17,6 +17,7 @@ from . import new as new_mod
 from . import paths
 from . import reasons as reasons_mod
 from . import report as report_mod
+from . import shards as shards_mod
 from . import verify as verify_mod
 from .records import load_records, validate_outlines, validate_records
 from .verify import apply_fidelity, conversion_coverage, http_open, is_stale, verify_all
@@ -63,7 +64,19 @@ def cmd_fidelity(a: argparse.Namespace) -> int:
 def cmd_verify(a: argparse.Namespace) -> int:
     if a.fidelity_from:
         return cmd_fidelity(a)
-    results = verify_all(ids=a.ids or None, derive=a.outlines, fetch_inputs=a.outline_inputs)
+    ids = a.ids or None
+    if a.shard is not None:  # H2: the records whose origin host hashes to shard I of N
+        if a.ids:
+            print("refused: --shard selects the records itself; give either ids or --shard")
+            return 2
+        try:
+            i, n = shards_mod.parse(a.shard)
+        except ValueError as e:
+            print(f"refused: {e}")
+            return 2
+        ids = shards_mod.select(load_records(), i, n)
+        print(f"shard {i}/{n}: {len(ids)} records")
+    results = verify_all(ids=ids, derive=a.outlines, fetch_inputs=a.outline_inputs) if ids != [] else []
     for v in results:
         o = v["origin"]
         l2 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L2")
@@ -72,6 +85,8 @@ def cmd_verify(a: argparse.Namespace) -> int:
         print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}: {l1}; "
               f"{l2}; {l3})")
     print(f"{len(results)} verified -> {paths.VERIFICATION_DIR}")
+    if a.ids_out:
+        Path(a.ids_out).write_text("".join(v["record_id"] + "\n" for v in results))
     return 0
 
 
@@ -244,6 +259,8 @@ def main(argv: list[str] | None = None) -> int:
     pv.add_argument("--fidelity-from", metavar="FILE",
                     help="offline: derive L4 for the one record id from a fidelity/1 record (E09)")
     pv.add_argument("--vdir", default=str(paths.VERIFICATION_DIR), help="with --fidelity-from: verifications")
+    pv.add_argument("--shard", metavar="I/N", help="the records whose origin host hashes to shard I of N (H2)")
+    pv.add_argument("--ids-out", metavar="FILE", help="write the ids verified, one per line")
     pv.set_defaults(fn=cmd_verify)
     sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)
