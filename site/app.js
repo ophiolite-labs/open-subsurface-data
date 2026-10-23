@@ -49,7 +49,9 @@
   // State <-> URL hash. Defaults are left out so a plain link stays plain.
   //   #q=volve&k=field,survey-3d&l=2&ext=0&ph=0&sel=equinor/volve&map=6.2/58.40/2.00
   //   #pick=opm/norne,sodir/factpages   select mode with two datasets ticked (`pick=` alone: none yet)
-  const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null, pick: null };
+  //   #t=1990-2000&dated=1   period overlaps 1990 to 2000 (either side may be empty), dated records only (E21)
+  const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null, pick: null,
+    from: null, to: null, dated: false };
   const state = { ...DEFAULTS, kinds: new Set() };
   function readHash() {
     const h = new URLSearchParams(location.hash.slice(1));
@@ -60,6 +62,10 @@
     state.approx = h.get('ph') !== '0';
     state.sel = byId[h.get('sel')] ? h.get('sel') : null;
     state.pick = h.has('pick') ? [...new Set(h.get('pick').split(',').filter(id => byId[id]))] : null;
+    const t = /^(\d{4})?-(\d{4})?$/.exec(h.get('t') || '') || [];
+    state.from = t[1] ? Number(t[1]) : null;
+    state.to = t[2] ? Number(t[2]) : null;
+    state.dated = h.get('dated') === '1';
     const m = (h.get('map') || '').split('/').map(Number);
     return m.length === 3 && m.every(Number.isFinite) ? { zoom: m[0], center: [m[2], m[1]] } : null;
   }
@@ -68,6 +74,8 @@
     if (state.q) h.set('q', state.q);
     if (state.kinds.size) h.set('k', [...state.kinds].sort().join(','));
     if (state.minLevel) h.set('l', state.minLevel);
+    if (state.from !== null || state.to !== null) h.set('t', `${state.from ?? ''}-${state.to ?? ''}`);
+    if (state.dated) h.set('dated', '1');
     if (!state.extents) h.set('ext', '0');
     if (!state.approx) h.set('ph', '0');
     if (state.sel) h.set('sel', state.sel);
@@ -96,8 +104,21 @@
 
   const allKinds = [...new Set(records.flatMap(r => r.kinds))].sort();
 
+  // Period (E21): the publisher's stated interval, by year. Only a start runs to today; only an end
+  // runs from the start of record. Undated records pass the window unless `dated` hides them.
+  const year = s => s ? Number(String(s).slice(0, 4)) : null;
+  const span = r => r.period && (r.period.start || r.period.end)
+    ? [year(r.period.start) ?? -Infinity, year(r.period.end) ?? new Date().getUTCFullYear()] : null;
+  const yearsLabel = r => {
+    const [a, b] = [year(r.period.start), year(r.period.end)];
+    return a === b ? String(a) : `${a ?? ''}–${b ?? 'today'}`;
+  };
+
   function matches(r) {
     if (LEVEL(r.level) < state.minLevel) return false;
+    const p = span(r);
+    if (state.dated && !p) return false;
+    if (p && ((state.to !== null && p[0] > state.to) || (state.from !== null && p[1] < state.from))) return false;
     if (state.kinds.size && !r.kinds.some(k => state.kinds.has(k))) return false;
     if (state.q) {
       const hay = [r.title, r.publisher.name, r.region && r.region.basin, r.region && r.region.country, r.id].join(' ').toLowerCase();
@@ -223,6 +244,11 @@
   $('extents').onchange = e => { state.extents = e.target.checked; applyFilters(); };
   $('approx').onchange = e => { state.approx = e.target.checked; applyFilters(); };
   $('q').oninput = e => { state.q = e.target.value.trim().toLowerCase(); applyFilters(); };
+  // A year counts once it has four digits; a half-typed one leaves that side open.
+  const yearOf = v => /^\d{4}$/.test(v.trim()) ? Number(v) : null;
+  $('from').oninput = e => { state.from = yearOf(e.target.value); applyFilters(); };
+  $('to').oninput = e => { state.to = yearOf(e.target.value); applyFilters(); };
+  $('dated').onchange = e => { state.dated = e.target.checked; applyFilters(); };
 
   function syncControls() {
     for (const k of allKinds) chips[k].classList.toggle('on', state.kinds.has(k));
@@ -230,6 +256,8 @@
     $('extents').checked = state.extents;
     $('approx').checked = state.approx;
     if ($('q').value.trim().toLowerCase() !== state.q) $('q').value = state.q;
+    for (const k of ['from', 'to']) if (yearOf($(k).value) !== state[k]) $(k).value = state[k] ?? '';
+    $('dated').checked = state.dated;
   }
 
   function renderList(ids) {
@@ -240,7 +268,7 @@
       const li = document.createElement('li'); li.className = id === state.sel ? 'sel' : '';
       li.dataset.id = id;
       const box = state.pick ? `<input type="checkbox" class="tick" aria-label="select ${esc(r.title)}"${state.pick.includes(id) ? ' checked' : ''}>` : '';
-      li.innerHTML = `${box}<span class="badges">${levelBadge(r)}</span><span class="t">${esc(r.title)}<span class="p">${esc(r.publisher.name)}</span></span>`;
+      li.innerHTML = `${box}<span class="badges">${levelBadge(r)}</span><span class="t">${esc(r.title)}<span class="p">${esc(r.publisher.name)}${span(r) ? `<span class="yr">${esc(yearsLabel(r))}</span>` : ''}</span></span>`;
       li.onclick = e => { if (state.pick) { e.preventDefault(); tick(id); } else select(id, true); };
       ul.appendChild(li);
     }
@@ -267,6 +295,7 @@
         <dt>Origin</dt><dd><a href="${esc(r.origin.url)}" target="_blank" rel="noopener">${esc(r.origin.url)}</a> (${esc(r.origin.access)})</dd>
         <dt>Licence</dt><dd>${esc(r.licence.name)}${r.licence.spdx ? ' (' + esc(r.licence.spdx) + ')' : ''}<br>redistribution ${esc(r.licence.redistribution)}, attribution ${esc(r.licence.attribution)}</dd>
         <dt>Holds</dt><dd>${r.kinds.map(esc).join(', ')}</dd>
+        <dt>When</dt><dd class="when">${r.period ? esc(`${r.period.start || 'start of record'} to ${r.period.end || 'today'}`) + (r.period.stated ? '<br>' + esc(r.period.stated) : '') : 'not stated by the publisher'}</dd>
         <dt>Region</dt><dd>${esc([r.region && r.region.basin, r.region && r.region.country].filter(Boolean).join(', ') || '—')}</dd>
         <dt>Checked</dt><dd>${esc(r.checked_at || 'not yet')}${isStale(r) ? ' (stale: older than ' + STALE_DAYS + ' days)' : ''}</dd>
       </dl>

@@ -20,6 +20,10 @@ h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: v
 .chip.on { border-color: var(--accent); background: #233449; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--muted); align-items: center; }
 .row select { background: var(--panel2); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; }
+.row.when { margin-top: 6px; }
+.row.when input[type=text] { width: 4.5em; padding: 2px 6px; font: inherit; background: var(--panel2); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; }
+#list li .p .yr { margin-left: 6px; font-size: 11px; }
+#list li .p .yr::before { content: "· "; }
 #list { flex: 1; min-height: 80px; overflow: auto; }
 #list ul { list-style: none; margin: 0; padding: 0; }
 #list li { padding: 7px 8px; border-radius: 6px; cursor: pointer; display: flex; gap: 8px; align-items: baseline; }
@@ -94,3 +98,7 @@ body.page { height: auto; overflow: auto; }
 #download { width: 100%; padding: 9px; margin: 4px 0; font: inherit; font-weight: 600; border-radius: 6px; border: 0;
   background: var(--accent); color: #0f1419; cursor: pointer; }
 @media (max-width: 640px) { #basket { order: 1; max-height: none; } #pickmode { padding: 6px 14px; } }
+
+/* E21: the year row made the sheet taller; on desktop an open detail keeps its height and the key
+   gives way (it scrolls) rather than the detail shrinking to two lines. */
+@media (min-width: 641px) { #detail { flex-shrink: 0; } #key { flex-shrink: 1; min-height: 0; overflow: auto; } }
