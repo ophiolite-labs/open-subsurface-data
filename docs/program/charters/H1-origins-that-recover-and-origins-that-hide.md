@@ -67,6 +67,20 @@ status and L2/L3 details; `status` prefers the L2 reason.
    checksum paths; it dispatches `verify.yml` on its branch once (E23 design 7), links the run, and
    lets publisher outcomes vary.
 
+8. (Added 23 Oct on E24's finding.) A `manifest_url` whose response is itself a data file is the
+   one entry: when the response's content type is not HTML, JSON, XML or plain text, or carries
+   `Content-Disposition: attachment`, or the record's `samples.yaml` entry says `file: true`, the
+   listing is `[Entry(url=manifest_url, name=<last path segment>, size=<Content-Length or None>)]`
+   and the sample hashes that object under the usual budget; the body is streamed once (not read
+   into memory as a listing). A CSV served as `text/csv` is a file, not a text list of URLs. Tests:
+   content-type path, attachment path, `file: true` path, and the mutation "CSV rows read as URLs".
+   E24's PR names the records this unlocks (heading "File addresses for H1 design 8"); the records
+   themselves are repointed by a later records slice, not by H1.
+9. (Added 23 Oct.) robots.txt that cannot be read (data.gov.tw answers HTTP 500 to the verifier's
+   agent, 404 to curl's) is reported as "robots.txt unreadable (HTTP <status>), treated as
+   disallow" (RFC 9309 section 2.3.1.4), distinct from an explicit disallow; a 404 robots.txt
+   allows. E23's test for this wording is extended if it does not already cover the 5xx case.
+
 **Acceptance.**
 - Offline: the recovery tests, the workflow-consumption test, the dry-mode test and the probe
   tests of design 6 green, each named with the mutation it catches.
@@ -75,6 +89,7 @@ status and L2/L3 details; `status` prefers the L2 reason.
 - After the merge, the first dispatched run on main closes every open `origin-dead` issue whose
   origin it observed at L1+, each with the comment of design 3; the PR body names which of #17,
   #23 to #27 that was, or that none had recovered.
+- Design 8: the four tests green and the mutation red; design 9: the 5xx wording test green.
 - `make check` green; verification/4 unchanged (details are strings).
 
 **Claim.** `src/osd/report.py`, `src/osd/verify.py` (origin probe classification and the injected browser probe only), `src/osd/cli.py` (report output, verify and status detail printing), `.github/workflows/verify.yml` (the report step and the ids it passes), `tests/test_report.py`, `tests/test_verify.py` (additions only), `tests/fixtures/report/**`, `docs/program/DECISIONS.md` (OSD-D20), `docs/program/charters/H1-*STRATEGY.md`, `docs/program/evidence/h1/**`.
@@ -102,3 +117,4 @@ status and L2/L3 details; `status` prefers the L2 reason.
 | A6 | Probe tests must assert outcomes and forbidden calls | Accepted: design 6. |
 | S1 | Records and samples stay in E24 | Accepted: design 7. |
 | S2 | E23 paths unchanged, browser agent never reaches them | Accepted: request-log test (design 4). |
+| E24-1 | (worker finding, after the round) a bare file address is not sampled by today's verifier | Added as design 8 (single-file listing) and design 9 (unreadable robots wording); claim extended to `check_files`/`read_listing` in `verify.py` and `src/osd/verifier/listings.py` (shape detection) and the `file:` flag in `samples.yaml` schema handling, not its entries (E24 holds the entries). |
