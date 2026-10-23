@@ -8,7 +8,7 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 
 | # | Epic | Class | Status | Depends on | Outcome a user can observe |
 |---|---|---|---|---|---|
-| 1 | E01 Twenty records from the open lists | Records | QUEUED, next | scaffold | The map lists at least twenty datasets, each with licence and access stated |
+| 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
 | 2 | E02 Verifier to L2 | Kernel | QUEUED | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
 | 3 | E03 Outlines from the data | Kernel | QUEUED | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
 | 4 | E05 Map that scales | Surface | QUEUED (parallel with E02, disjoint paths) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
@@ -27,6 +27,9 @@ map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins a
 Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
 `verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
 with real levels through the `verification-results` branch. `main` requires `check`.
+DNS for opensubsurfacedata.org entered by the owner 23 Oct and resolving; HTTPS certificate pending at GitHub.
+E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
+opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
 
 ## The loop
 
