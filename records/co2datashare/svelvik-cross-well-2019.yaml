@@ -18,13 +18,12 @@ licence:
   attribution: required
   statement: "We acknowledge SINTEF, the ECCSEL Svelvik CO2 Field Lab, and the Pre-ACT project (RCN project number 271496) for giving access to the data."
 kinds: [seismic-2d]
-region: {country: "NO", basin: "ECCSEL Svelvik CO2 Field Lab"}
+region: {country: "NO", basin: "ECCSEL Svelvik CO2 Field Lab", bbox: [10.4009, 59.5898, 10.4509, 59.6398]}
 size: {bytes_estimate: 1073741824, stated: "Svelvik CO2 Field Lab cross-well data 2019 ZIP 1 GiB"}
 listed_by: [publisher]
-notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. A link to the terms and the DOI must be given."
+notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. A link to the terms and the DOI must be given. bbox is a small box (about 0.05°) around the one point the portal states (Longitude 10.4258501, Latitude 59.6148044), approximate."
 known_issues:
   - "Cross-well seismic between wells, repeated before, during and after injection; the schema has no cross-well kind, so it is recorded as seismic-2d."
-  - "No bbox: the portal states one point (Longitude 10.4258501, Latitude 59.6148044), not an extent."
 period:
   start: "2019-08-08"
   end: "2019-11-06"

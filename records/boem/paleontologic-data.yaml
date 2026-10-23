@@ -18,13 +18,13 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [tops, reports]
-region: {country: US, basin: "Gulf of America Outer Continental Shelf"}
+region: {country: US, basin: "Gulf of America Outer Continental Shelf", bbox: [-97.21, 23.82, -81.14, 30.25]}
 listed_by: [publisher]
 known_issues:
   - "Disclaimer: 'Some errors may exist in this data'; the page states no licence or reuse terms."
-  - "No bbox: the page names the Gulf of America but states no extent."
 period:
   start: "1947-01"
   end: "2026-09-30"
   stated: "Releasable Paleo Reports: 'all released paleontologic summary reports and header data from January 1947 to September 30, 2026' (last updated 10/1/2026)"
+notes: "bbox is the extent of BOEM's three Gulf planning areas (GOA_Layers map service, layer 8 'BOEM Oil and Gas Planning Areas'), approximate."
 added: 2026-10-23

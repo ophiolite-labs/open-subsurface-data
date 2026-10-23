@@ -20,5 +20,9 @@ listed_by: [publisher]
 known_issues:
   - "The page carries only 'Copyright 2024'; no licence or terms page found."
   - "No bbox: the table names blocks but states no extent."
-notes: "No period set: the table dates wells from '1970' to 'Dec-16' with two-digit years."
+notes: "Period from the table's Date column: first '1970' (Chevron llB-1), last the raw cell 'Dec-16' (ExxonMobil Mesurado-1), a two-digit year read as December 2016."
+period:
+  start: "1970"
+  end: "2016-12"
+  stated: "Well Database table, Date column: first row '1970' (Chevron llB-1), last row 'Dec-16' (ExxonMobil Mesurado-1); 'Dec-16' read as December 2016"
 added: 2026-10-23
