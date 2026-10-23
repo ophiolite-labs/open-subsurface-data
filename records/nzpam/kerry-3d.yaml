@@ -18,4 +18,10 @@ listed_by: [seg-wiki, publisher]
 known_issues:
   - "Downloads need a RealMe login; the survey page states no licence. Copyright page says Crown copyright material on the website may be reproduced free of charge, which is not stated for datasets."
   - "bbox is the whole basin, approximate; the page names only 'Taranaki Basin'."
+inputs:
+  - name: survey-extent
+    url: "https://geodata.nzpam.govt.nz/survey/8223848313"
+    format: html-geojson
+    crs: "EPSG:4326"
+    stated: "Survey page row \"Survey Extents in GeoJSON\" (RFC 7946: WGS84 lon/lat)"
 added: 2026-10-23

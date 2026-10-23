@@ -5,3 +5,4 @@
 sodir/factpages: ["*rs:Format=CSV*"]          # the CSV export of the exploration wellbore table
 opm/norne: ["*.DATA"]                          # the simulation deck
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]    # MDIO metadata objects, a few hundred bytes
+nlog/nlog: ["*thematische_data_boringen.zip"]   # the borehole page's thematic data download, ~57 MB

@@ -20,4 +20,27 @@ licence:
 kinds: [wellbore-headers, wellbore-paths, tops, production, source-list]
 region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0]}
 listed_by: [publisher]
+known_issues:
+  - "Geonorge catalogue links NLOD 1.0, the FactPages terms page NLOD 2.0 (23 Oct)"
+inputs:
+  - name: wellbores
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Wellbores__all"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+  - name: seismic-finished
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Seismic_surveys__finished"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+  - name: seismic-ongoing
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Seismic_surveys__ongoing"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+  - name: seismic-paused
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Seismic_surveys__paused"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
 added: 2026-10-23

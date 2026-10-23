@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/record/1",
-  "title": "Open Subsurface Data record, version 1",
-  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here.",
+  "$id": "https://open-subsurface-data.org/schema/record/2",
+  "title": "Open Subsurface Data record, version 2",
+  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs`; every version-1 record is a valid version-2 record.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
@@ -80,6 +80,22 @@
       "type": "object", "additionalProperties": false,
       "properties": {"reference_id": {"type": "string"}, "notes": {"type": "string"}},
       "description": "Identifiers in the OSDU reference data where the same dataset is carried."
+    },
+    "inputs": {
+      "type": "array", "minItems": 1,
+      "description": "The publisher's own addresses for the geometry of this dataset (register services, files, stores), each with the CRS and units as the publisher states them. Extraction rules are tool configuration (src/osd/outlines/rules.yaml, OSD-D11), never fields here.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name", "url", "format"],
+        "properties": {
+          "name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Unique within the record; the key of its rule in rules.yaml."},
+          "url": {"type": "string", "format": "uri", "description": "As the publisher serves it, e.g. a WFS GetFeature request for one layer, a file, or a store prefix."},
+          "format": {"type": "string", "enum": ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson"],
+                     "description": "html-geojson: a page that carries a GeoJSON geometry the publisher labels as the extent."},
+          "crs": {"type": "string", "pattern": "^EPSG:[0-9]+$", "description": "The CRS the publisher declares for the coordinates. Absent means not declared: the input is refused, never guessed."},
+          "units": {"type": "string", "enum": ["m", "ft", "ftUS", "degree"], "description": "Coordinate units when the publisher states them outside the data."},
+          "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states the CRS and units, verbatim where short."}
+        }
+      }
     },
     "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}},
     "notes": {"type": "string", "maxLength": 1200},

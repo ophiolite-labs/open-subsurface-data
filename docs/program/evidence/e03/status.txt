@@ -1,0 +1,22 @@
+level id                                   checked                              access       redistribution kinds
+L0    equinor/volve                        never stale                          registration unknown        wellbore-headers,wellbore-logs,wellbore-paths,tops,seismic-3d,seismic-4d,horizons,surfaces,reservoir-model,production,reports
+L3    nlog/nlog                            2026-10-23                           anonymous    unknown        wellbore-headers,wellbore-logs,wellbore-paths,tops,seismic-2d,seismic-3d,production,reports
+L3    nopims/poseidon                      2026-10-23                           anonymous    allowed        seismic-3d,wellbore-logs,wellbore-headers
+L0    nsta/ndr                             never stale                          registration unknown        wellbore-headers,wellbore-logs,seismic-2d,seismic-3d,reports
+L1    nzpam/kerry-3d                       2026-10-23                           registration unknown        seismic-3d
+L1    nzpam/parihaka                       2026-10-23                           anonymous    unknown        seismic-3d,wellbore-logs,wellbore-headers
+L0    opm/norne                            never stale                          anonymous    allowed        reservoir-model
+L1    rmotc/teapot-dome                    2026-10-23                           registration allowed        seismic-3d,wellbore-logs,wellbore-headers,tops,production
+L0    seg/open-data-wiki                   never stale                          anonymous    allowed        source-list
+L3    sodir/factpages                      2026-10-23                           api          allowed        wellbore-headers,wellbore-paths,tops,production,source-list
+L0    terranubis/blake-ridge-hydrates-3d   never stale                          anonymous    allowed        seismic-3d
+L0    terranubis/delft                     never stale                          anonymous    allowed        seismic-3d
+L1    terranubis/f3-demo-2020              2026-10-23                           registration allowed        seismic-3d,wellbore-logs,wellbore-headers,horizons
+L0    terranubis/force-ml-2020-ichthys-3d  never stale                          anonymous    allowed        seismic-3d
+L0    terranubis/force-ml-2020-synthetic   never stale                          anonymous    allowed        wellbore-logs,reservoir-model
+L0    terranubis/laurentian-basin          never stale                          anonymous    allowed        seismic-2d
+L0    terranubis/oga-mnsh                  never stale                          anonymous    allowed        seismic-2d,wellbore-logs,horizons,faults
+L0    terranubis/oga-rockall-trough        never stale                          anonymous    allowed        seismic-2d,wellbore-logs,horizons,faults
+L0    terranubis/penobscot                 never stale                          anonymous    allowed        seismic-3d,seismic-2d,horizons,wellbore-logs,tops,time-depth
+L0    terranubis/usgs-beaufort-sea-2023    never stale                          anonymous    allowed        seismic-2d
+L0    terranubis/usgs-central-alaska-2023  never stale                          anonymous    allowed        seismic-2d

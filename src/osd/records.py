@@ -87,9 +87,12 @@ def validate_outlines(
     outlines_dir: Path = paths.OUTLINES_DIR, records_dir: Path = paths.RECORDS_DIR
 ) -> list[Problem]:
     """Each outline file is a FeatureCollection whose features carry the outline properties
-    and name an existing record; the file name must match that record."""
+    and name an existing record; the file name must match that record. Geometry is WGS84 with
+    closed, non-empty rings; a feature_id is '<record-id>#...' and unique in its file; a derived
+    feature names an input the collection carries and has a licence (its own or the file's)."""
     problems: list[Problem] = []
     v = _validator("outline")
+    vc = Draft202012Validator(_schema("outline")["$defs"]["collection"], format_checker=FormatChecker())
     known = set(load_records(records_dir))
     for p in sorted(outlines_dir.glob("*.geojson")):
         rel = p.name
@@ -102,6 +105,10 @@ def validate_outlines(
             problems.append(Problem(rel, "not a FeatureCollection"))
             continue
         expected_id = p.stem.replace("__", "/")
+        ids: dict[str, int] = {}
+        for err in vc.iter_errors({k: x for k, x in fc.items() if k not in ("type", "features")}):
+            problems.append(Problem(rel, f"collection: {err.message}"))
+        named = fc.get("inputs") if isinstance(fc.get("inputs"), dict) else {}
         if expected_id not in known:
             problems.append(Problem(rel, f"no record '{expected_id}' for this outline file"))
         for i, f in enumerate(fc.get("features", [])):
@@ -112,7 +119,57 @@ def validate_outlines(
                 problems.append(
                     Problem(rel, f"feature {i}: record_id '{props.get('record_id')}' != '{expected_id}'")
                 )
-            g = f.get("geometry") or {}
-            if g.get("type") not in {"Point", "Polygon", "LineString", "MultiPolygon"}:
-                problems.append(Problem(rel, f"feature {i}: geometry type {g.get('type')!r} not allowed"))
+            for msg in geometry_problems(f.get("geometry") or {}):
+                problems.append(Problem(rel, f"feature {i}: {msg}"))
+            if props.get("approximate") is False:
+                if "input" in props and props["input"] not in named:
+                    problems.append(Problem(rel, f"feature {i}: input '{props['input']}' is not in the collection's inputs"))
+                if not (props.get("licence") or fc.get("licence")):
+                    problems.append(Problem(rel, f"feature {i}: no licence (the feature's or the collection's)"))
+            fid = props.get("feature_id")
+            if fid is not None:
+                if not str(fid).startswith(expected_id + "#"):
+                    problems.append(Problem(rel, f"feature {i}: feature_id '{fid}' is not '{expected_id}#...'"))
+                if fid in ids:
+                    problems.append(Problem(rel, f"feature {i}: duplicate feature_id '{fid}' (also feature {ids[fid]})"))
+                ids.setdefault(fid, i)
     return problems
+
+
+def _position_problem(p) -> str | None:
+    if not (isinstance(p, list) and len(p) in (2, 3)
+            and all(isinstance(c, (int, float)) and not isinstance(c, bool) for c in p)):
+        return f"position {p!r} is not [lon, lat]"
+    if not (-180 <= p[0] <= 180 and -90 <= p[1] <= 90):
+        return f"position {p!r} outside WGS84 lon/lat"
+    return None
+
+
+def _ring_problems(ring) -> list[str]:
+    if not isinstance(ring, list) or len(ring) < 4:
+        return ["ring has fewer than 4 positions"]
+    out = [m for m in map(_position_problem, ring) if m][:1]
+    if not out and ring[0] != ring[-1]:
+        out.append("ring is not closed")
+    return out
+
+
+def geometry_problems(g: dict) -> list[str]:
+    """WGS84 positions, closed non-empty rings, lines of at least two positions."""
+    t, c = g.get("type"), g.get("coordinates")
+    if t == "Point":
+        m = _position_problem(c)
+        return [m] if m else []
+    if t == "LineString":
+        if not isinstance(c, list) or len(c) < 2:
+            return ["line has fewer than 2 positions"]
+        return [m for m in map(_position_problem, c) if m][:1]
+    if t == "Polygon":
+        if not isinstance(c, list) or not c:
+            return ["polygon has no rings"]
+        return [m for r in c for m in _ring_problems(r)][:1]
+    if t == "MultiPolygon":
+        if not isinstance(c, list) or not c or not all(isinstance(p, list) and p for p in c):
+            return ["multipolygon has an empty part"]
+        return [m for p in c for r in p for m in _ring_problems(r)][:1]
+    return [f"geometry type {t!r} not allowed"]

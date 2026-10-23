@@ -26,11 +26,12 @@ def cmd_validate(_: argparse.Namespace) -> int:
 
 
 def cmd_verify(a: argparse.Namespace) -> int:
-    results = verify_all(ids=a.ids or None)
+    results = verify_all(ids=a.ids or None, derive=a.outlines, fetch_inputs=a.outline_inputs)
     for v in results:
         o = v["origin"]
         l2 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L2")
-        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}; {l2})")
+        l3 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L3")
+        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}; {l2}; {l3})")
     print(f"{len(results)} verified -> {paths.VERIFICATION_DIR}")
     return 0
 
@@ -93,6 +94,10 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("validate", help="records and outlines against their schemas").set_defaults(fn=cmd_validate)
     pv = sub.add_parser("verify", help="network: reach each origin, write verification records")
     pv.add_argument("ids", nargs="*")
+    pv.add_argument("--outlines", action="store_true",
+                    help="also fetch outline inputs and rewrite outlines/ (osd.outlines, E03)")
+    pv.add_argument("--outline-inputs", action="store_true",
+                    help="also fetch outline inputs and check the committed outlines against them (CI)")
     pv.set_defaults(fn=cmd_verify)
     sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)

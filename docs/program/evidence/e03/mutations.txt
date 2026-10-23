@@ -1,0 +1,36 @@
+FAILS (good) | hull -> bounding box | src/osd/outlines/geometry.py | test_segy_hull_matches_the_known_exact_hull
+FAILS (good) | x/y header bytes swapped | src/osd/outlines/extractors.py | test_segy_known_coordinate_and_axis_order
+FAILS (good) | dead traces counted | src/osd/outlines/extractors.py | test_segy_hull_matches_the_known_exact_hull
+FAILS (good) | WFS hit count ignored | src/osd/outlines/extractors.py | test_wfs_hit_count_mismatch_is_refused
+FAILS (good) | keep filter ignored | src/osd/outlines/extractors.py | test_sodir_seismic_ids_equal_the_net_areas_of_the_fixture
+FAILS (good) | feature_id collisions accepted in derive | src/osd/outlines/__init__.py | test_duplicate_feature_id_never_passes
+FAILS (good) | duplicate feature_id accepted in check | src/osd/outlines/__init__.py | test_duplicate_feature_id_never_passes
+FAILS (good) | undeclared CRS guessed as WGS84 | src/osd/outlines/geometry.py | test_undeclared_crs_never_passes
+FAILS (good) | response CRS not compared | src/osd/outlines/extractors.py | test_undeclared_crs_never_passes
+FAILS (good) | undeclared units assumed metres | src/osd/outlines/extractors.py | test_undeclared_units_never_pass
+FAILS (good) | units not compared with the CRS | src/osd/outlines/geometry.py | test_undeclared_units_never_pass
+FAILS (good) | empty response accepted | src/osd/outlines/extractors.py | test_empty_response_never_passes
+FAILS (good) | missing inputs accepted by check | src/osd/outlines/__init__.py | test_missing_inputs_never_passes
+FAILS (good) | approximate accepted by check | src/osd/outlines/__init__.py | test_approximate_feature_never_passes
+FAILS (good) | stale input sha accepted | src/osd/outlines/__init__.py | test_changed_input_bytes_fail_outline_derived
+FAILS (good) | pass without stored inputs | src/osd/outlines/__init__.py | test_changed_input_bytes_fail_outline_derived
+FAILS (good) | min_features ignored | src/osd/outlines/__init__.py | test_feature_count_below_rules_fails
+FAILS (good) | tampered stored part accepted | src/osd/outlines/__init__.py | test_fetch_stores_parts_and_sums
+FAILS (good) | open ring accepted | src/osd/records.py | test_open_ring_is_a_problem
+FAILS (good) | derived identity not required (outline/2 if/then) | schema/outline.schema.json | test_derived_feature_without_identity_is_a_problem
+FAILS (good) | blosc unshuffle skipped | src/osd/outlines/codecs.py | test_blosc_lz4_decodes_a_real_chunk
+FAILS (good) | L3 without L2 (ladder gap) | src/osd/verify.py | test_derived_outline_without_L2_is_not_L3
+FAILS (good) | rule fields leak into record schema | schema/record.schema.json | test_record_schema_has_no_outline_policy
+FAILS (good) | simplification tolerance ignored (x10) | src/osd/outlines/geometry.py | test_survey_polygons_are_simplified_within_tolerance_points_exact
+FAILS (good) | simplified_m not recorded | src/osd/outlines/__init__.py | test_survey_polygons_are_simplified_within_tolerance_points_exact
+FAILS (good) | points simplified too | src/osd/outlines/__init__.py | test_survey_polygons_are_simplified_within_tolerance_points_exact
+FAILS (good) | unplaced wellbores dropped silently | src/osd/outlines/__init__.py | test_wellbores_without_a_position_are_listed_not_drawn
+FAILS (good) | id_scope ignored (wellbore and survey NPDIDs collide) | src/osd/outlines/__init__.py | test_overlapping_publisher_ids_are_scoped_not_collided
+FAILS (good) | feature input not checked against the collection's inputs | src/osd/records.py | test_derived_feature_without_identity_is_a_problem
+FAILS (good) | collection members not validated | src/osd/records.py | test_derived_feature_without_identity_is_a_problem
+FAILS (good) | rings below tolerance squared kept | src/osd/outlines/geometry.py | test_rings_below_tolerance_squared_are_dropped_and_counted
+FAILS (good) | rings_dropped not recorded | src/osd/outlines/__init__.py | test_publisher_page_extent
+FAILS (good) | 2D holes kept (exteriors_only ignored) | src/osd/outlines/geometry.py | test_rings_below_tolerance_squared_are_dropped_and_counted
+FAILS (good) | polygon_decimals ignored | src/osd/outlines/geometry.py | test_rings_below_tolerance_squared_are_dropped_and_counted
+FAILS (good) | polygon rules not named in the derivation | src/osd/outlines/__init__.py | test_polygon_rules_are_named_in_the_derivation
+FAILS (good) | --outline-inputs rewrites the committed file | src/osd/verify.py | test_outline_inputs_check_the_committed_file_and_outlines_rewrite_it

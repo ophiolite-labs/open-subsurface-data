@@ -37,7 +37,7 @@ jobs:
             ids="${{ inputs.ids }}"
           fi
           echo "ids=$ids" >> "$GITHUB_OUTPUT"
-      - run: uv run osd verify ${{ steps.ids.outputs.ids }} | tee verify.txt
+      - run: uv run osd verify --outline-inputs ${{ steps.ids.outputs.ids }} | tee verify.txt   # L3 compares committed outlines with today's inputs (E03)
       - name: levels as published (the same levels records.json carries after the republish)
         run: |
           uv run osd status | tee status.txt

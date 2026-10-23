@@ -1,0 +1,4 @@
+{"type":"FeatureCollection","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"features":[
+{"type":"Feature","geometry":{"type":"MultiPolygon","coordinates":[[[[2.51105495,60.48987856],[2.44941598,60.37255035],[2.72996017,60.33620984],[2.79254205,60.45340854],[2.51105495,60.48987856]]]]},"properties":{"GmlID":"Seismic_surveys__finished.1186","OBJECTID":1186,"Survey_name":"EQ26056","NPDID_for_survey":11191,"Sub_type":"3D","Net_or_gross":"net"}},
+{"type":"Feature","geometry":{"type":"MultiPolygon",},"properties":{"GmlID":"Seismic_surveys__finished.1213","OBJECTID":1213,"Survey_name":"CSSC-65","NPDID_for_survey":2000,"Sub_type":"2D","Net_or_gross":"net"}}
+]}
