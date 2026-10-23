@@ -18,7 +18,7 @@ licence:
   redistribution: allowed
   attribution: required
   statement: "LBEG (2022): Geologisches 3D-Modell Tieferer Untergrund Norddeutsches Becken für Niedersachsen und Bremen (TUNB3D-NI) – NIBIS® Kartenserver, Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover"
-kinds: [horizons, faults]
+kinds: [geological-model, horizons, faults]
 region: {country: DE, basin: North German Basin (Lower Saxony and Bremen), bbox: [6.6, 51.3, 11.6, 53.9]}
 listed_by: [publisher]
 known_issues:
@@ -28,5 +28,5 @@ period:
   start: "2014"
   end: "2022-03"
   stated: "\"wurde durch das LBEG von 2014 bis 2020 ... erstellt. ... die in der aktuellen Modellversion vom März 2022 münden\" (model construction and release)"
-notes: "Want: a kind for a geological 3D model (salt structures, volumes); the record names horizons and faults. Citation form from https://www.lbeg.niedersachsen.de/download/183313/Zitierweise_Modell_und_Abschlussbericht.pdf."
+notes: "Citation form from https://www.lbeg.niedersachsen.de/download/183313/Zitierweise_Modell_und_Abschlussbericht.pdf."
 added: 2026-10-23

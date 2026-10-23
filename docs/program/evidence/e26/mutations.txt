@@ -1,0 +1,26 @@
+E26 mutations, each applied to the lane head, the named test run red, the file restored with git checkout, the test run green (23 Oct 2026).
+
+## 1. record/4 loses an old kind
+mutation: schema/record.schema.json kinds enum without time-depth
+```
+FAILED tests/test_schema.py::test_record_3_fixtures_validate_under_record_3_and_record_4
+1 failed in 0.19s
+```
+restored: 1 passed in 0.16s
+
+## 2. the scaffold omits one kind
+mutation: src/osd/new.py writes the kinds comment without its last entry (stress)
+```
+FAILED tests/test_schema.py::test_new_scaffold_kinds_comment_lists_the_schema_kinds
+1 failed in 0.19s
+```
+restored: 1 passed in 0.17s
+
+## 3. STAC keywords drop a new kind
+mutation: src/osd/stac.py keywords filter out velocity-model
+```
+FAILED tests/test_build.py::test_new_kinds_travel_to_records_json_and_stac_keywords[velocity-model]
+1 failed, 4 passed in 0.24s
+```
+restored: 5 passed in 4.22s
+

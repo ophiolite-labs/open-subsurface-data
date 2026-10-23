@@ -1,6 +1,8 @@
 """E19: vocabulary from the records lanes (charter docs/program/charters/E19-vocabulary-from-the-records-lanes.md,
 strategy E19-vocabulary-from-the-records-lanes-STRATEGY.md): record/3, the stac-osd v2 access value, the
-status expiry note, the scaffold's comment lists and the six record edits."""
+status expiry note, the scaffold's comment lists and the six record edits. E26 (charter
+E26-vocabulary-kinds-the-records-lanes-asked-for.md): record/4's five kinds, record/3 compatibility and the
+scaffold's kinds comment."""
 
 import copy
 import json
@@ -28,8 +30,10 @@ def _v(schema: dict) -> Draft202012Validator:
     return Draft202012Validator(schema, format_checker=FormatChecker())
 
 
-RECORD_3 = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))
+RECORD = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))   # the live schema, record/4 (E26)
+RECORD_3 = _v(json.loads((FROZEN / "record-3.schema.json").read_text()))
 RECORD_2 = _v(json.loads((FROZEN / "record-2.schema.json").read_text()))
+NEW_KINDS = ["velocity-model", "geological-model", "airborne-em", "radiometrics", "stress"]   # E26, literal
 
 
 def _base(**kw) -> dict:
@@ -48,13 +52,14 @@ def _base(**kw) -> dict:
 
 
 def _errors(rec: dict) -> list:
-    return list(RECORD_3.iter_errors(rec))
+    return list(RECORD.iter_errors(rec))
 
 
 # --- record/3 --------------------------------------------------------------------------------------
 
 def test_record_ids_are_versioned():
-    assert RECORD_3.schema["$id"].endswith("/record/3") and RECORD_2.schema["$id"].endswith("/record/2")
+    assert RECORD.schema["$id"].endswith("/record/4") and RECORD_3.schema["$id"].endswith("/record/3")
+    assert RECORD_2.schema["$id"].endswith("/record/2")
 
 
 def test_record_3_admits_the_new_values():
@@ -96,9 +101,9 @@ def test_record_2_files_validate_under_record_2():
     old = 0
     for p in record_files():
         rec = load_record(p)
-        assert not list(RECORD_3.iter_errors(rec)), p
+        assert not list(RECORD.iter_errors(rec)), p
         if (rec["origin"]["access"] == "purchase" or "potential-fields" in rec["kinds"]
-                or "terms" in rec["licence"]):
+                or set(NEW_KINDS) & set(rec["kinds"]) or "terms" in rec["licence"]):
             continue
         assert not list(RECORD_2.iter_errors(rec)), p
         old += 1
@@ -122,10 +127,42 @@ def test_the_six_records_state_the_new_values():
     assert validate_records() == [] and len(recs) >= 96
 
 
+# --- record/4 (E26): the kinds the records lanes asked for ----------------------------------------
+
+RECORD_3_KINDS = [   # every record/3 kind, a fixed list: the compatibility fixtures, one record each
+    "wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth",
+    "seismic-3d", "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults",
+    "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list",
+    "potential-fields"]
+
+
+@pytest.mark.parametrize("kind", NEW_KINDS)
+def test_record_4_admits_each_new_kind(kind):
+    assert _errors(_base(kinds=[kind])) == []
+    assert _errors(_base(kinds=["seismic-3d", kind])) == []
+
+
+@pytest.mark.parametrize("kind", ["velocity_model", "Velocity-model", "velocity", "geologic-model", "aem",
+                                  "radiometric", "in-situ-stress"])
+def test_record_4_refuses_an_unknown_kind(kind):
+    assert _errors(_base(kinds=[kind]))
+
+
+def test_record_3_fixtures_validate_under_record_3_and_record_4():
+    """The same record/3 files, one per record/3 kind, are valid under the frozen record/3 and under
+    record/4; the frozen copy is the old contract and refuses each new kind."""
+    for kind in RECORD_3_KINDS:
+        rec = _base(kinds=[kind])
+        assert not list(RECORD_3.iter_errors(rec)), kind
+        assert not _errors(rec), kind
+    for kind in NEW_KINDS:
+        assert list(RECORD_3.iter_errors(_base(kinds=[kind]))), kind
+
+
 # --- osd new: the scaffold's comment lists come from the schema -----------------------------------
 
 def test_new_scaffold_comments_list_the_schema_values():
-    props = RECORD_3.schema["properties"]
+    props = RECORD.schema["properties"]
     text = new.scaffold("https://acme.example/demo", "Demo", "acme/demo", date(2026, 10, 23))
     lines = {line.split(":")[0].strip(): line.split("#", 1)[1].strip() for line in text.splitlines()
              if "#" in line and not line.startswith("#")}
@@ -134,6 +171,15 @@ def test_new_scaffold_comments_list_the_schema_values():
     assert lines["redistribution"] == "fill: " + " | ".join(props["licence"]["properties"]["redistribution"]["enum"])
     assert lines["attribution"] == "fill: " + " | ".join(props["licence"]["properties"]["attribution"]["enum"])
     assert lines["listed_by"] == " | ".join(props["listed_by"]["items"]["enum"])
+
+
+def test_new_scaffold_kinds_comment_lists_the_schema_kinds():
+    text = new.scaffold("https://acme.example/demo", "Demo", "acme/demo", date(2026, 10, 23))
+    (line,) = [x for x in text.splitlines() if x.startswith("kinds:")]
+    assert line.split("#", 1)[1].strip() == "fill: " + " | ".join(RECORD.schema["properties"]["kinds"]["items"]["enum"])
+    listed = line.split("fill: ", 1)[1].split(" | ")
+    for kind in NEW_KINDS + RECORD_3_KINDS:
+        assert kind in listed, kind
 
 
 # --- osd status: a stated absolute expiry beside the level ------------------------------------------
@@ -241,5 +287,5 @@ def test_stac_osd_1_collection_still_validates(tmp_path, no_network):
 
 def test_template_access_comment_lists_the_schema_values():
     line = next(x for x in (paths.RECORDS_DIR / "_template.yaml").read_text().splitlines() if x.strip().startswith("access:"))
-    enum = RECORD_3.schema["properties"]["origin"]["properties"]["access"]["enum"]
+    enum = RECORD.schema["properties"]["origin"]["properties"]["access"]["enum"]
     assert line.split("#", 1)[1].strip() == " | ".join(enum) + " (from schema/record.schema.json)"

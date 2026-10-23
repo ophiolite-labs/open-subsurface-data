@@ -18,7 +18,7 @@ licence:
   attribution: required
   share_alike: true
   statement: "Schattauer, I., Hintersberger, E. (2023): Aerogeophysical data - Northern Lower Austria. Tethys RDR, GeoSphere Austria, Wien"
-kinds: [potential-fields]
+kinds: [potential-fields, airborne-em, radiometrics]
 region: {country: AT, basin: Bohemian Massif and Molasse margin (northern Lower Austria), bbox: [15.449582, 48.331274, 16.096122, 48.886203]}
 listed_by: [publisher]
 known_issues:
@@ -27,5 +27,5 @@ period:
   start: "1983"
   end: "1997"
   stated: "\"five airborne surveys carried out between 1983 and 1997\" (acquisition); published 2023-08-17"
-notes: "Want: kinds for airborne electromagnetic and radiometric data; potential-fields covers the magnetics only. GeoSphere's Tethys repository holds many more aeromagnetic and aeroradiometric grids (tethys.at/dataset/250 to 292)."
+notes: "GeoSphere's Tethys repository holds many more aeromagnetic and aeroradiometric grids (tethys.at/dataset/250 to 292)."
 added: 2026-10-23

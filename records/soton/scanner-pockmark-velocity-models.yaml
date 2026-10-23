@@ -16,12 +16,11 @@ licence:
   url: http://creativecommons.org/licenses/by/4.0/
   redistribution: allowed
   attribution: required
-kinds: [time-depth, seismic-3d]
+kinds: [velocity-model]
 region: {country: GB, basin: "UK North Sea (Scanner Pockmark complex)"}
 size: {bytes_estimate: 1192000000, stated: "page: 146MB x3, 377MB x2, 2kB README; sum approximate"}
 listed_by: [publisher]
 known_issues:
-  - "Want: a velocity-model kind; time-depth is the nearest, with seismic-3d for the SEG-Y volumes."
   - "No bbox: the page and README state no coordinates or CRS."
   - "Each file reads 'Available under License Creative Commons Attribution' and links the 4.0 deed."
   - "The host answers browser user agents with a JavaScript proof-of-work challenge (Anubis); a plain tool agent gets the page."

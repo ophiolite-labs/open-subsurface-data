@@ -46,12 +46,13 @@ def record_id(url: str) -> str:
 
 
 def choices() -> dict[str, str]:
-    """The scaffold's comment lists, read from schema/record.schema.json so they never drift (E19)."""
+    """The scaffold's comment lists, read from schema/record.schema.json so they never drift (E19; kinds E26)."""
     p = _schema("record")["properties"]
     return {"access": " | ".join(p["origin"]["properties"]["access"]["enum"]),
             "redistribution": " | ".join(p["licence"]["properties"]["redistribution"]["enum"]),
             "attribution": " | ".join(p["licence"]["properties"]["attribution"]["enum"]),
-            "listed_by": " | ".join(p["listed_by"]["items"]["enum"])}
+            "listed_by": " | ".join(p["listed_by"]["items"]["enum"]),
+            "kinds": " | ".join(p["kinds"]["items"]["enum"])}
 
 
 def scaffold(url: str, title: str | None, rid: str, today: date) -> str:
@@ -76,7 +77,7 @@ def scaffold(url: str, title: str | None, rid: str, today: date) -> str:
         "  spdx: null                                      # CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0 or null",
         f"  redistribution: null                            # fill: {c['redistribution']}",
         f"  attribution: null                               # fill: {c['attribution']}",
-        "kinds: []                                         # fill: see schema/record.schema.json",
+        f"kinds: []                                         # fill: {c['kinds']}",
         "region: {}                                        # country, basin, bbox when the publisher states them",
         f"listed_by: [community]                            # {c['listed_by']}",
         f"added: {today.isoformat()}",

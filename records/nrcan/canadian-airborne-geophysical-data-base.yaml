@@ -17,7 +17,7 @@ licence:
   redistribution: allowed
   attribution: required
   statement: "Aeromagnetic, Airborne Electromagnetic, Gravity and Radiometric Survey / Compilation Data 2024, Canadian Airborne Geophysical Data Base, Airborne Geophysics Section, Geological Survey of Canada, Lands and Minerals Sector, Natural Resources Canada"
-kinds: [potential-fields]
+kinds: [potential-fields, airborne-em, radiometrics]
 region: {country: CA, basin: Canada (onshore and offshore survey areas), bbox: [-141.0, 41.7, -52.6, 83.1]}
 listed_by: [publisher]
 known_issues:
@@ -25,5 +25,5 @@ known_issues:
   - "Geodetic Survey gravity data carry their own citation: \"Gravity Data (Geodetic Survey): 2024, Canadian Geodetic Survey, Surveyor General Branch, Lands and Minerals Sector, Natural Resources Canada\"."
   - "The portal names the Open Government Licence - Canada without a version; no SPDX id is inferred."
   - "bbox is Canada, approximate; the portal states no extent."
-notes: "Want: airborne electromagnetic and radiometric data are not potential fields and have no kind in the vocabulary; the record lists only potential-fields. Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind)."
+notes: "Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind)."
 added: 2026-10-23

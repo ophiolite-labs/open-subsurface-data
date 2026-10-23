@@ -1,0 +1,99 @@
+diff --git a/records/doe-gdr/utah-forge-3d-gravity.yaml b/records/doe-gdr/utah-forge-3d-gravity.yaml
+index 9fa820a..5e65a2b 100644
+--- a/records/doe-gdr/utah-forge-3d-gravity.yaml
++++ b/records/doe-gdr/utah-forge-3d-gravity.yaml
+@@ -19 +19 @@ licence:
+-kinds: [potential-fields]
++kinds: [potential-fields, geological-model]
+@@ -29 +29 @@ period:
+-notes: "The files are a 3D density model from gravity inversion, nearest kind potential-fields. Want: a kind for a geological 3D model or derived property model."
++notes: "The files are a 3D density model from gravity inversion, nearest kind potential-fields."
+diff --git a/records/doe-gdr/utah-forge-seismic-reflection.yaml b/records/doe-gdr/utah-forge-seismic-reflection.yaml
+index ba08523..96d40ed 100644
+--- a/records/doe-gdr/utah-forge-seismic-reflection.yaml
++++ b/records/doe-gdr/utah-forge-seismic-reflection.yaml
+@@ -20 +20 @@ licence:
+-kinds: [seismic-3d, seismic-2d]
++kinds: [seismic-3d, seismic-2d, velocity-model]
+@@ -30 +30 @@ period:
+-notes: "Want: a velocity-model kind; the migration velocity model ships with the SEG-Y volumes and has no kind. The acquisition years of the original surveys are not stated on the page."
++notes: "The acquisition years of the original surveys are not stated on the page."
+diff --git a/records/geosphere-at/aerogeophysics-northern-lower-austria.yaml b/records/geosphere-at/aerogeophysics-northern-lower-austria.yaml
+index 567cbd8..488772e 100644
+--- a/records/geosphere-at/aerogeophysics-northern-lower-austria.yaml
++++ b/records/geosphere-at/aerogeophysics-northern-lower-austria.yaml
+@@ -21 +21 @@ licence:
+-kinds: [potential-fields]
++kinds: [potential-fields, airborne-em, radiometrics]
+@@ -30 +30 @@ period:
+-notes: "Want: kinds for airborne electromagnetic and radiometric data; potential-fields covers the magnetics only. GeoSphere's Tethys repository holds many more aeromagnetic and aeroradiometric grids (tethys.at/dataset/250 to 292)."
++notes: "GeoSphere's Tethys repository holds many more aeromagnetic and aeroradiometric grids (tethys.at/dataset/250 to 292)."
+diff --git a/records/geosphere-at/molasse-basin-subsurface-model.yaml b/records/geosphere-at/molasse-basin-subsurface-model.yaml
+index d8f7044..c47d5f8 100644
+--- a/records/geosphere-at/molasse-basin-subsurface-model.yaml
++++ b/records/geosphere-at/molasse-basin-subsurface-model.yaml
+@@ -21 +21 @@ licence:
+-kinds: [horizons]
++kinds: [geological-model, horizons]
+@@ -30 +30 @@ period:
+-notes: "Want: a kind for a geological 3D model; horizons is the nearest (the layers are modelled surfaces). Related ISBN 978-3-85316-090-9."
++notes: "Related ISBN 978-3-85316-090-9."
+diff --git a/records/igme/sigeof.yaml b/records/igme/sigeof.yaml
+index ddc2a30..3db34e9 100644
+--- a/records/igme/sigeof.yaml
++++ b/records/igme/sigeof.yaml
+@@ -22 +22 @@ licence:
+-kinds: [seismic-2d, potential-fields, wellbore-logs]
++kinds: [seismic-2d, potential-fields, wellbore-logs, radiometrics]
+@@ -30 +30 @@ known_issues:
+-notes: "Want: kinds for airborne radiometrics and electrical/electromagnetic soundings; potential-fields covers the gravimetry and aeromagnetics only."
++notes: "Want: kinds for electrical/electromagnetic soundings; potential-fields covers the gravimetry and aeromagnetics only."
+diff --git a/records/lbeg/tunb-velo-2-0-ni.yaml b/records/lbeg/tunb-velo-2-0-ni.yaml
+index c4b3f93..3275edd 100644
+--- a/records/lbeg/tunb-velo-2-0-ni.yaml
++++ b/records/lbeg/tunb-velo-2-0-ni.yaml
+@@ -20 +20 @@ licence:
+-kinds: [time-depth]
++kinds: [velocity-model]
+@@ -27 +27 @@ known_issues:
+-notes: "Want: a velocity-model kind; time-depth is the nearest (the publisher names time-depth conversion of seismic data as a use). The page names 2026 in the model title and gives no other date, so no period is written."
++notes: "The page names 2026 in the model title and gives no other date, so no period is written."
+diff --git a/records/lbeg/tunb3d-ni.yaml b/records/lbeg/tunb3d-ni.yaml
+index 668ccbe..4e7f371 100644
+--- a/records/lbeg/tunb3d-ni.yaml
++++ b/records/lbeg/tunb3d-ni.yaml
+@@ -21 +21 @@ licence:
+-kinds: [horizons, faults]
++kinds: [geological-model, horizons, faults]
+@@ -31 +31 @@ period:
+-notes: "Want: a kind for a geological 3D model (salt structures, volumes); the record names horizons and faults. Citation form from https://www.lbeg.niedersachsen.de/download/183313/Zitierweise_Modell_und_Abschlussbericht.pdf."
++notes: "Citation form from https://www.lbeg.niedersachsen.de/download/183313/Zitierweise_Modell_und_Abschlussbericht.pdf."
+diff --git a/records/nrcan/canadian-airborne-geophysical-data-base.yaml b/records/nrcan/canadian-airborne-geophysical-data-base.yaml
+index 9a34da9..d2cc486 100644
+--- a/records/nrcan/canadian-airborne-geophysical-data-base.yaml
++++ b/records/nrcan/canadian-airborne-geophysical-data-base.yaml
+@@ -20 +20 @@ licence:
+-kinds: [potential-fields]
++kinds: [potential-fields, airborne-em, radiometrics]
+@@ -28 +28 @@ known_issues:
+-notes: "Want: airborne electromagnetic and radiometric data are not potential fields and have no kind in the vocabulary; the record lists only potential-fields. Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind)."
++notes: "Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind)."
+diff --git a/records/soton/scanner-pockmark-velocity-models.yaml b/records/soton/scanner-pockmark-velocity-models.yaml
+index 4539702..8328ce0 100644
+--- a/records/soton/scanner-pockmark-velocity-models.yaml
++++ b/records/soton/scanner-pockmark-velocity-models.yaml
+@@ -19 +19 @@ licence:
+-kinds: [time-depth, seismic-3d]
++kinds: [velocity-model]
+@@ -24 +23,0 @@ known_issues:
+-  - "Want: a velocity-model kind; time-depth is the nearest, with seismic-3d for the SEG-Y volumes."
+diff --git a/records/ustc/bedrettolab-atv-logs-stress.yaml b/records/ustc/bedrettolab-atv-logs-stress.yaml
+index e8e9e7a..62d5c15 100644
+--- a/records/ustc/bedrettolab-atv-logs-stress.yaml
++++ b/records/ustc/bedrettolab-atv-logs-stress.yaml
+@@ -21 +21 @@ licence:
+-kinds: [wellbore-logs]
++kinds: [wellbore-logs, stress]
+@@ -31 +31 @@ period:
+-notes: "Geothermal (EGS) research laboratory under up to 1.5 km of overburden. Stress inversion results have no kind (nearest: wellbore-logs, from which they are derived)."
++notes: "Geothermal (EGS) research laboratory under up to 1.5 km of overburden."

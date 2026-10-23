@@ -19,7 +19,7 @@ licence:
   redistribution: allowed
   attribution: required
   statement: "Sistema de Información Geofísica del IGME: SIGEOF. Editor: Área de Geofísica y Teledetección. [Fecha de consulta DD/MM/AAAA]. Disponible en: http://info.igme.es/sigeof/"
-kinds: [seismic-2d, potential-fields, wellbore-logs]
+kinds: [seismic-2d, potential-fields, wellbore-logs, radiometrics]
 region: {country: ES, basin: Spain (onshore and offshore), bbox: [-18.2, 27.6, 4.4, 43.8]}
 listed_by: [publisher]
 known_issues:
@@ -27,5 +27,5 @@ known_issues:
   - "The generic licence says certain data sets may carry special conditions; the SIGEOF page states none beyond the general conditions."
   - "Part of the seismic navigation is from REPSOL and most seismic sections from the Archivo Técnico de Hidrocarburos (Ministerio de Industria); the SIGEOF page applies the IGME licence to all data from SIGEOF."
   - "bbox is Spain including the Canary and Balearic Islands, approximate; the page states no extent."
-notes: "Want: kinds for airborne radiometrics and electrical/electromagnetic soundings; potential-fields covers the gravimetry and aeromagnetics only."
+notes: "Want: kinds for electrical/electromagnetic soundings; potential-fields covers the gravimetry and aeromagnetics only."
 added: 2026-10-23
