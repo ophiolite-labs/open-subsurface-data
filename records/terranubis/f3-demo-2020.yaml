@@ -20,4 +20,8 @@ size: {stated: "about 1.3 GB"}
 listed_by: [seg-wiki, publisher]
 known_issues:
   - "Publisher replaced F3-Demo-2020 with F3 Demo 2023 on 12 June 2023; /datainfo/F3-Demo-2020 now serves the 2023 page (7.6 GB, 4.5 GB download), whose licence label links the BY-SA 3.0 deed. Licence fields corrected from the earlier BY-SA 4.0 entry to what the page states."
+period:
+  start: "1987"
+  end: "1987"
+  stated: "URL now serves the F3 Demo 2023 page; General: \"Acquisition: 1987\" (same F3 survey)."
 added: 2026-10-23

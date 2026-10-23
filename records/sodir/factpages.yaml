@@ -43,4 +43,8 @@ inputs:
     format: wfs
     crs: "EPSG:4326"
     stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+period:
+  start: "1966"
+  end: "2026-10-23"
+  stated: "FactMaps Wellbores__all (the register's own WFS): earliest Entry_year 1966 (Entered_date 1966-07-19); register updated daily, end = date read 2026-10-23"
 added: 2026-10-23

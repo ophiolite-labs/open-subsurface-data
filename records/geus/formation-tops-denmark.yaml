@@ -18,4 +18,8 @@ size: {bytes_estimate: 238546, stated: one file}
 listed_by: [publisher]
 known_issues:
   - "bbox is approximate (Danish deep wells onshore and offshore); the Dataverse record carries no geographic extent."
+period:
+  start: "2023-09-22"
+  end: "2023-09-22"
+  stated: "GEUS Dataverse metadata: 'Publication Date 2023-09-22'; Production Date 2022-01-31; current version 3.0 released 2026-04-09 (API releaseTime); no time-period field"
 added: 2026-10-23

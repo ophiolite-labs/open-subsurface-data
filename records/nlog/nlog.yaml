@@ -30,4 +30,8 @@ inputs:
     format: wfs
     crs: "EPSG:4230"
     stated: "WFS capabilities DefaultCRS urn:ogc:def:crs:EPSG::4230 for 3D Seismic; responses declare it"
+period:
+  start: "1800"
+  end: "2026-10-23"
+  stated: "NLOG WFS All boreholes (6738): earliest START_DATE_DRILLING 1800-01-01 (5 boreholes, likely a placeholder; next 1828-01-01), latest 2026-10-13; register live, end = date read 2026-10-23"
 added: 2026-10-23
