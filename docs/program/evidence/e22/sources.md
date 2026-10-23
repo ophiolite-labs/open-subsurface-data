@@ -164,3 +164,95 @@ Socrata metadata from `https://<domain>/api/views/<id>.json`, CKAN from `https:/
   - "'Pipeline' provides public access to oil and gas well data for over 154,000 wells. ... Data contained within tables include: locations; completions; farm name and operator; pays and shows of hydrocarbons; water; formation tops and thicknesses; monthly and annual production of gas and/or oil, generally since 1979; plugging; data about mechanical logs ..."
   - "DISCLAIMER REGARDING THE RELEASE OF DATA AND USER REQUIREMENTS: The West Virginia Geological and Economic Survey (WVGES) makes basic data available to the public from its computerized databases on mineral resources under the following conditions: ... 3. These data are provided as a service to the State of West Virginia through the WVGES for the purpose of research and development efforts. Final use of these data is the sole responsibility of the user."
 - Licence: none stated → unknown. Extent: West Virginia (approximate). Period: not written (production only from 1979).
+
+## Group B: Iberia, the Alps, Canada and the North Atlantic (read 2026-10-23, 13:54 to 14:02 UTC)
+
+
+### Hosts tried for group B
+Pages opened with curl (browser user agent); status is the final answer after redirects.
+
+| Host | Address opened | Answer | Result |
+|---|---|---|---|
+| IGME-CSIC | https://www.igme.es/datos-y-mapas/bases-de-datos/ ; http://info.igme.es/sigeof/ | 200, 13:57 and 14:02 UTC | answered: `igme/sigeof` |
+| IGME Hidrocarburos | https://info.igme.es/Hidrocarburos | 200, but a Blazor application ("An unhandled error has occurred") with no readable content, 13:57 UTC | no record (SIGEOF carries the hydrocarbon seismic sections and well logs) |
+| IGME ATH (guessed address) | https://info.igme.es/ATH/ | 404, 13:54 UTC | no record |
+| IGME data catalogue | https://www.igme.es/datos-y-mapas/catalogo-de-datos/ | timeout (curl exit 28), 13:59 UTC | no record |
+| swisstopo (opendata.swiss) | https://opendata.swiss/en/dataset/tiefe-bohrungen ; /2d-und-3d-reflexionsseismik-in-der-schweiz | 200, 13:54 UTC | answered: `swisstopo/deep-wells`, `swisstopo/reflection-seismic` |
+| opendata.swiss CKAN API | https://opendata.swiss/api/3/action/package_show?id=tiefe-bohrungen | 403 (nginx), 13:54 UTC | not used; the HTML dataset pages carry the terms symbol |
+| swisstopo (guessed page) | https://www.swisstopo.admin.ch/en/geological-data-deep-boreholes | 404 | not used |
+| GeoSphere Austria | https://www.geosphere.at/de/daten ; https://www.tethys.at/oai (ListRecords, GetRecord 184/191/212) ; https://tethys.at/dataset/191 and /212 | 200, 13:55 to 13:57 UTC | answered: `geosphere-at/molasse-basin-subsurface-model`, `geosphere-at/aerogeophysics-northern-lower-austria` |
+| GeoSphere Data Hub / data.gv.at | https://data.hub.geosphere.at/dataset/?q=… ; data.gv.at CKAN API | 200 script shell / HTML instead of JSON | not used |
+| Portugal ENMC | https://www.enmc.pt/ | connection refused (curl exit 7), 13:54 UTC | refused; DGEG used |
+| Portugal DGEG | https://www.dgeg.gov.pt/pt/areas-setoriais/geologia/petroleo-armazenamento-de-co2/ and subpages | 200, 13:59 UTC | answered: `dgeg/petroleum-technical-data` |
+| Manitoba | https://www.manitoba.ca/iem/petroleum/index.html, /gis/technical.html, /pubcat/digital.html | 200, 13:54 and 14:00 UTC | answered: `manitoba-petroleum/technical-well-files` |
+| Saskatchewan | .../oil-and-gas/oil-and-gas-news-and-bulletins/geoscience-data (404); .../saskatchewan-geoscience-data-system (200) | 14:01 UTC | no record: the Geoscience Data System is mineral assessment data; well data are via Petrinex (not opened) |
+| Newfoundland C-NLOER | not opened | | already present as `cnloer/data-information-hub` |
+| Faroe Jarðfeingi | https://jf.fo/ ; /datur/boridatur/ ; /datur/data-package/ ; /datur/seismikk-datur/ | 200, 13:54 and 14:01 UTC | answered: `jardfeingi/well-data` |
+| Greenland via GEUS | not opened | | GEUS already at the publisher cap (3) |
+
+### igme/sigeof
+
+- Listing: <https://www.igme.es/datos-y-mapas/bases-de-datos/>: "SIGEOF Sistema de Información Geofísica Aplicación dirigida a la búsqueda y localización de datos de distintas metodologías de Geofísica: Eléctrica – Corriente Continua; Electromagnético; Resonancia Magnética; Testificación; Gravimetría; Petrofísica; Magnetometría y/o Radiometría Aeroportada y Sísmica."
+- Page: <http://info.igme.es/sigeof/> (200, 14:02 UTC; https redirects to http)
+  - "Confirma haber leido y aceptar las condiciones de la licencia de uso de los datos facilitados por esta aplicación."
+  - "LICENCIA DE USO: Condiciones de uso público y difusión de la información para la reutilización de los datos del IGME" … "Son de aplicación las siguientes condiciones generales para la reutilización de los datos procedentes de SIGEOF: 1. Está prohibido desnaturalizar el sentido de la información. 2. Debe citarse la fuente de los datos objeto de la reutilización. Esta cita podrá realizarse de la siguiente manera: Sistema de Información Geofísica del IGME: SIGEOF. Editor: Área de Geofísica y Teledetección. [Fecha de consulta DD/MM/AAAA]. Disponible en: http://info.igme.es/sigeof/ 3. No se podrá indicar, insinuar o sugerir que el Instituto Geológico y Minero de España (IGME) … participa, patrocina o apoya la reutilización"
+- Format report <http://info.igme.es/sigeof/doc/SIGEOF_INFO.pdf> (200): sections "SÍSMICA – LÍNEAS (SEG-P1) Y SECCIONES SÍSMICAS (TIF)", "SÍSMICA – SECCIONES SÍSMICAS (SEG-Y)", "MAGNETOMETRÍA Y/O RADIOMETRÍA – VUELOS/MALLAS", "DATOS GRAVIMÉTRICOS", "TESTIFICACIÓN – EXXONMOBIL"; "la mayoría de las secciones sísmicas obtenidas a partir del Archivo Técnico de Hidrocarburos (Ministerio de Industria, Energía y Turismo). También se encuentra la información de Sondeos de Hidrocarburos proporcionada por la compañía ExxonMobil International Limited."
+- Generic licence <https://info.igme.es/media/Pdfs/LicUsoIGME_GENERICA_EN_2022.pdf> (linked from https://www.igme.es/condiciones-de-uso/): "the re-use and dissemination of the NC IGME information and data is granted and supported by way of this free licence for commercial and non-commercial use, for any purpose"; "Certain databases or data sets may be subject to special conditions of use".
+- Extent: by map, province or sheet; bbox is Spain (approximate). Period: none stated.
+
+### swisstopo/deep-wells
+
+- Page: <https://opendata.swiss/en/dataset/tiefe-bohrungen> (200, 13:54 UTC), "Deep wells", organisation Federal Office of Topography swisstopo; terms symbol links `/en/terms-of-use#terms_by`.
+  - "This map shows the deep wells in Switzerland. The data come from the Federal Office of Topography swisstopo, from universities, cantons and private companies. Metadata are publicly accessible and the associated documents, when they are free for publication, are accessible through the Federal Geoportal (map.geo.admin.ch). For any information concerning the documentation, please contact the rights holder directly. The map is revised regularly and does not purport to be complete. MD = Measured depth, TVD = True vertical depth, TD = Total depth"
+  - Resources: WMS / WMTS ch.swisstopo.geologie-bohrungen_tiefer_500, API "RESTful API von geo.admin.ch", map preview, download. "Issued date July 14, 2017", "Modified date July 28, 2026", "Temporal coverage -", "Spatial coverage Schweiz (mit grenznahem Ausland)", "Update interval Quarterly".
+- Terms: <https://opendata.swiss/en/terms-of-use> (200, 13:55 UTC): "Open use. Must provide the source. You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes. You must provide the source (author, title and link to the dataset)."; "the datasets on opendata.swiss are generally accompanied by terms of use, rather than licences."
+- Extent: Switzerland (approximate bbox). Period: catalogue issued to modified (release), as quoted.
+
+### swisstopo/reflection-seismic
+
+- Page: <https://opendata.swiss/en/dataset/2d-und-3d-reflexionsseismik-in-der-schweiz> (200, 13:54 UTC); terms symbol `#terms_by` (same terms as above).
+  - "This map shows the location of seismic reflection data acquired in Switzerland for the exploration of the geological subsurface. The majority of these are two-dimensional measurements (2D) along the profile traces shown. Three-dimensional measurements (3D) cover the areas within the shown perimeters. … Downloading is possible for many of the processed seismic datasets that are publicly available. For more detailed information on other seismic data (raw, non-public etc.), please contact the rights holder directly. This map is continuously updated and does not claim to be complete."
+  - "Issued date September 8, 2023", "Modified date November 24, 2025", "Spatial coverage Schweiz (mit grenznahem Ausland)", "Update interval Semiannual".
+- Not recorded (cap and spread): "Gravimetric Atlas of Switzerland 1:100000" (terms `#terms_open`, issued 1994).
+
+### geosphere-at/molasse-basin-subsurface-model
+
+- Page: <https://tethys.at/dataset/191> (200, 13:57 UTC; script application). Metadata from <https://www.tethys.at/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:tethys.at:191> (200, 13:56 UTC):
+  - title "Geological subsurface model of the Austrian Molasse Basin"; "Increasing usage requirements in the Molasse Basin regarding mining, geothermal energy and storage of CO2 and natural gas have been the main driving force for creating a geological subsurface model"; "The modelled geological layers were exported as .DXF files from SKUA-GOCAD™."
+  - coverage "SOUTH-BOUND LATITUDE: 47.79 * WEST-BOUND LONGITUDE: 12.75 * NORTH-BOUND LATITUDE: 48.78 * EAST-BOUND LONGITUDE: 16.59 * ELEVATION ABSOLUT: 783 * DEPTH ABSOLUT: -7412"
+  - rights "Creative Commons Attribution 4.0 International (CC BY 4.0)", "info:eu-repo/semantics/openAccess"; date 2022-12-02; DOI 10.24341/tethys.191
+  - source "Porpaczy, C.,Bottig, M. (2022): Geological subsurface model of the Austrian Molasse Basin.Tethys RDR, Geologische Bundesanstalt (GBA), Wien"
+- Period: 2022-12-02 (publication, release).
+
+### geosphere-at/aerogeophysics-northern-lower-austria
+
+- Page: <https://tethys.at/dataset/212> (200, 13:57 UTC). OAI record oai:tethys.at:212 (200, 13:56 UTC):
+  - "The aerogeophysical dataset contains geomagnetic, electromagnetic and radiometric (Th, U, K) data from five airborne surveys carried out between 1983 and 1997 in the northern part of Lower Austria: Geras (1996, 1997), Pulkau North (1995), Pulkau (1994), Kamptal-Ziersdorf (1983), Krems (1983). … In 1998, the geomagnetic datasets were combined and reprocessed."
+  - coverage "SOUTH-BOUND LATITUDE: 48.331274 * WEST-BOUND LONGITUDE: 15.449582 * NORTH-BOUND LATITUDE: 48.886203 * EAST-BOUND LONGITUDE: 16.096122"
+  - rights "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)"; date 2023-08-17; DOI 10.24341/tethys.212
+  - source "Schattauer, I.,Hintersberger, E. (2023): Aerogeophysical data - Northern Lower Austria.Tethys RDR, GeoSphere Austria, Wien"
+- Period: 1983 to 1997 (acquisition).
+
+### dgeg/petroleum-technical-data
+
+- Page: <https://www.dgeg.gov.pt/pt/areas-setoriais/geologia/petroleo-armazenamento-de-co2/dados-informacao-tecnico-cientifica/dados-consulta/> (200, 13:59 UTC):
+  - "Os dados e informação técnica no âmbito das atividades de prospeção e pesquisa de petróleo … estão disponíveis nas instalações da DGEG ou do Laboratório Nacional de Energia e Geologia (LNEG)"
+  - "Sísmica 2D - No âmbito das concessões atribuídas, foram adquiridos cerca de 72600 km de sísmica (Dados de campo, processados e reprocessados): 5.865 Km onshore 67.009 Km offshore"; "Sísmica 3D - Desde 2010, foram adquiridos cerca de 10.372 km² de sísmica 3D"; "Sondagens - Desde 1938, foram efetuadas 175 sondagens. … Relatórios finais; Diagrafias elétricas; Dados de Velocidade; Relatórios de geoquímica; Relatórios de biostratigrafia; Testemunhos e detritos de sondagens; Lâminas delgadas …; Amostras de óleo e de testes de formação."
+- Price page <…/precario-aplicavel/> (200, 13:59 UTC): "Para consultar o respetivo preçário … bem como resumo das respetivas condições, ver Tabela de Preços 2018/2019" → <https://www.dgeg.gov.pt/media/5nvewoac/doc-7.pdf> (200):
+  - "A venda de documentação deve obedecer aos seguintes termos e condições: … 2. As companhias não licenciadas/não concessionárias deverão pagar … pela consulta de informação técnica, uma taxa fixa de 1250,0 Euros. … 3. A taxa fixa … terá a validade de 12 meses … 5. Os organismos públicos e as instituições académicas poderão beneficiar dum desconto de 50%, a ser analisado caso a caso. 6. A informação só será vendida, ao setor petrolífero, a companhias idóneas. 7. A informação não poderá ser reproduzida ou vendida a terceiros."
+- Extent: none stated (bbox mainland Portugal and offshore, approximate). Period: 1938 to date (wells), as quoted.
+
+### manitoba-petroleum/technical-well-files
+
+- Page: <https://www.manitoba.ca/iem/petroleum/gis/technical.html> (200, 14:00 UTC):
+  - "Technical Well files can be accessed by entering the well licence number below."; "The Regulatory Services Branch has technical records of all non-confidential wells drilled in the Province. Files may include the original well licence, survey plan, drilling prognosis, core analyses, drill stem test reports, reservoir pressure measurements, logs, drilling and service rig tour reports, and well completion reports."
+  - sample file http://content.gov.mb.ca/iem/petroleum/documents/technical/008001.pdf (200, application/pdf, 34 MB); UWI key list …/reports/uwi_weekly.xlsx (200).
+- Digital data page <https://www.manitoba.ca/iem/petroleum/pubcat/digital.html>: "Digital Well data is available from the Regulatory Services Branch by contacting …"
+- Licence: <https://www.gov.mb.ca/legal/copyright.html> (200, 14:00 UTC; footer link of the page): "The OpenMB License makes clear that most material covered by Crown copyright can be copied, modified, published, translated, adapted, distributed or otherwise used, without seeking additional permissions"; "Information that belongs to a third-party is governed by that third-party and can't be licensed by the government."; attribution example "Contains information from the Manitoba government, licensed under the OpenMB Information and Data Use Licence ( Manitoba.ca/OpenMB )". Licence PDF <https://www.gov.mb.ca/asset_library/en/legal/OpenMB-Information-Data-Use-Licence.pdf> (200): exemptions include "third party rights the Information Provider is not authorized to license".
+- Extent: none stated (bbox southern Manitoba, approximate). Period: none stated.
+
+### jardfeingi/well-data
+
+- Page: <https://jf.fo/datur/boridatur/> (200, 14:01 UTC): "Below are all the data releases for the wells on the map. Press on the data below each well to download a pdf file. (9 offshore wells and 3 onshore wells)." Zip files 2015.08.24_FO_Offshore_Wells.zip and Onshore_wells_NOV2017.zip. Sample PDFs: 6004-12-1_well_fakta.pdf ("Well information … Spud date 23/7-2001 … Operator BP Amoco Exploration (Faroes) Ltd"), 6004-12-1_digital-logs.pdf ("Digital Logs (LAS)" list).
+- Data-package <https://jf.fo/datur/data-package/> (200, 14:01 UTC): "It includes released 3D-, 2D-seismic and well data."; "There is an administration fee of £400 for sending the data on a harddrive"; "Press here to see the Terms and Conditions (pdf)" (no link in the page).
+- Licence: none stated; recorded `unknown`. Extent: none stated (bbox the Faroese area, approximate). Period: none stated.

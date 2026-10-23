@@ -1,0 +1,35 @@
+id: dgeg/petroleum-technical-data
+title: "Petróleo: Dados / Informação Técnico-Científica (seismic, wells and reports of Portugal)"
+summary: >-
+  The technical data from petroleum exploration in Portugal held by DGEG and LNEG: about
+  72,600 km of 2D seismic (field, processed and reprocessed; 5,865 km onshore, 67,009 km
+  offshore), about 10,372 km² of 3D seismic acquired since 2010, and 175 wells drilled since 1938
+  with final reports, electric logs, velocity data, geochemistry and biostratigraphy reports,
+  cores and cuttings, thin sections and fluid samples.
+publisher: {name: "Direção-Geral de Energia e Geologia (DGEG)", url: https://www.dgeg.gov.pt, country: PT}
+origin:
+  url: https://www.dgeg.gov.pt/pt/areas-setoriais/geologia/petroleo-armazenamento-de-co2/dados-informacao-tecnico-cientifica/dados-consulta/
+  access: purchase
+  notes: "Data are consulted at DGEG or LNEG and sold per the price list 'Tabela de Preços 2018/2019' (https://www.dgeg.gov.pt/media/5nvewoac/doc-7.pdf), linked from the 'Preçário Aplicável' page. ENMC (www.enmc.pt) refused the connection on 23 Oct 2026."
+licence:
+  name: "DGEG Preçário 2018-2019, termos e condições de venda"
+  spdx: null
+  url: https://www.dgeg.gov.pt/media/5nvewoac/doc-7.pdf
+  redistribution: forbidden
+  attribution: unknown
+  terms:
+    stated: "\"A informação só será vendida, ao setor petrolífero, a companhias idóneas. A informação não poderá ser reproduzida ou vendida a terceiros.\" Non-licensed companies pay a fixed consultation fee of 1250 euros, valid 12 months; public bodies and academic institutions may receive a 50% discount case by case."
+    duration: null
+    review_before_publication: null
+kinds: [seismic-2d, seismic-3d, wellbore-logs, time-depth, core, geochemistry, reports]
+region: {country: PT, basin: "Portuguese onshore and offshore basins (Lusitanian, Porto, Alentejo, Algarve)", bbox: [-12.5, 36.5, -6.2, 42.2]}
+listed_by: [publisher]
+known_issues:
+  - "Prices: e.g. processed 2D lines SEG-Y 20 to 30 euros/km, 3D field data 80 to 100 euros/km², LAS logs 840 to 1400 euros per well, by data age (before 1973, 1973-1999, after 1999)."
+  - "bbox is mainland Portugal and its offshore, approximate; the page states no extent."
+period:
+  start: "1938"
+  end: "2026-10-23"
+  stated: "\"Sondagens - Desde 1938, foram efetuadas 175 sondagens\"; \"Sísmica 3D - Desde 2010\" (acquisition, to date)"
+notes: "Velocity data recorded as time-depth. Basin names from DGEG's 'Bacias Sedimentares' page title list, not from the data page."
+added: 2026-10-23

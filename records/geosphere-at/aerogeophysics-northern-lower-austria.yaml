@@ -1,0 +1,31 @@
+id: geosphere-at/aerogeophysics-northern-lower-austria
+title: Aerogeophysical data - Northern Lower Austria (magnetic, radiometric and electromagnetic data)
+summary: >-
+  Geomagnetic, electromagnetic and radiometric (Th, U, K) data from five helicopter surveys flown
+  between 1983 and 1997 in the northern part of Lower Austria around the Diendorf fault system:
+  Geras (1996, 1997), Pulkau North (1995), Pulkau (1994), Kamptal-Ziersdorf (1983) and Krems
+  (1983); the magnetic and electromagnetic sets were combined and reprocessed in 1998.
+publisher: {name: "GeoSphere Austria, Tethys RDR", url: https://www.geosphere.at, country: AT}
+origin:
+  url: https://tethys.at/dataset/212
+  access: anonymous
+  notes: "DOI 10.24341/tethys.212; OAI-PMH record oai:tethys.at:212. Files: GeoTIFF grids, text and a PDF description. Methods in Schattauer et al. 2022 (doi:10.3390/geosciences12120436) and Paoletti et al. 2022 (doi:10.3390/rs14081807)."
+licence:
+  name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+  spdx: CC-BY-SA-4.0
+  url: https://creativecommons.org/licenses/by-sa/4.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+  statement: "Schattauer, I., Hintersberger, E. (2023): Aerogeophysical data - Northern Lower Austria. Tethys RDR, GeoSphere Austria, Wien"
+kinds: [potential-fields]
+region: {country: AT, basin: Bohemian Massif and Molasse margin (northern Lower Austria), bbox: [15.449582, 48.331274, 16.096122, 48.886203]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the record's stated coverage."
+period:
+  start: "1983"
+  end: "1997"
+  stated: "\"five airborne surveys carried out between 1983 and 1997\" (acquisition); published 2023-08-17"
+notes: "Want: kinds for airborne electromagnetic and radiometric data; potential-fields covers the magnetics only. GeoSphere's Tethys repository holds many more aeromagnetic and aeroradiometric grids (tethys.at/dataset/250 to 292)."
+added: 2026-10-23

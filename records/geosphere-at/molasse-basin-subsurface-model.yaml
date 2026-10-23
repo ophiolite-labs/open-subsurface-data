@@ -1,0 +1,31 @@
+id: geosphere-at/molasse-basin-subsurface-model
+title: Geological subsurface model of the Austrian Molasse Basin
+summary: >-
+  Geological 3D subsurface model of the Molasse Basin in Lower and Upper Austria and Salzburg,
+  built in SKUA-GOCAD from all published subsurface information (geological maps,
+  cross-sections, contour maps and geophysical data) as a basis for subsurface management of
+  mining, geothermal energy and gas and CO2 storage; the modelled geological layers are
+  published as DXF files with a data description document.
+publisher: {name: "GeoSphere Austria (Geologische Bundesanstalt, GBA), Tethys RDR", url: https://www.geosphere.at, country: AT}
+origin:
+  url: https://tethys.at/dataset/191
+  access: anonymous
+  notes: "DOI 10.24341/tethys.191; OAI-PMH record oai:tethys.at:191 at https://www.tethys.at/oai. The landing page is a script application; its metadata are read from the OAI record."
+licence:
+  name: Creative Commons Attribution 4.0 International (CC BY 4.0)
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+  statement: "Porpaczy, C., Bottig, M. (2022): Geological subsurface model of the Austrian Molasse Basin. Tethys RDR, Geologische Bundesanstalt (GBA), Wien"
+kinds: [horizons]
+region: {country: AT, basin: "Molasse Basin (Lower Austria, Upper Austria, Salzburg)", bbox: [12.75, 47.79, 16.59, 48.78]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the record's stated coverage (south 47.79, west 12.75, north 48.78, east 16.59; depth to -7412 m)."
+period:
+  start: "2022-12-02"
+  end: "2022-12-02"
+  stated: "Tethys OAI record dc:date 2022-12-02 (publication); citation year 2022 (release)"
+notes: "Want: a kind for a geological 3D model; horizons is the nearest (the layers are modelled surfaces). Related ISBN 978-3-85316-090-9."
+added: 2026-10-23

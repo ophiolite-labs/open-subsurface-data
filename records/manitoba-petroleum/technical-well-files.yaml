@@ -1,0 +1,27 @@
+id: manitoba-petroleum/technical-well-files
+title: Petroleum Technical Well Files
+summary: >-
+  Manitoba's Regulatory Services Branch (oil and gas) technical records of all non-confidential
+  wells drilled in the province, one PDF per well licence: well licence, survey plan, drilling
+  prognosis, core analyses, drill stem test reports, reservoir pressure measurements, logs,
+  drilling and service rig tour reports and well completion reports; wells are found through the
+  Unique Well Identifier (UWI) key list.
+publisher: {name: "Province of Manitoba, Regulatory Services Branch (Oil and Gas)", url: https://www.manitoba.ca/iem/petroleum/, country: CA}
+origin:
+  url: https://www.manitoba.ca/iem/petroleum/gis/technical.html
+  access: anonymous
+  notes: "Files at http://content.gov.mb.ca/iem/petroleum/documents/technical/<6-digit licence>.pdf (e.g. 008001.pdf, 34 MB); UWI key list https://www.manitoba.ca/iem/petroleum/reports/uwi_weekly.xlsx. Digital well data are by contact with the Branch."
+licence:
+  name: OpenMB Information and Data Use Licence
+  spdx: null
+  url: https://www.gov.mb.ca/asset_library/en/legal/OpenMB-Information-Data-Use-Licence.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Contains information from the Manitoba government, licensed under the OpenMB Information and Data Use Licence (Manitoba.ca/OpenMB)"
+kinds: [wellbore-headers, wellbore-logs, core, pressure, reports]
+region: {country: CA, basin: Williston Basin (southwestern Manitoba), bbox: [-102.0, 49.0, -95.2, 52.0]}
+listed_by: [publisher]
+known_issues:
+  - "The licence is named on the Government of Manitoba copyright page (https://www.gov.mb.ca/legal/copyright.html), linked from the well-files page; it excludes 'third party rights the Information Provider is not authorized to license', and operator-submitted reports may fall under that exemption."
+  - "bbox is southern Manitoba, approximate; the page states no extent."
+added: 2026-10-23

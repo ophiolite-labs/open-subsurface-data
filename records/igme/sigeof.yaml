@@ -1,0 +1,31 @@
+id: igme/sigeof
+title: "SIGEOF - Sistema de Información Geofísica"
+summary: >-
+  IGME-CSIC's geophysical information system: search and download of the geophysical data held
+  by the Spanish geological survey, by map extent, province or 1:50,000 and 1:200,000 sheet:
+  reflection seismic lines (SEG-P1 navigation, TIF sections and SEG-Y sections, many from the
+  Archivo Técnico de Hidrocarburos), gravimetric stations (Bouguer anomaly), airborne magnetic
+  and radiometric flights and grids, electrical and electromagnetic soundings, petrophysics and
+  well logging (testificación, including hydrocarbon wells provided by ExxonMobil).
+publisher: {name: "Instituto Geológico y Minero de España (IGME-CSIC)", url: https://www.igme.es, country: ES}
+origin:
+  url: http://info.igme.es/sigeof/
+  access: anonymous
+  notes: "The application asks the user to confirm the licence of use before searching. Format report: http://info.igme.es/sigeof/doc/SIGEOF_INFO.pdf. Listed on https://www.igme.es/datos-y-mapas/bases-de-datos/."
+licence:
+  name: "LICENCIA DE USO: Condiciones de uso público y difusión de la información para la reutilización de los datos del IGME"
+  spdx: null
+  url: https://info.igme.es/media/Pdfs/LicUsoIGME_GENERICA_EN_2022.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Sistema de Información Geofísica del IGME: SIGEOF. Editor: Área de Geofísica y Teledetección. [Fecha de consulta DD/MM/AAAA]. Disponible en: http://info.igme.es/sigeof/"
+kinds: [seismic-2d, potential-fields, wellbore-logs]
+region: {country: ES, basin: Spain (onshore and offshore), bbox: [-18.2, 27.6, 4.4, 43.8]}
+listed_by: [publisher]
+known_issues:
+  - "Terms: the licence grants re-use 'for commercial and non-commercial use, for any purpose'; the meaning may not be altered, the last-update date must be quoted, and IGME may not be implied to endorse the re-use."
+  - "The generic licence says certain data sets may carry special conditions; the SIGEOF page states none beyond the general conditions."
+  - "Part of the seismic navigation is from REPSOL and most seismic sections from the Archivo Técnico de Hidrocarburos (Ministerio de Industria); the SIGEOF page applies the IGME licence to all data from SIGEOF."
+  - "bbox is Spain including the Canary and Balearic Islands, approximate; the page states no extent."
+notes: "Want: kinds for airborne radiometrics and electrical/electromagnetic soundings; potential-fields covers the gravimetry and aeromagnetics only."
+added: 2026-10-23
