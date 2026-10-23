@@ -29,4 +29,5 @@ known_issues:
   - "Footer: 'Copyright © 2026 Petroliam Nasional Berhad (PETRONAS) ... All rights reserved.' The EUA covers data confidentiality; its text is not public."
   - "FAQ: downloads beyond 5 TB per account are charged 'approximately USD 0.12 per gigabyte'. Prices carry an asterisk not explained on the page."
   - "The home page says 730,000 line km of 2D seismic and 240,000 sq km of FTG; the coverage panel says 495,000 line-km and 292,000 sqkm. bbox is Malaysia with its offshore, approximate."
+notes: "No period stated: the page gives volumes but no dates."
 added: 2026-10-23

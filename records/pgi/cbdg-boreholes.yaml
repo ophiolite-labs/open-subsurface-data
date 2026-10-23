@@ -21,4 +21,8 @@ known_issues:
   - "PGI hosts (cbdg.pgi.gov.pl, baza.pgi.gov.pl, dm.pgi.gov.pl, cbdgmapa.pgi.gov.pl) answered an Incapsula challenge ('Request unsuccessful') to automated requests on 23 Oct 2026: blocked, not dead (OSD-D9). The licence is as stated on dane.gov.pl."
   - "At 15:08 UTC the same day cbdgmapa.pgi.gov.pl answered the ArcGIS service behind the WFS dane.gov.pl names; that layer is the manifest_url."
   - "bbox is the extent of Poland, approximate."
+period:
+  start: "1824"
+  end: "2026-10-23"
+  stated: "PGI CBDG layer cbdg_otwory/0 field ROK 'Rok wiercenia': min 1824, max 2026 over 308,587 boreholes; dane.gov.pl: 'od końca XIX wieku do chwili obecnej', updated 'Codziennie' (daily), so to today"
 added: 2026-10-23

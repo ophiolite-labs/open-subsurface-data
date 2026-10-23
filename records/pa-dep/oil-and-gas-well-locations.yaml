@@ -23,4 +23,5 @@ known_issues:
   - "data.pa.gov lists the DEP GIS Open Data Portal as 'Public Domain'; the dataset's own terms say not for commercial use or resale. Recorded, not resolved."
   - "\"Some sub facility types are not included in this layer due to security policies.\""
   - "bbox is the layer's stated extent (Pennsylvania), approximate."
+notes: "No period stated: the hub item and its metadata give no dates, and the map layer timed out."
 added: 2026-10-23

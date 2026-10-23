@@ -28,4 +28,5 @@ known_issues:
   - "Site footer: '© Copyright 2023 (Petroci Virtual Data Room) All rights reserved'. The confidentiality and licence agreements are named in the process chart but their texts and prices are not public."
   - "Per-block summary PDFs linked from the area pages (www.petroci.ci/virtual_data_room/...) redirect to a 404 page (23 Oct 2026)."
   - "bbox is the Ivorian coastal basin and offshore, approximate."
+notes: "No period stated: the public page gives geological ages only, no data dates."
 added: 2026-10-23

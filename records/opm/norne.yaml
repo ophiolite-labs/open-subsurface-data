@@ -21,4 +21,5 @@ known_issues:
   - "README adds: git history contains proprietary decks (now removed) where usage restrictions may apply."
   - "NTNU's own Norne hosting is no longer the source; OPM is the live home (search result, not opened on the NTNU side)."
   - "share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+notes: "No period stated: the README gives no release or acquisition date."
 added: 2026-10-23
