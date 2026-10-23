@@ -7,6 +7,7 @@ publisher: {name: TGS (AWS Open Data), url: https://registry.opendata.aws/tgs-op
 origin:
   url: https://registry.opendata.aws/tgs-opendata-poseidon
   access: anonymous
+  manifest_url: https://tgs-opendata-poseidon.s3.amazonaws.com/?list-type=2&max-keys=1000
 licence:
   name: CC BY 4.0 (as the TGS Open Data page states)
   spdx: CC-BY-4.0

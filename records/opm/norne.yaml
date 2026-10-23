@@ -6,6 +6,7 @@ publisher: {name: Open Porous Media Initiative, url: https://opm-project.org, co
 origin:
   url: https://github.com/OPM/opm-data
   access: anonymous
+  manifest_url: https://api.github.com/repos/OPM/opm-data/contents/norne
 licence:
   name: Open Database License 1.0 (decks); Database Contents License 1.0 (data)
   spdx: ODbL-1.0

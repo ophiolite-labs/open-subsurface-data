@@ -12,7 +12,7 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 60   # L2 hashes up to 2 GB per run, 2 s pause per host
     permissions: { contents: write, pull-requests: write, actions: write }
     steps:
       - uses: actions/checkout@v4
@@ -37,13 +37,17 @@ jobs:
           fi
           echo "ids=$ids" >> "$GITHUB_OUTPUT"
       - run: uv run osd verify ${{ steps.ids.outputs.ids }} | tee verify.txt
+      - name: levels as published (the same levels records.json carries after the republish)
+        run: |
+          uv run osd status | tee status.txt
+          { echo '### osd status'; echo '```'; cat status.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with: { name: verification, path: build/verification }
       - name: comment on the pull request
         if: github.event_name == 'pull_request'
         env: { GH_TOKEN: "${{ github.token }}" }
         run: |
-          { echo '### Verification'; echo '```'; cat verify.txt; echo '```'; } > body.md
+          { echo '### Verification'; echo '```'; cat verify.txt; echo '```'; echo '### osd status'; echo '```'; cat status.txt; echo '```'; } > body.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file body.md || true
       - name: store results and republish
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
