@@ -1,0 +1,30 @@
+id: gsq/qped
+title: Queensland Petroleum Exploration Data-QPED
+summary: >-
+  2017 database extract from MERLIN with geological, geophysical and geochemical data on
+  Queensland's sedimentary basins from petroleum wells, coal seam gas wells and stratigraphic
+  bores: well history, company and GSQ stratigraphy, drill stem tests, wireline logs, downhole
+  temperatures, analytical data, biostratigraphy and hydrocarbon indications.
+publisher: {name: Geological Survey of Queensland, url: https://geoscience.data.qld.gov.au, country: AU}
+origin:
+  url: https://geoscience.data.qld.gov.au/dataset/ds000005
+  access: anonymous
+  manifest_url: https://www.data.qld.gov.au/api/3/action/package_show?id=ds000005
+  notes: "The GSQ portal answered 403 to this host on 23 Oct 2026; facts are from GSQ's own entry in the Queensland Government open data catalogue (organisation Geological Survey of Queensland, maintainer GSQOpenData), which lists no resources."
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, tops, wellbore-logs, pressure, geochemistry]
+region: {country: AU, basin: Queensland sedimentary basins, bbox: [138.0, -29.2, 153.6, -9.1]}
+listed_by: [publisher]
+known_issues:
+  - "Licence read from the publisher's entry in the state open data catalogue; the GSQ dataset page itself was blocked (403) on 23 Oct 2026."
+  - "bbox is the State of Queensland, approximate."
+period:
+  start: "2017"
+  end: "2017"
+  stated: "Catalogue notes: \"2017 Database extract containing geological, geophysical, and geochemical data relating to Queensland's sedimentary basins\" (release)"
+added: 2026-10-23

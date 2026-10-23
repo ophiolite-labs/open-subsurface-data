@@ -1,0 +1,26 @@
+id: cnsoer/directory-of-offshore-wells
+title: Directory of Offshore Wells (Nova Scotia offshore area)
+summary: >-
+  The Canada-Nova Scotia Offshore Energy Regulator's list of offshore wells: well name, company,
+  drilling unit, location, spud date, well termination date, RT elevation, water depth, total
+  depth, well type, classification and status, published on the Data Management Centre's public
+  data summary.
+publisher: {name: Canada-Nova Scotia Offshore Energy Regulator (CNSOER), url: https://cnsoer.ca, country: CA}
+origin:
+  url: https://cnsopbdigitaldata.ca/geoviewer/dmc/public/query/0
+  access: anonymous
+  notes: "Files dow-2025.xlsx and dow-2025.pdf (Last Revised January 2025), plus dow-oj-2025 for wells curated by the CNSOER outside its jurisdiction. Formerly the CNSOPB; cnsopb.ns.ca redirects to cnsoer.ca. The full DMC (logs, seismic, reports) needs an approved account."
+licence:
+  name: Not stated for the data (DMC page states "Content © CNSOER 2025")
+  spdx: null
+  url: https://cnsoer.ca/website-terms-of-use
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: CA, basin: Scotian Shelf and Slope (Canada-Nova Scotia offshore area), bbox: [-67.0, 40.5, -56.0, 47.0]}
+listed_by: [publisher]
+known_issues:
+  - "The cnsoer.ca website terms prohibit unauthorized reproduction of website materials; the DMC host states only a copyright line, so redistribution of the well list is not inferred."
+  - "bbox is the Canada-Nova Scotia offshore area, approximate."
+  - "Coordinates in the PDF are DMS with the degree sign rendered as 0."
+added: 2026-10-23
