@@ -1,0 +1,32 @@
+name: Ask for a mirrored copy to be removed
+description: A copy of a file in the Open Subsurface Data mirror that should no longer be served
+title: "takedown: <record id or sha256>"
+labels: [takedown]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every file the mirror holds has a custody document naming its origin, its licence and its
+        sha256 (`custody/<sha256>.json` beside the copy). A maintainer (see CONTRIBUTING.md,
+        "Removing a mirrored copy") reads this request and, when it is approved, removes the copy
+        and records a tombstone so it is never mirrored again. The catalogue keeps pointing at the
+        publisher's own address. Nothing here removes the publisher's original.
+  - type: input
+    id: copy
+    attributes:
+      label: "Which copy? (the mirror address, the sha256, or the record id)"
+      placeholder: "https://.../mirror/<record id>/<sha256>/<file>"
+    validations: { required: true }
+  - type: dropdown
+    id: who
+    attributes:
+      label: "You are"
+      options: [The publisher or rights holder, Acting for the publisher or rights holder, Someone else]
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes: { label: "Why should it be removed? (licence change, error, personal data, other)" }
+    validations: { required: true }
+  - type: input
+    id: contact
+    attributes: { label: "How can we reach you if the issue thread is not enough? (optional)" }
