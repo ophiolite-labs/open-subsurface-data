@@ -24,7 +24,7 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 - E16 had found two gate reds outside its claim: the record/1 test pops only `inputs` (period is also record/2), and full STAC validation of 18,432 Items takes 115 s. OSD-D18: gate validates Collections and an Item sample; `make check-full` runs in the verify workflow on main. E16's claim extended to land both.
 - E06 slice 2 merged (PR #12, main cc7c470): Select on the map, tick datasets, read licences and the share-alike note, download `osd.manifest.json`; a `#pick=` link shares a selection; round trip into `osd get` proven in `docs/program/evidence/e06/`. E06 is DONE.
 - Verify on main after E15: success; the site publishes 68 records (62 L1, 3 L2, 1 L3, 2 L0) and serves `outlines.pmtiles` (60.9 MB) with byte ranges.
-- Owner action 103 added (bucket and keys); items 102 and 103 are not yet on the Mac (ssh to the Mac times out; a retry loop runs every five minutes until it prints mac-ok).
+- Owner actions 102 (QGIS STAC screenshot) and 103 (Hetzner project, bucket and keys for the mirror) are on the Mac (sync confirmed mac-ok 23 Oct 15:15 CEST, after the Mac was unreachable from the afternoon).
 - Hardening (supervisor, main): the E05 performance test asserts the median of its five pans instead of the maximum; PR #11 failed on one 110.5 ms frame beside four under 98 ms on the shared runner. Budget unchanged at 100 ms.
 - Known red: a worker whose branch is deleted by `gh pr merge --delete-branch` sees its worktree path reported as deleted; run `git worktree prune` after closing the pane.
 
