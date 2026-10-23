@@ -1,7 +1,8 @@
 """Build the published catalogue from records, outlines and verification records.
 
 Outputs (build/catalog/):
-  records.json    every record, joined with its latest verification level
+  records.json    every record, joined with its latest verification level, the date it was
+                   established and `stale` when that date is over 30 days old (or absent)
   outlines.geojson one FeatureCollection, every feature joined with record title, kinds,
                    licence and level so the map needs no second lookup
   collections.json STAC-shaped collections, one per record (full STAC validity is E04)
@@ -10,10 +11,12 @@ Outputs (build/catalog/):
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 from . import __version__, paths
 from .records import load_outline, load_records
+from .verify import is_stale
 
 
 def latest_verification(rid: str, vdir: Path = paths.VERIFICATION_DIR) -> dict | None:
@@ -21,7 +24,8 @@ def latest_verification(rid: str, vdir: Path = paths.VERIFICATION_DIR) -> dict |
     return json.loads(p.read_text()) if p.exists() else None
 
 
-def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR) -> dict:
+def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
+          now: datetime | None = None) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     recs = load_records()
     records_out = []
@@ -31,7 +35,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         v = latest_verification(rid, vdir)
         level = v["level"] if v else "L0"
         checked = v["checked_at"] if v else None
-        joined = dict(rec, level=level, checked_at=checked)
+        joined = dict(rec, level=level, checked_at=checked, stale=is_stale(checked, now))
         records_out.append(joined)
         op = paths.outline_path(rid)
         if op.exists():

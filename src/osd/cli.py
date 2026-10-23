@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import datetime
+from pathlib import Path
 
 from . import build as build_mod
 from . import paths
 from .records import load_records, validate_outlines, validate_records
-from .verify import verify_all
+from .verify import is_stale, verify_all
 
 
 def cmd_validate(_: argparse.Namespace) -> int:
@@ -23,7 +25,9 @@ def cmd_validate(_: argparse.Namespace) -> int:
 def cmd_verify(a: argparse.Namespace) -> int:
     results = verify_all(ids=a.ids or None)
     for v in results:
-        print(f"  {v['level']}  {v['record_id']}  (origin HTTP {v['origin'].get('http_status')})")
+        o = v["origin"]
+        l2 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L2")
+        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}; {l2})")
     print(f"{len(results)} verified -> {paths.VERIFICATION_DIR}")
     return 0
 
@@ -34,14 +38,20 @@ def cmd_build(_: argparse.Namespace) -> int:
     return 0
 
 
+def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = None) -> list[str]:
+    """The levels `osd build` publishes, read from the same verification directory."""
+    lines = [f"{'level':5} {'id':36} {'checked':10} {'access':12} {'redistribution':14} kinds"]
+    for rid, r in load_records().items():
+        v = build_mod.latest_verification(rid, vdir)
+        lv, checked = (v["level"], v["checked_at"]) if v else ("L0", None)
+        when = (checked or "never")[:10] + (" stale" if is_stale(checked, now) else "")
+        lines.append(f"{lv:5} {rid:36} {when:16} {r['origin']['access']:12} "
+                     f"{r['licence']['redistribution']:14} {','.join(r['kinds'])}")
+    return lines
+
+
 def cmd_status(_: argparse.Namespace) -> int:
-    recs = load_records()
-    print(f"{'level':5} {'id':28} {'access':12} {'redistribution':14} kinds")
-    for rid, r in recs.items():
-        v = build_mod.latest_verification(rid)
-        lv = v["level"] if v else "L0"
-        print(f"{lv:5} {rid:28} {r['origin']['access']:12} {r['licence']['redistribution']:14} "
-              f"{','.join(r['kinds'])}")
+    print("\n".join(status_lines()))
     return 0
 
 
