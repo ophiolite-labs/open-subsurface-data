@@ -20,4 +20,8 @@ listed_by: [publisher]
 notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Sharing is allowed; credit to the Sleipner group and a link to the terms are required."
 known_issues:
   - "The portal states one point (58.361 N, 1.91 E); bbox is a small box around it."
+period:
+  start: "1994-01-10"
+  end: "2010-12-10"
+  stated: "CO2 DataShare dataset page 'Period covered by the dataset' (CKAN temporal_coverage_start/end 1994-01-10/2010-12-10); DOI 10.11582/2020.00005"
 added: 2026-10-23

@@ -23,4 +23,8 @@ listed_by: [seg-wiki, publisher, osdu]
 osdu: {notes: "Volve is the reference data set of several OSDU test environments; identifiers to be recorded at L4."}
 known_issues:
   - Licence redistribution terms not yet captured by the verifier (L2 pending).
+period:
+  start: "2008"
+  end: "2016"
+  stated: "Equinor Volve data sharing page: files 'from the Volve field, which was in production from 2008 to 2016'; release announced June 2018 (press release 14 June 2018)"
 added: 2026-10-23

@@ -19,4 +19,8 @@ listed_by: [publisher]
 notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Credit to Equinor and Gassnova is required."
 known_issues:
   - "The portal states one point (60.72 N, 4.07 E); bbox is an approximate box around it."
+period:
+  start: "2009-01-01"
+  end: "2018-12-31"
+  stated: "CO2 DataShare dataset page, Additional Info table: 'Period covered by the dataset Start: January 1, 2009 End: December 31, 2018' (release date February 23, 2021)"
 added: 2026-10-23

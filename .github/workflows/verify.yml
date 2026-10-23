@@ -67,6 +67,9 @@ jobs:
           { echo '### Verification'; echo '```'; cat verify.txt; echo '```'; echo '### osd status'; echo '```'; cat status.txt; echo '```'
             echo '### dead-link report'; echo '```'; cat dead.txt 2>/dev/null || echo 'not run'; echo '```'; } > body.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file body.md || true
+      - name: full STAC tree (OSD-D18; the gate validates a sample of Items)
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        run: make check-full
       - name: store results and republish
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         env: { GH_TOKEN: "${{ github.token }}" }

@@ -25,4 +25,8 @@ inputs:
     format: html-geojson
     crs: "EPSG:4326"
     stated: "Survey page row \"Survey Extents in GeoJSON\" (RFC 7946: WGS84 lon/lat)"
+period:
+  start: "2005-01-13"
+  end: "2005-02-24"
+  stated: "NZP&M geodata catalogue survey PARIHAKA-3D : PR3460 details: Start Date \"13 January 2005\", End Date \"24 February 2005\"."
 added: 2026-10-23

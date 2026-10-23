@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
   - "bbox is approximate, read from the page's map view."
+period:
+  start: "1984"
+  end: "1984"
+  stated: "TerraNubis data info page, General block: 'Acquisition: 1984'"
 added: 2026-10-23

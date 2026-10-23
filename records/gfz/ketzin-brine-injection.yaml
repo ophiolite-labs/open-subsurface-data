@@ -21,4 +21,8 @@ known_issues:
   - "The page states the experiment ran 'October 2015 to January 2015' (sic)."
 notes: >-
   The description adds: "Anyone should feel free to make use of the published data for any ethical purpose (civil use)". Recorded here, no schema field.
+period:
+  start: "2016"
+  end: "2016"
+  stated: "GFZ DataCite metadata: Issued 2016. Abstract gives experiment period 'during October 2015 to January 2015' (sic, end before start), so not usable as acquisition period"
 added: 2026-10-23

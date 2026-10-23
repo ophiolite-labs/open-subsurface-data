@@ -20,4 +20,8 @@ listed_by: [publisher]
 notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Credit to Northern Lights JV DA and a link to the terms are required."
 known_issues:
   - "The portal states one point (60.576 N, 3.4434 E); bbox is an approximate box around it."
+period:
+  start: "2020-06-12"
+  end: "2023-05-01"
+  stated: "CO2 DataShare dataset page 'Period covered by the dataset' (CKAN temporal_coverage_start/end 2020-06-12/2023-05-01); DOI 10.11582/2023.00113"
 added: 2026-10-23

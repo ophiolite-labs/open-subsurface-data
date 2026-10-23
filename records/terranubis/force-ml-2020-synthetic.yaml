@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The publisher's licence label reads only 'Creative Commons 4.0'; the variant (BY-SA 4.0) is taken from the deed the label links to."
   - "Synthetic data; the page gives Country N/A. region.country is set to the creator's country only because the schema requires one."
+period:
+  start: "2020-08-10"
+  end: "2020-08-10"
+  stated: "TerraNubis news page: '10 August 2020: We have added new projects: ... FORCE ML Competition 2020 Synthetic Models and Wells'; the data info page itself gives no Acquisition field"
 added: 2026-10-23

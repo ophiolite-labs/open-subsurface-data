@@ -24,4 +24,8 @@ inputs:
     format: html-geojson
     crs: "EPSG:4326"
     stated: "Survey page row \"Survey Extents in GeoJSON\" (RFC 7946: WGS84 lon/lat)"
+period:
+  start: "1996-02-28"
+  end: "1996-04-14"
+  stated: "NZP&M geodata catalogue survey KERRY-3D : PR1556 details: Start Date \"28 February 1996\", End Date \"14 April 1996\"."
 added: 2026-10-23

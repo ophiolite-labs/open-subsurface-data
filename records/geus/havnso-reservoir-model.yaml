@@ -18,4 +18,8 @@ size: {bytes_estimate: 133117652, stated: one file}
 listed_by: [publisher]
 known_issues:
   - "The Dataverse record has no standard licence; its terms of use are the GEUS terms for free subsurface data (redistribution only free of charge, in specific cases, GEUS' rights kept)."
+period:
+  start: "2023-09-22"
+  end: "2023-09-22"
+  stated: "GEUS Dataverse metadata: 'Publication Date 2023-09-22'; Production Date 2020-12-22; Deposit Date 2023-09-19; no time-period field"
 added: 2026-10-23

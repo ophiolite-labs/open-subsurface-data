@@ -19,4 +19,8 @@ size: {bytes_estimate: 889097830, stated: one zip package}
 listed_by: [publisher]
 known_issues:
   - "The eCat ISO record states CC BY 4.0; the data.gov.au copy of the same record shows 'Licence Not Specified'."
+period:
+  start: "2011"
+  end: "2011"
+  stated: "Year stated in the publisher's own dataset title (GA eCat 72891): 'Seismic Survey, WA, 2011'; ISO record has no temporal extent element, publication date 2011-01-01, creation 2011-09-21"
 added: 2026-10-23

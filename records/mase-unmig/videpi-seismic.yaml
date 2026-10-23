@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "bbox is the extent of Italy and its offshore, approximate; the list pages state no extent."
   - "Most lines are scanned sections (PDF); only 171 are SEG-Y."
+period:
+  start: "1957"
+  end: "2021-12-31"
+  stated: "ViDEPI home: documents of expired titles \"depositata a partire dal 1957\"; project page (progetto.asp): \"i documenti afferenti ai titoli cessati al 31/12/2021\" (2025 update added titles expired 2014-2021)."
 added: 2026-10-23

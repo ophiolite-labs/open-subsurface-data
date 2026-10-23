@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "bbox is Victoria with its offshore, approximate; the catalogue entry states no extent."
   - "earthresources.vic.gov.au answered HTTP 403 to automated requests on 23 Oct 2026; the data.vic catalogue answers."
+period:
+  start: "1920-01-01"
+  end: "2026-10-23"
+  stated: "Victorian metashare ISO record (data.vic full_metadata_url): temporal extent begin 1920-01-01, end 'now'; data.vic: update_frequency 'continual', 'actively maintained'"
 added: 2026-10-23

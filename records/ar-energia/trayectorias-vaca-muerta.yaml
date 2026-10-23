@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The files are served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026; datos.gob.ar answers."
   - "bbox is the Neuquén Basin, approximate; the catalogue states no extent."
+period:
+  start: "2024-12-09"
+  end: "2024-12-09"
+  stated: "datos.gob.ar dataset page and CKAN: dataset_issued 2024-12-09 ('Fecha de publicación'); no temporal coverage stated"
 added: 2026-10-23

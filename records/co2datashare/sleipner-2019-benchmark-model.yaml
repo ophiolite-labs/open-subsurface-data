@@ -19,4 +19,8 @@ listed_by: [publisher]
 notes: "Same licence as the Sleipner 4D seismic: CC BY 4.0 based, may not be sold."
 known_issues:
   - "The portal states one point (58.36 N, 1.91 E); bbox is a small box around it."
+period:
+  start: "1994-01-10"
+  end: "2010-12-10"
+  stated: "CO2 DataShare dataset page 'Period covered by the dataset' (CKAN temporal_coverage_start/end 1994-01-10/2010-12-10); DOI 10.11582/2020.00004"
 added: 2026-10-23

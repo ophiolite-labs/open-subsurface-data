@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The Terms of Use grant the right to publish, distribute and modify the information on the website; they do not name the databases separately. KGS asks that data be acquired directly from a KGS server."
   - "bbox is the State of Kansas, approximate."
+period:
+  start: "1901"
+  end: "2026-10-23"
+  stated: "KGS FGDC metadata for the Master List of Oil and Gas Wells (linked from petroDB.html): Beginning_Date 1901, Ending_Date Present; update frequency 'Continually'"
 added: 2026-10-23

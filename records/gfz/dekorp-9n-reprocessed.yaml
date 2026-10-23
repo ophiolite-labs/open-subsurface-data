@@ -17,4 +17,8 @@ kinds: [seismic-2d]
 region: {country: DE, basin: Upper Rhine Graben, bbox: [7.65, 49.64, 8.93, 49.67]}
 listed_by: [publisher]
 notes: "Most DEKORP field-data publications at GFZ are CC BY-NC 4.0; the reprocessed 2N, 2S, 3B/MVE West and 9N releases are CC BY 4.0."
+period:
+  start: "1988"
+  end: "1988"
+  stated: "GFZ Data Services landing page abstract (metadata/datacite.json): 'The profile 9N was recorded in 1988'; reprocessed release Issued 2021"
 added: 2026-10-23

@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The licence is stated on the data.overheid.nl entry for the dataset, not on the PDOK page."
   - "bbox is approximate (the Netherlands); no extent stated on the PDOK page."
+period:
+  start: "2023-09-05"
+  end: "2023-09-05"
+  stated: "Nationaal Georegister ISO record 2bae2c5e (BHR-G as-is): citation date 2023-09-05, type 'publicatie'; maintenance 'dagelijks'; no temporal extent or first-record year stated"
 added: 2026-10-23

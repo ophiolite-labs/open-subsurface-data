@@ -18,4 +18,8 @@ region: {country: SE, basin: "Scandinavian Caledonides (Seve Nappe, Åre, Jämtl
 listed_by: [publisher]
 known_issues:
   - "The VSP page names only 'COSC 1 borehole'; bbox is a small box around the COSC-1 point (63.4063 N, 13.2031 E) stated by the same publisher on the COSC-1 operational data sets, DOI 10.5880/icdp.5054.002."
+period:
+  start: "2014"
+  end: "2014"
+  stated: "GFZ Data Services landing page abstract (also its metadata/datacite.json): 'an extensive seismic survey took place in 2014'; DataCite Issued 2021"
 added: 2026-10-23

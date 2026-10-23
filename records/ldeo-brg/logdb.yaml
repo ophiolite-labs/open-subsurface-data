@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "The LogDB site itself states no licence; CC0 is stated on all 712 Zenodo LogDB records listed on 23 Oct 2026. Holes inside the one-year IODP moratorium are password-protected on LogDB."
   - "No bbox: holes span all ocean basins."
+period:
+  start: "1968"
+  end: "2024"
+  stated: "LDEO LogDB landing page: logging data recorded by DSDP (1968-1983) through International Ocean Discovery Program (2014-2024); origin page itself lists legs but no dates"
 added: 2026-10-23

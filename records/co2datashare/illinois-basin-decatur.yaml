@@ -21,4 +21,8 @@ listed_by: [publisher]
 notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Users must link the terms and cite the DOI. Well log content is inferred from the 'Well Information' part description, which names the three deep wells; the page does not list log curves."
 known_issues:
   - "The portal states one point (39.87 N, 88.89 W); bbox is an approximate box around it."
+period:
+  start: "2007-01-01"
+  end: "2020-12-01"
+  stated: "CO2 DataShare dataset page 'Period covered by the dataset' (CKAN temporal_coverage_start/end 2007-01-01/2020-12-01); DOI 10.11582/2022.00017"
 added: 2026-10-23

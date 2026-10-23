@@ -20,4 +20,8 @@ listed_by: [publisher]
 notes: "Contents of the database are licensed under the Database Contents License 1.0 (http://opendatacommons.org/licenses/dbcl/1.0/). Funded by the Climit programme of the Research Council of Norway and in part by Norsk Hydro, Statoil and Shell (2007-2011); not directly related to the Northern Lights project though the target formation is the same (CO2 DataShare page)."
 known_issues:
   - "The SINTEF page states no extent; CO2 DataShare states one point (60.5 N, 3.5 E). bbox is an approximate box around it."
+period:
+  start: "2009-03-31"
+  end: "2009-03-31"
+  stated: "SINTEF MatMoRA Johansen download page footer: \"Published March 31, 2009\"."
 added: 2026-10-23

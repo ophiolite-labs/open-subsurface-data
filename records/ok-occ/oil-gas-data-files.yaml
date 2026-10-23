@@ -19,4 +19,8 @@ listed_by: [publisher]
 known_issues:
   - "No terms of use for the data files found on 23 Oct 2026; the oklahoma.gov copyright page covers the website only."
   - "bbox is the State of Oklahoma, approximate."
+period:
+  start: "2006"
+  end: "2026-10-23"
+  stated: "OCC data files page: earliest stated year is UIC volumes \"All 2006-2010 UIC 1012A Reports\"; current files updated weekly/daily/nightly (also \"2010 to Present Basic Well Completion Master\")."
 added: 2026-10-23

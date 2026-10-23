@@ -19,4 +19,8 @@ region: {country: NL, basin: West Netherlands Basin, bbox: [4.25, 51.95, 4.45, 5
 listed_by: [publisher]
 known_issues:
   - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+period:
+  start: "1985"
+  end: "1985"
+  stated: "TerraNubis data info, General: \"Acquisition: 1985\"; text: \"acquired in 1985 by NAM and re-processed in 2011\"."
 added: 2026-10-23

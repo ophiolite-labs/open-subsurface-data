@@ -20,4 +20,8 @@ listed_by: [publisher]
 known_issues:
   - "SARIG catalogue blocked for automated requests since 2026-10-23 (HTTP 403 to non-browser user agents, including the verifier); a browser-like fetch answers 200 (OSD-D9)."
   - "The stated extent is a one-by-1.5-degree cell, much larger than the 66 sq km survey."
+period:
+  start: "2005"
+  end: "2006"
+  stated: "SARIG CKAN record mesac35918 abstract: \"The processing took place during 2005/2006\" (reprocessing period; publication_date 01/01/2005, citation \"2005\")."
 added: 2026-10-23
