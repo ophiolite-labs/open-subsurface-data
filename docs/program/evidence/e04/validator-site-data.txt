@@ -1,0 +1,12 @@
+$ make build
+$ unshare -rn stac-validator site/data/stac/catalog.json --recursive --schema-config schema/stac/schema-map.json   # no network namespace
+-- Recursive Validation Summary:
+  Stac objects passed: 69/69 (100.0%)
+
+  Breakdown by type:
+    Catalog: 1/1 (100.0%)
+    Collection: 68/68 (100.0%)
+
+Validation completed in 72.70ms
+
+exit status 0

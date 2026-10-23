@@ -1,0 +1,25 @@
+# fixture (tests/test_stac.py helpers): acme/dated has period 1993..1994-06 and features a b c; acme/undated has no period and features d e
+$ unshare -rn stac-validator <fixture>/stac/catalog.json --recursive --schema-config schema/stac/schema-map.json   # no network namespace
+-- Recursive Validation Summary:
+  Stac objects passed: 6/6 (100.0%)
+
+  Breakdown by type:
+    Catalog: 1/1 (100.0%)
+    Collection: 2/2 (100.0%)
+    Item: 3/3 (100.0%)
+
+Validation completed in 31.13ms
+
+exit status 0
+
+# feature_ids in the outline files
+acme/dated#a
+acme/dated#b
+acme/dated#c
+acme/undated#d
+acme/undated#e
+
+# Item ids written (id, start_datetime, end_datetime)
+acme/dated#a 1993-01-01T00:00:00Z 1994-06-30T23:59:59Z
+acme/dated#b 1993-01-01T00:00:00Z 1994-06-30T23:59:59Z
+acme/dated#c 1993-01-01T00:00:00Z 1994-06-30T23:59:59Z
