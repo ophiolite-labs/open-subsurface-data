@@ -19,4 +19,10 @@ listed_by: [seg-wiki, publisher]
 known_issues:
   - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the NZP&M geodata catalogue entry PARIHAKA-3D : PR3460, opened 23 Oct 2026; downloads there need a RealMe login (not tested)."
   - "Exact licence instrument not yet captured (L2 pending)."
+inputs:
+  - name: survey-extent
+    url: "https://geodata.nzpam.govt.nz/survey/927165623"
+    format: html-geojson
+    crs: "EPSG:4326"
+    stated: "Survey page row \"Survey Extents in GeoJSON\" (RFC 7946: WGS84 lon/lat)"
 added: 2026-10-23

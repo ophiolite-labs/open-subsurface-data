@@ -20,4 +20,10 @@ listed_by: [seg-wiki]
 known_issues:
   - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the TGS Open Data page on the AWS Registry of Open Data (opened 23 Oct 2026; CC BY 4.0, MDIO, public S3 bucket). Original survey: Geoscience Australia / ConocoPhillips via NOPIMS."
   - "Licence to be confirmed against the NOPIMS terms page by the verifier (L2)."
+inputs:
+  - name: full-stack-agc
+    url: "https://tgs-opendata-poseidon.s3.amazonaws.com/full_stack_agc.mdio/"
+    format: mdio
+    crs: "EPSG:28351"
+    stated: "Registry page: \"Coordinate system used is: GDA94 / MGA Zone 51\"; cdp-x/cdp-y carry unitsV1 length m"
 added: 2026-10-23

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/outline/1",
+  "title": "Outline feature properties, version 1",
+  "description": "Properties every feature in outlines/<record-id>.geojson carries. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey (Polygon) or one line (LineString).",
+  "type": "object",
+  "required": ["record_id", "kind", "name", "approximate", "source"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "kind": {"type": "string", "enum": ["wellbore", "survey-3d", "survey-2d", "field", "block", "dataset-extent"]},
+    "name": {"type": "string"},
+    "approximate": {"type": "boolean", "description": "true when the geometry is a placeholder (centroid, hand-drawn box) and not derived from the data; the map draws it differently and L3 requires false"},
+    "source": {"type": "string", "description": "How the geometry was derived: 'publisher shapefile <url>', 'LAS header lat/long', 'SEG-Y trace headers hull', 'hand placed from publisher map'"},
+    "uwi": {"type": "string"},
+    "publisher_id": {"type": "string", "description": "The publisher's own identifier for the wellbore or survey"}
+  }
+}

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/outline/1",
-  "title": "Outline feature properties, version 1",
-  "description": "Properties every feature in outlines/<record-id>.geojson carries. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey (Polygon) or one line (LineString).",
+  "$id": "https://open-subsurface-data.org/schema/outline/2",
+  "title": "Outline feature properties, version 2",
+  "description": "Properties every feature in outlines/<record-id>.geojson carries. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey or field (Polygon or MultiPolygon) or one line (LineString). Version 2 requires the input identity on derived features (approximate: false); every version-1 placeholder still validates.",
   "type": "object",
   "required": ["record_id", "kind", "name", "approximate", "source"],
   "properties": {
@@ -10,8 +10,16 @@
     "kind": {"type": "string", "enum": ["wellbore", "survey-3d", "survey-2d", "field", "block", "dataset-extent"]},
     "name": {"type": "string"},
     "approximate": {"type": "boolean", "description": "true when the geometry is a placeholder (centroid, hand-drawn box) and not derived from the data; the map draws it differently and L3 requires false"},
-    "source": {"type": "string", "description": "How the geometry was derived: 'publisher shapefile <url>', 'LAS header lat/long', 'SEG-Y trace headers hull', 'hand placed from publisher map'"},
+    "source": {"type": "string", "description": "How the geometry was derived: the extractor and the input name of its rule in src/osd/outlines/rules.yaml, or 'hand placed from publisher map' for a placeholder"},
     "uwi": {"type": "string"},
-    "publisher_id": {"type": "string", "description": "The publisher's own identifier for the wellbore or survey"}
-  }
+    "publisher_id": {"type": "string", "description": "The publisher's own identifier for the wellbore or survey"},
+    "feature_id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*#.+$",
+                   "description": "<record-id>#<publisher_id|uwi>, unique within the collection"},
+    "input_url": {"type": "string", "format": "uri", "description": "The record input the geometry was derived from"},
+    "input_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$",
+                     "description": "sha256 of the input's SHA256SUMS (one sha256sum line per fetched part, in fetch order)"},
+    "licence": {"type": "string", "description": "The licence of the record the geometry was derived from (OSD-D13)"}
+  },
+  "if": {"properties": {"approximate": {"const": false}}, "required": ["approximate"]},
+  "then": {"required": ["feature_id", "input_url", "input_sha256", "licence"]}
 }
