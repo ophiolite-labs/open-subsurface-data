@@ -6,6 +6,7 @@ publisher: {name: University of Helsinki and VTT Technical Research Centre of Fi
 origin:
   url: https://zenodo.org/records/14534965
   access: anonymous
+  manifest_url: https://zenodo.org/records/14534965
   notes: DOI 10.5281/zenodo.14534965 (Kietäväinen, Nyyssönen, Nuppunen-Puputti, Bomberg, 2024). Two spreadsheet files.
 licence:
   name: Creative Commons Attribution 4.0 International

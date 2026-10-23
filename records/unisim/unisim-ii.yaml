@@ -9,6 +9,7 @@ publisher: {name: UNISIM-CEPETRO-Unicamp, url: https://www.unisim.cepetro.unicam
 origin:
   url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/overview
   access: anonymous
+  manifest_url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/unisim-ii-d
   notes: "Files on https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/unisim-ii-d; CMG decks only on that case; still updated (study PDF 21-SEP-2026)."
 licence:
   name: Open Database License 1.0 (decks); Database Contents License 1.0 (contents)

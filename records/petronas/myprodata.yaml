@@ -1,0 +1,32 @@
+id: petronas/myprodata
+title: PETRONAS myPROdata (Malaysia E&P data portal)
+summary: >-
+  PETRONAS myPROdata is a web-based platform that provides access to Malaysia's E&P data: subsurface and
+  surface data for exploration blocks, Discovered Resource Opportunities and producing fields, stated as
+  over 1,100 TB with 2D and 3D seismic, Full Tensor Gradiometry, some 6,000 wells and well logs and
+  83,000 technical reports. Basic and Academia access is free; Standard, Premium and Bid Round are paid.
+publisher: {name: "Malaysia Petroleum Management (MPM), PETRONAS", url: https://www.petronas.com/mpm/data-centre, country: MY}
+origin:
+  url: https://www.petronas.com/myprodata/
+  access: purchase
+  notes: "Subscriptions at https://www.petronas.com/myprodata/subscriptions (Standard RM68,000*, Premium RM89,000*; Basic view-only for 3 months free); register at https://myprodata.petronas.com/register; FAQ at /myprodata/faq. Physical samples are at the PETRONAS Geoscience Centre (National_Data@petronas.com.my)."
+licence:
+  name: PETRONAS myPROdata End User Agreement (text shown at registration, not published)
+  spdx: null
+  url: https://www.petronas.com/myprodata/faq
+  redistribution: forbidden
+  attribution: unknown
+  terms:
+    stated: "users must agree with the terms and conditions outlined in the End User Agreement. [...] It stipulates the terms and conditions in relation to data access policy, subscription model, subscription fees, data confidentiality and acknowledgement of PETRONAS as the data and/or product owner. [...] Basic – three months only Standard: Minimum – one year Maximum – five years Premium: Minimum – one year Maximum – five years"
+    duration: "Standard and Premium: minimum one year, maximum five years; Basic three months; Academia (general) one year"
+    review_before_publication: null
+    expires: null
+kinds: [seismic-2d, seismic-3d, wellbore-headers, wellbore-logs, potential-fields, reports, production]
+region: {country: MY, basin: "Malay, Penyu, Sarawak and Sabah basins (offshore Peninsular Malaysia, Sarawak and Sabah)", bbox: [99.6, 0.8, 119.3, 7.4]}
+size: {stated: "Over 1,100 TB; 700,000 sqkm 3D seismic, 292,000 sqkm Full Tensor Gradiometry, 495,000 line-km 2D seismic, 6,000 wells and well logs, 83,000 technical reports"}
+listed_by: [publisher]
+known_issues:
+  - "Footer: 'Copyright © 2026 Petroliam Nasional Berhad (PETRONAS) ... All rights reserved.' The EUA covers data confidentiality; its text is not public."
+  - "FAQ: downloads beyond 5 TB per account are charged 'approximately USD 0.12 per gigabyte'. Prices carry an asterisk not explained on the page."
+  - "The home page says 730,000 line km of 2D seismic and 240,000 sq km of FTG; the coverage panel says 495,000 line-km and 292,000 sqkm. bbox is Malaysia with its offshore, approximate."
+added: 2026-10-23

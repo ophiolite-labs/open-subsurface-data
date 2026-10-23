@@ -6,6 +6,7 @@ publisher: {name: "Allied Geophysical Laboratories, University of Houston", url:
 origin:
   url: https://www.agl.uh.edu/downloads/downloads.htm
   access: anonymous
+  manifest_url: https://www.agl.uh.edu/downloads/
   notes: "Modeled (pre-stack) data on request to the AGL. Directory listing at https://www.agl.uh.edu/downloads/."
 licence:
   name: No licence stated on the AGL download page

@@ -1,0 +1,28 @@
+id: ns-energy/onshore-2d-seismic-navigation
+title: Navigation data for 2D seismic lines, onshore Nova Scotia (NSDOE Open File Report 2017-11)
+summary: >-
+  Shapefiles of the navigation (shot-point locations) of onshore 2D seismic lines in Nova Scotia,
+  in three zip archives for the Cape Breton, Cumberland and Windsor regions, published with the
+  Nova Scotia Onshore Petroleum Atlas (2017) beside the Schedule of 2D Seismic Data (OFR 2017-07).
+publisher: {name: Nova Scotia Department of Energy, url: https://novascotia.ca/onshore-atlas/, country: CA}
+origin:
+  url: https://novascotia.ca/onshore-atlas/
+  access: anonymous
+  manifest_url: https://novascotia.ca/onshore-atlas/
+  notes: "Zips under https://novascotia.ca/onshore-atlas/docs/, e.g. Part 2 Cumberland region 1,954,295 bytes. Seismic traces are not on this page; the Onshore Petroleum Data Viewer links 2D and 3D seismic datasets."
+licence:
+  name: NSDOE Open File Report disclaimer (public information)
+  spdx: null
+  url: "https://novascotia.ca/onshore-atlas/docs/Disclaimer(16).txt"
+  redistribution: allowed
+  attribution: required
+  statement: "Bianco, E., 2017, Navigation data for 2D seismic lines, onshore Nova Scotia. Nova Scotia Department of Energy Open File Report 2017-10."
+kinds: [seismic-2d]
+region: {country: CA, basin: "Maritimes Basin (Windsor, Cumberland and Cape Breton regions)", bbox: [-66.4, 43.4, -59.7, 47.1]}
+listed_by: [publisher]
+known_issues:
+  - "Navigation only (line locations), no traces; seismic-2d is the nearest kind."
+  - "The disclaimer's suggested citation numbers the report 2017-10, while its header and the page say 2017-11; statement quotes it as written. Attribution is a request (\"We request\")."
+  - "bbox is mainland Nova Scotia and Cape Breton, approximate."
+period: {start: "2017", end: "2017", stated: "Open File Report 2017-11 (NSDOE), \"Bianco, E., 2017\" (release year, not acquisition)"}
+added: 2026-10-23

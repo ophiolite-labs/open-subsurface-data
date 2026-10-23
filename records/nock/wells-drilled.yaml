@@ -1,0 +1,28 @@
+id: nock/wells-drilled
+title: Wells Drilled in Kenya
+summary: >-
+  National Oil Corporation of Kenya's table of petroleum wells drilled in Kenya, by well, year, operator,
+  well type, block, basin (Anza, Lamu, Mandera, Tertiary Rift), measured depth, what was encountered,
+  stratigraphic level at total depth and well status, published as a PDF from the Wells Drilled page.
+publisher: {name: National Oil Corporation of Kenya (NOCK), url: https://nationaloil.co.ke, country: KE}
+origin:
+  url: https://nationaloil.co.ke/website_11ab3dee/wells-drilled/
+  access: anonymous
+  manifest_url: https://nationaloil.co.ke/website_11ab3dee/wells-drilled/
+licence:
+  name: "Not stated for the data (site footer \"© 2026 National Oil Corporation of Kenya\")"
+  spdx: null
+  url: https://nationaloil.co.ke/website_11ab3dee/wells-drilled/
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: KE, basin: "Anza, Lamu, Mandera and Tertiary Rift basins", bbox: [33.9, -4.9, 41.9, 5.1]}
+period:
+  start: "1960"
+  end: "2017"
+  stated: "Wells__Drilled.pdf (2 pages, created 30 Jun 2017 from Excel): YEAR column runs from 1960 (Pandangua-1, Walu-1) to 2017 (Emekuya-1, Etete, Amosing-6)"
+listed_by: [publisher]
+known_issues:
+  - "The table is a PDF exported from Excel, not a spreadsheet; it has no coordinates. The server last-modified date is 9 Dec 2021; wells after 2017 are not listed."
+  - "robots.txt sets Crawl-delay: 10. bbox is Kenya, approximate."
+added: 2026-10-23

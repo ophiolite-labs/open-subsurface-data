@@ -8,6 +8,7 @@ publisher: {name: Ministry of Energy and Energy Industries (MEEI), url: https://
 origin:
   url: https://www.energy.gov.tt/data/historical-oil-and-gas-production-data/
   access: anonymous
+  manifest_url: https://www.energy.gov.tt/data/historical-oil-and-gas-production-data/
   notes: "Two downloads, e.g. https://www.energy.gov.tt/wp-content/uploads/2019/11/Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx and Annual-Natural-Gas-Production-1908-2018-1.xlsx (each also as PDF)."
 licence:
   name: MEEI website Terms of Use

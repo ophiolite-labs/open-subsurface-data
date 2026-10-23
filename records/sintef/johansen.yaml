@@ -6,6 +6,7 @@ publisher: {name: SINTEF (MatMoRA project), url: https://www.sintef.no, country:
 origin:
   url: https://www.sintef.no/projectweb/matmora/downloads/johansen/
   access: anonymous
+  manifest_url: https://www.sintef.no/projectweb/matmora/downloads/johansen/
   notes: "Zip files in Eclipse GRDECL and plain-text formats. The same model is also on CO2 DataShare (DOI 10.11582/2022.00031, published by the University of Bergen) under ODbL 1.0."
 licence:
   name: Open Database License; individual contents under the Database Contents License

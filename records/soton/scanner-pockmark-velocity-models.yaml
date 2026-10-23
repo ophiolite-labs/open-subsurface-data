@@ -1,0 +1,32 @@
+id: soton/scanner-pockmark-velocity-models
+title: Scanner-Pockmark Subsurface Velocity Models
+summary: >-
+  P-wave velocity models derived from seismic data acquired over the Scanner Pockmark complex in the
+  North Sea: two full waveform inversion (FWI) models made with in-house tools from Shell and Imperial
+  College, in binary and SEG-Y, and a tomographic model made with the open-source FAST code, in binary.
+publisher: {name: "University of Southampton (Farid Jedari Eyvazi), ePrints Soton", url: https://eprints.soton.ac.uk, country: GB}
+origin:
+  url: https://eprints.soton.ac.uk/id/eprint/503057/
+  access: anonymous
+  manifest_url: https://eprints.soton.ac.uk/id/eprint/503057/
+  notes: "DOI 10.5258/SOTON/D3589. Six files: three binary models (146 MB each), two SEG-Y models (377 MB each), README.txt. Supports the PhD thesis on 3-D FWI of the Scanner Pockmark OBS seismic dataset (CHIMNEY project)."
+licence:
+  name: Creative Commons Attribution
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [time-depth, seismic-3d]
+region: {country: GB, basin: "UK North Sea (Scanner Pockmark complex)"}
+size: {bytes_estimate: 1192000000, stated: "page: 146MB x3, 377MB x2, 2kB README; sum approximate"}
+listed_by: [publisher]
+known_issues:
+  - "Want: a velocity-model kind; time-depth is the nearest, with seismic-3d for the SEG-Y volumes."
+  - "No bbox: the page and README state no coordinates or CRS."
+  - "Each file reads 'Available under License Creative Commons Attribution' and links the 4.0 deed."
+  - "The host answers browser user agents with a JavaScript proof-of-work challenge (Anubis); a plain tool agent gets the page."
+period:
+  start: "2025-07-18"
+  end: "2025-07-18"
+  stated: "page: 'Published date: 18 July 2025'; README: 'Date that the file was created: July, 2025'"
+added: 2026-10-23

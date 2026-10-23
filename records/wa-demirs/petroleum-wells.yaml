@@ -6,8 +6,8 @@ publisher: {name: "Department of Energy, Mines, Industry Regulation and Safety (
 origin:
   url: https://catalogue.data.wa.gov.au/dataset/wa-onshore-petroleum-wells-dmirs-025
   access: anonymous
-  manifest_url: https://catalogue.data.wa.gov.au/api/3/action/package_show?id=wa-onshore-petroleum-wells-dmirs-025
-  notes: Files (GDB, SHP, TAB, KML) via https://dasc.dmirs.wa.gov.au/home?productAlias=WAPetroleumWells; WFS/WMS and ArcGIS REST on public-services.slip.wa.gov.au. Projection GDA2020.
+  manifest_url: https://public-services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/Industry_and_Mining/MapServer/13?f=json
+  notes: Files (GDB, SHP, TAB, KML) via https://dasc.dmirs.wa.gov.au/home?productAlias=WAPetroleumWells; WFS/WMS and ArcGIS REST on public-services.slip.wa.gov.au. Projection GDA2020. manifest_url is the package's ArcGIS Server Map Service layer 13 (4,371 features on 23 Oct 2026).
 licence:
   name: Creative Commons Attribution 4.0
   spdx: CC-BY-4.0

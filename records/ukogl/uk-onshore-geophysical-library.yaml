@@ -6,6 +6,7 @@ publisher: {name: UK Onshore Geophysical Library, url: https://ukogl.org.uk, cou
 origin:
   url: https://ukogl.org.uk/blog/archives/
   access: anonymous
+  manifest_url: https://ukogl.org.uk/blog/archives/
   notes: "The interactive map is https://ukogl.org.uk/map. Data management by Lynx Information Systems."
 licence:
   name: No licence stated (the About page says the Library provides data free of charge; charges apply for output of digital pre-stack data)

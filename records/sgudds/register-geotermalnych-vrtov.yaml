@@ -1,0 +1,29 @@
+id: sgudds/register-geotermalnych-vrtov
+title: Register geotermálnych vrtov (register of geothermal boreholes of Slovakia)
+summary: >-
+  One of three Geofond borehole registers combined in the State Geological Institute of Dionýz Štúr's
+  Vrty application: the geothermal borehole register, separated from the hydrogeological borehole
+  register to reflect the growing interest in geothermal energy. Records give location, depth, year,
+  open interval, aquifer age and lithology, yield, wellhead temperature, thermal output and water type.
+publisher: {name: Štátny geologický ústav Dionýza Štúra (ŠGÚDŠ), url: https://www.geology.sk, country: SK}
+origin:
+  url: https://www.geology.sk/geoinfoportal/mapovy-portal/registre-geofondu/vrty/
+  access: anonymous
+  manifest_url: https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2?f=json
+  notes: "Map application https://app.geology.sk/geofond/vrty/; ArcGIS service Geofond/Vrty_all (layers 0 other boreholes, 1 hydrogeological, 2 geothermal). Scanned borehole passports in PDF are linked per object; final reports in the Geofond archive need a registered user."
+licence:
+  name: Creative Commons BY 4.0
+  spdx: CC-BY-4.0
+  url: https://www.geology.sk/licencie-a-citacie-2/
+  redistribution: allowed
+  attribution: required
+  statement: "© Štátny geologický ústav Dionýza Štúra"
+kinds: [wellbore-headers, geochemistry]
+region: {country: SK, bbox: [16.83, 47.73, 22.57, 49.61]}
+listed_by: [publisher]
+known_issues:
+  - "The licence page puts \"všetky údaje, ktoré sú na portáli k dispozícii na stiahnutie\" under CC BY 4.0 and calls the data informative only; it does not name this map service separately."
+  - "wellbore-headers is the nearest kind for a geothermal well register; geochemistry stands for the mineralisation and chemical water type fields."
+  - "bbox is Slovakia, approximate. Layer 2 held 307 features on 23 Oct 2026."
+notes: "Application launched 06/2016; data updated continuously as needed (publisher's page). The other-boreholes register (layer 0) held 95,630 features the same day."
+added: 2026-10-23

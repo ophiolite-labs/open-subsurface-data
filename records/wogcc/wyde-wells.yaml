@@ -1,0 +1,24 @@
+id: wogcc/wyde-wells
+title: WOGCC Data Explorer (WYDE)
+summary: >-
+  The Wyoming Oil and Gas Conservation Commission's web data explorer, a map viewer over the
+  Commission's well database with layers for oil, gas, coalbed methane, injection, disposal and
+  orphan wells, active and other permits to drill (APDs), oil and gas fields and gas plants.
+publisher: {name: Wyoming Oil and Gas Conservation Commission (WOGCC), url: https://wogcc.wyo.gov, country: US}
+origin:
+  url: https://dataexplorer.wogcc.wyo.gov/
+  access: anonymous
+  notes: "Linked as \"WYDE (Data Explorer)\" from https://wogcc.wyo.gov/. The viewer's layer list is at /api/GISConfig and its layers are served through /geoserver/wfs; it also has a login for other functions. The older Data Site pipeline.wyo.gov disallows all crawling in robots.txt."
+licence:
+  name: No licence stated (WYDE "No Warranty" notice)
+  spdx: null
+  url: https://dataexplorer.wogcc.wyo.gov/
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: US, basin: "Wyoming (Powder River, Green River, Wind River and other basins)", bbox: [-111.06, 40.99, -104.05, 45.01]}
+listed_by: [publisher]
+known_issues:
+  - "The explorer states only: \"No Warranty is made by the Wyoming Oil and Gas Conservation Commission for the use of this data.\" No licence or reuse terms were found on wogcc.wyo.gov or the explorer."
+  - "No file listing: data are viewed and queried in the map application. bbox is the State of Wyoming, approximate."
+added: 2026-10-23

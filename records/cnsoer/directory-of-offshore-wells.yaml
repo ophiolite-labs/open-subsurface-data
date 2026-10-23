@@ -9,6 +9,7 @@ publisher: {name: Canada-Nova Scotia Offshore Energy Regulator (CNSOER), url: ht
 origin:
   url: https://cnsopbdigitaldata.ca/geoviewer/dmc/public/query/0
   access: anonymous
+  manifest_url: https://cnsopbdigitaldata.ca/geoviewer/dmc/public/query/0
   notes: "Files dow-2025.xlsx and dow-2025.pdf (Last Revised January 2025), plus dow-oj-2025 for wells curated by the CNSOER outside its jurisdiction. Formerly the CNSOPB; cnsopb.ns.ca redirects to cnsoer.ca. The full DMC (logs, seismic, reports) needs an approved account."
 licence:
   name: Not stated for the data (DMC page states "Content © CNSOER 2025")

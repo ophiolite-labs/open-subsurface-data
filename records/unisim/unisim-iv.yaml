@@ -9,6 +9,7 @@ publisher: {name: UNISIM-CEPETRO-Unicamp, url: https://www.unisim.cepetro.unicam
 origin:
   url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-iv/overview
   access: anonymous
+  manifest_url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-iv/unisim-iv-2019
   notes: "Files (.rar) on the case pages, e.g. https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-iv/unisim-iv-2019. The years in case names (2019, 2022, 2024, 2026) are fictitious field-life dates."
 licence:
   name: Open Database License 1.0 (decks); Database Contents License 1.0 (contents)

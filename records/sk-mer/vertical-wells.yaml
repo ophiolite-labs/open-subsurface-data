@@ -1,0 +1,27 @@
+id: sk-mer/vertical-wells
+title: Vertical Wells (Saskatchewan PETROLEUM schema, GeoAtlas)
+summary: >-
+  Locations of vertical wells licensed under The Oil and Gas Conservation Act and Regulations and
+  The Oil and Gas Conservation Regulations 2012 across Saskatchewan, with surface and bottom-hole
+  positions taken from survey plans entered into the Ministry's IRIS system, licence, status,
+  Lahee classification, spud, finish-drill and abandonment dates and wellbore depths.
+publisher: {name: "Government of Saskatchewan, Ministry of Energy and Resources", url: https://www.saskatchewan.ca, country: CA}
+origin:
+  url: https://gisappl.saskatchewan.ca/WebDocs/Geo_Atlas/MetaData/Vertical_well.html
+  access: anonymous
+  manifest_url: https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/0?f=json
+  notes: "Layer 0 of the Economy/Petroleum map service (\"All feature classes from the PETROLEUM schema in the Production Data Warehouse\"), 119,595 features, maxRecordCount 2000. Non-vertical wells are layer 1, drill core layer 2, drill cuttings layer 3."
+licence:
+  name: Government of Saskatchewan Standard Unrestricted Use Data Licence (Version 2.0)
+  spdx: null
+  url: https://gisappl.saskatchewan.ca/Html5Ext/Resources/GOS_Standard_Unrestricted_Use_Data_Licence_v2.0.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Contains information licensed under the Government of Saskatchewan Standard Unrestricted Use Data Licence (Version 2.0)."
+kinds: [wellbore-headers]
+region: {country: CA, basin: Western Canada Sedimentary Basin and Williston Basin (Saskatchewan), bbox: [-111.088, 48.896, -100.551, 57.740], crs: "EPSG:2957"}
+listed_by: [publisher]
+known_issues:
+  - "The licence excludes \"third party rights the Information Provider is not authorized to license\" and data licensed exclusively to Information Services Corporation."
+  - "The map service caps a query at 2000 features; a full copy takes paged queries."
+added: 2026-10-23

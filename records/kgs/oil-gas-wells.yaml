@@ -6,6 +6,7 @@ publisher: {name: Kansas Geological Survey, url: https://www.kgs.ku.edu, country
 origin:
   url: https://www.kgs.ku.edu/PRS/petroDB.html
   access: anonymous
+  manifest_url: https://www.kgs.ku.edu/PRS/petroDB.html
 licence:
   name: KGS website Terms of Use
   spdx: null

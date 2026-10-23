@@ -9,6 +9,7 @@ publisher: {name: "Jarðfeingi (Faroese Geological Survey)", url: https://jf.fo,
 origin:
   url: https://jf.fo/datur/boridatur/
   access: anonymous
+  manifest_url: https://jf.fo/datur/boridatur/
   notes: "The released logs and reports themselves come in the Data-package (https://jf.fo/datur/data-package/: 3D and 2D seismic and well data of the former 5th round area), ordered with an administration fee of £400 under terms and conditions whose PDF is not linked from the page."
 licence:
   name: No licence stated

@@ -9,7 +9,7 @@ publisher: {name: Society of Petroleum Engineers, url: https://www.spe.org, coun
 origin:
   url: https://www.spe.org/en/csp/
   access: anonymous
-  manifest_url: https://github.com/Simulation-Benchmarks/11thSPE-CSP
+  manifest_url: https://api.github.com/repos/Simulation-Benchmarks/11thSPE-CSP/contents/geometries
   notes: "Prepared by Nordbotten, Fernø (U Bergen), Kovscek (Stanford), Lie (SINTEF) and Flemisch (U Stuttgart). The README's https://spe.org/csp/spe11/ answered 403 on 23 Oct 2026; www.spe.org/en/csp/ answered."
 licence:
   name: Creative Commons Attribution 4.0 International (Zenodo release); files licensed individually (REUSE)

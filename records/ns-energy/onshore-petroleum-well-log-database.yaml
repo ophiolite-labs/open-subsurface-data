@@ -1,0 +1,28 @@
+id: ns-energy/onshore-petroleum-well-log-database
+title: Preliminary petroleum well log database, onshore Nova Scotia (NSDOE Open File Report 2017-09)
+summary: >-
+  Well logs from onshore petroleum wells in Nova Scotia as LAS files, in three zip archives for
+  the Cape Breton, Cumberland and Windsor regions, published with the Nova Scotia Onshore
+  Petroleum Atlas (2017) beside the Schedule of Petroleum Wells and a preliminary petrophysics
+  database.
+publisher: {name: Nova Scotia Department of Energy, url: https://novascotia.ca/onshore-atlas/, country: CA}
+origin:
+  url: https://novascotia.ca/onshore-atlas/
+  access: anonymous
+  manifest_url: https://novascotia.ca/onshore-atlas/
+  notes: "Zips under https://novascotia.ca/onshore-atlas/docs/: Part 1 Cape Breton 4,837,104 bytes, Part 2 Cumberland 16,150,885 bytes, Part 3 Windsor 44,392,798 bytes. The page also points to the Nova Scotia Onshore Petroleum Data Viewer (an ArcGIS Experience) for well, 2D and 3D seismic and geologic model downloads."
+licence:
+  name: NSDOE Open File Report disclaimer (public information)
+  spdx: null
+  url: "https://novascotia.ca/onshore-atlas/docs/Disclaimer(15).txt"
+  redistribution: allowed
+  attribution: required
+  statement: "Bianco, E., 2017, Preliminary petroleum well log database, onshore Nova Scotia. Nova Scotia Department of Energy Open File Report 2017-09."
+kinds: [wellbore-logs]
+region: {country: CA, basin: "Maritimes Basin (Windsor, Cumberland and Cape Breton regions)", bbox: [-66.4, 43.4, -59.7, 47.1]}
+listed_by: [publisher]
+known_issues:
+  - "The disclaimer says the information \"may be distributed or copied, but may not copyrighted\" and \"We request\" a Nova Scotia Department of Energy credit line; attribution is a request. statement is the suggested citation."
+  - "Titled \"Preliminary\" by the publisher. bbox is mainland Nova Scotia and Cape Breton, approximate."
+period: {start: "2017", end: "2017", stated: "Open File Report 2017-09; suggested citation \"Bianco, E., 2017\" (release year, not acquisition)"}
+added: 2026-10-23
