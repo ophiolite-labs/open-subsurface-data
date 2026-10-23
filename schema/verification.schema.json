@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/verification/1",
-  "title": "Verification record, version 1",
+  "$id": "https://open-subsurface-data.org/schema/verification/2",
+  "title": "Verification record, version 2",
   "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
   "type": "object",
   "additionalProperties": false,
@@ -31,14 +31,16 @@
         "http_status": {"type": "integer"},
         "final_url": {"type": "string"},
         "content_type": {"type": "string"},
-        "elapsed_ms": {"type": "integer"}
+        "elapsed_ms": {"type": "integer"},
+        "reachability": {"type": "string", "enum": ["ok", "blocked", "moved", "dead"],
+                         "description": "v2. ok: 2xx/3xx; blocked: 403/429 or a challenge page, not dead; moved: final host differs; dead: 404/410, DNS failure, timeout or 5xx after one retry"}
       }
     },
     "files": {
       "type": "array",
       "items": {
         "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
-        "properties": {"path": {"type": "string"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+        "properties": {"path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
       }
     },
     "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
