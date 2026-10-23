@@ -1,0 +1,27 @@
+id: dgh/national-data-repository
+title: National Data Repository (NDR), India
+summary: >-
+  An integrated repository of exploration and production data of Indian sedimentary basins run by
+  the Directorate General of Hydrocarbons. It offers E&P data (seismic and well logs) in online,
+  near-line and offline modes, with an online portal showing E&P data of 26 Indian sedimentary
+  basins for viewing, selecting and ordering.
+publisher: {name: "Directorate General of Hydrocarbons (DGH), Ministry of Petroleum and Natural Gas", url: https://www.ndrdgh.gov.in/NDR/, country: IN}
+origin:
+  url: https://www.ndrdgh.gov.in/NDR/
+  access: request
+  notes: "Ordering portal (Team Work Space) needs a login; data is sold per https://www.ndrdgh.gov.in/NDR/pdf/Price_List_for_NDR_Data_Sale-Final.pdf and purchase needs a signed confidentiality agreement. Limited data up to 50 sq. km is free for academic research, still under the agreement."
+licence:
+  name: E&P Data Policy and NDR Confidentiality Agreement
+  spdx: null
+  url: https://www.ndrdgh.gov.in/NDR/pdf/data_policy.pdf
+  redistribution: forbidden
+  attribution: unknown
+kinds: [seismic-2d, seismic-3d, wellbore-headers, wellbore-logs, core, reports]
+region: {country: IN, basin: 26 Indian sedimentary basins, bbox: [66.0, 5.0, 97.5, 35.5]}
+size: {stated: "data storage capacity of 200 TB to store processed data & 720TB robotic tape library to store raw data"}
+listed_by: [publisher]
+known_issues:
+  - "\"No resale of data is permitted by the entity with whom the data has been shared under the policy\"; the confidentiality agreement forbids disclosure to third parties."
+  - "bbox is India with its offshore, approximate."
+  - "The bare host https://www.ndrdgh.gov.in/ answers with a redirect to /NDR; a client that does not follow redirects sees no answer."
+added: 2026-10-23

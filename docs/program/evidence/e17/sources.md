@@ -95,3 +95,48 @@ E13 and E14.
 - Oman MEM: JavaScript-only site, no data page found.
 - Namibia MME / Geological Survey of Namibia, Tanzania TPDC and PURA, Morocco ONHYM: unreachable. Kenya National Oil: "Account Suspended". Senegal PETROSEN: maintenance page. Uganda PAU, Mozambique INP: no data page.
 - Held back: Council for Geoscience coal and core borehole headers (ZA, licence not stated, no new country); Saudi Geological Survey National Geological Database (licence not stated, minerals); Israel Water Authority borehole depths (CC BY, groundwater).
+
+## dgh/national-data-repository
+
+- Page: <https://www.ndrdgh.gov.in/NDR/> (the bare host redirects here)
+  - "National Data Repository (NDR) is an integrated data repository of Exploration and Production (E&P) data of Indian sedimentary basins."
+  - "Online portal (Team Work Space-TWS) showcasing E&P data of 26 Indian Sedimentary Basins along with capability for online data viewing, selecting and ordering"
+  - <https://www.ndrdgh.gov.in/NDR/?page_id=1153>: "data storage capacity of 200 TB to store processed data & 720TB robotic tape library to store raw data"
+- Licence: <https://www.ndrdgh.gov.in/NDR/pdf/data_policy.pdf>
+  - "5.2.5 No resale of data is permitted by the entity with whom the data has been shared under the policy."
+  - <https://www.ndrdgh.gov.in/NDR/?page_id=11708>: "Confidentiality agreement is required to be filled out, signed and a soft copy is to be sent ... for data purchase only"
+- Extent: India with offshore (approximate). Period: none stated (the service "was launched for public on 28th July 2017").
+
+## esdm/migas-data-repository
+
+- Page: <https://datamigas.esdm.go.id/home>
+  - "Digital Well Log 169.875 records", "2D Seismic Processed Digital Data 386.597 records", "3D Seismic Processed Digital Data 49.253 records", "Well Sample and Well Core Sample 60.610 box"; "Diperbarui pada: 30 September 2026"
+- Licence: <https://datamigas.esdm.go.id/docsviewer/DocumentView.aspx?filename=termandco> (Edaran Nomor 2.E/03/SJD.2/2020)
+  - "Anggota dan Non Anggota wajib bertanggungjawab dan menjamin bahwa dalam pemanfaatan “Data dan Informasi” akan menjaga kerahasiaannya dan tidak akan mengungkapkan atau membocorkannya kepada siapapun yang tidak berhak."
+  - "“Data dan Informasi” dan produk turunannya adalah milik Negara Republik Indonesia dan digunakan hanya untuk kepentingan internal Anggota dan Non Anggota dan tidak boleh dikomersialisasikan kepada siapapun tanpa persetujuan dari Pusdatin ESDM."
+- Extent: Indonesia with offshore (approximate). Period: none stated.
+- migas.esdm.go.id timed out; geologi.esdm.go.id did not resolve.
+
+## jamstec/seismic-survey-database
+
+- Page: <https://www.jamstec.go.jp/obsmcs_db/e/>
+  - "Categories of accessible data are Multi-Channel Seismic reflection data (MCS), refraction and wide-angle seismic reflection data by Ocean Bottom Seismograph." "All the MCS and OBS data are available for academic use via the data request form."
+- Licence: <https://www.jamstec.go.jp/obsmcs_db/e/policy.html>
+  - "You can freely view the information on JAMSTEC Seismic Survey DB Site, but cannot provide them for any other people. ... You can use the requested data for academic and educational purposes. You cannot use the data for commercial purposes basically."
+  - DataCite 10.17596/0002069: rights "Site policy and data policy"; issued 2004; no geoLocations.
+- Period: <https://www.jamstec.go.jp/obsmcs_db/e/survey/db/list_cruise.json>: first "KR97-02_Leg4" "period": {"sdate": "1997/05/02", "edate": "1997/05/09"}; latest edate "2025/10/21" (KM25-10C).
+- Extent: none stated (named survey areas only).
+
+## kigam/marine-geological-map-korea-strait
+
+- Page: <https://data.kigam.re.kr/data/a7dd595f-4d9b-49a4-845e-289dc1416f52>
+  - "데이터명 수치해저지질도_25만 축척_한국해협 주제분류 석유해저 지도자료 해저지질도 ... 축척 1:250,000 발간일 1990-12-31 발행기관 한국동력자원연구소"
+  - "Location POLYGON ((130.000000 34.500000, 129.000000 34.500000, 129.000000 35.500000, 130.000000 35.500000, 130.000000 34.500000))"
+  - License link `http://creativecommons.org/licenses/by-nc/4.0/`; "이 데이터의 저작권은한국지질자원연구원에게 있습니다."
+  - Request form: "Application for use is available after logging in. If you are not a member, please sign up."
+- Period: 1990-12-31 (publication). Extent: the stated polygon.
+- Not used: the agent's first find (수치연안해저지질도 1집, Gangneung–Samcheok, CC BY-NC-ND) states no location; the SEG-Y item PA-108 answered HTTP 500.
+
+## Not recorded (Asia)
+
+- Kochi Core Center: 503 (emergency maintenance). JAMSTEC J-CORES / SIO7: connection reset. GSJ gbank: every page "メンテナンス中"; GSJ's terms are CC BY 4.0 compatible, a strong retry. JOGMEC data, PETRONAS MPM: no DNS. data.gov.in: no connection. Philippines DOE PECR: soft 404.

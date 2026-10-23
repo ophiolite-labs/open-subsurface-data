@@ -1,0 +1,30 @@
+id: kigam/marine-geological-map-korea-strait
+title: "수치해저지질도_25만 축척_한국해협 (Digital marine geological map 1:250,000, Korea Strait)"
+summary: >-
+  Digital marine geological map sheet of the Korea Strait at 1:250,000 on KIGAM's Geo Big Data
+  Open Platform (Petroleum & Marine subject): seismic profile interpretation, survey track,
+  sampling location, bathymetry and surface sediment maps, with the 1984 printed sheet.
+publisher: {name: Korea Institute of Geoscience and Mineral Resources (KIGAM), url: https://data.kigam.re.kr, country: KR}
+origin:
+  url: https://data.kigam.re.kr/data/a7dd595f-4d9b-49a4-845e-289dc1416f52
+  access: registration
+  manifest_url: https://data.kigam.re.kr/search/metadata?subject=OilUndersea
+  notes: "DOI 10.22747/data.20240627.5390. Files: 수치탄성파탐사단면해석도 (seismic section interpretation), 수치탐사항적도 (survey tracks), 수치시료채취위치도 (sampling locations), 수치해저지형도 (bathymetry), surface sediment maps, and 해저지질도_25만_한국해협_1984년발간.zip. Original publisher 한국동력자원연구소 (KIER)."
+licence:
+  name: Creative Commons BY-NC 4.0
+  spdx: CC-BY-NC-4.0
+  url: http://creativecommons.org/licenses/by-nc/4.0/
+  redistribution: restricted
+  attribution: required
+  statement: "김성우. 이윤오, 김종수, 조철현, 구자흥 . (1990). 수치해저지질도_25만 축척_한국해협. 한국동력자원연구소. https://doi.org/10.22747/data.20240627.5390"
+kinds: [seismic-2d, surfaces]
+region: {country: KR, basin: Korea Strait, bbox: [129.0, 34.5, 130.0, 35.5]}
+listed_by: [publisher]
+known_issues:
+  - "Seismic is an interpreted section map, not traces."
+  - "Every file opens a request form: \"Application for use is available after logging in. If you are not a member, please sign up.\" Recorded as registration; whether a person approves the application is not stated."
+period:
+  start: "1990-12-31"
+  end: "1990-12-31"
+  stated: "Overview: 발간일 1990-12-31 (publication date); platform versions 1 (2021.04.15) to 3.0 (2024.06.27)"
+added: 2026-10-23
