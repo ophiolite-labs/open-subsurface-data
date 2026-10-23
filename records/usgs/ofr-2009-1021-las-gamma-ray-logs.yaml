@@ -23,4 +23,8 @@ listed_by: [publisher]
 known_issues:
   - "The citation says '20 LAS files'; the text says the logs are from 11 wells."
   - "bbox is the central Appalachian Basin along the cross section, approximate."
+period:
+  start: "2009-02"
+  end: "2009-02"
+  stated: "report page: 'First posted February 2009'"
 added: 2026-10-23

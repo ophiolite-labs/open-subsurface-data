@@ -21,4 +21,5 @@ listed_by: [publisher]
 known_issues:
   - "The explorer states only: \"No Warranty is made by the Wyoming Oil and Gas Conservation Commission for the use of this data.\" No licence or reuse terms were found on wogcc.wyo.gov or the explorer."
   - "No file listing: data are viewed and queried in the map application. bbox is the State of Wyoming, approximate."
+notes: "No period stated: the explorer gives no date range, and its well layer has no date fields."
 added: 2026-10-23
