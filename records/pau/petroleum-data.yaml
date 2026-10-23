@@ -1,0 +1,27 @@
+id: pau/petroleum-data
+title: Uganda petroleum data (Petroleum Authority of Uganda data management)
+summary: >-
+  The Petroleum Authority of Uganda manages all the petroleum and related data generated from oil and gas
+  activities in Uganda and assesses and responds to requests for data: geological and geophysical
+  subsurface data, essentially wells and seismic data, facilities, HSE, costs, national content and GIS
+  data, held in a tier three data centre, a core store and seismic tape storage.
+publisher: {name: Petroleum Authority of Uganda (PAU), url: https://www.pau.go.ug, country: UG}
+origin:
+  url: https://www.pau.go.ug/about-us/petroleum-data-management
+  access: request
+  notes: "The page is script-rendered; its text is served by the site's CMS at https://www.pau.go.ug/api/petroleum-data-mgt? (modified 2026-06-01). No request form, fee or terms are given; contact via https://www.pau.go.ug/contact-us."
+licence:
+  name: "Not stated for the data (site footer \"Copyright ©2025 Petroleum Authority of Uganda. All rights reserved.\")"
+  spdx: null
+  url: https://www.pau.go.ug/about-us/petroleum-data-management
+  redistribution: forbidden
+  attribution: unknown
+kinds: [wellbore-headers, wellbore-logs, seismic-2d, seismic-3d, core, reports]
+region: {country: UG, basin: Albertine Graben, bbox: [29.5, -1.5, 35.0, 4.3]}
+size: {stated: "over sixty (60) Terabytes of electronic oil and gas digital data and thousands of physical data (geo samples)"}
+listed_by: [publisher]
+known_issues:
+  - "The page names wells and seismic data without splitting 2D from 3D; kinds seismic-2d and seismic-3d and wellbore-logs are the nearest reading of 'wells and seismic data'."
+  - "The page mentions a 'PAU Exploration and Production (E&P) Fact site (link)' but gives no address; the National Petroleum Data Repository is stated as under development."
+  - "bbox is Uganda, approximate."
+added: 2026-10-23

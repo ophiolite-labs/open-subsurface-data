@@ -1,0 +1,30 @@
+id: anpg/historico-de-producao
+title: Histórico de Produção (annual crude oil production of Angola)
+summary: >-
+  ANPG's production history page for Angola: annual national crude oil production in barrels per day
+  from 1955 to 2025, sourced "ANPG - Direcção de Produção", shown with milestones, decade averages and
+  monthly oil and associated gas figures for 2024 to 2025.
+publisher: {name: "Agência Nacional de Petróleo, Gás e Biocombustíveis (ANPG)", url: https://www.anpg.co.ao, country: AO}
+origin:
+  url: https://www.anpg.co.ao/producao/historico
+  access: anonymous
+  notes: "The page is script-rendered; its annual series is served as JSON by the site's own API at https://www.anpg.co.ao/api/production-historical (71 rows, fields year, oil_bopd, source). The linked PDF 'Histórico de Produção 1956-2020' has a malformed address and answered 403."
+licence:
+  name: "ANPG Termos de Utilização (\"© 2025 ANPG. Todos os direitos reservados.\")"
+  spdx: null
+  url: https://www.anpg.co.ao/termos
+  redistribution: forbidden
+  attribution: unknown
+kinds: [production]
+region: {country: AO, basin: "Angolan basins (Congo, Kwanza and others), onshore and offshore", bbox: [8.0, -18.1, 24.1, -4.4]}
+period:
+  start: "1955"
+  end: "2025"
+  stated: "API production-historical: years 1955 to 2025 (oil_bopd), source 'ANPG - Direcção de Produção', published_at 2026-08-04; page chart 'Evolução Histórica (1978-2025)'"
+size: {stated: "71 annual values"}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'Este website destina-se exclusivamente a fins informativos' and 'Todos os conteúdos deste website ... são propriedade da ANPG ou dos seus licenciadores'; footer 'Todos os direitos reservados'. No licence for the data is named."
+  - "National totals only, not by field or well; the API has no download file, so there is no listing to sample."
+  - "bbox is Angola with its offshore, approximate."
+added: 2026-10-23

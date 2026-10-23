@@ -1,0 +1,31 @@
+id: petroci/virtual-data-room
+title: PETROCI Virtual Data Room (Côte d'Ivoire open blocks)
+summary: >-
+  PETROCI's virtual data room for the Côte d'Ivoire sedimentary basin: per open block (Abidjan Margin,
+  Onshore, San Pedro Margin, Ultra Deep) the public pages state 2D seismic (km), 3D seismic (sq km) and
+  wells, with plays and leads. Access is by request form, then a confidentiality agreement, payment and a
+  licence agreement before data are viewed or downloaded.
+publisher: {name: PETROCI Holding, url: https://www.petroci.ci, country: CI}
+origin:
+  url: https://www.petrocivirtualdataroom.ci/
+  access: purchase
+  notes: "Request form https://www.petrocivirtualdataroom.ci/resquest-form.html (request type 'Browse and preview data' or 'Download Data'); process chart Processus_Commercial_VDR_PETROCI_CLIENT.pdf linked from /diagram.html; contact infosVDRr@petroci.ci."
+licence:
+  name: PETROCI confidentiality agreement and licence agreement (texts not published)
+  spdx: null
+  url: https://www.petrocivirtualdataroom.ci/diagram.html
+  redistribution: forbidden
+  attribution: unknown
+  terms:
+    stated: "Communicate interest in blocks; Send data list; Express interest in datasets; Send confidentiality agreement; Sign agreement, execute payment and send receipt; ... Browse and preview data; Visualize limited images files; Request data for download; Send licence agreement and data pricing; Sign licence agreement and execute payment; Download data and analyse it"
+    duration: null
+    review_before_publication: null
+    expires: null
+kinds: [seismic-2d, seismic-3d, wellbore-headers, reports]
+region: {country: CI, basin: "Côte d'Ivoire sedimentary basin (Abidjan Margin, San Pedro Margin, Ultra Deep, Onshore)", bbox: [-8.6, 1.5, -2.4, 5.6]}
+listed_by: [publisher]
+known_issues:
+  - "Site footer: '© Copyright 2023 (Petroci Virtual Data Room) All rights reserved'. The confidentiality and licence agreements are named in the process chart but their texts and prices are not public."
+  - "Per-block summary PDFs linked from the area pages (www.petroci.ci/virtual_data_room/...) redirect to a 404 page (23 Oct 2026)."
+  - "bbox is the Ivorian coastal basin and offshore, approximate."
+added: 2026-10-23

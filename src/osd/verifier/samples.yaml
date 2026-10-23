@@ -31,6 +31,7 @@ kigam/marine-geological-map-korea-strait: "the listing is a search result with n
 manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links the weekly well list, 1,233,013 bytes
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
+nock/wells-drilled: ["*/pdf/Wells__Drilled.pdf"]   # page links one PDF table: Wells__Drilled.pdf, 266,101 bytes
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
 ns-energy/onshore-2d-seismic-navigation: ["*2017-11*Cumberland*region.zip"]   # atlas page: OFR 2017-11 Part 2 Cumberland shapefile zip, 1,954,295 bytes
 ns-energy/onshore-petroleum-well-log-database: ["*2017-09*Cape*Breton*region.zip"]   # atlas page: OFR 2017-09 Part 1 Cape Breton LAS zip, 4,837,104 bytes
