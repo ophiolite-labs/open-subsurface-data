@@ -40,6 +40,15 @@ def load_record(path: Path) -> dict:
     # dates: yaml parses 2026-10-23 into a date; the schema wants the ISO string
     if "added" in data and not isinstance(data["added"], str):
         data["added"] = data["added"].isoformat()
+    # period: unquoted 1993-06-30 is a date and 1993 an int; the schema wants the strings
+    period = data.get("period")
+    if isinstance(period, dict):
+        for k in ("start", "end"):
+            x = period.get(k)
+            if hasattr(x, "isoformat"):
+                period[k] = x.isoformat()
+            elif isinstance(x, int) and not isinstance(x, bool):
+                period[k] = str(x)
     return data
 
 

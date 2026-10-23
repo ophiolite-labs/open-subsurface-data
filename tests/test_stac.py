@@ -279,3 +279,11 @@ def test_period_is_additive_to_record_2():
     assert not list(v.iter_errors(dict(base, period={"start": "1993", "end": "1994-06-30"})))
     for bad in ({"start": "1993"}, {"start": "93", "end": "1994"}, {"start": "1993", "end": "1994", "x": 1}):
         assert list(v.iter_errors(dict(base, period=bad))), bad
+
+
+def test_unquoted_yaml_period_reads_as_strings(tmp_records):
+    from osd.records import load_record, validate_records
+    p = tmp_records / "acme" / "demo.yaml"
+    p.write_text(p.read_text() + "period: {start: 1993, end: 1994-06-30, stated: acquired 1993-94}\n")
+    assert load_record(p)["period"] == {"start": "1993", "end": "1994-06-30", "stated": "acquired 1993-94"}
+    assert validate_records(tmp_records) == []

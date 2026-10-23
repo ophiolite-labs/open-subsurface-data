@@ -99,7 +99,7 @@
     },
     "period": {
       "type": "object", "additionalProperties": false, "required": ["start", "end"],
-      "description": "The acquisition or release interval the publisher states for the dataset, inclusive (OSD-D14: STAC Items exist only for records with a period). Quote the dates in YAML ('1993', not 1993).",
+      "description": "The acquisition or release interval the publisher states for the dataset, inclusive (OSD-D14: STAC Items exist only for records with a period). Unquoted YAML dates and years are read as these strings.",
       "properties": {
         "start": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval starts at the beginning of it (UTC)."},
         "end": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval ends at the end of it (UTC)."},
