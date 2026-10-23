@@ -10,6 +10,10 @@ let server, browser;
 before(async () => { await mkdir(OUT, { recursive: true }); server = await serve(); browser = await launch(); });
 after(async () => { await browser.close(); server.close(); });
 
+// The GeoJSON path on the same build: files.txt without the tiles.
+const withoutTiles = c => c.route('**/data/files.txt', async route =>
+  route.fulfill({ body: (await (await route.fetch()).text()).split('\n').filter(f => f !== 'outlines.pmtiles').join('\n') }));
+
 async function open(hash = '', { viewport = { width: 1400, height: 900 }, routes } = {}) {
   const context = await browser.newContext({ viewport });
   const unexpected = [];
@@ -86,9 +90,10 @@ test('10,000 wellbores cluster at zoom 5 and the frame after moveend arrives und
   const wells = Array.from({ length: N }, (_, i) => ({ type: 'Feature',
     properties: { record_id: rid, kind: 'wellbore', name: `synthetic ${i}`, approximate: false },
     geometry: { type: 'Point', coordinates: [1 + rnd() * 8, 56 + rnd() * 6] } }));
-  // the synthetic set replaces the committed outlines, so the budget measures these N points alone
-  const { context, page, errors } = await open('map=5/59/5', { routes: c => c.route('**/data/outlines.geojson',
-    route => route.fulfill({ json: { type: 'FeatureCollection', features: wells } })) });
+  // the synthetic set replaces the committed outlines on the GeoJSON path (files.txt without tiles,
+  // E15), so the budget measures these N points alone
+  const { context, page, errors } = await open('map=5/59/5', { routes: async c => { await withoutTiles(c);
+    await c.route('**/data/outlines.geojson', route => route.fulfill({ json: { type: 'FeatureCollection', features: wells } })); } });
 
   const seen = await page.evaluate(() => {
     const m = window.osdMap;
@@ -136,9 +141,6 @@ test('phone width: the panel is a bottom sheet', async () => {
 const built = (await readFile(join(ROOT, 'site', 'data', 'files.txt'), 'utf8').catch(() => '')).split('\n');
 const noTiles = !built.includes('outlines.pmtiles') && (process.env.CI ? false : 'no data/outlines.pmtiles (tippecanoe not installed)');
 if (process.env.CI && !built.includes('outlines.pmtiles')) throw new Error('CI builds tiles: data/outlines.pmtiles missing');
-// The GeoJSON path on the same build: files.txt without the tiles.
-const withoutTiles = c => c.route('**/data/files.txt', async route =>
-  route.fulfill({ body: (await (await route.fetch()).text()).split('\n').filter(f => f !== 'outlines.pmtiles').join('\n') }));
 const outlinesSource = page => page.evaluate(() => window.osdMap.getSource('outlines').type);
 
 test('tiles: the page loads tiles for the viewport, under 1 MB from the site, and never outlines.geojson', { skip: noTiles }, async () => {
