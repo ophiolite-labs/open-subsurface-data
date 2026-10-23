@@ -7,3 +7,5 @@ with the merge commit.
 | Lane | Branch | Paths | Status | Since |
 |---|---|---|---|---|
 | scaffold | main | everything | MERGED (initial commit) | 2026-10-23 |
+| E01 | e01-twenty-records | `records/**` | OPEN (records lane) | 2026-10-23 |
+| E11 | main | `.github/workflows/**`, `site/robots.txt`, `docs/program/**` | OPEN (supervisor; waits on DNS, owner item 100) | 2026-10-23 |
