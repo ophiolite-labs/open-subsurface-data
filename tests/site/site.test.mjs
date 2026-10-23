@@ -531,3 +531,142 @@ test('period: the filter on the real catalogue, desktop and phone width; the yea
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+// ---- E27: the map says why. A fixture catalogue with one verification per reason class
+// (tests/fixtures/site/verification), built by osd.build into build/site-test/e27, served in place of
+// data/records.json. The sentence is the one `osd status` prints (tests/test_build.py asserts that).
+const WHY_DIR = join(OUT, 'e27');
+const whyBuilt = (async () => {
+  await promisify(execFile)(process.env.UV || 'uv', ['run', '--quiet', 'python', '-c',
+    'import sys; from pathlib import Path; from osd.build import build; build(Path(sys.argv[1]), Path(sys.argv[2]), mirror_dir=Path(sys.argv[3]))',
+    WHY_DIR, join(ROOT, 'tests', 'fixtures', 'site', 'verification'), join(OUT, 'e27-no-mirror')], { cwd: ROOT });
+  return JSON.parse(await readFile(join(WHY_DIR, 'records.json'), 'utf8'));
+})();
+const withWhy = async c => { const body = await whyBuilt; await c.route('**/data/records.json', route => route.fulfill({ json: body })); };
+const CLASSES = {   // record id -> what the panel must say, by class
+  'bgs/single-onshore-borehole-index': /^files-checksummed: no file address is published to us/,
+  'nzpam/kerry-3d': /no file address is published to us \(no origin\.manifest_url; access registration\)$/,
+  'gsq/qped': /^files-checksummed: the listing \(ckan\) names no files$/,
+  'ak-dggs/tax-credit-well-data': /^files-checksummed: robots\.txt disallows the listing /,
+  'nm-ocd/oil-and-gas-wells': /^origin-reachable: answers a browser, not the verifier \(HTTP 404 to osd-verifier, HTTP 200 to a browser agent\)/,
+  'seg/open-data-wiki': /^origin-reachable: blocked from this runner \(challenge page/,
+  'geus/deep-subsurface-data': /^origin-reachable: HTTP 502 from /,
+  'sodir/factpages': /^sample, not the whole dataset: 3 of 3 selected files hashed/,
+  'nopims/poseidon': /^1 features derived from 1 inputs/,
+  'equinor/volve': /^never verified$/,
+};
+const whyOf = page => page.evaluate(() => ({ title: document.querySelector('#detail h3 .title').textContent,
+  reason: document.querySelector('#detail dd.why .reason').textContent,
+  checked: document.querySelector('#detail dd.why .checked')?.textContent ?? null,
+  badges: [...document.querySelectorAll('#detail h3 .lvl, #detail h3 .blocked')].map(b => b.textContent) }));
+
+test('why: each reason class shows the verifier\'s sentence and the date it was checked in the detail panel', async () => {
+  const body = await whyBuilt;
+  const byId = Object.fromEntries(body.records.map(r => [r.id, r]));
+  const { context, page, errors } = await open('sel=equinor/volve', { routes: withWhy });
+  for (const [id, want] of Object.entries(CLASSES)) {
+    await page.evaluate(id => { location.hash = 'sel=' + id; }, id);
+    await page.waitForFunction(t => document.querySelector('#detail h3 .title')?.textContent === t, byId[id].title);
+    const got = await whyOf(page);
+    assert.equal(await page.locator('#detail dt', { hasText: /^Why this level$/ }).count(), 1, id);
+    assert.equal(got.reason, body.reasons[id], id);
+    assert.match(got.reason, want, id);
+    assert.equal(got.checked, byId[id].checked_at ? 'checked 23 Oct 2026' : null, id);
+  }
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('why: a blocked record shows the OSD-D20 sentence and no level badge, in the panel and the list', async () => {
+  const { context, page, errors } = await open('sel=nm-ocd/oil-and-gas-wells', { routes: withWhy });
+  const got = await whyOf(page);
+  assert.match(got.reason, /answers a browser, not the verifier/);
+  assert.deepEqual(got.badges, ['blocked since 2026-10-21']);
+  assert.equal(await page.locator('#list li[data-id="nm-ocd/oil-and-gas-wells"] .lvl').count(), 0);
+  assert.equal(await page.locator('#list li[data-id="nm-ocd/oil-and-gas-wells"] .blocked').innerText(), 'blocked since 2026-10-21');
+  await page.evaluate(() => { location.hash = 'sel=sodir/factpages'; });
+  await page.waitForFunction(() => /^sample/.test(document.querySelector('#detail dd.why .reason').textContent));
+  assert.deepEqual((await whyOf(page)).badges, ['L2']);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('why: phone width, the detail panel of a blocked and of an L2 record', async () => {
+  for (const [id, name] of [['nm-ocd/oil-and-gas-wells', 'phone-detail-blocked'], ['sodir/factpages', 'phone-detail-l2']]) {
+    const { context, page, errors } = await open(`sel=${id}`, { viewport: { width: 390, height: 844 }, routes: withWhy });
+    const why = page.locator('#detail dd.why');
+    await page.locator('#detail h3').scrollIntoViewIfNeeded();
+    assert.ok(await why.isVisible(), 'the Why row shows with the title, first in the panel');
+    const b = await why.boundingBox();
+    assert.ok(b.x >= 0 && b.x + b.width <= 390, 'the Why row fits the sheet');
+    assert.ok(await page.evaluate(() => { const s = document.getElementById('side'); return s.scrollWidth <= s.clientWidth; }), 'no horizontal overflow');
+    // clipped to the sheet: full-viewport phone captures can show a black map canvas under swiftshader (HANDOFF)
+    const sheet = await page.locator('#side').boundingBox();
+    await page.screenshot({ path: join(OUT, `${name}.png`), clip: { x: 0, y: sheet.y, width: 390, height: sheet.height } });
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+});
+
+test('why: the share hash and the filters are unchanged by the reason', async () => {
+  const hash = 'k=wellbore-headers&l=1&sel=sodir/factpages';
+  const { context, page, errors } = await open(hash, { routes: withWhy });
+  assert.equal((await page.evaluate(() => location.hash)).replace(/&map=[^&]*/, ''), '#' + hash);
+  const body = await whyBuilt;
+  const want = body.records.filter(r => Number(r.level.slice(1)) >= 1 && r.kinds.includes('wellbore-headers')).map(r => r.id);
+  assert.deepEqual((await listed(page)).sort(), want.sort());
+  assert.ok(!want.includes('nm-ocd/oil-and-gas-wells') && want.includes('sodir/factpages'), 'blocked is L0 to the filter');
+  assert.match(await page.locator('#detail dd.why .reason').innerText(), /^sample, not the whole dataset/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('why: the basket to-do names the verifier\'s reason; a never-verified dataset keeps the access sentence', async () => {
+  const { context, page, errors } = await open('pick=gsq/qped,terranubis/f3-demo-2020', { routes: withWhy });
+  await page.waitForFunction(() => [...document.querySelectorAll('#basket .files')].every(e => !/…/.test(e.textContent)));
+  assert.equal(await page.locator('#basket li[data-id="gsq/qped"] .files').innerText(), 'to-do: files-checksummed: the listing (ckan) names no files');
+  assert.match(await page.locator('#basket li[data-id="terranubis/f3-demo-2020"] .files').innerText(), /^to-do: access registration/);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('why: the status page shows a sortable Why column on desktop and hides it at phone width', async () => {
+  const body = await whyBuilt;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 1000 } });
+  await offline(context);
+  await withWhy(context);
+  const page = await context.newPage();
+  const errors = errorsOf(page);
+  await page.goto(server.url + 'status.html');
+  await page.waitForFunction(() => document.querySelectorAll('#status tbody tr').length > 0);
+  const rows = () => page.$$eval('#status tbody tr', trs => trs.map(tr => [tr.dataset.id, tr.querySelector('td.why').textContent]));
+  const got = Object.fromEntries(await rows());
+  for (const id of Object.keys(CLASSES)) assert.equal(got[id], body.reasons[id], id);
+  assert.equal(await page.locator('th[data-key="reason"]').innerText(), 'Why');
+  await page.click('th[data-key="reason"]');
+  const up = (await rows()).map(r => r[1]);
+  assert.deepEqual(up, [...up].sort());
+  assert.equal(await page.getAttribute('th[data-key="reason"]', 'aria-sort'), 'ascending');
+  await page.click('th[data-key="checked_at"]'); await page.click('th[data-key="checked_at"]');   // checked rows first
+  assert.ok(await page.evaluate(() => document.querySelector('.wrap').scrollWidth <= document.querySelector('.wrap').clientWidth), 'the table fits a desktop screen');
+  await page.screenshot({ path: join(OUT, 'status-desktop.png'), fullPage: false });
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.locator('th[data-key="reason"]').isVisible(), false);
+  assert.equal(await page.locator('#status tbody tr td.why').first().isVisible(), false);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= 390), 'no horizontal overflow on the phone');
+  await page.screenshot({ path: join(OUT, 'status-phone.png'), fullPage: false });
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('why: how.html lists the reason sentences and what a publisher can do about each', async () => {
+  const context = await browser.newContext();
+  await offline(context);
+  const page = await context.newPage();
+  await page.goto(server.url + 'how.html');
+  const text = await page.locator('#why').innerText();
+  for (const s of ['never verified', 'no file address is published to us', 'names no files', 'robots.txt disallows',
+    'answers a browser, not the verifier', 'blocked from this runner', 'HTTP 502', 'files were hashed'])
+    assert.ok(text.includes(s), s);
+  await context.close();
+});
