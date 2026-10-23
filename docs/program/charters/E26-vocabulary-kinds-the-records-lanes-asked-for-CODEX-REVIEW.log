@@ -1,0 +1,1964 @@
+Reading additional input from stdin...
+OpenAI Codex v0.159.0
+--------
+workdir: /home/epic/src/open-subsurface-data
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: concise
+session id: 01a1697a-059c-72a1-b7ee-20a05d769bab
+--------
+user
+You are a fresh, independent senior reviewer of one epic charter in the Open Subsurface Data project (a verified catalogue of open subsurface datasets: YAML records -> verifier levels L0-L4 -> outlines -> STAC/GeoJSON catalogue -> static MapLibre map; Python package src/osd, tests in tests/, schemas in schema/). Read docs/ARCHITECTURE.md, docs/ENGINEERING.md, docs/program/PROGRAM.md, then the charter at /home/epic/src/open-subsurface-data/docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for.md. VERIFY every 'exists' claim in its Context section against the code at HEAD (open the files; do not trust the document) and state the commit you verified against (git rev-parse HEAD). Report in Markdown: (1) Verdict: APPROVE / APPROVE WITH CHANGES / REWORK, one sentence why. (2) Factual errors about current code, with file:line evidence. (3) Design objections: an owner, boundary, format or contract choice that is unsafe or misplaced, each with a concrete alternative that stays within docs/ENGINEERING.md (no new CI stations, no server, standards over bespoke). (4) Acceptance lines that can pass vacuously or whose proposed test would stay green under the mutation it should catch. (5) Scope creep into another charter in docs/program/charters/. Be specific and terse; no praise; at most 60 lines. Do not modify any files.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll read the project guidance and charter, check its Context claims against HEAD, and compare the proposed scope with related charters.
+exec
+/bin/bash -lc 'git rev-parse HEAD && cat docs/ARCHITECTURE.md docs/ENGINEERING.md docs/program/PROGRAM.md docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+e63a3e0515945c07cdee51a1a12396e6eac6fa9c
+# Architecture
+
+One sentence: contributors write facts about open datasets, tools turn those facts into verified
+levels, outlines and a catalogue, and a static map plus a manifest let anyone find and fetch the
+data; Ophiolite reads the same catalogue as a source.
+
+## The chain
+
+```
+  SEG wiki, national        contributor            verifier            outline extractor
+  registers, publishers ──► records/*.yaml ──────► build/verification ─► outlines/*.geojson
+        (lists)             (facts, CC0)            (levels L1–L2)        (L3, derived)
+                                 │                        │                    │
+                                 └──────────┬─────────────┴────────────────────┘
+                                            ▼
+                                     osd build  ─────►  build/catalog/
+                                                        records.json · outlines.geojson · collections.json (STAC)
+                                            │
+                 ┌──────────────────────────┼──────────────────────────────┐
+                 ▼                          ▼                              ▼
+           site/ (MapLibre)           QGIS / any GIS                 manifest (E06)
+           toggles, search,           GeoJSON / STAC by address      osd get · Python reader
+           panel, cards                                                   │
+                                                                          ▼
+                                                              Ophiolite source (E09, L4)
+                                                              E85 intake · E35 rights-basis
+```
+
+## Components and their boundaries
+
+| Component | Owns | Never does |
+|---|---|---|
+| **Records** (`records/`, `schema/record.schema.json`) | Facts as the publisher states them: origin, licence, kinds, region | Carry a level, a checksum or anything a tool produced |
+| **Verifier** (`src/osd/verify.py`, `schema/verification.schema.json`) | Network checks, checksums, licence text capture, the level ladder | Change a record; run inside the required CI check |
+| **Outlines** (`outlines/`, `schema/outline.schema.json`, extractor in E03) | Geometry per wellbore or survey in WGS84, with its derivation named | Invent geometry without saying `approximate: true` |
+| **Build** (`src/osd/build.py`) | Joins records, outlines and levels into the published files | Fetch anything |
+| **Catalogue** (`build/catalog/`) | The one published artefact; STAC-shaped collections, GeoJSON outlines, records JSON | Hold dataset bytes |
+| **Site** (`site/`) | Reading the catalogue and showing it; copyable addresses and snippets | Hold its own data store; need a server |
+| **Retrieval** (E06) | A manifest from a selection; a fetcher that verifies checksums | Decode proprietary project files (Ophiolite connector doctrine) |
+| **Mirror store** (E07) | Checksummed copies of small or orphaned datasets whose licence allows it | Copy anything with `redistribution: unknown` |
+| **Ophiolite bridge** (E09) | The catalogue as an Ophiolite source; rights-basis from the record; fidelity records | Live outside the Ophiolite monorepo's own conventions |
+
+## Formats, all standard
+
+- Records: YAML validated by JSON Schema 2020-12. Outlines: GeoJSON, EPSG:4326.
+- Catalogue: STAC 1.0 collections and items (full validity is E04), plus one GeoJSON for map and GIS.
+- Tiles: PMTiles once outlines exceed what one GeoJSON serves comfortably (E05).
+- Manifest: `osd.manifest/1` JSON (E06). Seismic store, if ever: Zarr-based (E10).
+
+## The level ladder
+
+L0 listed → L1 reachable → L2 checksummed and licence captured → L3 outlined from the data →
+L4 converted to a canonical type with a fidelity record. No rung is skipped, and a level is
+computed from check outcomes, never typed. The ladder is the product's honesty: a dashed outline
+on the map is a placeholder and says so.
+
+## What the map is and is not
+
+The map is a view of the catalogue, nothing more. It has no account, no state beyond the URL, no
+server. Everything it shows can be opened in QGIS by one address. That is also why the website
+and "a GIS layer" are one deliverable rather than two.
+
+## Where Ophiolite comes in
+
+Ophiolite is a consumer of the catalogue, and the catalogue borrows Ophiolite's vocabulary
+(kinds from the E55 registry, rights-basis from E35). The two repositories meet at one interface:
+a manifest or STAC collection Ophiolite's intake (E85) can read. No Ophiolite code runs here;
+no catalogue code runs there.
+# Engineering setup
+
+Fit for purpose: a Python package, YAML records and a static page. The Ophiolite program
+(docs/program-2026-09-25 in the Ophiolite monorepo) taught what to keep and what to drop; the
+evidence for each line is in the Ophiolite program records of 8–22 October 2026.
+
+## Keep (copied from Ophiolite)
+
+| Practice | Why it earned its place |
+|---|---|
+| Claims board: a lane names its paths before it starts, two lanes never share a path | Overlap was the cause of merge pain; the 21 Oct simplification cut kept the board deliberately |
+| Contract first: slice 0 is schema, fixtures and stubs; later slices vertical | Layer-cut slices made serial chains (18 Oct rule) |
+| Kernel vs surface proof bar | Surface strategies capped at one review round after revisions ran to 8 and 18 rounds on E60 and E42c |
+| Outcome-named slices: the brief says what a user can do after merge, or no lane | Success metric is slices merged per day, not green CI |
+| Revert first: a red main gets one revert within the hour, the fix follows | Owner accepted a briefly red main on about one merge in five |
+| No artificial schedule: act when the precondition holds, never on a timer | Nightly timers and self-set dates cost days (night 2026.10.95) |
+| Small fixes batched, one push per merge, no wait on the repeat run | Loop steps 7 and 8 |
+| Brief by reference, one drafting and one execution agent, small contexts | 83 % of usage was sessions over 150k tokens, 78 % subagent-heavy |
+| A different model reviews kernel charters, read-only, one round | Reviews caught contract mistakes; multiple rounds did not pay |
+
+## Drop (what cost Ophiolite more than it returned)
+
+| Station | Evidence | Here instead |
+|---|---|---|
+| Self-hosted runners, pool builders, runner crews | needrestart killed runner units after any apt run; two crews and "chair out, station out" existed only to manage them | GitHub-hosted `ubuntu-24.04`, one job, under two minutes |
+| Merge trains, then a merge queue | 8 workers gave 10× activity for 2–3× merges; merges per worker-day fell from 5.6 to 0.3 at 18 workers | Squash merge on a green check; at most 2 coding lanes plus 1 records lane |
+| Nightly releases, release pinning, qualification | A night took 1 h 50 min at best, ARM64 70 min on the critical path; per-lane qualification 45 min serial | Every merge to main publishes the site; no version numbers |
+| Hardening lanes and a growing item list | 87 hardening merges against about 10 epic slices in a week; the list grew 150 → 217 | Defects under 50 lines ride on the next lane; a red main is reverted, not hardened |
+| Committed conformance results, locks, worker-check cron | Three lanes lost 30–45 min each on a dead lock; a queue stopped for an hour on a docs-only deadline | Nothing is committed that a job can regenerate; no locks; no cron |
+| Multiple Codex rounds, 4-revision caps | 2–4 h of a worker per round | One round for a kernel charter; none for surface or records |
+| Dispatch per commit group | Worth it for a 27-minute C++ build | A 2-minute check runs on every push; nothing to batch |
+| ccache, proven-tree skip, CI spend caps | Needed for a 27-minute C++ build | Irrelevant at Python-and-static scale; revisit above 10 min per check |
+
+## The gate
+
+`make check` = ruff + pytest + schema validation + build, offline. It is the only required
+status. Network verification (`verify` workflow) comments on pull requests and never blocks: a
+publisher's outage is a finding, not a red gate. The site publishes from main on every merge.
+
+## Proof bar by class
+
+- **Kernel** (schemas, verifier, build, manifest, bridge): tests for every acceptance line, a
+  mutation shown to fail for every guard, one Codex round on the charter. Strategy at lane open,
+  at most two pages.
+- **Surface** (site, docs, records): `make check` green and a screenshot or the verify comment.
+  No strategy document; the charter's acceptance list is the brief.
+- **Records**: the verify comment shows the level; a human checks the licence fields against
+  the publisher's page. Same-day merge.
+
+## Roles
+
+- **Supervisor** (one): keeps `docs/program/PROGRAM.md` true, writes lane briefs by reference,
+  merges on green, reverts on red, records decisions in `DECISIONS.md`. Does not write product
+  code except a revert.
+- **Worker** (at most three concurrent: two coding lanes, one records lane): takes a charter,
+  claims paths, opens a branch `e<nn>-<slug>`, pushes when the diff is inside the claim, opens
+  the pull request with the outcome sentence and the proof. Waits for nothing but its own check.
+- **Reviewer** (Codex, read-only): one round per kernel charter, dispositions recorded in the
+  charter.
+
+## What is deliberately absent
+
+No merge queue, no release branches, no version tags, no nightly, no self-hosted compute, no
+lock files committed by hand, no conformance ledger, no item list. If one of these starts to look
+necessary, the measured reason goes into `DECISIONS.md` first.
+# Program: Open Subsurface Data
+
+Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two coding lanes and
+one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
+Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
+
+## Queue (23 Oct 2026)
+
+| # | Epic | Class | Status | Depends on | Outcome a user can observe |
+|---|---|---|---|---|---|
+| 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
+| 2 | E02 Verifier to L2 | Kernel | MERGED 23 Oct (PR #3, 37c010c; 18 mutations; three records at L2, SEG wiki blocked) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
+| 3 | E03 Outlines from the data | Kernel | MERGED 23 Oct (PR #7, 7ddecf0; record/2 inputs, outline/2; Sodir, NLOG, Poseidon at L3; F3 and Teapot behind logins) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
+| 4 | E05 Map that scales | Surface | MERGED 23 Oct (PR #2, 6c232cf; shareable hash, 10k clustered wells, how.html, Playwright site test in CI) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
+| 5 | E04 STAC catalogue | Kernel | MERGED 23 Oct (PR #8, aced173; 68 Collections validate offline, Items need periods; QGIS screenshot is owner action 102) | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
+| 6 | E06 Retrieval by manifest | Kernel | DONE (slice 1 PR #9, slice 2 PR #12, 23 Oct; main cc7c470) | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
+| 7 | E08 Curation that runs itself | Surface | MERGED 23 Oct (PR #5, e408adb; status page, dead-link issues, osd new, CODEOWNERS, labels). DONE when two outside PRs have merged (owner action 101) | E02 | An outside contributor's record merges the same day; dead links become issues |
+| 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
+| 9 | E07 Mirror store and custody | Kernel | slice 1 MERGED (PR #13, 23 Oct; main 58e895f; manifest/2, custody/1, verification/3, local transport; Norne eligible); slice 2 QUEUED after owner action 103 | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
+| 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | OSD slice 1 MERGED (PR #14, 23 Oct; main c370a87: manifest/3 catalog snapshot, fidelity/1, L4 rule); static manifest/3 fixtures PR #16 (pin 82ae5563d); PARTIAL until Ophiolite E127 lands (after E121 there; rights part after E35) | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
+| 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
+| 13 | E13 Twenty records from the national registers | Records | MERGED 23 Oct (PR #4, 6429445; 42 records, 10 countries with a government publisher, 0 new TerraNubis) | E01 | Forty datasets listed; a government source for at least eight countries |
+| 14 | E14 Twenty records: research drilling, CO2 sites, state archives | Records | MERGED 23 Oct (PR #6, 61f9527; 68 records, 26 new, six new countries, all 26 at L1) | E13 | Sixty datasets listed, wider kinds and regions |
+| 15 | E15 Tiles for the registers | Surface | MERGED (PR #10, 23 Oct; main 2904db0) | E03 | The map on a phone connection loads tiles for the viewport, not 7 MB of outlines |
+| 16 | E16 Periods from the publishers | Records | MERGED (PR #11, 23 Oct; main fa13d75; 53 of 68 records with a period, 18,432 Items; OSD-D18 gate sample) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
+| 17 | E17 Records, fourth twenty (Africa, Middle East, Asia, Canada, open seismic and model sets) | Records | MERGED (PR #15, 23 Oct; main 98eb254; 92 records, 9 new countries) | E16 | The map lists at least 85 datasets on six continents |
+| 18 | E18 Items carry their own dates | Kernel | MERGED (PR #19, 23 Oct, main 8581b50; charter reworked after its Codex round) | E03, E04, E16 | Time filters in a STAC client return the wellbores and surveys of that window, not a whole register |
+| 19 | E19 Vocabulary from the records lanes (potential fields, purchase, licence terms) | Kernel (small) | MERGED (PR #18, 23 Oct; main ae7a812; record/3, manifest/4, stac-osd v2) | E17 | Records can say gravity/magnetics, sold data and time-limited terms as the publisher states them |
+| 20 | E20 Records: the retry and the publishers' sentences | Records | MERGED (PR #21, 23 Oct; main a1f8832; 96 records, NRCan potential-fields, PASA/DGH publisher sentences; six hosts still refuse) | E17, E19 | Unreached publishers are listed when they answer; purchase records carry the publisher's own licence sentence |
+| 21 | E21 The map says when | Surface | MERGED (PR #22, 23 Oct; main 3d5841c; period filter `t=`/`dated=1`, When row, journey tests) | E05, E16 | A person filters the map by acquisition years and reads when a dataset was acquired, in the publisher's words |
+| 22 | E22 Records, fifth twenty (US states, Iberia and the Alps, Latin America, Africa, geothermal and CO2 sites) | Records | MERGED (PR #30, 23 Oct; main 595a30f; 121 records, ten new countries, seven US states) | E20 | The map lists 116 datasets with the open US state regulators and five more countries |
+| 23 | E23 More datasets checksummed | Kernel | MERGED (PR #31, 23 Oct; main 3ece7a2; verification/4, ten listing readers, publisher checksums, a reason per record below L2) | E02, E07 | Every listed dataset has its sample attempted each run; passes show L2, the rest say which check stopped them |
+| 24 | E24 Records: files the verifier can reach, and the sixth twenty | Records | MERGED (PR #32, 23 Oct; main 4dcdc56; 140 records; 24 of 49 lane records L2 on the branch run) |
+| 25 | E25 Records: the seventh twenty, and the bare files | Records | IN LANE (osd-e25, 23 Oct) | E24, H1 | At least 156 datasets listed; bare-file records reach L2 or say why |
+| 26 | E26 Vocabulary: the kinds the records lanes asked for | Kernel (small) | CHARTERED, Codex round running (23 Oct) | E19, E24 | A record can say velocity model, geological model, airborne EM, radiometrics, stress; ten records lose their want sentence |
+| 27 | E27 The map says why | Surface | IN LANE (osd-e27, 23 Oct) | E23, H1, E08 | A person reads on the map and the status page why a dataset is at its level, in the verifier's words, with the date |
+| H1 | H1 Origins that recover, and origins that hide from robots | Kernel (hardening) | MERGED (PR #33, 23 Oct; main 5cbe7af; OSD-D20; issues close on recovery; single-file listings) | E08, E23 | Origin-dead issues close themselves; publishers that hide from the verifier are called blocked, not dead |
+| 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
+
+Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
+map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
+(three of them the SEG wiki blocking this host with HTTP 403, one NOPIMS 403; see OSD-D9).
+Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
+`verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
+with real levels through the `verification-results` branch. `main` requires `check`.
+DNS entered and the domain verified for ophiolite-labs by the owner 23 Oct; HTTPS enforced (certificate issued after re-setting the custom domain).
+E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
+opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
+
+## The loop
+
+1. The supervisor takes the first QUEUED epic whose dependencies are MERGED and whose paths are
+   free on `CLAIMS.md`. Surfaces are disjoint: `records/`, `site/`, `src/osd/`, `.github/`.
+2. Kernel: the worker writes a strategy of at most two pages at lane open (acceptance line → test
+   name), one Codex round on the charter if not yet reviewed, dispositions recorded in the charter.
+   Surface and records: no strategy, the charter's acceptance list is the brief.
+3. The worker claims paths, branches `e<nn>-<slug>`, commits in outcome-named slices.
+4. The worker pushes unasked when the diff is inside the claim; asks for `schema/` version bumps
+   and `.github/` edits.
+5. Pull request: outcome sentence, proof (check green, screenshot or verify comment). The
+   required status is `check` only.
+6. Supervisor merges on green with squash. Main publishes the site. Nobody waits for the
+   repeat run on main.
+7. Red main: revert within the hour, then a fix lane. No hardening lanes, no item list.
+8. Defects under 50 lines ride on the next lane that owns the path. Larger ones get a charter.
+9. During any wait the worker starts the next slice on a stacked branch; it is merged after.
+10. After a merge the supervisor updates this table, moves the claim rows to MERGED, and
+    `/compact`s.
+
+## Rules
+
+- R1 WIP: two coding lanes plus one records lane. A third coding lane waits.
+- R2 Gate: `make check` only. Nothing network-bound is ever required.
+- R3 Records say what the publisher says; tools say what they established. Never cross.
+- R4 Every slice names what a user can do after it merges.
+- R5 Surface gets a screenshot, kernel gets tests and one mutation per guard, records get the
+  verify comment and a licence read.
+- R6 No timers, no nightly, no self-set dates. Act when the precondition holds.
+- R7 Nothing a job can regenerate is committed (`build/`, `site/data/`).
+## E26 Vocabulary: the kinds the records lanes asked for — QUEUED · Kernel (small) · strategy at lane open · one Codex round
+
+Authority: E20, E22 and E24 findings in `docs/program/HANDOFF.md` and the `notes` of the records
+named in design 4 ("Want: a kind for …"); E19 (record/3, the vocabulary rules and dispositions);
+AGENTS.md schema-change rule (bump the `$id`, keep old files validating, name the change in the
+PR title); OSD-D7, OSD-D11.
+
+**Outcome.** A record can say that a dataset holds a velocity model, a geological 3D model,
+airborne electromagnetic data, radiometric data or stress measurements, each in the publisher's
+terms; the map's chips, the STAC keywords and the manifest carry the values through unchanged;
+the twelve records that wrote "Want: a kind for …" use the new kinds and lose the want sentence;
+existing records and manifests keep validating.
+
+**Context today (verified 23 Oct, main 4dcdc56).** `schema/record.schema.json` is record/3 with
+19 kinds (E19 added `potential-fields`). Kinds are STAC `keywords` (`src/osd/stac.py`), site chips
+derive from the records present (`site/app.js`, no vocabulary copy), `src/osd/new.py` scaffold
+comments and a test read the schema's values (E19 design 3). `tests/test_schema.py` holds the
+record/3 fixtures and the record/2 compatibility test under `tests/fixtures/schema/`. Twelve
+records name a want in `origin.notes` or `known_issues`: velocity model
+(`doe-gdr/utah-forge-seismic-reflection`, `lbeg/tunb-velo-2-0-ni`,
+`soton/scanner-pockmark-velocity-models`); geological 3D model (`doe-gdr/utah-forge-3d-gravity`
+"3D density model from gravity inversion", `geosphere-at/molasse-basin-subsurface-model`,
+`lbeg/tunb3d-ni`); airborne electromagnetics and radiometrics
+(`geosphere-at/aerogeophysics-northern-lower-austria`, `igme/sigeof`,
+`nrcan/canadian-airborne-geophysical-data-base`); stress (`ustc/bedrettolab-atv-logs-stress`,
+"stress_inversion.zip"); and two whose want is not a kind and stay as they are
+(`force/ml-competition-2020-well-logs` lithofacies labels, `ns-energy/onshore-2d-seismic-navigation`
+navigation only). `azu/data-room` and `dgeg/petroleum-technical-data` record velocity
+*measurements* as `time-depth`; that is right and they are not touched.
+
+**The design the lane must map to.**
+1. record/4: `kinds` gains exactly `velocity-model` (a seismic velocity field or cube, interval or
+   migration velocities as a model, not time-depth pairs), `geological-model` (a 3D structural or
+   property model: layers, volumes, salt bodies, inverted density), `airborne-em` (airborne
+   electromagnetic soundings), `radiometrics` (gamma-ray spectrometry surveys, airborne or ground),
+   `stress` (in-situ stress measurements and inversions). The enum description defines each in one
+   clause. record/3 files validate under record/3 in the compatibility test (frozen copy under
+   `tests/fixtures/schema/`), every stored record validates under record/4. No other schema changes;
+   `manifest/4` and `stac-osd` carry kinds as free keywords and need no bump (assert this with a
+   test that a record/4 kind round-trips build → manifest → STAC keyword).
+2. Names: if the Ophiolite kind registry (`~/src/ophiolite`, E55) names any of these, use its
+   name and cite the file in the PR; else the names above stand and the PR says the registry has
+   none.
+3. No vocabulary copies: `src/osd/new.py` scaffold comments and its test read the schema; site
+   chips stay data-derived (one site journey test with a fixture catalogue holding a
+   `velocity-model` record shows the chip and filters by it); `how.html` is not touched
+   (E27 holds the site text).
+4. Records, exact edits and nothing else: the ten records above gain the kind their want names
+   (`doe-gdr/utah-forge-3d-gravity` gains `geological-model` and keeps `potential-fields`;
+   `igme/sigeof` and `nrcan/canadian-airborne-geophysical-data-base` gain both `airborne-em` and
+   `radiometrics` only where their own text names each; `geosphere-at/aerogeophysics-…` likewise;
+   `ustc/bedrettolab-atv-logs-stress` gains `stress`; velocity and geological-model records gain
+   their kind and keep the nearest kind only if the dataset also holds that kind, e.g. SEG-Y
+   volumes beside a velocity model) and the "Want: …" sentence is removed from `notes`, the rest
+   of the note kept verbatim. The two non-kind wants are untouched. Every edit cites the record's
+   own text; nothing is re-fetched.
+
+**Acceptance.**
+- record/4 fixtures: each new kind validates; an unknown kind is refused; record/3 fixtures
+  validate under the frozen record/3; `uv run osd validate` 140 records (or main's count), 0 problems.
+- Round trip: a fixture record with `velocity-model` reaches the manifest and the STAC Collection
+  `keywords` unchanged; stac-osd and manifest schemas unchanged in the diff.
+- Scaffold: the `osd new` comment lists the five new kinds, read from the schema (mutation: schema
+  enum entry removed → the scaffold test is red).
+- Site: fixture catalogue with one `velocity-model` record and one without; the chip appears and
+  filtering includes the one and excludes the other.
+- The ten record diffs show exactly the `kinds` line and the removed sentence.
+
+**Out of scope.** Kinds for lithofacies labels or navigation-only seismic (recorded as findings,
+not added); any site text; STAC or manifest schema versions.
+
+**Stop rules.** None.
+
+**Ownership and dependencies.** Coding lane; paths `schema/record.schema.json` (record/4),
+`tests/fixtures/schema/record-3.schema.json` (frozen copy), `src/osd/new.py` (comments only),
+`tests/test_schema.py`, `tests/test_new.py` or where the scaffold test lives, `tests/test_stac.py`
+and `tests/test_manifest.py` (round-trip additions), `tests/site/site.test.mjs` (one journey test;
+shared with E27, second to merge rebases), `tests/fixtures/**` additions, the ten records named
+in design 4, `docs/program/evidence/e26/**`. Depends on E19, E24 (merged).
+
+**Evidence to inspect.** The ten record diffs; the schema diff; the round-trip test; the chip
+screenshot; the mutation.
+
+exec
+/bin/bash -lc "rg -n 'kinds|keywords|record/|manifest/|enum|schema' schema/record.schema.json schema/manifest.schema.json schema/stac-osd* src/osd/new.py src/osd/stac.py src/osd/manifest.py tests/test_schema.py tests/test_new.py site/app.js; rg --files records tests/fixtures/schema docs/program/charters | sort" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+rg: tests/test_new.py: No such file or directory (os error 2)
+tests/test_schema.py:2:strategy E19-vocabulary-from-the-records-lanes-STRATEGY.md): record/3, the stac-osd v2 access value, the
+tests/test_schema.py:13:from jsonschema import Draft7Validator, Draft202012Validator, FormatChecker
+tests/test_schema.py:20:FROZEN = ROOT / "tests" / "fixtures" / "schema"
+tests/test_schema.py:24:V1_URL = "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"
+tests/test_schema.py:27:def _v(schema: dict) -> Draft202012Validator:
+tests/test_schema.py:28:    return Draft202012Validator(schema, format_checker=FormatChecker())
+tests/test_schema.py:31:RECORD_3 = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))
+tests/test_schema.py:32:RECORD_2 = _v(json.loads((FROZEN / "record-2.schema.json").read_text()))
+tests/test_schema.py:39:           "kinds": ["seismic-3d"], "region": {"country": "NL"}, "listed_by": ["publisher"], "added": "2026-10-23"}
+tests/test_schema.py:54:# --- record/3 --------------------------------------------------------------------------------------
+tests/test_schema.py:57:    assert RECORD_3.schema["$id"].endswith("/record/3") and RECORD_2.schema["$id"].endswith("/record/2")
+tests/test_schema.py:61:    assert _errors(_base(kinds=["potential-fields"])) == []
+tests/test_schema.py:83:    _base(kinds=["gravity"]), _base(access="paid"), _base(access="Purchase"),
+tests/test_schema.py:92:    """Every record/2 file is a record/3 file; every current record without its record/3 values is a
+tests/test_schema.py:93:    record/2 file under the frozen record/2 schema."""
+tests/test_schema.py:100:        if (rec["origin"]["access"] == "purchase" or "potential-fields" in rec["kinds"]
+tests/test_schema.py:105:    assert old >= 89   # at least 96 records (E20), seven carry record/3 values
+tests/test_schema.py:111:        assert "potential-fields" in recs[rid]["kinds"], rid
+tests/test_schema.py:125:# --- osd new: the scaffold's comment lists come from the schema -----------------------------------
+tests/test_schema.py:127:def test_new_scaffold_comments_list_the_schema_values():
+tests/test_schema.py:128:    props = RECORD_3.schema["properties"]
+tests/test_schema.py:132:    assert lines["access"] == "fill: " + " | ".join(props["origin"]["properties"]["access"]["enum"])
+tests/test_schema.py:134:    assert lines["redistribution"] == "fill: " + " | ".join(props["licence"]["properties"]["redistribution"]["enum"])
+tests/test_schema.py:135:    assert lines["attribution"] == "fill: " + " | ".join(props["licence"]["properties"]["attribution"]["enum"])
+tests/test_schema.py:136:    assert lines["listed_by"] == " | ".join(props["listed_by"]["items"]["enum"])
+tests/test_schema.py:202:    rec = dict(_base(access="purchase", kinds=["seismic-2d", "potential-fields"], terms=TERMS),
+tests/test_schema.py:212:    assert col["osd:access"] == "purchase" and "potential-fields" in col["keywords"]
+tests/test_schema.py:224:    """A Collection written under stac-osd/1 (the v1 URL, a record/2 access value) validates under the
+tests/test_schema.py:225:    frozen v1 schema, under the current schema, and through the offline schema map."""
+tests/test_schema.py:238:    smap = json.loads(stac.SCHEMA_MAP.read_text())["schemas"]
+tests/test_schema.py:242:def test_template_access_comment_lists_the_schema_values():
+tests/test_schema.py:244:    enum = RECORD_3.schema["properties"]["origin"]["properties"]["access"]["enum"]
+tests/test_schema.py:245:    assert line.split("#", 1)[1].strip() == " | ".join(enum) + " (from schema/record.schema.json)"
+src/osd/new.py:7:and kinds. It reads one page, once; `--title` skips even that.
+src/osd/new.py:20:from .records import _schema
+src/osd/new.py:49:    """The scaffold's comment lists, read from schema/record.schema.json so they never drift (E19)."""
+src/osd/new.py:50:    p = _schema("record")["properties"]
+src/osd/new.py:51:    return {"access": " | ".join(p["origin"]["properties"]["access"]["enum"]),
+src/osd/new.py:52:            "redistribution": " | ".join(p["licence"]["properties"]["redistribution"]["enum"]),
+src/osd/new.py:53:            "attribution": " | ".join(p["licence"]["properties"]["attribution"]["enum"]),
+src/osd/new.py:54:            "listed_by": " | ".join(p["listed_by"]["items"]["enum"])}
+src/osd/new.py:79:        "kinds: []                                         # fill: see schema/record.schema.json",
+site/app.js:4:   Select mode (E06): tick datasets, download an osd.manifest/1 file (/4 when a dataset is sold or
+site/app.js:44:        approximate: true, level: r.level, title: r.title, publisher: r.publisher.name, kinds: r.kinds },
+site/app.js:53:  const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null, pick: null,
+site/app.js:55:  const state = { ...DEFAULTS, kinds: new Set() };
+site/app.js:59:    state.kinds = new Set((h.get('k') || '').split(',').filter(Boolean));
+site/app.js:75:    if (state.kinds.size) h.set('k', [...state.kinds].sort().join(','));
+site/app.js:105:  const allKinds = [...new Set(records.flatMap(r => r.kinds))].sort();
+site/app.js:122:    if (state.kinds.size && !r.kinds.some(k => state.kinds.has(k))) return false;
+site/app.js:235:  const kindsEl = document.getElementById('kinds');
+site/app.js:239:    c.onclick = () => { state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k); syncControls(); applyFilters(); };
+site/app.js:240:    kindsEl.appendChild(c); chips[k] = c;
+site/app.js:254:    for (const k of allKinds) chips[k].classList.toggle('on', state.kinds.has(k));
+site/app.js:297:        <dt>Holds</dt><dd>${r.kinds.map(esc).join(', ')}</dd>
+site/app.js:316:  // the picked-line layer and the tick() calls. The file it writes is osd.manifest/1 as
+site/app.js:317:  // src/osd/manifest.py writes it for a Collection selection (schema/manifest.schema.json), or /4 with
+site/app.js:320:  const MANIFEST_FORMAT = 'osd.manifest/1';
+site/app.js:321:  const MANIFEST_FORMAT_4 = 'osd.manifest/4';
+schema/record.schema.json:2:  "$schema": "https://json-schema.org/draft/2020-12/schema",
+schema/record.schema.json:3:  "$id": "https://open-subsurface-data.org/schema/record/3",
+schema/record.schema.json:8:  "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
+schema/record.schema.json:29:        "access": {"type": "string", "enum": ["anonymous", "registration", "api", "request", "purchase"],
+schema/record.schema.json:41:        "redistribution": {"type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+schema/record.schema.json:43:        "attribution": {"type": "string", "enum": ["required", "not-required", "unknown"]},
+schema/record.schema.json:59:    "kinds": {
+schema/record.schema.json:61:      "items": {"type": "string", "enum": [
+schema/record.schema.json:67:      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets; potential-fields: gravity or magnetic data (record/3)."
+schema/record.schema.json:88:      "items": {"type": "string", "enum": ["seg-wiki", "publisher", "osdu", "community"]},
+schema/record.schema.json:104:          "format": {"type": "string", "enum": ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson"],
+schema/record.schema.json:107:          "units": {"type": "string", "enum": ["m", "ft", "ftUS", "degree"], "description": "Coordinate units when the publisher states them outside the data."},
+src/osd/stac.py:15:extension (schema/stac-osd.json). Validation runs offline against the schemas bundled in
+src/osd/stac.py:16:schema/stac/ (schema/stac/schema-map.json).
+src/osd/stac.py:33:                 "schema/stac-osd.json?v=3")   # OSD-D19; v2 (E19): purchase; v3 (E18): osd:period_source
+src/osd/stac.py:34:FILE_EXTENSION = "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+src/osd/stac.py:35:ALTERNATE_EXTENSION = "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"
+src/osd/stac.py:37:SCHEMA_MAP = paths.SCHEMA_DIR / "stac" / "schema-map.json"
+src/osd/stac.py:186:            "keywords": rec["kinds"],
+src/osd/stac.py:223:def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MAP) -> tuple[bool, list]:
+src/osd/stac.py:224:    """stac-validator over a local file or tree, against the bundled schemas only."""
+src/osd/stac.py:225:    from stac_validator.utilities import fetch_and_parse_schema
+src/osd/stac.py:228:    fetch_and_parse_schema.cache_clear()   # a schema map change must not reuse a cached schema
+src/osd/stac.py:229:    v = StacValidate(str(path), recursive=recursive, schema_config=str(schema_config))
+src/osd/manifest.py:1:"""Retrieval manifests, osd.manifest/4 (E06; alternates E07; snapshot E09; record/3 vocabulary E19): write one from the built catalogue, read one typed.
+src/osd/manifest.py:11:schema/manifest.schema.json and returns frozen dataclasses with `sha256` decoded from the
+src/osd/manifest.py:14:osd.manifest/2 (E07) adds `alternates` per asset: other locations of the same bytes (the mirror,
+src/osd/manifest.py:18:osd.manifest/3 (E09) adds `metadata.catalog`, the snapshot identity of the catalogue it was written
+src/osd/manifest.py:24:osd.manifest/4 (E19) carries the record/3 vocabulary: `access: purchase` and `licence.terms`, the
+src/osd/manifest.py:37:from jsonschema import Draft202012Validator, FormatChecker
+src/osd/manifest.py:42:FORMAT = "osd.manifest/1"
+src/osd/manifest.py:43:FORMAT_2 = "osd.manifest/2"
+src/osd/manifest.py:44:FORMAT_3 = "osd.manifest/3"
+src/osd/manifest.py:45:FORMAT_4 = "osd.manifest/4"
+src/osd/manifest.py:68:    """licence.terms (record/3): the publisher's words; nothing here is computed."""
+src/osd/manifest.py:85:    terms: Terms | None = None        # None: the record states no terms (record/3, manifest/4)
+src/osd/manifest.py:128:    schema = json.loads((paths.SCHEMA_DIR / "manifest.schema.json").read_text())
+src/osd/manifest.py:129:    return Draft202012Validator(schema, format_checker=FormatChecker())
+src/osd/manifest.py:156:    for i, e in enumerate(doc["entries"]):
+src/osd/manifest.py:257:        raise ManifestError("an entry carries record/3 values (purchase, terms) but records.json has no "
+schema/manifest.schema.json:2:  "$schema": "https://json-schema.org/draft/2020-12/schema",
+schema/manifest.schema.json:3:  "$id": "https://open-subsurface-data.org/schema/manifest/4",
+schema/manifest.schema.json:4:  "title": "Retrieval manifest, version 4 (osd.manifest/4; osd.manifest/1, /2 and /3 still validate)",
+schema/manifest.schema.json:5:  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials. v2 (E07): an asset may name `alternates`, other locations of the same bytes (the mirror), tried before `href`; a manifest with alternates says osd.manifest/2, one without may stay osd.manifest/1. v3 (E09): `metadata.catalog` names the catalogue snapshot the manifest was written from (records.json `catalog`, copied whole); a /3 manifest carries it, /1 and /2 must not. A /3 licence may state `attribution: null` (the source states no value), which /1 and /2 refuse. v4 (E19): the record/3 vocabulary travels: an entry may say `access: purchase` and its licence may carry `terms`, copied whole (absent keys stay absent); a /4 manifest carries `metadata.catalog` like /3, and /1 to /3 refuse both new values, so an old manifest means what it meant. A manifest is written as /4 only when an entry needs it.",
+schema/manifest.schema.json:10:    "format": {"enum": ["osd.manifest/1", "osd.manifest/2", "osd.manifest/3", "osd.manifest/4"]},
+schema/manifest.schema.json:13:    "selection": {"enum": ["collections", "items"], "description": "Collection selection or Item selection, never a mix"},
+schema/manifest.schema.json:20:    {"if": {"properties": {"format": {"const": "osd.manifest/1"}}},
+schema/manifest.schema.json:23:    {"if": {"properties": {"format": {"enum": ["osd.manifest/3", "osd.manifest/4"]}}},
+schema/manifest.schema.json:28:    {"if": {"properties": {"format": {"const": "osd.manifest/4"}}},
+schema/manifest.schema.json:73:        "redistribution": {"enum": ["allowed", "restricted", "forbidden", "unknown"]},
+schema/manifest.schema.json:74:        "attribution": {"enum": ["required", "not-required", "unknown", null],
+schema/manifest.schema.json:79:                  "description": "v4. The record's licence.terms (record/3), copied whole: the keys the record states, nothing added",
+schema/manifest.schema.json:98:        "access": {"enum": ["anonymous", "registration", "api", "request", "purchase"], "description": "purchase is v4 only"},
+schema/manifest.schema.json:104:        "coverage": {"enum": ["sampled", "complete"], "description": "sampled: the files the verifier hashed, not the whole dataset"},
+schema/stac-osd.json:2:  "$schema": "http://json-schema.org/draft-07/schema#",
+schema/stac-osd.json:3:  "$id": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=3",
+schema/stac-osd.json:5:  "description": "Collection fields state what our tools established about the whole record (record-level assurance, not per file or per feature). Item fields state how one feature's geometry was obtained. Enums are closed and no other osd: field is allowed. Offline validation maps this URL to schema/stac-osd.json (schema/stac/schema-map.json). v2 (E19): `osd:access` admits `purchase`; the identifier gains `?v=2`. The v1 identifier resolves to this same file online, so a document naming either identifier validates here; v1 is frozen at tests/fixtures/schema/stac-osd-1.json. v3 (E18): Items gain `osd:period_source`; the identifier gains `?v=3`; a document naming the v1 or v2 identifier validates here too; v2 is frozen at tests/fixtures/schema/stac-osd-2.json.",
+schema/stac-osd.json:38:          "contains": {"enum": ["https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=3", "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2", "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"]}
+schema/stac-osd.json:47:          "type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+schema/stac-osd.json:55:          "type": "string", "enum": ["anonymous", "registration", "api", "request", "purchase"],
+schema/stac-osd.json:59:          "type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+schema/stac-osd.json:87:          "type": "string", "enum": ["feature", "feature-start,collection-end", "collection"],
+docs/program/charters/E01-twenty-records.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.log
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.md
+docs/program/charters/E02-verifier-to-L2-STRATEGY.md
+docs/program/charters/E02-verifier-to-L2.md
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.log
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.md
+docs/program/charters/E03-outlines-from-the-data-STRATEGY.md
+docs/program/charters/E03-outlines-from-the-data.md
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.log
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.md
+docs/program/charters/E04-stac-catalogue-STRATEGY.md
+docs/program/charters/E04-stac-catalogue.md
+docs/program/charters/E05-map-that-scales.md
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.log
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.md
+docs/program/charters/E06-retrieval-by-manifest-STRATEGY.md
+docs/program/charters/E06-retrieval-by-manifest.md
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.log
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.md
+docs/program/charters/E07-mirror-store-and-custody-STRATEGY.md
+docs/program/charters/E07-mirror-store-and-custody.md
+docs/program/charters/E08-curation-that-runs-itself.md
+docs/program/charters/E09-ophiolite-half.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.log
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-STRATEGY.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue.md
+docs/program/charters/E10-seismic-slices.md
+docs/program/charters/E11-hosting-and-domain.md
+docs/program/charters/E12-catalogue-into-a-workspace.md
+docs/program/charters/E13-registers-second-twenty.md
+docs/program/charters/E14-records-third-twenty.md
+docs/program/charters/E15-tiles-for-the-registers.md
+docs/program/charters/E16-periods-from-the-publishers.md
+docs/program/charters/E17-records-fourth-twenty.md
+docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.log
+docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.md
+docs/program/charters/E18-items-carry-their-own-dates-STRATEGY.md
+docs/program/charters/E18-items-carry-their-own-dates.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes-CODEX-REVIEW.log
+docs/program/charters/E19-vocabulary-from-the-records-lanes-CODEX-REVIEW.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes-STRATEGY.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes.md
+docs/program/charters/E20-records-retry-and-the-publishers-sentences.md
+docs/program/charters/E21-the-map-says-when.md
+docs/program/charters/E22-records-fifth-twenty.md
+docs/program/charters/E23-more-datasets-checksummed-CODEX-REVIEW.log
+docs/program/charters/E23-more-datasets-checksummed-CODEX-REVIEW.md
+docs/program/charters/E23-more-datasets-checksummed-STRATEGY.md
+docs/program/charters/E23-more-datasets-checksummed.md
+docs/program/charters/E24-records-files-the-verifier-can-reach.md
+docs/program/charters/E25-records-seventh-twenty-and-the-bare-files.md
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-CODEX-REVIEW.log
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for.md
+docs/program/charters/E27-the-map-says-why.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-CODEX-REVIEW.log
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-CODEX-REVIEW.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-STRATEGY.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide.md
+records/LICENSE
+records/_template.yaml
+records/aer/st37-list-of-wells.yaml
+records/agl/marmousi2.yaml
+records/ak-dggs/tax-credit-seismic-data.yaml
+records/ak-dggs/tax-credit-well-data.yaml
+records/ancap/bouguer-anomaly-map-of-uruguay.yaml
+records/anh/produccion-fiscalizada-crudo.yaml
+records/anp/bdep.yaml
+records/anpg/historico-de-producao.yaml
+records/ar-energia/fractura-adjunto-iv.yaml
+records/ar-energia/produccion-por-pozo.yaml
+records/ar-energia/trayectorias-vaca-muerta.yaml
+records/azu/data-room.yaml
+records/bcer/well-surface-holes-permitted.yaml
+records/beg/stratton-3d.yaml
+records/bgs/single-onshore-borehole-index.yaml
+records/calgem/wellstar-oil-and-gas-wells.yaml
+records/cgs/vrtna-prozkoumanost.yaml
+records/cnloer/data-information-hub.yaml
+records/cnsoer/data-management-centre.yaml
+records/cnsoer/directory-of-offshore-wells.yaml
+records/co2datashare/eos-31-5-7-rock-mechanics.yaml
+records/co2datashare/illinois-basin-decatur.yaml
+records/co2datashare/sleipner-2019-benchmark-model.yaml
+records/co2datashare/sleipner-4d-seismic.yaml
+records/co2datashare/smeaheia.yaml
+records/cpc/onshore-well-locations.yaml
+records/dgeg/petroleum-technical-data.yaml
+records/dgh/national-data-repository.yaml
+records/doe-gdr/utah-forge-3d-gravity.yaml
+records/doe-gdr/utah-forge-seismic-reflection.yaml
+records/doe-gdr/utah-forge-well-58-32-logs.yaml
+records/ecmc/oil-and-gas-active-and-plugged-wells.yaml
+records/equinor/drogon.yaml
+records/equinor/volve.yaml
+records/esdm/migas-data-repository.yaml
+records/eug/national-data-repository.yaml
+records/force/ml-competition-2020-well-logs.yaml
+records/ga/brumbys-1-otway.yaml
+records/ga/l200-southern-carnarvon-seismic.yaml
+records/geosphere-at/aerogeophysics-northern-lower-austria.yaml
+records/geosphere-at/molasse-basin-subsurface-model.yaml
+records/geus/deep-subsurface-data.yaml
+records/geus/formation-tops-denmark.yaml
+records/geus/havnso-reservoir-model.yaml
+records/gfz/cosc-1-zero-offset-vsp.yaml
+records/gfz/dekorp-9n-reprocessed.yaml
+records/gfz/ketzin-brine-injection.yaml
+records/gfz/ktb-data.yaml
+records/gsmma/hydrogeological-drilling-database.yaml
+records/gsmma/sw-offshore-core-stations-2008-2011.yaml
+records/gsmma/sw-offshore-seismic-lines-2008-2011.yaml
+records/gsq/qped.yaml
+records/gsv/petroleum-wells.yaml
+records/gy-mnr/well-activities.yaml
+records/helsinki-univ/outokumpu-deep-hole-vocs.yaml
+records/ibm-research/netherlands-f3-interpretation.yaml
+records/ie-pad/offshore-exploration-wells.yaml
+records/igme/sigeof.yaml
+records/inp-mz/actividade-de-pesquisa-e-producao.yaml
+records/iodp-jrso/lims-expedition-data.yaml
+records/jamstec/seismic-survey-database.yaml
+records/jardfeingi/well-data.yaml
+records/kgs/oil-gas-wells.yaml
+records/kigam/marine-geological-map-korea-strait.yaml
+records/lbeg/kw-fis.yaml
+records/lbeg/tunb-velo-2-0-ni.yaml
+records/lbeg/tunb3d-ni.yaml
+records/ldeo-brg/logdb.yaml
+records/manitoba-petroleum/technical-well-files.yaml
+records/marum/bremen-core-repository.yaml
+records/mase-unmig/videpi-seismic.yaml
+records/mase-unmig/videpi-wells.yaml
+records/meei/historical-oil-and-gas-production.yaml
+records/namcor/exploration-production-data.yaml
+records/nlog/nlog.yaml
+records/nm-ocd/oil-and-gas-wells.yaml
+records/nock/wells-drilled.yaml
+records/nopims/poseidon.yaml
+records/nrcan/canadian-airborne-geophysical-data-base.yaml
+records/ns-energy/onshore-2d-seismic-navigation.yaml
+records/ns-energy/onshore-petroleum-well-log-database.yaml
+records/nsta/ndr.yaml
+records/ntgs/core-library.yaml
+records/nysdec/oil-and-gas-annual-production.yaml
+records/nysdec/oil-gas-and-other-regulated-wells.yaml
+records/nzpam/kerry-3d.yaml
+records/nzpam/parihaka.yaml
+records/odnr/oil-and-gas-well-database.yaml
+records/ok-occ/oil-gas-data-files.yaml
+records/opm/norne.yaml
+records/opm/spe9.yaml
+records/pa-dep/oil-and-gas-well-locations.yaml
+records/pasa/national-petroleum-exploration-database.yaml
+records/pau/petroleum-data.yaml
+records/perupetro/banco-de-datos.yaml
+records/petroci/virtual-data-room.yaml
+records/petronas/myprodata.yaml
+records/pgi/cbdg-boreholes.yaml
+records/prime/national-oil-gas-database.yaml
+records/rmotc/teapot-dome.yaml
+records/sa-dem/moorari-3d-2005-reprocessing.yaml
+records/seg/open-data-wiki.yaml
+records/sgc/banco-informacion-petrolera-pozos.yaml
+records/sgudds/register-geotermalnych-vrtov.yaml
+records/sintef/johansen.yaml
+records/sk-mer/vertical-wells.yaml
+records/sodir/factpages.yaml
+records/soton/scanner-pockmark-velocity-models.yaml
+records/spe/csp10-model-2.yaml
+records/spe/csp11.yaml
+records/staatsolie/open-door-data-offering.yaml
+records/swisstopo/deep-wells.yaml
+records/swisstopo/reflection-seismic.yaml
+records/sztfh/seismic-and-well-log-databases.yaml
+records/terranubis/blake-ridge-hydrates-3d.yaml
+records/terranubis/delft.yaml
+records/terranubis/f3-demo-2020.yaml
+records/terranubis/force-ml-2020-ichthys-3d.yaml
+records/terranubis/force-ml-2020-synthetic.yaml
+records/terranubis/laurentian-basin.yaml
+records/terranubis/oga-mnsh.yaml
+records/terranubis/oga-rockall-trough.yaml
+records/terranubis/penobscot.yaml
+records/terranubis/usgs-beaufort-sea-2023.yaml
+records/terranubis/usgs-central-alaska-2023.yaml
+records/tno/bro-geological-boreholes.yaml
+records/tno/olympus.yaml
+records/tudelft/egg-model.yaml
+records/tx-rrc/full-wellbore.yaml
+records/tx-rrc/production-data-query-dump.yaml
+records/ukogl/uk-onshore-geophysical-library.yaml
+records/unisim/unisim-i.yaml
+records/unisim/unisim-ii.yaml
+records/unisim/unisim-iv.yaml
+records/usgs/namss.yaml
+records/ustc/bedrettolab-atv-logs-stress.yaml
+records/ut-dogm/oil-gas-wells.yaml
+records/wa-demirs/petroleum-wells.yaml
+records/wogcc/wyde-wells.yaml
+records/wvges/pipeline-oil-and-gas-well-data.yaml
+tests/fixtures/schema/manifest-3.schema.json
+tests/fixtures/schema/record-2.schema.json
+tests/fixtures/schema/stac-osd-1.json
+tests/fixtures/schema/stac-osd-2.json
+tests/fixtures/schema/verification-3.schema.json
+
+exec
+/bin/bash -lc "nl -ba schema/manifest.schema.json | sed -n '88,122p'; nl -ba src/osd/manifest.py | sed -n '90,115p;210,260p'; nl -ba tests/test_schema.py | sed -n '30,140p'; nl -ba schema/record.schema.json | sed -n '59,69p'; for f in records/doe-gdr/utah-forge-seismic-reflection.yaml records/lbeg/tunb-velo-2-0-ni.yaml records/soton/scanner-pockmark-velocity-models.yaml records/doe-gdr/utah-forge-3d-gravity.yaml records/geosphere-at/molasse-basin-subsurface-model.yaml records/lbeg/tunb3d-ni.yaml records/geosphere-at/aerogeophysics-northern-lower-austria.yaml records/igme/sigeof.yaml records/nrcan/canadian-airborne-geophysical-data-base.yaml records/ustc/bedrettolab-atv-logs-stress.yaml records/force/ml-competition-2020-well-logs.yaml records/ns-energy/onshore-2d-seismic-navigation.yaml records/azu/data-room.yaml records/dgeg/petroleum-technical-data.yaml; do echo \""'$f"; nl -ba "$f"; done' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+    88	    "entry": {
+    89	      "type": "object", "additionalProperties": false,
+    90	      "required": ["collection_id", "record_id", "title", "origin_url", "access", "licence", "assets"],
+    91	      "properties": {
+    92	        "collection_id": {"type": "string", "pattern": "^[a-z0-9-]+--[a-z0-9-]+$"},
+    93	        "record_id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$"},
+    94	        "item_id": {"type": ["string", "null"], "description": "Item selection: the STAC Item id, or null when the feature has no Item"},
+    95	        "feature_id": {"type": "string", "description": "Item selection: the map feature that was selected"},
+    96	        "title": {"type": "string"},
+    97	        "origin_url": {"type": "string", "format": "uri", "description": "The publisher's page; the to-do address when assets are empty"},
+    98	        "access": {"enum": ["anonymous", "registration", "api", "request", "purchase"], "description": "purchase is v4 only"},
+    99	        "licence": {"$ref": "#/$defs/licence"},
+   100	        "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}, "description": "The record's known_issues, verbatim (publisher restrictions live here and in licence.redistribution)"},
+   101	        "assets": {"type": "object", "additionalProperties": {"$ref": "#/$defs/asset"},
+   102	                   "propertyNames": {"pattern": "^[^/\\\\][^\\\\]*$", "not": {"pattern": "(^|/)\\.\\.?(/|$)"}},
+   103	                   "description": "STAC asset key (a relative path) to asset; keys become paths under --dest/<collection_id>/"},
+   104	        "coverage": {"enum": ["sampled", "complete"], "description": "sampled: the files the verifier hashed, not the whole dataset"},
+   105	        "unresolved": {"type": "string", "minLength": 1, "description": "Why no asset is listed; the origin page is the to-do"}
+   106	      },
+   107	      "if": {"properties": {"assets": {"maxProperties": 0}}},
+   108	      "then": {"required": ["unresolved"]},
+   109	      "else": {"required": ["coverage"]}
+   110	    }
+   111	  }
+   112	}
+    90	            t = {k: self.terms[k] for k in TERMS_FIELDS if k in self.terms}
+    91	            object.__setattr__(self, "terms", Terms(**t, stated_keys=frozenset(t)))
+    92	
+    93	
+    94	@dataclass(frozen=True)
+    95	class Entry:
+    96	    collection_id: str
+    97	    record_id: str
+    98	    title: str
+    99	    origin_url: str
+   100	    access: str
+   101	    licence: Licence
+   102	    assets: tuple[Asset, ...]
+   103	    item_id: str | None = None
+   104	    feature_id: str | None = None
+   105	    coverage: str | None = None
+   106	    unresolved: str | None = None
+   107	    known_issues: tuple[str, ...] = ()
+   108	
+   109	
+   110	@dataclass(frozen=True)
+   111	class Catalog:
+   112	    source_commit: str | None
+   113	    verification_commit: str | None
+   114	    built_at: str
+   115	    records_digest: str
+   210	    recs = {r["id"]: r for r in built["records"]}
+   211	    by_cid = {collection_id(rid): rid for rid in recs}
+   212	    stac_dir = catalog_dir / "stac"
+   213	
+   214	    def collection(rid: str) -> dict:
+   215	        return json.loads((stac_dir / collection_id(rid) / "collection.json").read_text())
+   216	
+   217	    entries = []
+   218	    if not features:
+   219	        for i in dict.fromkeys(ids):
+   220	            rid = i if i in recs else by_cid.get(i)
+   221	            if rid is None:
+   222	                raise ManifestError(f"'{i}' is neither a record id nor a collection id in {catalog_dir}")
+   223	            rec, col = recs[rid], collection(rid)
+   224	            e, assets = _entry(rec), _assets(col)
+   225	            e["assets"] = assets
+   226	            if assets:
+   227	                e["coverage"] = "sampled"
+   228	            else:
+   229	                e["unresolved"] = _no_assets_reason(rec)
+   230	            entries.append(e)
+   231	        selection = "collections"
+   232	    else:
+   233	        outlines = json.loads((catalog_dir / "outlines.geojson").read_text())["features"]
+   234	        known = {f["id"]: f["properties"]["record_id"] for f in outlines if "id" in f}
+   235	        for fid in dict.fromkeys(features):
+   236	            rid = known.get(fid)
+   237	            if rid is None:
+   238	                raise ManifestError(f"'{fid}' is not a feature id in {catalog_dir / 'outlines.geojson'}")
+   239	            rec, col = recs[rid], collection(rid)
+   240	            item_ids = {json.loads((stac_dir / collection_id(rid) / x["href"]).read_text())["id"]
+   241	                        for x in col["links"] if x["rel"] == "item"}
+   242	            e = _entry(rec)
+   243	            has_item = fid in item_ids
+   244	            e.update(item_id=fid if has_item else None, feature_id=fid, assets={})
+   245	            e["unresolved"] = (
+   246	                "STAC Items carry no assets: the files the catalogue knows belong to the Collection "
+   247	                f"{e['collection_id']}, not to this feature; select the Collection to fetch them"
+   248	                if has_item else
+   249	                f"no STAC Item for this feature (the record states no period); it belongs to the "
+   250	                f"Collection {e['collection_id']}")
+   251	            entries.append(e)
+   252	        selection = "items"
+   253	    v2 = any("alternates" in a for e in entries for a in e["assets"].values())
+   254	    v4 = any(e["access"] == "purchase" or "terms" in e["licence"] for e in entries)
+   255	    snapshot = built.get("catalog")   # absent from a catalogue built before E09
+   256	    if v4 and not snapshot:
+   257	        raise ManifestError("an entry carries record/3 values (purchase, terms) but records.json has no "
+   258	                            "`catalog`: rebuild the catalogue")
+   259	    doc = {"format": FORMAT_4 if v4 else FORMAT_3 if snapshot else FORMAT_2 if v2 else FORMAT,
+   260	           "created": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    30	
+    31	RECORD_3 = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))
+    32	RECORD_2 = _v(json.loads((FROZEN / "record-2.schema.json").read_text()))
+    33	
+    34	
+    35	def _base(**kw) -> dict:
+    36	    rec = {"id": "acme/demo", "title": "Demo set", "publisher": {"name": "Acme", "url": "https://acme.example"},
+    37	           "origin": {"url": "https://acme.example/demo", "access": "anonymous"},
+    38	           "licence": {"name": "Acme terms", "spdx": None, "redistribution": "forbidden", "attribution": "unknown"},
+    39	           "kinds": ["seismic-3d"], "region": {"country": "NL"}, "listed_by": ["publisher"], "added": "2026-10-23"}
+    40	    for k, x in kw.items():
+    41	        if k == "access":
+    42	            rec["origin"]["access"] = x
+    43	        elif k == "terms":
+    44	            rec["licence"]["terms"] = x
+    45	        else:
+    46	            rec[k] = x
+    47	    return rec
+    48	
+    49	
+    50	def _errors(rec: dict) -> list:
+    51	    return list(RECORD_3.iter_errors(rec))
+    52	
+    53	
+    54	# --- record/3 --------------------------------------------------------------------------------------
+    55	
+    56	def test_record_ids_are_versioned():
+    57	    assert RECORD_3.schema["$id"].endswith("/record/3") and RECORD_2.schema["$id"].endswith("/record/2")
+    58	
+    59	
+    60	def test_record_3_admits_the_new_values():
+    61	    assert _errors(_base(kinds=["potential-fields"])) == []
+    62	    assert _errors(_base(access="purchase")) == []
+    63	    assert _errors(_base(access="purchase", terms=TERMS)) == []
+    64	    assert _errors(_base(terms={"stated": "Licence runs until 31 December 2030.", "expires": "2030-12-31"})) == []
+    65	    assert _errors(_base(terms={"stated": "Terms as published.", "duration": None,
+    66	                                "review_before_publication": None, "expires": None})) == []
+    67	    assert _errors(_base(terms={"stated": "Only the words."})) == []
+    68	
+    69	
+    70	def test_terms_without_stated_refused():
+    71	    assert _errors(_base(terms={k: x for k, x in TERMS.items() if k != "stated"}))
+    72	    assert _errors(_base(terms={"stated": ""}))
+    73	
+    74	
+    75	@pytest.mark.parametrize("expires", ["2027-13-01", "2027-02-30", "soon", "2027", "27-01-01", "2027-01-01T00:00:00Z",
+    76	                                     20270101, True, date(2027, 1, 1)],
+    77	                         ids=["month-13", "feb-30", "word", "year", "short-year", "datetime", "int", "bool", "yaml-date"])
+    78	def test_expires_not_a_date_refused(expires):
+    79	    assert _errors(_base(terms=dict(TERMS, expires=expires)))
+    80	
+    81	
+    82	@pytest.mark.parametrize("rec", [
+    83	    _base(kinds=["gravity"]), _base(access="paid"), _base(access="Purchase"),
+    84	    _base(terms=dict(TERMS, price="40 USD")), _base(terms="at most 10 years"),
+    85	    _base(terms=dict(TERMS, review_before_publication="yes")), _base(terms=dict(TERMS, duration=10)),
+    86	], ids=["kind", "access", "access-case", "terms-closed", "terms-string", "review-string", "duration-int"])
+    87	def test_unknown_values_refused(rec):
+    88	    assert _errors(rec)
+    89	
+    90	
+    91	def test_record_2_files_validate_under_record_2():
+    92	    """Every record/2 file is a record/3 file; every current record without its record/3 values is a
+    93	    record/2 file under the frozen record/2 schema."""
+    94	    assert not list(RECORD_2.iter_errors(_base())) and not _errors(_base())
+    95	    assert list(RECORD_2.iter_errors(_base(access="purchase")))     # the frozen copy is the old contract
+    96	    old = 0
+    97	    for p in record_files():
+    98	        rec = load_record(p)
+    99	        assert not list(RECORD_3.iter_errors(rec)), p
+   100	        if (rec["origin"]["access"] == "purchase" or "potential-fields" in rec["kinds"]
+   101	                or "terms" in rec["licence"]):
+   102	            continue
+   103	        assert not list(RECORD_2.iter_errors(rec)), p
+   104	        old += 1
+   105	    assert old >= 89   # at least 96 records (E20), seven carry record/3 values
+   106	
+   107	
+   108	def test_the_six_records_state_the_new_values():
+   109	    recs = load_records()
+   110	    for rid in ("prime/national-oil-gas-database", "eug/national-data-repository", "namcor/exploration-production-data"):
+   111	        assert "potential-fields" in recs[rid]["kinds"], rid
+   112	    for rid in ("namcor/exploration-production-data", "beg/stratton-3d", "dgh/national-data-repository",
+   113	                "pasa/national-petroleum-exploration-database"):
+   114	        assert recs[rid]["origin"]["access"] == "purchase", rid
+   115	    assert not any("Want" in k for k in recs["beg/stratton-3d"]["known_issues"])
+   116	    terms = recs["pasa/national-petroleum-exploration-database"]["licence"]["terms"]
+   117	    assert terms["duration"] == "a maximum period of 10 years"   # the publisher's words (E20)
+   118	    assert terms["review_before_publication"] is True and terms["expires"] is None
+   119	    assert "maximum period of 10 years" in terms["stated"] and "review prior to publication" in terms["stated"]
+   120	    assert {"dgh/national-data-repository", "pasa/national-petroleum-exploration-database"} <= {
+   121	        k for k, r in recs.items() if "terms" in r["licence"]}   # a subset: later records may state terms (E22)
+   122	    assert validate_records() == [] and len(recs) >= 96
+   123	
+   124	
+   125	# --- osd new: the scaffold's comment lists come from the schema -----------------------------------
+   126	
+   127	def test_new_scaffold_comments_list_the_schema_values():
+   128	    props = RECORD_3.schema["properties"]
+   129	    text = new.scaffold("https://acme.example/demo", "Demo", "acme/demo", date(2026, 10, 23))
+   130	    lines = {line.split(":")[0].strip(): line.split("#", 1)[1].strip() for line in text.splitlines()
+   131	             if "#" in line and not line.startswith("#")}
+   132	    assert lines["access"] == "fill: " + " | ".join(props["origin"]["properties"]["access"]["enum"])
+   133	    assert "purchase" in lines["access"]
+   134	    assert lines["redistribution"] == "fill: " + " | ".join(props["licence"]["properties"]["redistribution"]["enum"])
+   135	    assert lines["attribution"] == "fill: " + " | ".join(props["licence"]["properties"]["attribution"]["enum"])
+   136	    assert lines["listed_by"] == " | ".join(props["listed_by"]["items"]["enum"])
+   137	
+   138	
+   139	# --- osd status: a stated absolute expiry beside the level ------------------------------------------
+   140	
+    59	    "kinds": {
+    60	      "type": "array", "minItems": 1, "uniqueItems": true,
+    61	      "items": {"type": "string", "enum": [
+    62	        "wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth",
+    63	        "seismic-3d", "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults",
+    64	        "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list",
+    65	        "potential-fields"
+    66	      ]},
+    67	      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets; potential-fields: gravity or magnetic data (record/3)."
+    68	    },
+    69	    "region": {
+records/doe-gdr/utah-forge-seismic-reflection.yaml
+     1	id: doe-gdr/utah-forge-seismic-reflection
+     2	title: "Utah FORGE: Seismic Reflection Data"
+     3	summary: >-
+     4	  2D and 3D seismic reflection data from the Utah FORGE site near Roosevelt Hot Springs,
+     5	  reprocessed during Phase 2c and output as SEG-Y: unmigrated time, prestack time migration and
+     6	  prestack depth migration (unenhanced and enhanced), and the velocity model used for migration,
+     7	  with a readme and the reprocessing paper. The raw and initially processed shot gathers are in
+     8	  the linked submission 1015.
+     9	publisher: {name: "Energy and Geoscience Institute at the University of Utah (Utah FORGE), via the DOE Geothermal Data Repository", url: https://gdr.openei.org, country: US}
+    10	origin:
+    11	  url: https://gdr.openei.org/submissions/1141
+    12	  access: anonymous
+    13	  notes: "Author John Miller (geophysical consultant). 'Download All Resources 849.51 MB — 3 files'. Raw and initially processed 2D and 3D data (1122 3D shot-gather SEG-Y files, navigation, stack, velocities): https://gdr.openei.org/submissions/1015."
+    14	licence:
+    15	  name: Creative Commons Attribution 4.0 (CC BY 4.0)
+    16	  spdx: CC-BY-4.0
+    17	  url: https://creativecommons.org/licenses/by/4.0/
+    18	  redistribution: allowed
+    19	  attribution: required
+    20	kinds: [seismic-3d, seismic-2d]
+    21	region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
+    22	size: {bytes_estimate: 849510000, stated: "849.51 MB — 3 files"}
+    23	listed_by: [publisher]
+    24	known_issues:
+    25	  - "bbox is the box the page's metadata gives for the files (FORGE site); the 2D lines extend beyond it (submission 1015 gives 38.2867 to 38.6867 N, -113.0528 to -112.6528 E for some of its files)."
+    26	period:
+    27	  start: "2018"
+    28	  end: "2019"
+    29	  stated: "Resource paper titled \"2018-2019 reprocessing of the 2D and 3D multichannel seismic surveys at the FORGE Utah EGS Laboratory\" (reprocessing); 'Data from Jun 19, 2019'"
+    30	notes: "Want: a velocity-model kind; the migration velocity model ships with the SEG-Y volumes and has no kind. The acquisition years of the original surveys are not stated on the page."
+    31	added: 2026-10-23
+records/lbeg/tunb-velo-2-0-ni.yaml
+     1	id: lbeg/tunb-velo-2-0-ni
+     2	title: Geschwindigkeitsmodell des Norddeutschen Beckens für Niedersachsen und Bremen (TUNB Velo 2.0-NI, 2026)
+     3	summary: >-
+     4	  LBEG's 3D velocity model of the North German Basin for Lower Saxony and Bremen from the joint
+     5	  project TUNB Velo 2.0 led by BGR: regional interval velocities from Base Zechstein to the ground
+     6	  surface, built on 14 lithostratigraphic horizons, salt structures and faults mostly from
+     7	  TUNB3D-NI, in 19 harmonised model tiles, as a basis for time-depth conversion of seismic data.
+     8	publisher: {name: "Landesamt für Bergbau, Energie und Geologie (LBEG)", url: https://www.lbeg.niedersachsen.de, country: DE}
+     9	origin:
+    10	  url: https://www.lbeg.niedersachsen.de/startseite/geologie/3d_modelle_des_untergrundes/geologische_ubersichtsmodelle/geschwindigkeitsmodell_tunb_velo_2_0_ni_2026/geschwindigkeitsmodell-des-norddeutschen-beckens-fur-niedersachsen-und-bremen-tunb-velo-2-0-ni-2026-250388.html
+    11	  access: anonymous
+    12	  notes: "On the NIBIS map server and in the NIBIS3D viewer (https://nibis.lbeg.de/cardomap3/?permalink=17R663Uv); on request, free of charge, in Aspen SKUA vo format (interval and average velocities) and as txt. Final report DOI 10.48476/geober_56_2026."
+    13	licence:
+    14	  name: Creative Commons CC-BY 4.0 (NIBIS Kartenserver Nutzungsbedingungen, open data)
+    15	  spdx: CC-BY-4.0
+    16	  url: https://nibis.lbeg.de/cardomap3/content.aspx?method=CopyRight,UsageConstraints,ApplicationContent
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	  statement: "NIBIS® Kartenserver (<year of download>): <theme, and which data were changed>. - Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover."
+    20	kinds: [time-depth]
+    21	region: {country: DE, basin: North German Basin (Lower Saxony and Bremen), bbox: [6.6, 51.3, 11.6, 53.9]}
+    22	listed_by: [publisher]
+    23	known_issues:
+    24	  - "No model for southern Lower Saxony and the Osnabrück area (\"aufgrund unzureichender Datengrundlagen\")."
+    25	  - "The CC BY 4.0 terms cover data on the NIBIS map server; the page states no separate terms for the files supplied on request."
+    26	  - "bbox is Lower Saxony and Bremen, approximate."
+    27	notes: "Want: a velocity-model kind; time-depth is the nearest (the publisher names time-depth conversion of seismic data as a use). The page names 2026 in the model title and gives no other date, so no period is written."
+    28	added: 2026-10-23
+records/soton/scanner-pockmark-velocity-models.yaml
+     1	id: soton/scanner-pockmark-velocity-models
+     2	title: Scanner-Pockmark Subsurface Velocity Models
+     3	summary: >-
+     4	  P-wave velocity models derived from seismic data acquired over the Scanner Pockmark complex in the
+     5	  North Sea: two full waveform inversion (FWI) models made with in-house tools from Shell and Imperial
+     6	  College, in binary and SEG-Y, and a tomographic model made with the open-source FAST code, in binary.
+     7	publisher: {name: "University of Southampton (Farid Jedari Eyvazi), ePrints Soton", url: https://eprints.soton.ac.uk, country: GB}
+     8	origin:
+     9	  url: https://eprints.soton.ac.uk/id/eprint/503057/
+    10	  access: anonymous
+    11	  manifest_url: https://eprints.soton.ac.uk/id/eprint/503057/
+    12	  notes: "DOI 10.5258/SOTON/D3589. Six files: three binary models (146 MB each), two SEG-Y models (377 MB each), README.txt. Supports the PhD thesis on 3-D FWI of the Scanner Pockmark OBS seismic dataset (CHIMNEY project)."
+    13	licence:
+    14	  name: Creative Commons Attribution
+    15	  spdx: CC-BY-4.0
+    16	  url: http://creativecommons.org/licenses/by/4.0/
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	kinds: [time-depth, seismic-3d]
+    20	region: {country: GB, basin: "UK North Sea (Scanner Pockmark complex)"}
+    21	size: {bytes_estimate: 1192000000, stated: "page: 146MB x3, 377MB x2, 2kB README; sum approximate"}
+    22	listed_by: [publisher]
+    23	known_issues:
+    24	  - "Want: a velocity-model kind; time-depth is the nearest, with seismic-3d for the SEG-Y volumes."
+    25	  - "No bbox: the page and README state no coordinates or CRS."
+    26	  - "Each file reads 'Available under License Creative Commons Attribution' and links the 4.0 deed."
+    27	  - "The host answers browser user agents with a JavaScript proof-of-work challenge (Anubis); a plain tool agent gets the page."
+    28	period:
+    29	  start: "2025-07-18"
+    30	  end: "2025-07-18"
+    31	  stated: "page: 'Published date: 18 July 2025'; README: 'Date that the file was created: July, 2025'"
+    32	added: 2026-10-23
+records/doe-gdr/utah-forge-3d-gravity.yaml
+     1	id: doe-gdr/utah-forge-3d-gravity
+     2	title: "Utah FORGE: 3D Gravity Data"
+     3	summary: >-
+     4	  3D geophysical inversion modelling of gravity data at the Utah FORGE site near Milford, Utah,
+     5	  to characterise the subsurface geologic framework and test the existing 3D geologic model:
+     6	  a readme and a report on model parameters, data used and geologic constraints, with two 3D
+     7	  density models as output.
+     8	publisher: {name: "Energy and Geoscience Institute at the University of Utah (Utah FORGE), via the DOE Geothermal Data Repository", url: https://gdr.openei.org, country: US}
+     9	origin:
+    10	  url: https://gdr.openei.org/submissions/1144
+    11	  access: anonymous
+    12	  notes: "Authors Christian Hardwick (Utah Geological Survey) and Jeff Witter (Innovate Geothermal Ltd.). 'Download All Resources 11.24 MB — 2 files'."
+    13	licence:
+    14	  name: Creative Commons Attribution 4.0 (CC BY 4.0)
+    15	  spdx: CC-BY-4.0
+    16	  url: https://creativecommons.org/licenses/by/4.0/
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	kinds: [potential-fields]
+    20	region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
+    21	size: {bytes_estimate: 11240000, stated: "11.24 MB — 2 files"}
+    22	listed_by: [publisher]
+    23	known_issues:
+    24	  - "bbox is the box the page's metadata gives for the files (FORGE site); the gravity model extent is not stated."
+    25	period:
+    26	  start: "2019-06-24"
+    27	  end: "2019-06-24"
+    28	  stated: "GDR page: 'Data from Jun 24, 2019', submitted Jun 24, 2019 (release); no acquisition dates stated"
+    29	notes: "The files are a 3D density model from gravity inversion, nearest kind potential-fields. Want: a kind for a geological 3D model or derived property model."
+    30	added: 2026-10-23
+records/geosphere-at/molasse-basin-subsurface-model.yaml
+     1	id: geosphere-at/molasse-basin-subsurface-model
+     2	title: Geological subsurface model of the Austrian Molasse Basin
+     3	summary: >-
+     4	  Geological 3D subsurface model of the Molasse Basin in Lower and Upper Austria and Salzburg,
+     5	  built in SKUA-GOCAD from all published subsurface information (geological maps,
+     6	  cross-sections, contour maps and geophysical data) as a basis for subsurface management of
+     7	  mining, geothermal energy and gas and CO2 storage; the modelled geological layers are
+     8	  published as DXF files with a data description document.
+     9	publisher: {name: "GeoSphere Austria (Geologische Bundesanstalt, GBA), Tethys RDR", url: https://www.geosphere.at, country: AT}
+    10	origin:
+    11	  url: https://tethys.at/dataset/191
+    12	  access: anonymous
+    13	  notes: "DOI 10.24341/tethys.191; OAI-PMH record oai:tethys.at:191 at https://www.tethys.at/oai. The landing page is a script application; its metadata are read from the OAI record."
+    14	licence:
+    15	  name: Creative Commons Attribution 4.0 International (CC BY 4.0)
+    16	  spdx: CC-BY-4.0
+    17	  url: https://creativecommons.org/licenses/by/4.0/
+    18	  redistribution: allowed
+    19	  attribution: required
+    20	  statement: "Porpaczy, C., Bottig, M. (2022): Geological subsurface model of the Austrian Molasse Basin. Tethys RDR, Geologische Bundesanstalt (GBA), Wien"
+    21	kinds: [horizons]
+    22	region: {country: AT, basin: "Molasse Basin (Lower Austria, Upper Austria, Salzburg)", bbox: [12.75, 47.79, 16.59, 48.78]}
+    23	listed_by: [publisher]
+    24	known_issues:
+    25	  - "bbox is the record's stated coverage (south 47.79, west 12.75, north 48.78, east 16.59; depth to -7412 m)."
+    26	period:
+    27	  start: "2022-12-02"
+    28	  end: "2022-12-02"
+    29	  stated: "Tethys OAI record dc:date 2022-12-02 (publication); citation year 2022 (release)"
+    30	notes: "Want: a kind for a geological 3D model; horizons is the nearest (the layers are modelled surfaces). Related ISBN 978-3-85316-090-9."
+    31	added: 2026-10-23
+records/lbeg/tunb3d-ni.yaml
+     1	id: lbeg/tunb3d-ni
+     2	title: Tieferer Untergrund Norddeutsches Becken für Niedersachsen und Bremen (TUNB3D-NI, 2022)
+     3	summary: >-
+     4	  LBEG's geological 3D overview model of the deep subsurface of the North German Basin for Lower
+     5	  Saxony and Bremen, built 2014 to 2020 with BGR and the northern German state surveys and revised
+     6	  to the March 2022 version: 13 base surfaces of lithostratigraphic units from Zechstein to
+     7	  Tertiary plus Top Zechstein, 1592 faults, 2091 fault offsets at Base Zechstein and 130 salt
+     8	  structures, in 20 harmonised model tiles.
+     9	publisher: {name: "Landesamt für Bergbau, Energie und Geologie (LBEG)", url: https://www.lbeg.niedersachsen.de, country: DE}
+    10	origin:
+    11	  url: https://www.lbeg.niedersachsen.de/startseite/geologie/neu_3d_modelle_des_untergrundes/geologische_ubersichtsmodelle/tieferer_untergrund_norddeutsches_becken_tunb3d_ni/tieferer-untergrund-norddeutsches-becken-fur-niedersachsen-und-bremen-tunb3d-ni-2022-206774.html
+    12	  access: anonymous
+    13	  notes: "On the NIBIS map server as 3D PDF and in the NIBIS3D viewer (https://nibis.lbeg.de/cardomap3/?permalink=2HWZoG3t); on request, free of charge, as SKUA-GOCAD ts objects or Esri Multipatch. Final report DOI 10.48476/tunb3d-ni."
+    14	licence:
+    15	  name: Creative Commons CC-BY 4.0 (NIBIS Kartenserver Nutzungsbedingungen, open data)
+    16	  spdx: CC-BY-4.0
+    17	  url: https://nibis.lbeg.de/cardomap3/content.aspx?method=CopyRight,UsageConstraints,ApplicationContent
+    18	  redistribution: allowed
+    19	  attribution: required
+    20	  statement: "LBEG (2022): Geologisches 3D-Modell Tieferer Untergrund Norddeutsches Becken für Niedersachsen und Bremen (TUNB3D-NI) – NIBIS® Kartenserver, Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover"
+    21	kinds: [horizons, faults]
+    22	region: {country: DE, basin: North German Basin (Lower Saxony and Bremen), bbox: [6.6, 51.3, 11.6, 53.9]}
+    23	listed_by: [publisher]
+    24	known_issues:
+    25	  - "The CC BY 4.0 terms cover data on the NIBIS map server; the page states no separate terms for the GOCAD and Multipatch files supplied on request."
+    26	  - "bbox is Lower Saxony and Bremen, approximate; the model covers the state 'nahezu flächendeckend'."
+    27	period:
+    28	  start: "2014"
+    29	  end: "2022-03"
+    30	  stated: "\"wurde durch das LBEG von 2014 bis 2020 ... erstellt. ... die in der aktuellen Modellversion vom März 2022 münden\" (model construction and release)"
+    31	notes: "Want: a kind for a geological 3D model (salt structures, volumes); the record names horizons and faults. Citation form from https://www.lbeg.niedersachsen.de/download/183313/Zitierweise_Modell_und_Abschlussbericht.pdf."
+    32	added: 2026-10-23
+records/geosphere-at/aerogeophysics-northern-lower-austria.yaml
+     1	id: geosphere-at/aerogeophysics-northern-lower-austria
+     2	title: Aerogeophysical data - Northern Lower Austria (magnetic, radiometric and electromagnetic data)
+     3	summary: >-
+     4	  Geomagnetic, electromagnetic and radiometric (Th, U, K) data from five helicopter surveys flown
+     5	  between 1983 and 1997 in the northern part of Lower Austria around the Diendorf fault system:
+     6	  Geras (1996, 1997), Pulkau North (1995), Pulkau (1994), Kamptal-Ziersdorf (1983) and Krems
+     7	  (1983); the magnetic and electromagnetic sets were combined and reprocessed in 1998.
+     8	publisher: {name: "GeoSphere Austria, Tethys RDR", url: https://www.geosphere.at, country: AT}
+     9	origin:
+    10	  url: https://tethys.at/dataset/212
+    11	  access: anonymous
+    12	  notes: "DOI 10.24341/tethys.212; OAI-PMH record oai:tethys.at:212. Files: GeoTIFF grids, text and a PDF description. Methods in Schattauer et al. 2022 (doi:10.3390/geosciences12120436) and Paoletti et al. 2022 (doi:10.3390/rs14081807)."
+    13	licence:
+    14	  name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    15	  spdx: CC-BY-SA-4.0
+    16	  url: https://creativecommons.org/licenses/by-sa/4.0/
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	  share_alike: true
+    20	  statement: "Schattauer, I., Hintersberger, E. (2023): Aerogeophysical data - Northern Lower Austria. Tethys RDR, GeoSphere Austria, Wien"
+    21	kinds: [potential-fields]
+    22	region: {country: AT, basin: Bohemian Massif and Molasse margin (northern Lower Austria), bbox: [15.449582, 48.331274, 16.096122, 48.886203]}
+    23	listed_by: [publisher]
+    24	known_issues:
+    25	  - "bbox is the record's stated coverage."
+    26	period:
+    27	  start: "1983"
+    28	  end: "1997"
+    29	  stated: "\"five airborne surveys carried out between 1983 and 1997\" (acquisition); published 2023-08-17"
+    30	notes: "Want: kinds for airborne electromagnetic and radiometric data; potential-fields covers the magnetics only. GeoSphere's Tethys repository holds many more aeromagnetic and aeroradiometric grids (tethys.at/dataset/250 to 292)."
+    31	added: 2026-10-23
+records/igme/sigeof.yaml
+     1	id: igme/sigeof
+     2	title: "SIGEOF - Sistema de Información Geofísica"
+     3	summary: >-
+     4	  IGME-CSIC's geophysical information system: search and download of the geophysical data held
+     5	  by the Spanish geological survey, by map extent, province or 1:50,000 and 1:200,000 sheet:
+     6	  reflection seismic lines (SEG-P1 navigation, TIF sections and SEG-Y sections, many from the
+     7	  Archivo Técnico de Hidrocarburos), gravimetric stations (Bouguer anomaly), airborne magnetic
+     8	  and radiometric flights and grids, electrical and electromagnetic soundings, petrophysics and
+     9	  well logging (testificación, including hydrocarbon wells provided by ExxonMobil).
+    10	publisher: {name: "Instituto Geológico y Minero de España (IGME-CSIC)", url: https://www.igme.es, country: ES}
+    11	origin:
+    12	  url: http://info.igme.es/sigeof/
+    13	  access: anonymous
+    14	  notes: "The application asks the user to confirm the licence of use before searching. Format report: http://info.igme.es/sigeof/doc/SIGEOF_INFO.pdf. Listed on https://www.igme.es/datos-y-mapas/bases-de-datos/."
+    15	licence:
+    16	  name: "LICENCIA DE USO: Condiciones de uso público y difusión de la información para la reutilización de los datos del IGME"
+    17	  spdx: null
+    18	  url: https://info.igme.es/media/Pdfs/LicUsoIGME_GENERICA_EN_2022.pdf
+    19	  redistribution: allowed
+    20	  attribution: required
+    21	  statement: "Sistema de Información Geofísica del IGME: SIGEOF. Editor: Área de Geofísica y Teledetección. [Fecha de consulta DD/MM/AAAA]. Disponible en: http://info.igme.es/sigeof/"
+    22	kinds: [seismic-2d, potential-fields, wellbore-logs]
+    23	region: {country: ES, basin: Spain (onshore and offshore), bbox: [-18.2, 27.6, 4.4, 43.8]}
+    24	listed_by: [publisher]
+    25	known_issues:
+    26	  - "Terms: the licence grants re-use 'for commercial and non-commercial use, for any purpose'; the meaning may not be altered, the last-update date must be quoted, and IGME may not be implied to endorse the re-use."
+    27	  - "The generic licence says certain data sets may carry special conditions; the SIGEOF page states none beyond the general conditions."
+    28	  - "Part of the seismic navigation is from REPSOL and most seismic sections from the Archivo Técnico de Hidrocarburos (Ministerio de Industria); the SIGEOF page applies the IGME licence to all data from SIGEOF."
+    29	  - "bbox is Spain including the Canary and Balearic Islands, approximate; the page states no extent."
+    30	notes: "Want: kinds for airborne radiometrics and electrical/electromagnetic soundings; potential-fields covers the gravimetry and aeromagnetics only."
+    31	added: 2026-10-23
+records/nrcan/canadian-airborne-geophysical-data-base.yaml
+     1	id: nrcan/canadian-airborne-geophysical-data-base
+     2	title: Geophysical Data (Canadian Airborne Geophysical Data Base and Geodetic Survey gravity data)
+     3	summary: >-
+     4	  Natural Resources Canada's Geophysical Data portal, the successor of the Geoscience Data
+     5	  Repository (GDR): aeromagnetic, airborne electromagnetic, gravity and radiometric survey and
+     6	  compilation data of the Geological Survey of Canada's Canadian Airborne Geophysical Data Base,
+     7	  and gravity data of the Canadian Geodetic Survey, searched by province, NTS sheet or drawn area.
+     8	publisher: {name: "Natural Resources Canada (Geological Survey of Canada)", url: https://natural-resources.canada.ca, country: CA}
+     9	origin:
+    10	  url: https://geophysical-data.canada.ca/Portal/Search
+    11	  access: anonymous
+    12	  notes: "The former GDR host gdr.agg.nrcan.gc.ca fails TLS from this host (23 Oct 2026); the portal at geophysical-data.canada.ca answers."
+    13	licence:
+    14	  name: "Geophysical Data terms and conditions (Data Usage Conditions; see the Open Government Licence - Canada)"
+    15	  spdx: null
+    16	  url: https://open.canada.ca/en/open-government-licence-canada
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	  statement: "Aeromagnetic, Airborne Electromagnetic, Gravity and Radiometric Survey / Compilation Data 2024, Canadian Airborne Geophysical Data Base, Airborne Geophysics Section, Geological Survey of Canada, Lands and Minerals Sector, Natural Resources Canada"
+    20	kinds: [potential-fields]
+    21	region: {country: CA, basin: Canada (onshore and offshore survey areas), bbox: [-141.0, 41.7, -52.6, 83.1]}
+    22	listed_by: [publisher]
+    23	known_issues:
+    24	  - "Terms: the citation for the data type must appear on any publication of the data and the publisher must be notified of any publication (infogdc-infocdg@nrcan-rncan.gc.ca)."
+    25	  - "Geodetic Survey gravity data carry their own citation: \"Gravity Data (Geodetic Survey): 2024, Canadian Geodetic Survey, Surveyor General Branch, Lands and Minerals Sector, Natural Resources Canada\"."
+    26	  - "The portal names the Open Government Licence - Canada without a version; no SPDX id is inferred."
+    27	  - "bbox is Canada, approximate; the portal states no extent."
+    28	notes: "Want: airborne electromagnetic and radiometric data are not potential fields and have no kind in the vocabulary; the record lists only potential-fields. Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind)."
+    29	added: 2026-10-23
+records/ustc/bedrettolab-atv-logs-stress.yaml
+     1	id: ustc/bedrettolab-atv-logs-stress
+     2	title: ATV logs, ellipticity data, and stress inversion results from boreholes in the BedrettoLab
+     3	summary: >-
+     4	  Acoustic televiewer (ATV) logs from boreholes CB1 (MB1), CB2 (MB2), CB3 (MB3), MB4, MB5, MB8,
+     5	  ST1 and ST2 in the Bedretto Underground Laboratory for Geosciences and Geoenergies (Swiss Alps):
+     6	  acoustic amplitudes, traveltimes, traveltime-derived borehole radii and masks of breakouts,
+     7	  keyseats and pre-existing fractures, the ellipticity data derived from them, and the stress
+     8	  orientations and relative magnitudes inverted from the ellipticity.
+     9	publisher: {name: "Guangyu Wang, University of Science and Technology of China (deposited on Zenodo)", url: https://zenodo.org, country: CN}
+    10	origin:
+    11	  url: https://zenodo.org/records/15725567
+    12	  access: anonymous
+    13	  manifest_url: https://zenodo.org/records/15725567
+    14	  notes: "DOI 10.5281/zenodo.15725567. Three files: ATV.zip (2.41 GB), ellipticity.zip, stress_inversion.zip. The lab's own data page (https://bedrettolab.ethz.ch/en/research/Data-access/, ETH Zurich / Swiss Seismological Service) links its datasets in the ETH Research Collection."
+    15	licence:
+    16	  name: Creative Commons Attribution 4.0 International
+    17	  spdx: CC-BY-4.0
+    18	  url: https://creativecommons.org/licenses/by/4.0/legalcode
+    19	  redistribution: allowed
+    20	  attribution: required
+    21	kinds: [wellbore-logs]
+    22	region: {country: CH, basin: "Bedretto Underground Laboratory (BedrettoLab), Bedretto tunnel, Ticino, Swiss Alps"}
+    23	size: {bytes_estimate: 2447545577, stated: "ATV.zip, ellipticity.zip, stress_inversion.zip"}
+    24	listed_by: [community]
+    25	known_issues:
+    26	  - "No bbox: neither the Zenodo record nor the BedrettoLab pages opened state coordinates."
+    27	period:
+    28	  start: "2025-06-24"
+    29	  end: "2025-06-24"
+    30	  stated: "Zenodo record 15725567: publication_date 2025-06-24 (release); no logging dates stated"
+    31	notes: "Geothermal (EGS) research laboratory under up to 1.5 km of overburden. Stress inversion results have no kind (nearest: wellbore-logs, from which they are derived)."
+    32	added: 2026-10-23
+records/force/ml-competition-2020-well-logs.yaml
+     1	id: force/ml-competition-2020-well-logs
+     2	title: FORCE 2020 well log and lithofacies dataset for machine learning competition
+     3	summary: >-
+     4	  Well log dataset from 118 wells used in the FORCE 2020 machine learning competition to predict
+     5	  lithofacies: logs slightly cleaned up and partially despiked, with hand-crafted lithofacies and
+     6	  lithology interpretation, as LAS files for the train, test, blind and hidden wells, plus NPD
+     7	  lithostratigraphy (groups, formations and members) and casing depth tables.
+     8	publisher: {name: "FORCE 2020 competition organisers (Bormann, Aursand, Dilib, Manral, Dischington), deposited on Zenodo", url: https://zenodo.org, country: "NO"}
+     9	origin:
+    10	  url: https://zenodo.org/records/4351156
+    11	  access: anonymous
+    12	  manifest_url: https://zenodo.org/records/4351156
+    13	  notes: "DOI 10.5281/zenodo.4351156. Five files: LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip (169.8 MB) and four spreadsheets. Documentation, starter notebook, competition CSVs and trained models: https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition"
+    14	licence:
+    15	  name: Creative Commons Attribution 4.0 International
+    16	  spdx: CC-BY-4.0
+    17	  url: https://creativecommons.org/licenses/by/4.0/legalcode
+    18	  redistribution: allowed
+    19	  attribution: required
+    20	kinds: [wellbore-logs, tops]
+    21	region: {country: "NO", basin: "Norwegian continental shelf (the deposit says 'Norwegian Sea')"}
+    22	size: {bytes_estimate: 170076108, stated: "Zenodo file list: LAS zip 169,785,172 bytes and four xlsx files"}
+    23	listed_by: [community]
+    24	known_issues:
+    25	  - "The description adds: 'The original well log data comes form the Norwegian government and is provided by a NOLD 2.0 license'; the deposit itself is CC BY 4.0."
+    26	  - "No bbox: the deposit states no coordinates; wells are named by their NPD wellbore names."
+    27	  - "Lithofacies labels have no kind of their own; tops (lithostratigraphy tables) and wellbore-logs are the nearest."
+    28	period:
+    29	  start: "2020-12-18"
+    30	  end: "2020-12-18"
+    31	  stated: "Zenodo record 4351156: publication_date 2020-12-18 (release); the GitHub CITATION.cff gives date-released 2020-11-18"
+    32	added: 2026-10-23
+records/ns-energy/onshore-2d-seismic-navigation.yaml
+     1	id: ns-energy/onshore-2d-seismic-navigation
+     2	title: Navigation data for 2D seismic lines, onshore Nova Scotia (NSDOE Open File Report 2017-11)
+     3	summary: >-
+     4	  Shapefiles of the navigation (shot-point locations) of onshore 2D seismic lines in Nova Scotia,
+     5	  in three zip archives for the Cape Breton, Cumberland and Windsor regions, published with the
+     6	  Nova Scotia Onshore Petroleum Atlas (2017) beside the Schedule of 2D Seismic Data (OFR 2017-07).
+     7	publisher: {name: Nova Scotia Department of Energy, url: https://novascotia.ca/onshore-atlas/, country: CA}
+     8	origin:
+     9	  url: https://novascotia.ca/onshore-atlas/
+    10	  access: anonymous
+    11	  manifest_url: https://novascotia.ca/onshore-atlas/
+    12	  notes: "Zips under https://novascotia.ca/onshore-atlas/docs/, e.g. Part 2 Cumberland region 1,954,295 bytes. Seismic traces are not on this page; the Onshore Petroleum Data Viewer links 2D and 3D seismic datasets."
+    13	licence:
+    14	  name: NSDOE Open File Report disclaimer (public information)
+    15	  spdx: null
+    16	  url: "https://novascotia.ca/onshore-atlas/docs/Disclaimer(16).txt"
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	  statement: "Bianco, E., 2017, Navigation data for 2D seismic lines, onshore Nova Scotia. Nova Scotia Department of Energy Open File Report 2017-10."
+    20	kinds: [seismic-2d]
+    21	region: {country: CA, basin: "Maritimes Basin (Windsor, Cumberland and Cape Breton regions)", bbox: [-66.4, 43.4, -59.7, 47.1]}
+    22	listed_by: [publisher]
+    23	known_issues:
+    24	  - "Navigation only (line locations), no traces; seismic-2d is the nearest kind."
+    25	  - "The disclaimer's suggested citation numbers the report 2017-10, while its header and the page say 2017-11; statement quotes it as written. Attribution is a request (\"We request\")."
+    26	  - "bbox is mainland Nova Scotia and Cape Breton, approximate."
+    27	period: {start: "2017", end: "2017", stated: "Open File Report 2017-11 (NSDOE), \"Bianco, E., 2017\" (release year, not acquisition)"}
+    28	added: 2026-10-23
+records/azu/data-room.yaml
+     1	id: azu/data-room
+     2	title: Data Room of the Croatian Hydrocarbon Agency
+     3	summary: >-
+     4	  A centralized reference database for the assessment of hydrocarbon resources, geothermal water for
+     5	  energy purposes and geological structures for natural gas storage and permanent CO2 disposal. All
+     6	  seismic (2D and 3D) and basic well data are loaded into three Kingdom projects (Adriatic Sea,
+     7	  Pannonian Basin, Dinarides); other well data (reports, well logs, velocity measurements) are in a
+     8	  web browser as .pdf and .tif. Used physically or virtually after an access form.
+     9	publisher: {name: "Croatian Hydrocarbon Agency (Agencija za ugljikovodike, AZU)", url: https://www.azu.hr, country: HR}
+    10	origin:
+    11	  url: https://www.azu.hr/en-us/data-room
+    12	  access: purchase
+    13	  notes: "Access form and Data Confidentiality Agreement before a visit. Fees and conditions: Pravilnik o pristupu sobi s podacima i korištenju podataka, Narodne novine 52/2023 (linked from the Data Room page). Academic, educational and state institutions enter and view free and sign a statement instead of the confidentiality agreement."
+    14	licence:
+    15	  name: Pravilnik o pristupu sobi s podacima i korištenju podataka (NN 52/2023); Data Confidentiality Agreement; data use agreement
+    16	  spdx: null
+    17	  url: https://narodne-novine.nn.hr/clanci/sluzbeni/full/2023_05_52_872.html
+    18	  redistribution: forbidden
+    19	  attribution: unknown
+    20	  terms:
+    21	    stated: "Naknada za pristup sobi s podacima i pregled podataka [...] ugljikovodika iznosi 2.000,00 eura. [...] 2D seizmički izvorni podaci – naknada iznosi 10,00 eura po km [...] 3D seizmički obrađeni podaci – naknada iznosi 1.000,00 eura po km2 [...] Podaci o bušotinama – naknada iznosi 500,00 eura po bušotini. [...] Primatelj odobrenja za korištenje podataka se slaže da će podatke i njihove kopije koristiti za internu upotrebu i da ih ne smije prodavati, trgovati njima, otkriti bilo kojoj trećoj strani ili na bilo koji način učiniti dostupnima."
+    22	    duration: null
+    23	kinds: [seismic-2d, seismic-3d, wellbore-headers, wellbore-logs, time-depth, reports]
+    24	region: {country: HR, basin: "Adriatic Sea, Pannonian Basin and Dinarides", bbox: [13.0, 42.0, 19.5, 46.6]}
+    25	listed_by: [publisher]
+    26	known_issues:
+    27	  - "The Data Room page says: \"All data contained in the data room are the property of the Republic of Croatia and may not be used without permission.\""
+    28	  - "Geothermal, gas storage and CO2 storage uses pay lower data fees (Article 8: 2D raw 5,00 EUR/km, well data 50,00 EUR per well) and no entry fee."
+    29	  - "time-depth stands for the \"velocity measurements\" the page names. bbox is Croatia with its Adriatic offshore, approximate."
+    30	notes: "licence.terms.stated quotes Articles 4(1), 7 and 5(6) of the Pravilnik (NN 52/2023, in force eight days after publication, signed 2 May 2023) as read on 23 Oct 2026; fees exclude VAT (Article 9(2))."
+    31	added: 2026-10-23
+records/dgeg/petroleum-technical-data.yaml
+     1	id: dgeg/petroleum-technical-data
+     2	title: "Petróleo: Dados / Informação Técnico-Científica (seismic, wells and reports of Portugal)"
+     3	summary: >-
+     4	  The technical data from petroleum exploration in Portugal held by DGEG and LNEG: about
+     5	  72,600 km of 2D seismic (field, processed and reprocessed; 5,865 km onshore, 67,009 km
+     6	  offshore), about 10,372 km² of 3D seismic acquired since 2010, and 175 wells drilled since 1938
+     7	  with final reports, electric logs, velocity data, geochemistry and biostratigraphy reports,
+     8	  cores and cuttings, thin sections and fluid samples.
+     9	publisher: {name: "Direção-Geral de Energia e Geologia (DGEG)", url: https://www.dgeg.gov.pt, country: PT}
+    10	origin:
+    11	  url: https://www.dgeg.gov.pt/pt/areas-setoriais/geologia/petroleo-armazenamento-de-co2/dados-informacao-tecnico-cientifica/dados-consulta/
+    12	  access: purchase
+    13	  notes: "Data are consulted at DGEG or LNEG and sold per the price list 'Tabela de Preços 2018/2019' (https://www.dgeg.gov.pt/media/5nvewoac/doc-7.pdf), linked from the 'Preçário Aplicável' page. ENMC (www.enmc.pt) refused the connection on 23 Oct 2026."
+    14	licence:
+    15	  name: "DGEG Preçário 2018-2019, termos e condições de venda"
+    16	  spdx: null
+    17	  url: https://www.dgeg.gov.pt/media/5nvewoac/doc-7.pdf
+    18	  redistribution: forbidden
+    19	  attribution: unknown
+    20	  terms:
+    21	    stated: "\"A informação só será vendida, ao setor petrolífero, a companhias idóneas. A informação não poderá ser reproduzida ou vendida a terceiros.\" Non-licensed companies pay a fixed consultation fee of 1250 euros, valid 12 months; public bodies and academic institutions may receive a 50% discount case by case."
+    22	    duration: null
+    23	    review_before_publication: null
+    24	kinds: [seismic-2d, seismic-3d, wellbore-logs, time-depth, core, geochemistry, reports]
+    25	region: {country: PT, basin: "Portuguese onshore and offshore basins (Lusitanian, Porto, Alentejo, Algarve)", bbox: [-12.5, 36.5, -6.2, 42.2]}
+    26	listed_by: [publisher]
+    27	known_issues:
+    28	  - "Prices: e.g. processed 2D lines SEG-Y 20 to 30 euros/km, 3D field data 80 to 100 euros/km², LAS logs 840 to 1400 euros per well, by data age (before 1973, 1973-1999, after 1999)."
+    29	  - "bbox is mainland Portugal and its offshore, approximate; the page states no extent."
+    30	period:
+    31	  start: "1938"
+    32	  end: "2026-10-23"
+    33	  stated: "\"Sondagens - Desde 1938, foram efetuadas 175 sondagens\"; \"Sísmica 3D - Desde 2010\" (acquisition, to date)"
+    34	notes: "licence.terms.stated quotes the price list doc-7.pdf ('Tabela de Preços 2018/2019', linked from the 'Preçário Aplicável' page), read 23 Oct 2026. Velocity data recorded as time-depth. Basin names from DGEG's 'Bacias Sedimentares' page title list, not from the data page."
+    35	added: 2026-10-23
+
+**Seeking missing files and charters**
+codex
+Two claims are incorrect: the manifest has no field for kinds, and the scaffold’s schema-derived comments do not include kinds. I’ll check the record edits and test requirements next, especially whether the proposed mutations would fail.
+exec
+/bin/bash -lc "nl -ba records/soton/scanner-pockmark-velocity-models.yaml; nl -ba records/doe-gdr/utah-forge-3d-gravity.yaml; nl -ba records/geosphere-at/molasse-basin-subsurface-model.yaml; nl -ba records/lbeg/tunb3d-ni.yaml; nl -ba records/geosphere-at/aerogeophysics-northern-lower-austria.yaml; cat docs/program/charters/E25-records-seventh-twenty-and-the-bare-files.md docs/program/charters/E27-the-map-says-why.md docs/program/CLAIMS.md; nl -ba src/osd/new.py | sed -n '48,82p'; nl -ba src/osd/manifest.py | sed -n '270,300p'; nl -ba site/app.js | sed -n '103,107p;234,242p'; nl -ba src/osd/stac.py | sed -n '180,190p'" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	id: soton/scanner-pockmark-velocity-models
+     2	title: Scanner-Pockmark Subsurface Velocity Models
+     3	summary: >-
+     4	  P-wave velocity models derived from seismic data acquired over the Scanner Pockmark complex in the
+     5	  North Sea: two full waveform inversion (FWI) models made with in-house tools from Shell and Imperial
+     6	  College, in binary and SEG-Y, and a tomographic model made with the open-source FAST code, in binary.
+     7	publisher: {name: "University of Southampton (Farid Jedari Eyvazi), ePrints Soton", url: https://eprints.soton.ac.uk, country: GB}
+     8	origin:
+     9	  url: https://eprints.soton.ac.uk/id/eprint/503057/
+    10	  access: anonymous
+    11	  manifest_url: https://eprints.soton.ac.uk/id/eprint/503057/
+    12	  notes: "DOI 10.5258/SOTON/D3589. Six files: three binary models (146 MB each), two SEG-Y models (377 MB each), README.txt. Supports the PhD thesis on 3-D FWI of the Scanner Pockmark OBS seismic dataset (CHIMNEY project)."
+    13	licence:
+    14	  name: Creative Commons Attribution
+    15	  spdx: CC-BY-4.0
+    16	  url: http://creativecommons.org/licenses/by/4.0/
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	kinds: [time-depth, seismic-3d]
+    20	region: {country: GB, basin: "UK North Sea (Scanner Pockmark complex)"}
+    21	size: {bytes_estimate: 1192000000, stated: "page: 146MB x3, 377MB x2, 2kB README; sum approximate"}
+    22	listed_by: [publisher]
+    23	known_issues:
+    24	  - "Want: a velocity-model kind; time-depth is the nearest, with seismic-3d for the SEG-Y volumes."
+    25	  - "No bbox: the page and README state no coordinates or CRS."
+    26	  - "Each file reads 'Available under License Creative Commons Attribution' and links the 4.0 deed."
+    27	  - "The host answers browser user agents with a JavaScript proof-of-work challenge (Anubis); a plain tool agent gets the page."
+    28	period:
+    29	  start: "2025-07-18"
+    30	  end: "2025-07-18"
+    31	  stated: "page: 'Published date: 18 July 2025'; README: 'Date that the file was created: July, 2025'"
+    32	added: 2026-10-23
+     1	id: doe-gdr/utah-forge-3d-gravity
+     2	title: "Utah FORGE: 3D Gravity Data"
+     3	summary: >-
+     4	  3D geophysical inversion modelling of gravity data at the Utah FORGE site near Milford, Utah,
+     5	  to characterise the subsurface geologic framework and test the existing 3D geologic model:
+     6	  a readme and a report on model parameters, data used and geologic constraints, with two 3D
+     7	  density models as output.
+     8	publisher: {name: "Energy and Geoscience Institute at the University of Utah (Utah FORGE), via the DOE Geothermal Data Repository", url: https://gdr.openei.org, country: US}
+     9	origin:
+    10	  url: https://gdr.openei.org/submissions/1144
+    11	  access: anonymous
+    12	  notes: "Authors Christian Hardwick (Utah Geological Survey) and Jeff Witter (Innovate Geothermal Ltd.). 'Download All Resources 11.24 MB — 2 files'."
+    13	licence:
+    14	  name: Creative Commons Attribution 4.0 (CC BY 4.0)
+    15	  spdx: CC-BY-4.0
+    16	  url: https://creativecommons.org/licenses/by/4.0/
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	kinds: [potential-fields]
+    20	region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
+    21	size: {bytes_estimate: 11240000, stated: "11.24 MB — 2 files"}
+    22	listed_by: [publisher]
+    23	known_issues:
+    24	  - "bbox is the box the page's metadata gives for the files (FORGE site); the gravity model extent is not stated."
+    25	period:
+    26	  start: "2019-06-24"
+    27	  end: "2019-06-24"
+    28	  stated: "GDR page: 'Data from Jun 24, 2019', submitted Jun 24, 2019 (release); no acquisition dates stated"
+    29	notes: "The files are a 3D density model from gravity inversion, nearest kind potential-fields. Want: a kind for a geological 3D model or derived property model."
+    30	added: 2026-10-23
+     1	id: geosphere-at/molasse-basin-subsurface-model
+     2	title: Geological subsurface model of the Austrian Molasse Basin
+     3	summary: >-
+     4	  Geological 3D subsurface model of the Molasse Basin in Lower and Upper Austria and Salzburg,
+     5	  built in SKUA-GOCAD from all published subsurface information (geological maps,
+     6	  cross-sections, contour maps and geophysical data) as a basis for subsurface management of
+     7	  mining, geothermal energy and gas and CO2 storage; the modelled geological layers are
+     8	  published as DXF files with a data description document.
+     9	publisher: {name: "GeoSphere Austria (Geologische Bundesanstalt, GBA), Tethys RDR", url: https://www.geosphere.at, country: AT}
+    10	origin:
+    11	  url: https://tethys.at/dataset/191
+    12	  access: anonymous
+    13	  notes: "DOI 10.24341/tethys.191; OAI-PMH record oai:tethys.at:191 at https://www.tethys.at/oai. The landing page is a script application; its metadata are read from the OAI record."
+    14	licence:
+    15	  name: Creative Commons Attribution 4.0 International (CC BY 4.0)
+    16	  spdx: CC-BY-4.0
+    17	  url: https://creativecommons.org/licenses/by/4.0/
+    18	  redistribution: allowed
+    19	  attribution: required
+    20	  statement: "Porpaczy, C., Bottig, M. (2022): Geological subsurface model of the Austrian Molasse Basin. Tethys RDR, Geologische Bundesanstalt (GBA), Wien"
+    21	kinds: [horizons]
+    22	region: {country: AT, basin: "Molasse Basin (Lower Austria, Upper Austria, Salzburg)", bbox: [12.75, 47.79, 16.59, 48.78]}
+    23	listed_by: [publisher]
+    24	known_issues:
+    25	  - "bbox is the record's stated coverage (south 47.79, west 12.75, north 48.78, east 16.59; depth to -7412 m)."
+    26	period:
+    27	  start: "2022-12-02"
+    28	  end: "2022-12-02"
+    29	  stated: "Tethys OAI record dc:date 2022-12-02 (publication); citation year 2022 (release)"
+    30	notes: "Want: a kind for a geological 3D model; horizons is the nearest (the layers are modelled surfaces). Related ISBN 978-3-85316-090-9."
+    31	added: 2026-10-23
+     1	id: lbeg/tunb3d-ni
+     2	title: Tieferer Untergrund Norddeutsches Becken für Niedersachsen und Bremen (TUNB3D-NI, 2022)
+     3	summary: >-
+     4	  LBEG's geological 3D overview model of the deep subsurface of the North German Basin for Lower
+     5	  Saxony and Bremen, built 2014 to 2020 with BGR and the northern German state surveys and revised
+     6	  to the March 2022 version: 13 base surfaces of lithostratigraphic units from Zechstein to
+     7	  Tertiary plus Top Zechstein, 1592 faults, 2091 fault offsets at Base Zechstein and 130 salt
+     8	  structures, in 20 harmonised model tiles.
+     9	publisher: {name: "Landesamt für Bergbau, Energie und Geologie (LBEG)", url: https://www.lbeg.niedersachsen.de, country: DE}
+    10	origin:
+    11	  url: https://www.lbeg.niedersachsen.de/startseite/geologie/neu_3d_modelle_des_untergrundes/geologische_ubersichtsmodelle/tieferer_untergrund_norddeutsches_becken_tunb3d_ni/tieferer-untergrund-norddeutsches-becken-fur-niedersachsen-und-bremen-tunb3d-ni-2022-206774.html
+    12	  access: anonymous
+    13	  notes: "On the NIBIS map server as 3D PDF and in the NIBIS3D viewer (https://nibis.lbeg.de/cardomap3/?permalink=2HWZoG3t); on request, free of charge, as SKUA-GOCAD ts objects or Esri Multipatch. Final report DOI 10.48476/tunb3d-ni."
+    14	licence:
+    15	  name: Creative Commons CC-BY 4.0 (NIBIS Kartenserver Nutzungsbedingungen, open data)
+    16	  spdx: CC-BY-4.0
+    17	  url: https://nibis.lbeg.de/cardomap3/content.aspx?method=CopyRight,UsageConstraints,ApplicationContent
+    18	  redistribution: allowed
+    19	  attribution: required
+    20	  statement: "LBEG (2022): Geologisches 3D-Modell Tieferer Untergrund Norddeutsches Becken für Niedersachsen und Bremen (TUNB3D-NI) – NIBIS® Kartenserver, Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover"
+    21	kinds: [horizons, faults]
+    22	region: {country: DE, basin: North German Basin (Lower Saxony and Bremen), bbox: [6.6, 51.3, 11.6, 53.9]}
+    23	listed_by: [publisher]
+    24	known_issues:
+    25	  - "The CC BY 4.0 terms cover data on the NIBIS map server; the page states no separate terms for the GOCAD and Multipatch files supplied on request."
+    26	  - "bbox is Lower Saxony and Bremen, approximate; the model covers the state 'nahezu flächendeckend'."
+    27	period:
+    28	  start: "2014"
+    29	  end: "2022-03"
+    30	  stated: "\"wurde durch das LBEG von 2014 bis 2020 ... erstellt. ... die in der aktuellen Modellversion vom März 2022 münden\" (model construction and release)"
+    31	notes: "Want: a kind for a geological 3D model (salt structures, volumes); the record names horizons and faults. Citation form from https://www.lbeg.niedersachsen.de/download/183313/Zitierweise_Modell_und_Abschlussbericht.pdf."
+    32	added: 2026-10-23
+     1	id: geosphere-at/aerogeophysics-northern-lower-austria
+     2	title: Aerogeophysical data - Northern Lower Austria (magnetic, radiometric and electromagnetic data)
+     3	summary: >-
+     4	  Geomagnetic, electromagnetic and radiometric (Th, U, K) data from five helicopter surveys flown
+     5	  between 1983 and 1997 in the northern part of Lower Austria around the Diendorf fault system:
+     6	  Geras (1996, 1997), Pulkau North (1995), Pulkau (1994), Kamptal-Ziersdorf (1983) and Krems
+     7	  (1983); the magnetic and electromagnetic sets were combined and reprocessed in 1998.
+     8	publisher: {name: "GeoSphere Austria, Tethys RDR", url: https://www.geosphere.at, country: AT}
+     9	origin:
+    10	  url: https://tethys.at/dataset/212
+    11	  access: anonymous
+    12	  notes: "DOI 10.24341/tethys.212; OAI-PMH record oai:tethys.at:212. Files: GeoTIFF grids, text and a PDF description. Methods in Schattauer et al. 2022 (doi:10.3390/geosciences12120436) and Paoletti et al. 2022 (doi:10.3390/rs14081807)."
+    13	licence:
+    14	  name: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    15	  spdx: CC-BY-SA-4.0
+    16	  url: https://creativecommons.org/licenses/by-sa/4.0/
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	  share_alike: true
+    20	  statement: "Schattauer, I., Hintersberger, E. (2023): Aerogeophysical data - Northern Lower Austria. Tethys RDR, GeoSphere Austria, Wien"
+    21	kinds: [potential-fields]
+    22	region: {country: AT, basin: Bohemian Massif and Molasse margin (northern Lower Austria), bbox: [15.449582, 48.331274, 16.096122, 48.886203]}
+    23	listed_by: [publisher]
+    24	known_issues:
+    25	  - "bbox is the record's stated coverage."
+    26	period:
+    27	  start: "1983"
+    28	  end: "1997"
+    29	  stated: "\"five airborne surveys carried out between 1983 and 1997\" (acquisition); published 2023-08-17"
+    30	notes: "Want: kinds for airborne electromagnetic and radiometric data; potential-fields covers the magnetics only. GeoSphere's Tethys repository holds many more aeromagnetic and aeroradiometric grids (tethys.at/dataset/250 to 292)."
+    31	added: 2026-10-23
+## E25 Records: the seventh twenty, and the bare files — QUEUED · Records · no strategy, no Codex round
+
+Authority: owner direction 23 Oct 2026; E24's PR #32 body (section "File addresses for H1 design 8",
+the "checked but not given a listing" list, the refused candidates); H1 designs 8 and 9 (merged
+PR #33); OSD-D7, OSD-D9, OSD-D11, OSD-D15, OSD-D20.
+
+**Outcome.** The map lists at least 156 datasets from at least four more countries; the records
+whose `manifest_url` is a bare file reach L2 because the verifier now treats such a response as a
+one-entry listing; and every dataset still below L2 says why in the verifier's words.
+
+**Context today (verified 23 Oct, main 4dcdc56).** 140 records. E24 merged 49 record files, 33
+`manifest_url`s with `samples.yaml` entries; its branch run showed 24 of its records at L2. H1
+merged OSD-D20 (`blocked` when a 404/410/5xx to the verifier is a 2xx to a browser agent) and
+design 8 (a `manifest_url` whose response is itself a data file, by content type or
+`Content-Disposition: attachment`, is the one listing entry; `id: {file: true, sample: ["*"]}` in
+`src/osd/verifier/samples.yaml` says so when the headers do not). Seven records keep a bare-file
+address and were not sampled before H1: `ar-energia/trayectorias-vaca-muerta`,
+`ar-energia/fractura-adjunto-iv`, `ar-energia/produccion-por-pozo`,
+`gsmma/hydrogeological-drilling-database`, `gsmma/sw-offshore-core-stations-2008-2011`,
+`gsmma/sw-offshore-seismic-lines-2008-2011`, `cpc/onshore-well-locations`. Verify runs on main
+after both merges are 39980489177 and 39981701762; their comments show what H1 already fixed.
+Refused on 23 Oct (do not retry this lane): Tasmania MRT, Greece HEREMA, Romania NAMR, Bulgaria,
+Thailand DMF and data.go.th, Philippines DOE, Vietnam PVN, Tanzania PURA, Morocco ONHYM, Senegal
+PETROSEN, and E24's "checked but not given a listing" hosts (TerraNubis, Volve, GFZ, LDEO, IODP,
+MARUM, GEUS Havnsø, DOE GDR, NTGS, WVGES) plus E22's and E24's refused list in the E24 charter.
+E26 (vocabulary) holds twelve named records (its design 4); do not edit those.
+
+**The design the lane must map to.**
+1. E01 design 1, E13 designs 3 to 6, E14 design 1, E17 designs 1 to 3, E24 designs 2 and 3 stand.
+   Records an open lane holds are out of reach (`CLAIMS.md`).
+2. Bare files: read main's latest verify comment or `osd status` on the published results for the
+   seven records above. A record sampled at L2 needs nothing. A record whose file came back as an
+   HTML listing with no entries, or whose headers do not say "file", gets `file: true` in its
+   `samples.yaml` entry (the H1 shape), with the response content type and size in the comment.
+   A record that is `blocked` (OSD-D20) stays as it is; say so in `notes` only if the note does
+   not already say it.
+3. New records, in this order until twenty, each opened on the day: Canada (Saskatchewan, C-NLOPB
+   Newfoundland and Labrador), Australia (NSW DIGS, Victoria GSV, South Australia SARIG beyond
+   SA-DEM's one record), New Zealand NZP&M, Mexico CNH/CNIH, US states not yet listed and not
+   refused (Texas RRC, North Dakota DMR, Utah DOGM if absent, Alabama OGB, Nebraska, Virginia,
+   Florida), Africa (Nigeria NUPRC, Ghana Petroleum Commission, Namibia beyond NAMCOR, Egypt EUG
+   beyond the one record only if a distinct dataset), Asia (Pakistan DGPC, Oman MEM, Bangladesh
+   Petrobangla, Turkey MTA/MAPEG), Europe (Sweden SGU boreholes, Iceland Orkustofnun, Estonia,
+   Lithuania, Ukraine Geoinform, Serbia, Bosnia, Albania AKBN), and open research sets with a file
+   listing (USGS National Geothermal Data System, USGS Core Research Center, UK CO2 Stored, Zenodo
+   or GitHub-hosted seismic and model sets not yet listed). Aggregator cap three per publisher;
+   `unknown` cap six; at least four new countries.
+4. Every new record whose publisher lists files where the verifier reads them gets a
+   `manifest_url` and a `samples.yaml` entry (pattern, file, size, robots.txt line). Kinds wanted
+   but absent: use the nearest kind and say so in `notes` (E26 adds the kinds; E25 does not wait).
+5. `period`, `region.bbox`, licences, purchase terms in the publisher's words, as before.
+
+**Acceptance.**
+- `uv run osd validate` reports `>= 156 records, 0 problems`; `make check` green (samples
+  coverage test included).
+- The PR lists each bare-file record with what main's run showed and what changed (nothing,
+  `file: true`, or blocked), and every new or changed `manifest_url` with its robots.txt line,
+  listing shape and sample pattern.
+- The `verify` workflow comment on the PR shows the bare-file records at L2 unless blocked, and
+  names for each new record below L2 why.
+- Hand counts: new countries (at least four), `unknown` at most six, bbox and period counts,
+  records with a `manifest_url`.
+
+**Claim.** `records/**` (new files and edits to records no open lane holds; not E26's twelve),
+`src/osd/verifier/samples.yaml` (entries and `file:` flags for this lane's records),
+`docs/program/evidence/e25/**`.
+## E27 The map says why — QUEUED · Surface · no strategy, no Codex round · journey tests
+
+Authority: owner direction 23 Oct 2026 (levels on the map are real); E23 (a reason per record
+below L2, `osd status` prints it: `src/osd/cli.py` `l2_reason`); H1 (OSD-D20 `blocked` with its
+reason "answers a browser, not the verifier (HTTP a to osd-verifier, HTTP b to a browser agent)";
+`osd status` prints the reason for blocked); E08 (status page); OSD-D9 (blocked awards no level).
+
+**Outcome.** A person who opens a dataset on the map, or a row on the status page, reads in the
+verifier's own words why it is at its level and when that was established: "no file address is
+published to us", "listing names no file", "robots.txt disallows the listing", "answers a browser,
+not the verifier", "origin dead since …", or "sampled 3 files, sha256 matched" for L2.
+
+**Context today (verified 23 Oct, main 4dcdc56).** `src/osd/build.py` writes `site/data/records.json`
+with title, publisher, kinds, licence, redistribution, level and the verification date; it does
+not carry the reason. `site/app.js` shows a sentence from `noAssetsReason(r)` that depends on
+`origin.access` only, so a dead origin and a listing without files read the same. The reason
+sentence exists once, in `src/osd/cli.py` `l2_reason` (E23, extended by H1), and nowhere else.
+`site/status.html` lists level, dataset and last-checked date (phone: those three columns only).
+`how.html` explains the levels. Site journey tests run in `tests/site/site.test.mjs` (Playwright,
+fixture catalogue, CI `check`). Known red: tippecanoe attribute corruption (tiles carry no dates).
+
+**The design the lane must map to.**
+1. One source: move `l2_reason` into `src/osd/reasons.py` (or equivalent) and have `osd status`
+   and `build.py` call the same function; a test asserts, for each level and for `blocked`, that
+   the status line and the `records.json` field are the same string.
+2. `records.json` gains `reason` (that sentence) and keeps the verification date; the site's data
+   contract (`site/data/` is regenerated, never committed) gets the field documented in
+   `build.py`'s docstring. Records never verified read "never verified" as `osd status` does.
+3. Detail panel: a "Why this level" row with the sentence and the date ("checked 23 Oct 2026");
+   `noAssetsReason` is replaced by the record's `reason`, so the access-based sentence survives
+   only where the verifier's reason is the access itself. Status page: a "Why" column on wide
+   screens (hidden on the phone layout like the other columns are), sortable as the others.
+4. `how.html` gains one paragraph that lists the reason sentences and what a publisher can do
+   about each (publish a file listing; allow the verifier in robots.txt; answer robots the same
+   as browsers).
+5. Journey tests on a fixture catalogue with one record per reason class: the detail panel and
+   the status row show the sentence and date; a `blocked` record shows the OSD-D20 sentence and
+   no level badge; the share hash and filters are unchanged.
+
+**Acceptance.**
+- `make check` green; the reason-equality test red when `build.py` formats its own sentence
+  (mutation: duplicate the sentence in build.py → red).
+- Screenshot of the detail panel for a `blocked` record and for an L2 record at phone width.
+- `site/status.html` shows the Why column on a desktop screenshot and hides it at phone width.
+- Playwright journey tests listed by name in the PR; no record file touched.
+
+**Out of scope.** New reason classes; issue automation; map tiles; any schema change.
+
+**Claim.** `src/osd/build.py`, `src/osd/cli.py` (the `l2_reason` move only), `src/osd/reasons.py`
+(new), `site/app.js`, `site/index.html`, `site/status.html`, `site/how.html`, `site/style.css`,
+`tests/test_build.py` (or where build tests live), `tests/test_cli.py` additions,
+`tests/site/site.test.mjs` (shared with E26, second to merge rebases), `tests/fixtures/site/**`,
+`docs/program/evidence/e27/**`.
+# Claims
+
+One row per open lane. A lane may touch only the paths in its row. Two open rows never share a
+path. `schema/` edits are kernel and announced in the pull request title. Rows move to MERGED
+with the merge commit.
+
+| Lane | Branch | Paths | Status | Since |
+|---|---|---|---|---|
+| scaffold | main | everything | MERGED (initial commit) | 2026-10-23 |
+| E01 | e01-twenty-records | `records/**` | MERGED (PR #1) | 2026-10-23 |
+| E11 | main | `.github/workflows/**`, `site/robots.txt`, `docs/program/**` | MERGED (domain live) | 2026-10-23 |
+| E02 | e02-verifier-to-l2 | `src/osd/verify.py`, `src/osd/build.py`, `src/osd/cli.py`, `schema/verification.schema.json`, `src/osd/verifier/**` (sampling policy), `tests/test_verify.py`, `.github/workflows/verify.yml` (announced), `docs/program/charters/E02-*` (dispositions), `records/sodir/factpages.yaml`, `records/opm/norne.yaml`, `records/nopims/poseidon.yaml` (manifest_url only; records slot, ruled 23 Oct; sampling policy goes to src/osd/verifier/samples.yaml per OSD-D11) | MERGED (PR #3, 37c010c) | 2026-10-23 |
+| E05 | e05-map-that-scales | `site/**`, `tools/shot.mjs`, `tests/site/**`, `package.json`, `package-lock.json`, `.gitignore` (one line, ruled 23 Oct), `Makefile` (site targets only), `.github/workflows/ci.yml` (site test step only, announced), `docs/program/evidence/e05/**` | MERGED (PR #2, 6c232cf) | 2026-10-23 |
+| E13 | e13-registers-second-twenty | `records/**` except `records/sodir/factpages.yaml`, `records/opm/norne.yaml`, `records/nopims/poseidon.yaml` (E02); `docs/program/evidence/e13/**` | MERGED (PR #4, 6429445) | 2026-10-23 |
+| E03 | e03-outlines-from-the-data | `src/osd/outlines/**`, `src/osd/verify.py` (outline checks only), `src/osd/records.py` (outline validation), `schema/record.schema.json` (record/2: `inputs`, announced), `schema/outline.schema.json`, `outlines/**`, `records/<targets>.yaml` (`inputs` only: sodir/factpages, nlog/nlog, terranubis/f3-demo-2020, rmotc/teapot-dome, nopims/poseidon, nzpam/parihaka, nzpam/kerry-3d; E13 must not edit these seven), `pyproject.toml` (pyproj, segyio), `tests/test_outlines.py`, `tests/fixtures/outlines/**`, `tests/conftest.py`, `src/osd/cli.py` (`--outlines` only), `uv.lock`, `.github/workflows/verify.yml` (`--outlines` flag only, announced), `src/osd/verifier/samples.yaml` and `origin.manifest_url` of the seven target records (ruled 23 Oct on the E03 inbox note), `tests/site/site.test.mjs` (the 10k performance test replaces, not adds, the outline data; ruled 23 Oct on the red check), `docs/program/charters/E03-*` (strategy), `docs/program/evidence/e03/**` | MERGED (PR #7, 7ddecf0) | 2026-10-23 |
+| E08 | e08-curation-that-runs-itself | `.github/**` (announced; not `ci.yml`'s check job), `site/status.html`, `site/index.html` (one link to status.html only), `src/osd/new.py`, `src/osd/report.py`, `src/osd/cli.py` (`new` and `report` subcommands only), `tests/test_report.py`, `tests/site/status.test.mjs`, `package.json` (`site-test` script line only), `CONTRIBUTING.md`, `docs/program/evidence/e08/**` (ruled 23 Oct on the E08 inbox note) | MERGED (PR #5, e408adb) | 2026-10-23 |
+| E14 | e14-records-third-twenty | `records/**` except the seven E03 files (`sodir/factpages`, `nlog/nlog`, `terranubis/f3-demo-2020`, `rmotc/teapot-dome`, `nopims/poseidon`, `nzpam/parihaka`, `nzpam/kerry-3d`); `docs/program/evidence/e14/**` | MERGED (PR #6, 61f9527) | 2026-10-23 |
+| E04 | e04-stac-catalogue | `src/osd/stac.py`, `src/osd/build.py` (one call to the STAC writer), `schema/stac-osd.json`, `schema/stac/**`, `schema/record.schema.json` (optional `period` only, announced), `pyproject.toml` and `uv.lock` (stac-validator pinned), `Makefile` (recursive copy of build/catalog), `tests/test_stac.py`, `src/osd/records.py` (period coercion only, ruled 23 Oct), `docs/program/charters/E04-*` (strategy), `docs/program/evidence/e04/**` | MERGED (PR #8, aced173) | 2026-10-23 |
+| E15 | e15-tiles-for-the-registers | `Makefile` (build target: tiling), `src/osd/build.py` (one tiling call at the end of build), `.github/workflows/ci.yml` and `pages.yml` (tippecanoe install step, announced), `site/app.js`, `site/index.html` (if needed), `tests/site/**`, `tests/test_build.py` (tile count test), `docs/program/evidence/e15/**` | MERGED PR #10 23 Oct | 2026-10-23 |
+| E16 | e16-periods-from-the-publishers | `records/**` (`period` and `notes` only), `docs/program/evidence/e16/**`, and (23 Oct, OSD-D18) `tests/test_stac.py`, `tests/test_outlines.py` (period pop, one line), `Makefile` (`check-full` target), `.github/workflows/verify.yml` (one step) | MERGED PR #11 23 Oct | 2026-10-23 |
+| E06 | e06-retrieval-by-manifest | `src/osd/manifest.py`, `src/osd/get.py`, `src/osd/cli.py` (`get` and `manifest` subcommands), `schema/manifest.schema.json`, `tests/test_manifest.py`, `tests/fixtures/manifest/**`, `docs/program/charters/E06-*` (strategy, dispositions), `docs/program/evidence/e06/**`; `site/app.js` (select mode) only after E15 merges, by a claim update | MERGED slice 1 (PR #9, 8b48217); slice 2 claims site/app.js and tests/site/** after E15 | 2026-10-23 |
+| E07 | e07-mirror-store-and-custody | `src/osd/mirror.py`, `src/osd/custody.py`, `schema/custody.schema.json`, `schema/manifest.schema.json` (manifest/2, announced), `schema/stac-osd.json`, `schema/stac/**`, `src/osd/stac.py` (alternate hrefs), `src/osd/build.py` (public index), `src/osd/manifest.py`, `src/osd/get.py`, `src/osd/cli.py` (`mirror` subcommands), `src/osd/verifier/samples.yaml` (`mirror:` rules), `.github/ISSUE_TEMPLATE/takedown.yml`, `CONTRIBUTING.md` (takedown section), `tests/test_mirror.py`, `tests/fixtures/mirror/**`, `docs/program/charters/E07-*` (strategy), `docs/program/evidence/e07/**`, and (23 Oct ruling 1) `src/osd/verify.py` (the mirror inventory call only) and `schema/verification.schema.json` (verification/3: `inventory`, announced), `tests/test_manifest.py` (the unknown-format negative moves to manifest/3) | slice 1 MERGED PR #13 23 Oct; slice 2 reclaims at lane open | 2026-10-23 |
+| E06-2 | e06-retrieval-by-manifest-slice-2 | `site/app.js`, `site/index.html`, `site/style.css`, `tests/site/**`, `src/osd/build.py` (only if select mode needs a field in records.json), `docs/program/evidence/e06/**` | MERGED PR #12 23 Oct | 2026-10-23 |
+| E17 | e17-records-fourth-twenty | `records/**` (new files and edits to records no open lane holds; E07 holds none), `docs/program/evidence/e17/**` | MERGED PR #15 23 Oct | 2026-10-23 |
+| E09 | e09-ophiolite-reads-the-catalogue | `src/osd/manifest.py`, `src/osd/build.py`, `src/osd/verify.py`, `src/osd/cli.py`, `schema/manifest.schema.json` (manifest/3, announced), `schema/fidelity.schema.json` (new), `schema/verification.schema.json` (only if announced), `tests/test_fidelity.py`, `tests/test_manifest.py`, `tests/test_build.py`, `tests/fixtures/fidelity/**`, `docs/program/charters/E09-*STRATEGY.md`, `docs/program/evidence/e09/**`, and (23 Oct rulings) `.github/workflows/pages.yml` and `.github/workflows/verify.yml` (one `OSD_VERIFICATION_COMMIT` line each), `src/osd/get.py` (the null-attribution wording) | MERGED PR #14 23 Oct | 2026-10-23 |
+| E09-fx | e09-static-manifest-fixtures | `tests/fixtures/fidelity/**` (new static manifest/3 files), `tests/test_fidelity.py` or `tests/test_manifest.py` (one equality test), `docs/program/charters/E09-ophiolite-half.md` (pin note) | MERGED PR #16 23 Oct | 2026-10-23 |
+| E18 | e18-items-carry-their-own-dates | `src/osd/outlines/**`, `src/osd/stac.py` (Item dates; shared with E19 pass-through: second to merge rebases), `src/osd/verify.py` (outline writer only), `schema/outline.schema.json` (outline/3), `schema/stac-osd.json` (`osd:period_source`; shared with E19), `schema/stac/schema-map.json` (shared), the committed register outline files (Sodir, NLOG), `tests/test_outlines.py`, `tests/test_stac.py`, `tests/fixtures/outlines/**`, `docs/program/charters/E18-*STRATEGY.md`, `docs/program/evidence/e18/**`, and (23 Oct ruling 1) `src/osd/build.py` (one line: `osd:period_*` left out of the map layer) | MERGED (PR #19, 23 Oct) | 2026-10-23 |
+| E19 | e19-vocabulary-from-the-records-lanes | `schema/record.schema.json` (record/3), `schema/manifest.schema.json` (manifest/4), `schema/stac-osd.json` (access enum; shared with E18), `schema/stac/schema-map.json` (shared), `src/osd/manifest.py`, `src/osd/get.py`, `src/osd/stac.py` (access pass-through only; shared), `src/osd/cli.py`, `src/osd/new.py`, `site/app.js`, `tests/test_schema.py`, `tests/test_manifest.py`, `tests/site/site.test.mjs`, `tests/fixtures/**` additions, records `prime/national-oil-gas-database`, `eug/national-data-repository`, `namcor/exploration-production-data`, `beg/stratton-3d`, `dgh/national-data-repository`, `pasa/national-petroleum-exploration-database`, `docs/program/charters/E19-*STRATEGY.md`, `docs/program/evidence/e19/**`, and (23 Oct ruling 1) three lines in `tests/test_outlines.py` and `tests/test_stac.py` (record/3 `$id` asserts, one `continue`; E18 rebases), `tests/test_report.py` (one token, the access list), `records/_template.yaml` (the access comment line) | MERGED PR #18 23 Oct | 2026-10-23 |
+| E20 | e20-records-retry | `records/**` (new files and edits to records no open lane holds; E21 holds none), `docs/program/evidence/e20/**`, `src/osd/records.py` (`licence.terms.expires` coercion only), one test case in the record-loading test module, `tests/test_schema.py` (record counts as lower bounds and the PASA/DGH terms wording only; granted 23 Oct), two assertions in `tests/site/site.test.mjs` (the PASA wording regex and the duration literal; shared with E21, second to merge rebases) | MERGED (PR #21, 23 Oct) | 2026-10-23 |
+| E21 | e21-the-map-says-when | `site/app.js`, `site/index.html`, `site/style.css`, `site/how.html`, `tests/site/**`, `docs/program/evidence/e21/**` | MERGED (PR #22, 23 Oct) | 2026-10-23 |
+| E22 | e22-records-fifth-twenty | `records/**` (new files and edits to records no open lane holds; E21 holds none), `docs/program/evidence/e22/**`, one assertion in `tests/test_schema.py` (the set of records with `licence.terms`, granted 23 Oct) | MERGED (PR #30, 23 Oct) | 2026-10-23 |
+| E23 | e23-more-datasets-checksummed | `src/osd/verify.py`, `src/osd/verifier/**`, `src/osd/cli.py` (status column only), `schema/verification.schema.json` (verification/4), `tests/fixtures/schema/verification-3.schema.json` (new), `tests/test_verify.py`, `tests/test_mirror.py` (additions only), `tests/fixtures/listings/**`, `tests/fixtures/verification/**`, `docs/program/charters/E23-*STRATEGY.md`, `docs/program/evidence/e23/**` | MERGED (PR #31, 23 Oct) | 2026-10-23 |
+| E24 | e24-records-files-the-verifier-can-reach | `records/**` (new files and edits to records no open lane holds), `src/osd/verifier/samples.yaml` (entries for this lane's `manifest_url`s), `docs/program/evidence/e24/**` | MERGED (PR #32, 23 Oct) | 2026-10-23 |
+| H1 | h1-origins-that-recover-and-hide | `src/osd/report.py`, `src/osd/verify.py` (origin probe classification, injected browser probe, single-file listing in `check_files`/`read_listing`), `src/osd/verifier/listings.py` (file-body shape detection), `src/osd/verifier/samples.yaml` (the `file:` flag handling only; entries are E24's), `src/osd/cli.py` (report output, verify/status detail), `.github/workflows/verify.yml` (report step, ids), `tests/test_report.py`, `tests/test_verify.py` (additions only), `tests/fixtures/report/**`, `docs/program/DECISIONS.md` (OSD-D20), `docs/program/charters/H1-*STRATEGY.md`, `docs/program/evidence/h1/**` | MERGED (PR #33, 23 Oct) | 2026-10-23 |
+| E25 | e25-records-seventh-twenty-and-the-bare-files | `records/**` (new files and edits to records no open lane holds; not E26's ten), `src/osd/verifier/samples.yaml` (entries and `file:` flags for this lane's records), `docs/program/evidence/e25/**` | OPEN (worker osd-e25, worktree ../osd-e25-records-seventh-twenty) | 2026-10-23 |
+| E26 | e26-vocabulary-kinds | `schema/record.schema.json` (record/4), `tests/fixtures/schema/record-3.schema.json`, `src/osd/new.py` (comments), `tests/test_schema.py`, scaffold test, `tests/test_stac.py` and `tests/test_manifest.py` additions, `tests/site/site.test.mjs` (one test; shared with E27), `tests/fixtures/**` additions, records `doe-gdr/utah-forge-seismic-reflection`, `lbeg/tunb-velo-2-0-ni`, `soton/scanner-pockmark-velocity-models`, `doe-gdr/utah-forge-3d-gravity`, `geosphere-at/molasse-basin-subsurface-model`, `lbeg/tunb3d-ni`, `geosphere-at/aerogeophysics-northern-lower-austria`, `igme/sigeof`, `nrcan/canadian-airborne-geophysical-data-base`, `ustc/bedrettolab-atv-logs-stress`, `docs/program/evidence/e26/**` | CHARTERED (Codex round running; lane opens after rework) | 2026-10-23 |
+| E27 | e27-the-map-says-why | `src/osd/build.py`, `src/osd/cli.py` (`l2_reason` move), `src/osd/reasons.py`, `site/**` (no `site/data/`), `tests/test_build.py`, `tests/test_cli.py` additions, `tests/site/site.test.mjs` (shared with E26), `tests/fixtures/site/**`, `docs/program/evidence/e27/**` | OPEN (worker osd-e27, worktree ../osd-e27-the-map-says-why) | 2026-10-23 |
+    48	def choices() -> dict[str, str]:
+    49	    """The scaffold's comment lists, read from schema/record.schema.json so they never drift (E19)."""
+    50	    p = _schema("record")["properties"]
+    51	    return {"access": " | ".join(p["origin"]["properties"]["access"]["enum"]),
+    52	            "redistribution": " | ".join(p["licence"]["properties"]["redistribution"]["enum"]),
+    53	            "attribution": " | ".join(p["licence"]["properties"]["attribution"]["enum"]),
+    54	            "listed_by": " | ".join(p["listed_by"]["items"]["enum"])}
+    55	
+    56	
+    57	def scaffold(url: str, title: str | None, rid: str, today: date) -> str:
+    58	    u = urlsplit(url)
+    59	    c = choices()
+    60	    header = [line for line in TEMPLATE.read_text().splitlines() if line.startswith("#")]
+    61	    q = json.dumps  # a JSON string is a YAML string, whatever the title holds
+    62	    return "\n".join([
+    63	        *header,
+    64	        f"# Scaffolded by `osd new` on {today.isoformat()}. Every null or empty value below is for a",
+    65	        "# human to fill from the publisher's page; `osd validate` lists them until they are.",
+    66	        f"id: {rid}",
+    67	        f"title: {q(title) if title else 'null'}" + ("" if title else "   # fill: the dataset's name"),
+    68	        "publisher:",
+    69	        "  name: null                                      # fill: the publisher as it names itself",
+    70	        f"  url: {u.scheme}://{u.netloc}",
+    71	        "origin:",
+    72	        f"  url: {q(url)}",
+    73	        f"  access: null                                    # fill: {c['access']}",
+    74	        "licence:",
+    75	        "  name: null                                      # fill: the licence as the publisher names it",
+    76	        "  spdx: null                                      # CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0 or null",
+    77	        f"  redistribution: null                            # fill: {c['redistribution']}",
+    78	        f"  attribution: null                               # fill: {c['attribution']}",
+    79	        "kinds: []                                         # fill: see schema/record.schema.json",
+    80	        "region: {}                                        # country, basin, bbox when the publisher states them",
+    81	        f"listed_by: [community]                            # {c['listed_by']}",
+    82	        f"added: {today.isoformat()}",
+   270	def write(doc: dict, path: Path) -> Path:
+   271	    path.write_text(json.dumps(doc, indent=2) + "\n")
+   272	    return path
+   103	  map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
+   104	
+   105	  const allKinds = [...new Set(records.flatMap(r => r.kinds))].sort();
+   106	
+   107	  // Period (E21): the publisher's stated interval, by year. Only a start runs to today; only an end
+   234	  // Controls
+   235	  const kindsEl = document.getElementById('kinds');
+   236	  const chips = {};
+   237	  for (const k of allKinds) {
+   238	    const c = document.createElement('span'); c.className = 'chip'; c.textContent = k; c.dataset.kind = k;
+   239	    c.onclick = () => { state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k); syncControls(); applyFilters(); };
+   240	    kindsEl.appendChild(c); chips[k] = c;
+   241	  }
+   242	  const $ = id => document.getElementById(id);
+   180	        col = {
+   181	            "type": "Collection", "stac_version": STAC_VERSION,
+   182	            "stac_extensions": [OSD_EXTENSION] + ([FILE_EXTENSION] if assets else [])
+   183	                               + ([ALTERNATE_EXTENSION] if alternate else []),
+   184	            "id": cid, "title": rec["title"], "description": rec.get("summary") or rec["title"],
+   185	            "license": lic.get("spdx") or "other",
+   186	            "keywords": rec["kinds"],
+   187	            "providers": [{"name": rec["publisher"]["name"], "roles": ["producer", "licensor"],
+   188	                           "url": rec["publisher"]["url"]}],
+   189	            "extent": {"spatial": {"bbox": [spatial]}, "temporal": {"interval": [when]}},
+   190	            "links": [{"rel": "root", "href": "../catalog.json", "type": "application/json"},
+
+**Verifying clean Git state**
+exec
+/bin/bash -lc "git status --short; nl -ba docs/program/charters/E27-the-map-says-why.md; nl -ba docs/program/charters/E19-vocabulary-from-the-records-lanes.md | sed -n '15,55p'; rg -n 'def _entry|kinds|keywords' src/osd/manifest.py src/osd/build.py; nl -ba docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for.md | sed -n '12,95p'; head -n 8 tests/fixtures/schema/record-2.schema.json" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+?? docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-CODEX-REVIEW.log
+     1	## E27 The map says why — QUEUED · Surface · no strategy, no Codex round · journey tests
+     2	
+     3	Authority: owner direction 23 Oct 2026 (levels on the map are real); E23 (a reason per record
+     4	below L2, `osd status` prints it: `src/osd/cli.py` `l2_reason`); H1 (OSD-D20 `blocked` with its
+     5	reason "answers a browser, not the verifier (HTTP a to osd-verifier, HTTP b to a browser agent)";
+     6	`osd status` prints the reason for blocked); E08 (status page); OSD-D9 (blocked awards no level).
+     7	
+     8	**Outcome.** A person who opens a dataset on the map, or a row on the status page, reads in the
+     9	verifier's own words why it is at its level and when that was established: "no file address is
+    10	published to us", "listing names no file", "robots.txt disallows the listing", "answers a browser,
+    11	not the verifier", "origin dead since …", or "sampled 3 files, sha256 matched" for L2.
+    12	
+    13	**Context today (verified 23 Oct, main 4dcdc56).** `src/osd/build.py` writes `site/data/records.json`
+    14	with title, publisher, kinds, licence, redistribution, level and the verification date; it does
+    15	not carry the reason. `site/app.js` shows a sentence from `noAssetsReason(r)` that depends on
+    16	`origin.access` only, so a dead origin and a listing without files read the same. The reason
+    17	sentence exists once, in `src/osd/cli.py` `l2_reason` (E23, extended by H1), and nowhere else.
+    18	`site/status.html` lists level, dataset and last-checked date (phone: those three columns only).
+    19	`how.html` explains the levels. Site journey tests run in `tests/site/site.test.mjs` (Playwright,
+    20	fixture catalogue, CI `check`). Known red: tippecanoe attribute corruption (tiles carry no dates).
+    21	
+    22	**The design the lane must map to.**
+    23	1. One source: move `l2_reason` into `src/osd/reasons.py` (or equivalent) and have `osd status`
+    24	   and `build.py` call the same function; a test asserts, for each level and for `blocked`, that
+    25	   the status line and the `records.json` field are the same string.
+    26	2. `records.json` gains `reason` (that sentence) and keeps the verification date; the site's data
+    27	   contract (`site/data/` is regenerated, never committed) gets the field documented in
+    28	   `build.py`'s docstring. Records never verified read "never verified" as `osd status` does.
+    29	3. Detail panel: a "Why this level" row with the sentence and the date ("checked 23 Oct 2026");
+    30	   `noAssetsReason` is replaced by the record's `reason`, so the access-based sentence survives
+    31	   only where the verifier's reason is the access itself. Status page: a "Why" column on wide
+    32	   screens (hidden on the phone layout like the other columns are), sortable as the others.
+    33	4. `how.html` gains one paragraph that lists the reason sentences and what a publisher can do
+    34	   about each (publish a file listing; allow the verifier in robots.txt; answer robots the same
+    35	   as browsers).
+    36	5. Journey tests on a fixture catalogue with one record per reason class: the detail panel and
+    37	   the status row show the sentence and date; a `blocked` record shows the OSD-D20 sentence and
+    38	   no level badge; the share hash and filters are unchanged.
+    39	
+    40	**Acceptance.**
+    41	- `make check` green; the reason-equality test red when `build.py` formats its own sentence
+    42	  (mutation: duplicate the sentence in build.py → red).
+    43	- Screenshot of the detail panel for a `blocked` record and for an L2 record at phone width.
+    44	- `site/status.html` shows the Why column on a desktop screenshot and hides it at phone width.
+    45	- Playwright journey tests listed by name in the PR; no record file touched.
+    46	
+    47	**Out of scope.** New reason classes; issue automation; map tiles; any schema change.
+    48	
+    49	**Claim.** `src/osd/build.py`, `src/osd/cli.py` (the `l2_reason` move only), `src/osd/reasons.py`
+    50	(new), `site/app.js`, `site/index.html`, `site/status.html`, `site/how.html`, `site/style.css`,
+    51	`tests/test_build.py` (or where build tests live), `tests/test_cli.py` additions,
+    52	`tests/site/site.test.mjs` (shared with E26, second to merge rebases), `tests/fixtures/site/**`,
+    53	`docs/program/evidence/e27/**`.
+    15	`licence`. record/1 → record/2 was a `$id` bump for `inputs`; `period` was the only addition kept at
+    16	/2. `schema/manifest.schema.json` (manifest/3) repeats the access enum and the licence allowlist;
+    17	`src/osd/manifest.py` and `site/app.js` carry licence allowlists. The STAC extension
+    18	(`schema/stac-osd.json`) defines access, not kinds; kinds are STAC `keywords`. Site chips derive
+    19	from the records present. `src/osd/new.py` carries the access choices as scaffold comments. 92
+    20	records; PRIME's summary names gravity and magnetics, BEG's want is in `known_issues`, PASA states
+    21	"at most 10 years" per purchase and a pre-publication review; NRCan has no record (unreachable,
+    22	E17), so nothing here concerns NRCan.
+    23	
+    24	**The design the lane must map to.**
+    25	1. record/3: `kinds` gains `potential-fields`; `origin.access` gains `purchase` (a price list or
+    26	   sales desk between the person and the files; a free account is `registration`); `licence` gains
+    27	   an optional closed `terms: {duration: string|null, review_before_publication: bool|null,
+    28	   expires: date|null, stated: string}` where `stated` is the publisher's words, `duration` the
+    29	   publisher's conditional wording ("at most 10 years from purchase"), `expires` only an absolute
+    30	   publisher-stated calendar date (UTC day boundary), never computed. record/2 files validate under
+    31	   their own schema in the compatibility test.
+    32	2. manifest/4: the access enum and the licence allowlist admit the new values; manifest/1–3 still
+    33	   read; `src/osd/manifest.py` and `site/app.js` preserve `terms` field by field (absence kept);
+    34	   `osd get` writes the `stated` terms into ATTRIBUTION.md under the licence lines.
+    35	3. STAC: `schema/stac-osd.json` access enum gains `purchase` (`$id` bumped, old files validate;
+    36	   shared with E18: second to merge rebases); `potential-fields` appears as a keyword; no new
+    37	   vocabulary copies anywhere; `src/osd/new.py` scaffold comments list the schema's values and a
+    38	   test reads them from the schema.
+    39	4. `osd status` prints `terms expire <date>` beside the level for an absolute `expires`, with an
+    40	   injected clock for tests; no issue automation in this lane (E08's report path is untouched).
+    41	5. Records, exact edits and nothing else: `prime/national-oil-gas-database` kinds +
+    42	   `potential-fields`; `eug/national-data-repository` kinds + `potential-fields` (only if its own
+    43	   text names gravity or magnetics; else no edit, said in the PR); `namcor/exploration-production-data`
+    44	   kinds + `potential-fields` on the same condition and `access: purchase`; `beg/stratton-3d`
+    45	   `access: purchase` and the want sentence removed from `known_issues`; `dgh/national-data-repository`
+    46	   `access: purchase`; `pasa/national-petroleum-exploration-database` `access: purchase` and
+    47	   `terms: {duration: "at most 10 years from purchase" (publisher's words), review_before_publication:
+    48	   true, expires: null, stated: <verbatim>}`. Every edit cites the record's own existing text or
+    49	   evidence; nothing is re-fetched.
+    50	
+    51	**Acceptance.**
+    52	- record/3 fixtures: each new value validates; `terms` without `stated` refused; `expires` not a
+    53	  date refused; unknown kind or access refused; record/2 fixtures validate under record/2.
+    54	- Manifest: a record with `purchase` and full `terms` round-trips build → `osd manifest` →
+    55	  `osd.manifest.read` with exact values and exact absence; manifest/1–3 fixtures still read;
+src/osd/build.py:10:  outlines.geojson one FeatureCollection, every feature joined with record title, kinds,
+src/osd/build.py:89:                    "kinds": rec["kinds"], "licence": rec["licence"]["name"],
+src/osd/manifest.py:182:def _entry(rec: dict) -> dict:
+    12	existing records and manifests keep validating.
+    13	
+    14	**Context today (verified 23 Oct, main 4dcdc56).** `schema/record.schema.json` is record/3 with
+    15	19 kinds (E19 added `potential-fields`). Kinds are STAC `keywords` (`src/osd/stac.py`), site chips
+    16	derive from the records present (`site/app.js`, no vocabulary copy), `src/osd/new.py` scaffold
+    17	comments and a test read the schema's values (E19 design 3). `tests/test_schema.py` holds the
+    18	record/3 fixtures and the record/2 compatibility test under `tests/fixtures/schema/`. Twelve
+    19	records name a want in `origin.notes` or `known_issues`: velocity model
+    20	(`doe-gdr/utah-forge-seismic-reflection`, `lbeg/tunb-velo-2-0-ni`,
+    21	`soton/scanner-pockmark-velocity-models`); geological 3D model (`doe-gdr/utah-forge-3d-gravity`
+    22	"3D density model from gravity inversion", `geosphere-at/molasse-basin-subsurface-model`,
+    23	`lbeg/tunb3d-ni`); airborne electromagnetics and radiometrics
+    24	(`geosphere-at/aerogeophysics-northern-lower-austria`, `igme/sigeof`,
+    25	`nrcan/canadian-airborne-geophysical-data-base`); stress (`ustc/bedrettolab-atv-logs-stress`,
+    26	"stress_inversion.zip"); and two whose want is not a kind and stay as they are
+    27	(`force/ml-competition-2020-well-logs` lithofacies labels, `ns-energy/onshore-2d-seismic-navigation`
+    28	navigation only). `azu/data-room` and `dgeg/petroleum-technical-data` record velocity
+    29	*measurements* as `time-depth`; that is right and they are not touched.
+    30	
+    31	**The design the lane must map to.**
+    32	1. record/4: `kinds` gains exactly `velocity-model` (a seismic velocity field or cube, interval or
+    33	   migration velocities as a model, not time-depth pairs), `geological-model` (a 3D structural or
+    34	   property model: layers, volumes, salt bodies, inverted density), `airborne-em` (airborne
+    35	   electromagnetic soundings), `radiometrics` (gamma-ray spectrometry surveys, airborne or ground),
+    36	   `stress` (in-situ stress measurements and inversions). The enum description defines each in one
+    37	   clause. record/3 files validate under record/3 in the compatibility test (frozen copy under
+    38	   `tests/fixtures/schema/`), every stored record validates under record/4. No other schema changes;
+    39	   `manifest/4` and `stac-osd` carry kinds as free keywords and need no bump (assert this with a
+    40	   test that a record/4 kind round-trips build → manifest → STAC keyword).
+    41	2. Names: if the Ophiolite kind registry (`~/src/ophiolite`, E55) names any of these, use its
+    42	   name and cite the file in the PR; else the names above stand and the PR says the registry has
+    43	   none.
+    44	3. No vocabulary copies: `src/osd/new.py` scaffold comments and its test read the schema; site
+    45	   chips stay data-derived (one site journey test with a fixture catalogue holding a
+    46	   `velocity-model` record shows the chip and filters by it); `how.html` is not touched
+    47	   (E27 holds the site text).
+    48	4. Records, exact edits and nothing else: the ten records above gain the kind their want names
+    49	   (`doe-gdr/utah-forge-3d-gravity` gains `geological-model` and keeps `potential-fields`;
+    50	   `igme/sigeof` and `nrcan/canadian-airborne-geophysical-data-base` gain both `airborne-em` and
+    51	   `radiometrics` only where their own text names each; `geosphere-at/aerogeophysics-…` likewise;
+    52	   `ustc/bedrettolab-atv-logs-stress` gains `stress`; velocity and geological-model records gain
+    53	   their kind and keep the nearest kind only if the dataset also holds that kind, e.g. SEG-Y
+    54	   volumes beside a velocity model) and the "Want: …" sentence is removed from `notes`, the rest
+    55	   of the note kept verbatim. The two non-kind wants are untouched. Every edit cites the record's
+    56	   own text; nothing is re-fetched.
+    57	
+    58	**Acceptance.**
+    59	- record/4 fixtures: each new kind validates; an unknown kind is refused; record/3 fixtures
+    60	  validate under the frozen record/3; `uv run osd validate` 140 records (or main's count), 0 problems.
+    61	- Round trip: a fixture record with `velocity-model` reaches the manifest and the STAC Collection
+    62	  `keywords` unchanged; stac-osd and manifest schemas unchanged in the diff.
+    63	- Scaffold: the `osd new` comment lists the five new kinds, read from the schema (mutation: schema
+    64	  enum entry removed → the scaffold test is red).
+    65	- Site: fixture catalogue with one `velocity-model` record and one without; the chip appears and
+    66	  filtering includes the one and excludes the other.
+    67	- The ten record diffs show exactly the `kinds` line and the removed sentence.
+    68	
+    69	**Out of scope.** Kinds for lithofacies labels or navigation-only seismic (recorded as findings,
+    70	not added); any site text; STAC or manifest schema versions.
+    71	
+    72	**Stop rules.** None.
+    73	
+    74	**Ownership and dependencies.** Coding lane; paths `schema/record.schema.json` (record/4),
+    75	`tests/fixtures/schema/record-3.schema.json` (frozen copy), `src/osd/new.py` (comments only),
+    76	`tests/test_schema.py`, `tests/test_new.py` or where the scaffold test lives, `tests/test_stac.py`
+    77	and `tests/test_manifest.py` (round-trip additions), `tests/site/site.test.mjs` (one journey test;
+    78	shared with E27, second to merge rebases), `tests/fixtures/**` additions, the ten records named
+    79	in design 4, `docs/program/evidence/e26/**`. Depends on E19, E24 (merged).
+    80	
+    81	**Evidence to inspect.** The ten record diffs; the schema diff; the round-trip test; the chip
+    82	screenshot; the mutation.
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/record/2",
+  "title": "Open Subsurface Data record, version 2",
+  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
+
+codex
+**1. Verdict: REWORK.** The charter requires kinds to survive a manifest contract that cannot represent them, and its record-edit and compatibility requirements need correction.
+
+Verified against HEAD `e63a3e0515945c07cdee51a1a12396e6eac6fa9c`. No files modified.
+
+**2. Factual errors and Context verification**
+
+- **Manifest kinds do not exist.** Design 1 says manifest/4 carries free keywords; its entry schema forbids additional properties and defines neither `kinds` nor `keywords` (`schema/manifest.schema.json:89–105`). The typed reader likewise has neither (`src/osd/manifest.py:95–107`). STAC Collections carry keywords; the OSD extension does not define them.
+- **Scaffold claim is misleading for kinds.** Schema-derived choices cover access, redistribution, attribution and listed_by (`src/osd/new.py:48–54`). Kinds only says “see schema” (`:79`); the existing test never asserts kinds (`tests/test_schema.py:127–136`). This requires new behavior, not merely maintaining existing comments.
+- **Want locations are wrong.** Most are top-level `notes`, not `origin.notes`: e.g. `records/doe-gdr/utah-forge-seismic-reflection.yaml:30`, `records/lbeg/tunb-velo-2-0-ni.yaml:27`. Southampton’s is in `known_issues` (`records/soton/scanner-pockmark-velocity-models.yaml:24`).
+- **Literal removal cannot cover all ten.** Bedretto has no “Want:” sentence; its equivalent is “Stress inversion results have no kind” (`records/ustc/bedrettolab-atv-logs-stress.yaml:31`). The outcome also promises twelve changes while design 4 deliberately changes ten.
+- **IGME does not establish airborne EM.** Its text distinguishes airborne magnetic/radiometric flights from electrical/electromagnetic soundings (`records/igme/sigeof.yaml:7–9,30`). The condition in design 4 must therefore exclude `airborne-em` here.
+- **Other Context claims checked:** record/3 contains 19 kinds including `potential-fields` (`schema/record.schema.json:3,61–65`); STAC copies kinds (`src/osd/stac.py:186`); chips derive from records (`site/app.js:105,237–240`).
+- Record/3 fixtures are constructed in `tests/test_schema.py:35–67`; the record/2 compatibility test is at `:91–105`, loading the frozen schema at `:32`. The fixtures directory contains the old schema, not that test.
+- Opened all twelve named records: their model, geophysics, stress and two deferred vocabulary findings exist, subject to the corrections above. Both excluded velocity records use `time-depth` as claimed (`records/azu/data-room.yaml:23,29`; `records/dgeg/petroleum-technical-data.yaml:24,34`).
+
+**3. Design objections and concrete alternatives**
+
+- **Impossible manifest boundary:** remove manifest kind propagation from this lane; prove record → built catalogue → STAC keywords and site filtering. If manifests must carry kinds, explicitly charter a versioned schema, writer, reader and site-export change with backward compatibility.
+- **Unsupported classification:** add only `radiometrics` to IGME and preserve its unresolved electrical/EM finding. Do not delete that finding merely because another part was addressed.
+- **Container versus content:** Southampton’s SEG-Y files are velocity models (`records/soton/scanner-pockmark-velocity-models.yaml:4–6,12`), so SEG-Y alone cannot justify retaining `seismic-3d`. Specify exact expected kinds per record from its stated contents.
+- **Naming contract is unresolved:** design 1 demands exactly five spellings while design 2 permits replacements. Resolve registry mappings before freezing fixtures and acceptance names; cite the registry revision and file.
+- **Ownership violates the no-overlap rule:** “second to merge rebases” explicitly shares `tests/site/site.test.mjs` with E27. Sequence that path’s ownership or agree disjoint test files and fixture paths before opening E26.
+
+**4. Acceptance weaknesses**
+
+- **Compatibility can pass vacuously:** validating old fixtures only under their frozen old schema cannot detect record/4 rejecting an old kind. Validate the same fixed old fixtures under both schemas; mutate record/4 by removing an old kind and require failure.
+- **Scaffold mutation can stay green:** if expected and actual choices both read the mutated enum, removing an entry changes both equally. Assert the five agreed additions independently, alongside schema equality; separately mutate the scaffold to omit one.
+- **“Exactly the kinds line and removed sentence” tests shape, not meaning:** a wrong allowed kind or retained Southampton placeholder can satisfy it. Assert exact kinds and remaining note text for each named record, including Bedretto’s nonliteral finding.
+- **One-kind propagation is incomplete:** a special case preserving only `velocity-model` passes while dropping four other additions. Parameterize propagation over all five agreed values.
+- The manifest acceptance is currently **unsatisfiable**, rather than vacuous; weakening it to manifest validation alone would silently abandon the promised propagation.
+
+**5. Scope into other charters**
+
+- Adding manifest kind storage expands into E06/E09’s retrieval and consumer contract; E19 changed that contract explicitly (`docs/program/charters/E19-vocabulary-from-the-records-lanes.md:32–34`). Defer it or declare that scope and its proof.
+- E27 explicitly owns the same journey-test file and site fixtures (`docs/program/charters/E27-the-map-says-why.md:49–53`); resolve ownership, not merely merge order.
+- No additional E25 records work is needed: its charter already excludes E26’s named records. Keep the lane’s edits confined to the corrected ten-record list.
+tokens used
+53,919
+**1. Verdict: REWORK.** The charter requires kinds to survive a manifest contract that cannot represent them, and its record-edit and compatibility requirements need correction.
+
+Verified against HEAD `e63a3e0515945c07cdee51a1a12396e6eac6fa9c`. No files modified.
+
+**2. Factual errors and Context verification**
+
+- **Manifest kinds do not exist.** Design 1 says manifest/4 carries free keywords; its entry schema forbids additional properties and defines neither `kinds` nor `keywords` (`schema/manifest.schema.json:89–105`). The typed reader likewise has neither (`src/osd/manifest.py:95–107`). STAC Collections carry keywords; the OSD extension does not define them.
+- **Scaffold claim is misleading for kinds.** Schema-derived choices cover access, redistribution, attribution and listed_by (`src/osd/new.py:48–54`). Kinds only says “see schema” (`:79`); the existing test never asserts kinds (`tests/test_schema.py:127–136`). This requires new behavior, not merely maintaining existing comments.
+- **Want locations are wrong.** Most are top-level `notes`, not `origin.notes`: e.g. `records/doe-gdr/utah-forge-seismic-reflection.yaml:30`, `records/lbeg/tunb-velo-2-0-ni.yaml:27`. Southampton’s is in `known_issues` (`records/soton/scanner-pockmark-velocity-models.yaml:24`).
+- **Literal removal cannot cover all ten.** Bedretto has no “Want:” sentence; its equivalent is “Stress inversion results have no kind” (`records/ustc/bedrettolab-atv-logs-stress.yaml:31`). The outcome also promises twelve changes while design 4 deliberately changes ten.
+- **IGME does not establish airborne EM.** Its text distinguishes airborne magnetic/radiometric flights from electrical/electromagnetic soundings (`records/igme/sigeof.yaml:7–9,30`). The condition in design 4 must therefore exclude `airborne-em` here.
+- **Other Context claims checked:** record/3 contains 19 kinds including `potential-fields` (`schema/record.schema.json:3,61–65`); STAC copies kinds (`src/osd/stac.py:186`); chips derive from records (`site/app.js:105,237–240`).
+- Record/3 fixtures are constructed in `tests/test_schema.py:35–67`; the record/2 compatibility test is at `:91–105`, loading the frozen schema at `:32`. The fixtures directory contains the old schema, not that test.
+- Opened all twelve named records: their model, geophysics, stress and two deferred vocabulary findings exist, subject to the corrections above. Both excluded velocity records use `time-depth` as claimed (`records/azu/data-room.yaml:23,29`; `records/dgeg/petroleum-technical-data.yaml:24,34`).
+
+**3. Design objections and concrete alternatives**
+
+- **Impossible manifest boundary:** remove manifest kind propagation from this lane; prove record → built catalogue → STAC keywords and site filtering. If manifests must carry kinds, explicitly charter a versioned schema, writer, reader and site-export change with backward compatibility.
+- **Unsupported classification:** add only `radiometrics` to IGME and preserve its unresolved electrical/EM finding. Do not delete that finding merely because another part was addressed.
+- **Container versus content:** Southampton’s SEG-Y files are velocity models (`records/soton/scanner-pockmark-velocity-models.yaml:4–6,12`), so SEG-Y alone cannot justify retaining `seismic-3d`. Specify exact expected kinds per record from its stated contents.
+- **Naming contract is unresolved:** design 1 demands exactly five spellings while design 2 permits replacements. Resolve registry mappings before freezing fixtures and acceptance names; cite the registry revision and file.
+- **Ownership violates the no-overlap rule:** “second to merge rebases” explicitly shares `tests/site/site.test.mjs` with E27. Sequence that path’s ownership or agree disjoint test files and fixture paths before opening E26.
+
+**4. Acceptance weaknesses**
+
+- **Compatibility can pass vacuously:** validating old fixtures only under their frozen old schema cannot detect record/4 rejecting an old kind. Validate the same fixed old fixtures under both schemas; mutate record/4 by removing an old kind and require failure.
+- **Scaffold mutation can stay green:** if expected and actual choices both read the mutated enum, removing an entry changes both equally. Assert the five agreed additions independently, alongside schema equality; separately mutate the scaffold to omit one.
+- **“Exactly the kinds line and removed sentence” tests shape, not meaning:** a wrong allowed kind or retained Southampton placeholder can satisfy it. Assert exact kinds and remaining note text for each named record, including Bedretto’s nonliteral finding.
+- **One-kind propagation is incomplete:** a special case preserving only `velocity-model` passes while dropping four other additions. Parameterize propagation over all five agreed values.
+- The manifest acceptance is currently **unsatisfiable**, rather than vacuous; weakening it to manifest validation alone would silently abandon the promised propagation.
+
+**5. Scope into other charters**
+
+- Adding manifest kind storage expands into E06/E09’s retrieval and consumer contract; E19 changed that contract explicitly (`docs/program/charters/E19-vocabulary-from-the-records-lanes.md:32–34`). Defer it or declare that scope and its proof.
+- E27 explicitly owns the same journey-test file and site fixtures (`docs/program/charters/E27-the-map-says-why.md:49–53`); resolve ownership, not merely merge order.
+- No additional E25 records work is needed: its charter already excludes E26’s named records. Keep the lane’s edits confined to the corrected ten-record list.
