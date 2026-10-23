@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/verification/2",
-  "title": "Verification record, version 2",
+  "$id": "https://open-subsurface-data.org/schema/verification/3",
+  "title": "Verification record, version 3",
   "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
   "type": "object",
   "additionalProperties": false,
@@ -45,6 +45,16 @@
       }
     },
     "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"}
+    "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"},
+    "inventory": {
+      "type": "object", "additionalProperties": false, "required": ["rule", "listed", "selected", "coverage"],
+      "description": "v3 (E07). Only for records with a `mirror:` rule in verifier/samples.yaml: every listing entry the rule selects; each hashed one is in `files`. complete: all selected entries hashed in this run (a claim about this selection, never the whole dataset)",
+      "properties": {
+        "rule": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "listed": {"type": "integer", "minimum": 0, "description": "Entries in the listing"},
+        "selected": {"type": "array", "items": {"type": "string"}, "description": "Paths as the listing states them"},
+        "coverage": {"enum": ["complete", "partial"]}
+      }
+    }
   }
 }

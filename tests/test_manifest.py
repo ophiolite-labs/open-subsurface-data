@@ -147,8 +147,8 @@ def _mutations():
     def bad_checksum(d):
         d["entries"][0]["assets"]["one.bin"]["file:checksum"] = "1220xyz"
 
-    def format_2(d):
-        d["format"] = "osd.manifest/2"
+    def format_3(d):
+        d["format"] = "osd.manifest/3"
 
     def userinfo(d):
         d["entries"][0]["assets"]["one.bin"]["href"] = "https://me:secret@files.example/a/one.bin"
@@ -168,7 +168,7 @@ def _mutations():
     def escaping_key(d):
         d["entries"][0]["assets"]["../../etc/x"] = d["entries"][0]["assets"].pop("one.bin")
 
-    return [drop_licence, bad_checksum, format_2, userinfo, signed_query, no_unresolved, extra_field,
+    return [drop_licence, bad_checksum, format_3, userinfo, signed_query, no_unresolved, extra_field,
             bad_licence, escaping_key]
 
 

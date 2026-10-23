@@ -1,0 +1,15 @@
+$ uv run osd mirror remove 73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842 --store build/mirror --public-url http://127.0.0.1:8766/ --request https://github.com/ophiolite-labs/open-subsurface-data/issues/0 --approved-by tuna-soup   # dry run on the local store; issue 0 is a placeholder
+  deleted   mirror/opm/norne/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842/README
+  deleted   custody/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842.json
+  tombstone custody/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842.removed.json (osd mirror never copies this digest again)
+
+$ uv run osd build; jq of the Norne README asset
+{'norne/NORNE_ATW2013.DATA': True, 'norne/Norne_model_for_atw2013.pdf': True, 'norne/README': False, 'norne/plothelper.sh': True, 'norne/plotwells.sh': True}
+
+$ uv run osd mirror put opm/norne --store build/mirror --public-url http://127.0.0.1:8766/
+  present     opm/norne norne/NORNE_ATW2013.DATA f346c910f68a  (mirror/opm/norne/f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080/NORNE_ATW2013.DATA)
+  present     opm/norne norne/Norne_model_for_atw2013.pdf b6c7aaa9eb09  (mirror/opm/norne/b6c7aaa9eb09470ce9555906cbc2b6a394d08ad6532750b604f8a6f2c364153e/Norne_model_for_atw2013.pdf)
+  refused     opm/norne norne/README 73be5dd04396  (removed 2026-10-23 on https://github.com/ophiolite-labs/open-subsurface-data/issues/0: never mirrored again)
+  present     opm/norne norne/plothelper.sh 380d97662683  (mirror/opm/norne/380d97662683715979ed3289e36818c292d42fde39caa6612d5cecdb78636113/plothelper.sh)
+  present     opm/norne norne/plotwells.sh 58b1c25d01f7  (mirror/opm/norne/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96/plotwells.sh)
+store build/mirror: 4 objects, 4 custody documents, 1 tombstones

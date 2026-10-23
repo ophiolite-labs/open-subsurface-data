@@ -1,0 +1,34 @@
+$ uv run osd mirror put opm/norne --store build/mirror --public-url http://127.0.0.1:8766/   # build/mirror served by python -m http.server on 127.0.0.1:8766
+  published   opm/norne norne/NORNE_ATW2013.DATA f346c910f68a  (12129 bytes)
+  published   opm/norne norne/Norne_model_for_atw2013.pdf b6c7aaa9eb09  (1320215 bytes)
+  published   opm/norne norne/README 73be5dd04396  (687 bytes)
+  published   opm/norne norne/plothelper.sh 380d97662683  (5893 bytes)
+  published   opm/norne norne/plotwells.sh 58b1c25d01f7  (3270 bytes)
+store build/mirror: 5 objects, 5 custody documents, 0 tombstones
+
+$ # the same command again (rerun: every state recognised, no origin fetch)
+  present     opm/norne norne/NORNE_ATW2013.DATA f346c910f68a  (mirror/opm/norne/f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080/NORNE_ATW2013.DATA)
+  present     opm/norne norne/Norne_model_for_atw2013.pdf b6c7aaa9eb09  (mirror/opm/norne/b6c7aaa9eb09470ce9555906cbc2b6a394d08ad6532750b604f8a6f2c364153e/Norne_model_for_atw2013.pdf)
+  present     opm/norne norne/README 73be5dd04396  (mirror/opm/norne/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842/README)
+  present     opm/norne norne/plothelper.sh 380d97662683  (mirror/opm/norne/380d97662683715979ed3289e36818c292d42fde39caa6612d5cecdb78636113/plothelper.sh)
+  present     opm/norne norne/plotwells.sh 58b1c25d01f7  (mirror/opm/norne/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96/plotwells.sh)
+store build/mirror: 5 objects, 5 custody documents, 0 tombstones
+
+$ find build/mirror -type f | sort
+build/mirror/custody/380d97662683715979ed3289e36818c292d42fde39caa6612d5cecdb78636113.json
+build/mirror/custody/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96.json
+build/mirror/custody/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842.json
+build/mirror/custody/b6c7aaa9eb09470ce9555906cbc2b6a394d08ad6532750b604f8a6f2c364153e.json
+build/mirror/custody/f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080.json
+build/mirror/mirror/opm/norne/380d97662683715979ed3289e36818c292d42fde39caa6612d5cecdb78636113/plothelper.sh
+build/mirror/mirror/opm/norne/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96/plotwells.sh
+build/mirror/mirror/opm/norne/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842/README
+build/mirror/mirror/opm/norne/b6c7aaa9eb09470ce9555906cbc2b6a394d08ad6532750b604f8a6f2c364153e/Norne_model_for_atw2013.pdf
+build/mirror/mirror/opm/norne/f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080/NORNE_ATW2013.DATA
+
+$ sha256sum build/mirror/mirror/opm/norne/*/*
+380d97662683715979ed3289e36818c292d42fde39caa6612d5cecdb78636113  build/mirror/mirror/opm/norne/380d97662683715979ed3289e36818c292d42fde39caa6612d5cecdb78636113/plothelper.sh
+58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96  build/mirror/mirror/opm/norne/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96/plotwells.sh
+73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842  build/mirror/mirror/opm/norne/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842/README
+b6c7aaa9eb09470ce9555906cbc2b6a394d08ad6532750b604f8a6f2c364153e  build/mirror/mirror/opm/norne/b6c7aaa9eb09470ce9555906cbc2b6a394d08ad6532750b604f8a6f2c364153e/Norne_model_for_atw2013.pdf
+f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080  build/mirror/mirror/opm/norne/f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080/NORNE_ATW2013.DATA

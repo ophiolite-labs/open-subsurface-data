@@ -1,4 +1,4 @@
-"""Retrieval manifests, osd.manifest/1 (E06): write one from the built catalogue, read one typed.
+"""Retrieval manifests, osd.manifest/2 (E06; alternates E07): write one from the built catalogue, read one typed.
 
 `from_catalog(ids)` reads build/catalog/ (records.json, stac/, outlines.geojson) and returns a
 manifest dict for a Collection selection (record or collection ids) or an Item selection (feature
@@ -10,6 +10,10 @@ record's, whole.
 `read(path)` is the interface Ophiolite's intake reads (E09): it validates against
 schema/manifest.schema.json and returns frozen dataclasses with `sha256` decoded from the
 multihash; any other checksum algorithm raises.
+
+osd.manifest/2 (E07) adds `alternates` per asset: other locations of the same bytes (the mirror,
+from the STAC asset's `alternate`). A manifest is written as /2 only when an asset has one, so
+a manifest without alternates stays readable by a /1 reader; both read here.
 """
 
 from __future__ import annotations
@@ -25,6 +29,7 @@ from . import paths
 from .stac import collection_id
 
 FORMAT = "osd.manifest/1"
+FORMAT_2 = "osd.manifest/2"
 CATALOG_URL = "https://opensubsurfacedata.org/data/stac/catalog.json"
 SHA256_MULTIHASH = "1220"
 LICENCE_FIELDS = ("name", "spdx", "url", "redistribution", "attribution", "share_alike", "statement")
@@ -41,6 +46,7 @@ class Asset:
     size: int | None
     sha256: str | None
     title: str | None = None
+    alternates: tuple[tuple[str, str], ...] = ()   # (name, href), tried before href (E07)
 
 
 @dataclass(frozen=True)
@@ -102,11 +108,12 @@ def read(path: Path | str) -> Manifest:
     doc = json.loads(Path(path).read_text())
     bad = problems(doc)
     if bad:
-        raise ManifestError(f"{path}: not an {FORMAT} manifest:\n  " + "\n  ".join(bad))
+        raise ManifestError(f"{path}: not an {FORMAT} or {FORMAT_2} manifest:\n  " + "\n  ".join(bad))
     entries = []
     for i, e in enumerate(doc["entries"]):
         assets = tuple(Asset(key=k, href=a["href"], size=a.get("file:size"), title=a.get("title"),
-                             sha256=sha256_of(a.get("file:checksum"), f"entries/{i}/assets/{k}"))
+                             sha256=sha256_of(a.get("file:checksum"), f"entries/{i}/assets/{k}"),
+                             alternates=tuple((n, x["href"]) for n, x in a.get("alternates", {}).items()))
                        for k, a in e["assets"].items())
         lic = Licence(**{k: e["licence"][k] for k in LICENCE_FIELDS if k in e["licence"]})
         entries.append(Entry(collection_id=e["collection_id"], record_id=e["record_id"], title=e["title"],
@@ -136,7 +143,12 @@ def _entry(rec: dict) -> dict:
 
 def _assets(collection: dict) -> dict:
     keep = ("href", "title", "roles", "file:size", "file:checksum")
-    return {k: {f: a[f] for f in keep if f in a} for k, a in collection.get("assets", {}).items()}
+    out = {}
+    for k, a in collection.get("assets", {}).items():
+        out[k] = {f: a[f] for f in keep if f in a}
+        if a.get("alternate"):
+            out[k]["alternates"] = {n: {"href": x["href"]} for n, x in a["alternate"].items()}
+    return out
 
 
 def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_url: str = CATALOG_URL,
@@ -190,7 +202,8 @@ def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_
                 f"Collection {e['collection_id']}")
             entries.append(e)
         selection = "items"
-    doc = {"format": FORMAT, "created": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    v2 = any("alternates" in a for e in entries for a in e["assets"].values())
+    doc = {"format": FORMAT_2 if v2 else FORMAT, "created": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "catalog_url": catalog_url, "selection": selection, "entries": entries}
     bad = problems(doc)
     if bad:   # never write a manifest the reader would refuse
