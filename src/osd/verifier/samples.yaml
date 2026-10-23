@@ -50,7 +50,10 @@ opm/norne: ["*.DATA"]                             # the simulation deck
 opm/spe9: ["SPE9.DATA"]   # GitHub contents API: the SPE9 deck, 15,927 bytes
 petrocom-gh/fields-production-data: ["*"]   # the bare 2025 workbook (xlsx content type: a file by its headers), 597,225 bytes
 pgi/cbdg-boreholes: ["*"]   # ArcGIS layer: one geojson export of at most 1000 of 334,145 features (kept as partial)
+seg/seam-open-data: ["*/Phase+I/SEAM_I_Well_Log_Delivery.zip"]   # page links 387; the Phase I well logs on S3 (literal +), 16,605,942 bytes
 sgc/banco-informacion-petrolera-pozos: ["*"]      # ArcGIS layer: one geojson export of at most 2000 features
+sgu/borrhal: ["*/oppnadata/borrhal/borrhal.zip"]   # page links the GeoPackage zip, 3,361,908 bytes (INSPIRE zip 137 MB not sampled)
+sgu/tyngdkraft: ["*/geofysik-mark-tyngdkraft.zip"]   # page links three zips; the ground gravity one, 28,212,306 bytes
 sgudds/register-geotermalnych-vrtov: ["*"]   # ArcGIS layer 2: one geojson export, all 307 features (maxRecordCount 1000), 392,511 bytes
 sintef/johansen: ["*/Sector5.zip"]   # page links eight zips; the 5-layer sector model, 3,943,155 bytes
 sk-mer/drill-core: ["*"]   # ArcGIS layer 2: one geojson export of at most 2000 of 104,754 features (kept as partial), 1,388,053 bytes
@@ -64,6 +67,7 @@ ukogl/uk-onshore-geophysical-library: ["*/UK-Onshore-BHT-Bottom-Hole.xlsx"]   # 
 unisim/unisim-i: ["https://*/UNISIM-I-D-deterministic-OPM-Flow.zip"]   # case page: the OPM Flow deck, 1,042,091 bytes
 unisim/unisim-ii: ["*/UNISIM-II-D-BO_deterministic.ZIP"]   # case page: the black-oil deck, 3,540,807 bytes
 unisim/unisim-iv: ["*/UNISIM-IV-2019/Nominal.rar"]   # case page: the nominal model, 4,419,578 bytes
+usgs/ofr-2009-1021-las-gamma-ray-logs: ["*.zip"]   # report index page (20 links): C-Cfiles.zip of LAS files, 982,712 bytes
 ustc/bedrettolab-atv-logs-stress: ["*/files/stress_inversion.zip?download=1"]   # Zenodo record page: stress_inversion.zip, 5,491,891 bytes (ATV.zip 2.4 GB not sampled)
 ut-dogm/oil-gas-wells: ["*"]                      # ArcGIS layer: one geojson export of at most 2000 features
 wa-demirs/petroleum-wells: ["*"]   # ArcGIS layer 13: one geojson export, all 4,371 features (maxRecordCount 10000), 1,978,900 bytes

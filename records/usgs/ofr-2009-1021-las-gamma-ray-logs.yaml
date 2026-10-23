@@ -1,0 +1,26 @@
+id: usgs/ofr-2009-1021-las-gamma-ray-logs
+title: "LAS Files for Gamma Ray Well Logs, Cross Section C-C' Through the Central Appalachian Basin (OFR 2009-1021)"
+summary: >-
+  USGS Open-File Report 2009-1021 (Trippi and Crangle) "summarizes the procedures used to convert gamma
+  ray curves on paper well logs to the digital Log ASCII ... Standard (LAS) format". "The LAS files
+  from the gamma ray logs of 11 wells used to construct cross section C-C' are included in this
+  report. They may be downloaded from the index page as a single ZIP file."
+publisher: {name: U.S. Geological Survey, url: https://www.usgs.gov, country: US}
+origin:
+  url: https://pubs.usgs.gov/of/2009/1021/
+  access: anonymous
+  manifest_url: https://pubs.usgs.gov/of/2009/1021/
+  notes: "C-Cfiles.zip, 982,712 bytes (23 Oct 2026); report PDF 1,099 KB. First posted February 2009."
+licence:
+  name: U.S. Public Domain (USGS Copyrights and Credits)
+  spdx: null
+  url: https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
+  redistribution: allowed
+  attribution: not-required
+kinds: [wellbore-logs, reports]
+region: {country: US, basin: Central Appalachian Basin, bbox: [-84.5, 36.5, -79.5, 40.0]}
+listed_by: [publisher]
+known_issues:
+  - "The citation says '20 LAS files'; the text says the logs are from 11 wells."
+  - "bbox is the central Appalachian Basin along the cross section, approximate."
+added: 2026-10-23

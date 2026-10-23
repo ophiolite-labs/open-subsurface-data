@@ -1,0 +1,28 @@
+id: seg/seam-open-data
+title: SEAM Open Data (Phase I and Time Lapse Pilot)
+summary: >-
+  "SEAM provides free access to selected data sets from past projects to accelerate research,
+  education, and technology development across the global geoscience community." Phase I: five earth
+  models of a salt canopy region of the Gulf of Mexico with fine-scale stratigraphy and reservoirs,
+  35 km EW x 40 km NS x 15 km deep, with simulated shots, well logs and VSP; and the Time Lapse Pilot.
+publisher: {name: "SEG Advanced Modeling Corporation (SEAM), Society of Exploration Geophysicists", url: https://seg.org/seam/, country: US}
+origin:
+  url: https://seg.org/seam/open-data/
+  access: anonymous
+  manifest_url: https://seg.org/seam/open-data/
+  notes: "Files are on https://seam-open-data.s3.us-west-2.amazonaws.com/ (object keys with literal '+'). The Phase I well-log delivery SEAM_I_Well_Log_Delivery.zip is 16,605,942 bytes (the page says 'Size: 600 KB')."
+licence:
+  name: "SEAM End User License Agreement (linked from the Time Lapse Pilot package); the page says 'free access'"
+  spdx: null
+  url: "https://seam-open-data.s3.us-west-2.amazonaws.com/Time+Lapse+Pilot/6.+SEAM+Time+Lapse+Pilot+End+User+License+Agreement/_READ_ME+SEAM+License.pdf"
+  redistribution: restricted
+  attribution: unknown
+kinds: [reservoir-model, seismic-2d, seismic-4d, wellbore-logs, time-depth, reports]
+size: {stated: "Volume 1 documents 16.3 MB; 2D model 34 MB; 2D data 2.33 GB; interpretation challenge 3 GB each; well logs 600 KB"}
+region: {basin: Synthetic deepwater Gulf of Mexico salt-canopy model}
+listed_by: [publisher]
+known_issues:
+  - "The EULA says 'Users must, however, obtain a license from SEG to hold and use the data, and pay a nominal fee' and that an executed agreement must be on file before any use; the page offers the files as free downloads. Not resolved here."
+  - "Synthetic data; no geographic extent."
+  - "The 'Elastic 2DEW Classic' download link points at SEAM_I_2D_Model.zip, the same file as the 2D model."
+added: 2026-10-23
