@@ -8,7 +8,7 @@
   version, keep a test that the old files still validate, name the change in the PR title.
 - The site is surface: one HTML, one JS, one CSS, no build step, no framework. Deletable modules,
   never migrations. A screenshot is its proof.
-- Network only in `osd verify` and the `verify` workflow. Tests inject a fetcher.
+- Network only in `osd verify`, the `verify` workflow, and the one page `osd new <url>` reads for a title (`--title` skips it). Tests inject a fetcher.
 - Lanes claim paths in `docs/program/CLAIMS.md` before they start; two open lanes never share a
   path. Branch names are `e<nn>-<slug>`; one squash merge per lane.
 - Program state lives in `docs/program/PROGRAM.md` (queue), `docs/program/charters/` (what each

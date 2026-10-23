@@ -1,0 +1,23 @@
+id: ntgs/core-library
+title: Northern Territory Core Library Catalogue
+summary: >-
+  A subset of COREDAT with information on mineral and petroleum drillcore and cuttings held at the core facilities in Darwin and Alice Springs, submitted by mineral and petroleum exploration companies, other NT government agencies and the Northern Territory Geological Survey.
+publisher: {name: Northern Territory Geological Survey, url: https://nt.gov.au, country: AU}
+origin:
+  url: https://data.nt.gov.au/dataset/water-bore-cuttings
+  access: anonymous
+  notes: "Downloads (CSV, SHP, TAB, KML) listed on the data.nt.gov.au entry, e.g. https://geoscience.nt.gov.au/contents/prod/Downloads/Drilling/CORE_SAMPLES_csv.zip. Metadata: https://www.ntlis.nt.gov.au/metadata/export_data?type=html&metadata_id=FBAE8EE369B0E2A0E040CD9B21441A85"
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+  statement: "Northern Territory of Australia (Northern Territory Geological Survey)"
+kinds: [core]
+region: {country: AU, basin: Northern Territory, bbox: [129.0, -26.0, 138.0, -10.0]}
+listed_by: [publisher]
+known_issues:
+  - "geoscience.nt.gov.au (GEMIS and the download files) served a 'website temporarily unavailable' maintenance page on 23 Oct 2026; the catalogue and NTLIS metadata answer."
+  - "The catalogue slug is water-bore-cuttings though the title is Northern Territory Core Library."
+added: 2026-10-23

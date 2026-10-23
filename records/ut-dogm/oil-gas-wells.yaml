@@ -1,0 +1,23 @@
+id: ut-dogm/oil-gas-wells
+title: Utah Oil Gas Wells
+summary: >-
+  Surface location of oil and gas wells from the Utah Department of Natural Resources, Division of Oil, Gas and Mining, updated nightly in the State Geographic Information Database (SGID): API code, well and company name, field, elevation, lease, well type and status, total cumulative oil, gas and water, with companion well-path and bottom-hole layers.
+publisher: {name: "Utah Division of Oil, Gas and Mining (with the Utah Geospatial Resource Center)", url: https://ogm.utah.gov, country: US}
+origin:
+  url: https://gis.utah.gov/products/sgid/energy/oil-gas-wells/
+  access: anonymous
+  manifest_url: https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0
+  notes: "Stewards: UGRC & DNR-OGM. Download via opendata.gis.utah.gov (item 791fefa310184331ae6e863062eaeb04, owner OGMGIS_utahDNR); paths in item b78e58f6b9024a33b51faace255f6130. The DOGM data centre oilgas.ogm.utah.gov timed out on 23 Oct 2026."
+licence:
+  name: Not stated for this layer (UGRC's CC BY 4.0 policy excludes data hosted by other organizations; the ArcGIS item has no licence text)
+  spdx: null
+  url: https://gis.utah.gov/documentation/policy/license/
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, wellbore-paths, production]
+region: {country: US, basin: "Utah (Uinta, Paradox and others)", bbox: [-114.03, 37.00, -109.04, 41.99]}
+listed_by: [publisher]
+known_issues:
+  - "UGRC licenses its data CC BY 4.0 'unless otherwise stated', except 'external data hosted by other organizations and included in the SGID by reference'; this layer is hosted by the utahDNR organization, so the licence is not inferred."
+  - "production is cumulative per well only."
+added: 2026-10-23

@@ -21,6 +21,11 @@ Screenshot for a surface lane (Playwright from the Ophiolite web tree):
 
 ## 23 Oct, afternoon (supervisor)
 
+E02 merged (PR #3, 37c010c), verify dispatched on main: 3 at L2, 17 at L1, SEG wiki blocked. E05 merged (PR #2, 6c232cf): the required `check` job now also runs the offline Playwright site tests (about 30 s). E03 (osd-e03), E08 (osd-e08) and E13 (osd-e13, records) in lane.
+E13 merged (PR #4): 42 records. E13 findings for the planner: CO2 DataShare licences carry a no-sale clause (in `notes`, no schema field); a publisher-type field would make the spread count mechanical; BRGM, NRCan GDR, CNSOER, Queensland GSQ, AOGCC, SEAM/Stratton/Viking Graben unreachable or blocked on 23 Oct (reasons in the PR body). Records slot free; no records lane chartered yet.
+Follow-up to charter after E03 merges (Surface, small): a build step that writes `site/data/outlines.pmtiles` from `outlines.geojson` (the E05 page already prefers it when present), so register outlines of several MB stop loading whole. E14 merged (PR #6): 68 records. E14 findings for the planner: a `microseismic` or `potential-fields` kind would admit Otway Stage 3 fibre-optic data and NRCan GDR; blocked or unreachable on 23 Oct: Mexico CNH, WAPIMS, PGI CBDG hosts, Colorado ECMC (geo-block), AOGCC, BRGM, ICDP site pages, publications.iodp.org (Zenodo deposits used instead); North Dakota DMR data is paid; Wyoming states no terms. Held back for the publisher cap: COSC-1 operational data, Northern Lights Eos thermo-mechanical set, further Ketzin sets. The open-list candidate pool is thinning: the next records lane should be chartered against a named source (one register's named datasets, or the held-back items), not another sweep.
+E08 rulings (inbox note answered): CODEOWNERS names the single collaborator; GitHub teams `records-maintainers` and `kernel-maintainers` come when there are people; required code-owner review stays off, the gate stays `check`. The two outside PRs for E08's acceptance are owner evidence, owner action 101.
+
 Codex round (OSD-D8) run on E02, E03 and E04 charters with `tools/review-charter.sh`; all three REWORK.
 E02's review is dispositioned by its lane in the charter before its PR. E03 and E04 charters were
 rewritten by the supervisor against the findings (dispositions at the end of each charter); the
@@ -30,6 +35,9 @@ need time); OSD-D9 revised (blocked awards no level). E02's claim lost the recor
 gained `src/osd/verifier/**`. Record schema bumps (record/2: `inputs`, `period`) are E03's and E04's.
 
 ## Known reds and baselines (23 Oct)
+
+- The E05 performance test (frame after `moveend` under 100 ms with 10,000 synthetic wellbores) measured against the real register outlines too once E03 landed 18,000 features in `outlines.geojson`; it now replaces the data with the synthetic set. Real-data load time is E15's (tiles).
+- A `pages` run cancelled by its concurrency group (`cancel-in-progress: true`) shows as failed in the run list; the later run deploys. Check the newest run and the site, not the red mark.
 
 - SEG wiki answers HTTP 403 to this host for any user agent (Cloudflare). Not dead; see OSD-D9.
 - NOPIMS page answers 403 from this host. Same class.

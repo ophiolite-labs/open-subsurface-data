@@ -1,0 +1,21 @@
+id: usgs/namss
+title: National Archive of Marine Seismic Surveys (NAMSS)
+summary: >-
+  USGS archive of marine seismic reflection data acquired within the U.S. Exclusive Economic Zone: USGS OCS and EEZ mapping surveys from 1975 to the mid-1990s, industry data donated by WesternGeco, Chevron, BP and PG&E, and BOEM geological and geophysical data released after their 25-year proprietary term. Most data are SEG-Y with shotpoint navigation.
+publisher: {name: "U.S. Geological Survey, Pacific Coastal and Marine Science Center", url: https://www.usgs.gov, country: US}
+origin:
+  url: https://walrus.wr.usgs.gov/namss/
+  access: anonymous
+  notes: "A WMS of survey locations is at https://walrus.wr.usgs.gov/namss/wms?request=GetCapabilities&service=WMS&version=1.1.1. Data release DOI 10.5066/F7930R7P."
+licence:
+  name: Public domain (the NAMSS About page states data downloaded from NAMSS are in the public domain and have no restrictions on usage or publication)
+  spdx: null
+  url: https://walrus.wr.usgs.gov/namss/about/
+  redistribution: allowed
+  attribution: not-required
+kinds: [seismic-2d, seismic-3d, source-list]
+region: {country: US, basin: U.S. Exclusive Economic Zone, bbox: [-180.0, 17.0, -64.0, 72.0]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is approximate (U.S. EEZ including Alaska, excluding Pacific territories); the publisher states the EEZ, not coordinates."
+added: 2026-10-23

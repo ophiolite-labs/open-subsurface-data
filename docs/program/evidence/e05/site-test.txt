@@ -1,0 +1,16 @@
+✔ no console error on load, map and how page (1335.956246ms)
+✔ #q=volve lists one dataset (730.678342ms)
+# shared view #k=production&sel=nlog/nlog&map=5.98/53.3793/4.9000 {"count":"(4 OF 21)","items":4,"title":"NLOG, Netherlands Oil and Gas Portal","zoom":"6.0"}
+✔ a hash with a kind filter and a selection renders the same view in a second context (3421.325219ms)
+✔ stale: checked_at older than 30 days shows "stale" next to the level (797.325253ms)
+# 10k wellbores at zoom 5: {"zoom":5,"clusters":70,"singles":1,"points":10000} frame after moveend (ms): 42.2, 29.0, 35.7, 39.4, 32.5
+✔ 10,000 wellbores cluster at zoom 5 and the frame after moveend arrives under 100 ms (4432.687256ms)
+✔ phone width: the panel is a bottom sheet (864.277324ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12311.395726

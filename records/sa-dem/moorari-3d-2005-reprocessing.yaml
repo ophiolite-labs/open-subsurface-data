@@ -1,0 +1,23 @@
+id: sa-dem/moorari-3d-2005-reprocessing
+title: 2005 Moorari 3D Seismic Survey Reprocessing
+summary: >-
+  Santos Ltd contracted WesternGeco to reprocess about 66 square kilometres of the 1994 Moorari 3D Seismic Survey in 2005/2006, to create Kirchhoff pre-stack time migrated gathers for AVO investigations and an enhanced stack for structural studies. Held in SARIG by the Geological Survey of South Australia.
+publisher: {name: "Department for Energy and Mining, South Australia (Geological Survey of South Australia)", url: https://www.energymining.sa.gov.au, country: AU}
+origin:
+  url: https://catalog.sarig.sa.gov.au/dataset/mesac35918
+  access: anonymous
+  notes: Document GSR 2005/01; the download is moorari_repro.zip with a PDF report.
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-3d, reports]
+region: {country: AU, basin: Cooper Basin, bbox: [139.5, -28.0, 141.0, -27.0]}
+size: {bytes_estimate: 600159523, stated: "zip 600108689 bytes and PDF 50834 bytes"}
+listed_by: [publisher]
+known_issues:
+  - "SARIG catalogue blocked for automated requests since 2026-10-23 (HTTP 403 to non-browser user agents, including the verifier); a browser-like fetch answers 200 (OSD-D9)."
+  - "The stated extent is a one-by-1.5-degree cell, much larger than the 66 sq km survey."
+added: 2026-10-23

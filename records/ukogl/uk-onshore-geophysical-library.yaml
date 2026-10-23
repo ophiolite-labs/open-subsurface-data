@@ -1,0 +1,22 @@
+id: ukogl/uk-onshore-geophysical-library
+title: UK Onshore Geophysical Library (UKOGL)
+summary: >-
+  A charitable national collection of UK onshore exploration data: over 87,000 km of 2D and more than 2,900 sq km of 3D seismic (post-stack SEG-Y, images, navigation), pre-stack field data for output costs, well data with tops, reports, LAS logs and directional data, and BGS and Mining Remediation Authority seismic, through an interactive web map.
+publisher: {name: UK Onshore Geophysical Library, url: https://ukogl.org.uk, country: GB}
+origin:
+  url: https://ukogl.org.uk/blog/archives/
+  access: anonymous
+  notes: "The interactive map is https://ukogl.org.uk/map. Data management by Lynx Information Systems."
+licence:
+  name: No licence stated (the About page says the Library provides data free of charge; charges apply for output of digital pre-stack data)
+  spdx: null
+  url: https://ukogl.org.uk/blog/about/
+  redistribution: unknown
+  attribution: unknown
+kinds: [seismic-2d, seismic-3d, wellbore-logs, wellbore-paths, tops, reports, source-list]
+region: {country: GB, basin: "UK onshore (England, Scotland and Wales)", bbox: [-6.5, 49.9, 1.8, 58.7]}
+listed_by: [publisher]
+known_issues:
+  - "No licence or terms page found; the web map is a JavaScript application, so whether downloads need an account was not established."
+  - "bbox is approximate (Great Britain onshore)."
+added: 2026-10-23

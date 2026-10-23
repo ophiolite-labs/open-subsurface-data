@@ -1,0 +1,22 @@
+id: ok-occ/oil-gas-data-files
+title: Oklahoma Oil and Gas Data Files
+summary: >-
+  Downloadable files from the Oklahoma Corporation Commission Oil and Gas Conservation Division with information on oil, gas and underground injection wells: RBDMS well data (CSV and shapefile, nightly), well completions since 2010, intent-to-drill files, and yearly UIC injection volumes with monthly injection pressures, plus historical files.
+publisher: {name: Oklahoma Corporation Commission, url: https://oklahoma.gov/occ.html, country: US}
+origin:
+  url: https://oklahoma.gov/occ/divisions/oil-gas/oil-gas-data.html
+  access: anonymous
+  notes: "Production is not here: the page points to the Oklahoma Tax Commission as the official recordkeeper for production. UIC files carry 'Vol' and 'PSI' columns per month (checked on the 2025 file)."
+licence:
+  name: No licence stated on the data page or the oklahoma.gov policy pages
+  spdx: null
+  url: https://oklahoma.gov/about/policy-disclaimers.html
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, pressure]
+region: {country: US, basin: "Oklahoma (Anadarko, Arkoma and others)", bbox: [-103.00, 33.62, -94.43, 37.00]}
+listed_by: [publisher]
+known_issues:
+  - "No terms of use for the data files found on 23 Oct 2026; the oklahoma.gov copyright page covers the website only."
+  - "bbox is the State of Oklahoma, approximate."
+added: 2026-10-23

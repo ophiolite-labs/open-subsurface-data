@@ -1,0 +1,21 @@
+$ uv run osd report --before before --after after --open-titles open-titles.txt --out dead.json --dry-run   # no open issues
+dead-link report (dry run): 1 issue to open, 0 already reported, 1 blocked (no issue, OSD-D9)
+  would open  "origin dead: equinor/volve"  HTTP 404 (4xx) on 2026-10-23
+  skip  seg/open-data-wiki: blocked, not dead
+
+$ jq -r ".[0].body" dead.json   # the issue the dispatch on main would open
+The origin of `equinor/volve` stopped answering: **HTTP 404 (4xx)** on **2026-10-23**.
+
+| | level | checked | origin |
+|---|---|---|---|
+| before | L1 | 2026-10-22T09:00:00+00:00 | HTTP 200 from https://www.equinor.com/energy/volve-data-sharing |
+| now | L0 | 2026-10-23T09:00:00+00:00 | HTTP 404 from https://www.equinor.com/energy/volve-data-sharing |
+
+Final URL: https://www.equinor.com/energy/volve-data-sharing
+
+Opened by the dead-link report of the `verify` workflow (`osd report`). If the publisher moved the data, update `origin.url` in the record; if it is gone, add a `known_issues` line. Close this issue when a later verify run reaches the origin again.
+
+$ (the same, with "origin dead: equinor/volve" already open)
+dead-link report (dry run): 0 issues to open, 1 already reported, 1 blocked (no issue, OSD-D9)
+  skip  equinor/volve: an open issue already names it
+  skip  seg/open-data-wiki: blocked, not dead

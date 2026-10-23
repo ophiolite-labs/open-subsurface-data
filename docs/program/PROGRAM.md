@@ -11,15 +11,16 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
 | 2 | E02 Verifier to L2 | Kernel | MERGED 23 Oct (PR #3, 37c010c; 18 mutations; three records at L2, SEG wiki blocked) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
 | 3 | E03 Outlines from the data | Kernel | IN LANE (osd-e03, 23 Oct; charter reworked after its Codex round, no second round) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
-| 4 | E05 Map that scales | Surface | IN LANE (osd-e05, parallel with E02) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
+| 4 | E05 Map that scales | Surface | MERGED 23 Oct (PR #2, 6c232cf; shareable hash, 10k clustered wells, how.html, Playwright site test in CI) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
 | 5 | E04 STAC catalogue | Kernel | QUEUED (charter reworked 23 Oct after its Codex round; no second round) | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
 | 6 | E06 Retrieval by manifest | Kernel | QUEUED | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
-| 7 | E08 Curation that runs itself | Surface | QUEUED | E02 | An outside contributor's record merges the same day; dead links become issues |
+| 7 | E08 Curation that runs itself | Surface | MERGED 23 Oct (PR #5, e408adb; status page, dead-link issues, osd new, CODEOWNERS, labels). DONE when two outside PRs have merged (owner action 101) | E02 | An outside contributor's record merges the same day; dead links become issues |
 | 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
 | 9 | E07 Mirror store and custody | Kernel | QUEUED | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
 | 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | QUEUED | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
 | 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
-| 13 | E13 Twenty records from the national registers | Records | IN LANE (osd-e13, 23 Oct; records slot, parallel with E02/E05) | E01 | Forty datasets listed; a government source for at least eight countries |
+| 13 | E13 Twenty records from the national registers | Records | MERGED 23 Oct (PR #4, 6429445; 42 records, 10 countries with a government publisher, 0 new TerraNubis) | E01 | Forty datasets listed; a government source for at least eight countries |
+| 14 | E14 Twenty records: research drilling, CO2 sites, state archives | Records | MERGED 23 Oct (PR #6, 61f9527; 68 records, 26 new, six new countries, all 26 at L1) | E13 | Sixty datasets listed, wider kinds and regions |
 | 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
 
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,

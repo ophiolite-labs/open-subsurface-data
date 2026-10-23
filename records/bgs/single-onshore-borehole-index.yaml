@@ -1,0 +1,23 @@
+id: bgs/single-onshore-borehole-index
+title: Single Onshore Borehole Index (SOBI)
+summary: >-
+  An index of over one million records of boreholes, shafts and wells from all forms of drilling and site investigation work held by the BGS, covering onshore and near-shore Great Britain from at least 1790, from one to several thousand metres deep. Individual borehole scans are linked from the BGS borehole record viewer.
+publisher: {name: British Geological Survey, url: https://www.bgs.ac.uk, country: GB}
+origin:
+  url: https://www.bgs.ac.uk/datasets/boreholes-index/
+  access: anonymous
+  notes: Also served as OGC API Features, WMS (Boreholes theme) and through GeoIndex.
+licence:
+  name: Open Government Licence (BGS)
+  spdx: OGL-UK-3.0
+  url: https://www.bgs.ac.uk/bgs-intellectual-property-rights/open-government-licence/
+  redistribution: allowed
+  attribution: required
+  statement: "Contains British Geological Survey materials © UKRI [year]"
+kinds: [wellbore-headers]
+region: {country: GB, basin: Great Britain onshore and near-shore, bbox: [-8.7, 49.8, 1.8, 60.9]}
+listed_by: [publisher]
+known_issues:
+  - "The scanned borehole records reached from the index are a separate service whose licence is not stated on the SOBI page; this record covers the index only."
+  - "bbox is Great Britain, approximate."
+added: 2026-10-23

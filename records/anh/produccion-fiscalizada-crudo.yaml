@@ -1,0 +1,23 @@
+id: anh/produccion-fiscalizada-crudo
+title: Produccion Fiscalizada Crudo Consolidada
+summary: >-
+  Audited (fiscalised) crude oil production taken from the information system where the official production reported by the operators is recorded, monthly by department, municipality, operator, contract and field, in barrels, with field coordinates.
+publisher: {name: Agencia Nacional de Hidrocarburos (ANH), url: https://www.anh.gov.co, country: CO}
+origin:
+  url: https://www.datos.gov.co/d/fdvb-hsrf
+  access: anonymous
+  manifest_url: https://www.datos.gov.co/api/views/fdvb-hsrf.json
+licence:
+  name: Creative Commons Attribution | Share Alike 4.0 International
+  spdx: CC-BY-SA-4.0
+  url: http://creativecommons.org/licenses/by-sa/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [production]
+region: {country: CO, bbox: [-81.68, 0.23, -68.02, 14.87]}
+listed_by: [publisher]
+known_issues:
+  - "www.anh.gov.co did not connect from this host on 23 Oct 2026; datos.gov.co answers."
+  - "Production is by field, not by well. bbox is the extent of Colombia, approximate."
+added: 2026-10-23

@@ -1,0 +1,23 @@
+id: ak-dggs/tax-credit-well-data
+title: Alaska tax credit well data (free download, Geologic Materials Center)
+summary: >-
+  Well data released under the Alaska exploration tax credit program, offered as free downloads by the DGGS Geologic Materials Center: one zip per well, named by well name and API number, holding the operator's data submittals as delivered.
+publisher: {name: Alaska Division of Geological & Geophysical Surveys, url: https://dggs.alaska.gov, country: US}
+origin:
+  url: https://dggs.alaska.gov/gmc/seismic-order.html
+  access: anonymous
+  manifest_url: https://dggs.alaska.gov/webpubs/dggs/gmc/well_data/
+  notes: "The 'Free Data' link on the order page opens the directory listing used as manifest_url (about 105 zip files on 23 Oct 2026)."
+licence:
+  name: No dataset licence stated (site-wide Alaska DNR copyright notice)
+  spdx: null
+  url: https://dnr.alaska.gov/shared/notices/copyright.htm
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-logs]
+region: {country: US, basin: "Alaska (North Slope, Cook Inlet and others)", bbox: [-170.0, 54.0, -140.0, 71.5]}
+listed_by: [publisher]
+known_issues:
+  - "The seismic terms and conditions do not mention well data. The site-wide DNR copyright notice forbids republication of department material without permission; whether it covers operator well submittals is not stated."
+  - "bbox is the State of Alaska, approximate."
+added: 2026-10-23

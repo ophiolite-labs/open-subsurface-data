@@ -1,0 +1,19 @@
+id: ie-pad/offshore-exploration-wells
+title: Exploration Wells in the Irish Offshore
+summary: >-
+  The location of offshore wells drilled in the Irish offshore area (Irish EEZ, Irish Sea, Saint Georges Channel, Celtic Sea and North Atlantic) between 1970 and 2019 by commercial oil and gas exploration companies, provided by the Petroleum Affairs Division. Point data as CSV, KML and shapefile.
+publisher: {name: "Petroleum Affairs Division, Department of Communications, Climate Action and Environment (as named in the dataset)", url: https://www.gov.ie, country: IE}
+origin:
+  url: https://data.gov.ie/dataset/exploration-wells-in-the-irish-offshore
+  access: anonymous
+  notes: "Distributed by the Marine Institute (atlas.marine.ie). The dataset names a well-level search at http://gis.dcenr.gov.ie/internetIPAS/servlet/internet/IPAS2IOffshoreWellsSearch, not opened for this record."
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: IE, basin: Irish offshore, bbox: [-13.40, 49.67, -5.53, 56.19]}
+listed_by: [publisher]
+added: 2026-10-23

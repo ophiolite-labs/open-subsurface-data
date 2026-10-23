@@ -1,0 +1,22 @@
+id: sgc/banco-informacion-petrolera-pozos
+title: "Banco de Información Petrolera: Pozos"
+summary: >-
+  Wells of the Colombian Petroleum Information Bank (EPIS), with field, contract, start and end dates, deviation type, final status and Lahee classification; about 25,000 wells as a feature service with CSV, shapefile, GeoJSON and KML downloads.
+publisher: {name: Servicio Geológico Colombiano (Dirección Técnica de Hidrocarburos), url: https://www2.sgc.gov.co, country: CO}
+origin:
+  url: https://datos-sgcolombiano.opendata.arcgis.com/datasets/55f871d861624b9996e865349ef67253_0
+  access: anonymous
+  manifest_url: https://services1.arcgis.com/Og2nrTKe5bptW02d/arcgis/rest/services/Banco_de_Informaci%C3%B3n_Petrolera_Pozos/FeatureServer/0
+  notes: Also listed on datos.gov.co as https://www.datos.gov.co/d/4dai-7crq.
+licence:
+  name: Creative Commons Reconocimiento 4.0 Internacional
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: CO, bbox: [-81.68, 0.23, -68.02, 14.87]}
+listed_by: [publisher]
+known_issues:
+  - "www.anh.gov.co and epis.anh.gov.co did not connect from this host on 23 Oct 2026; the SGC open data hub answers."
+added: 2026-10-23

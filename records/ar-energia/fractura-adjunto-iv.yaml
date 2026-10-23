@@ -1,0 +1,23 @@
+id: ar-energia/fractura-adjunto-iv
+title: Datos de fractura de pozos de hidrocarburos (Adjunto IV)
+summary: >-
+  Per well, formation, reservoir type, field, concession and province: horizontal lateral length, number of fracture stages, completion type, sand pumped, water and CO2 injected, maximum pressure (psi), fracture fleet power and fracture dates. Preliminary data subject to revision.
+publisher: {name: Secretaría de Energía (Argentina), url: https://www.argentina.gob.ar/economia/energia, country: AR}
+origin:
+  url: https://datos.gob.ar/dataset/datos-de-fractura-de-pozos-adjunto-iv
+  access: anonymous
+  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=datos-de-fractura-de-pozos-adjunto-iv
+licence:
+  name: CC-BY-4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [pressure]
+region: {country: AR, basin: Neuquén Basin and other producing basins, bbox: [-73.6, -55.1, -53.6, -21.8]}
+listed_by: [publisher]
+known_issues:
+  - "The CSV is served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026; datos.gob.ar answers."
+  - "pressure here is the maximum fracture treatment pressure per well, not reservoir pressure."
+  - "bbox is the extent of Argentina, approximate."
+added: 2026-10-23

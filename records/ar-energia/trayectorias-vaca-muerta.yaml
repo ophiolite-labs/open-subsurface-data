@@ -1,0 +1,22 @@
+id: ar-energia/trayectorias-vaca-muerta
+title: Trayectorias de Pozo Vaca Muerta
+summary: >-
+  Well trajectories of wells targeting the Vaca Muerta formation, with landing (navigation) levels, as CSV and shapefile, with the reporting instructions as documentation.
+publisher: {name: Secretaría de Energía (Argentina), url: https://www.argentina.gob.ar/economia/energia, country: AR}
+origin:
+  url: https://datos.gob.ar/dataset/trayectoria-de-pozos
+  access: anonymous
+  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=trayectoria-de-pozos
+licence:
+  name: CC-BY-4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-paths]
+region: {country: AR, basin: Neuquén Basin (Vaca Muerta), bbox: [-71.0, -40.0, -67.5, -35.5]}
+listed_by: [publisher]
+known_issues:
+  - "The files are served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026; datos.gob.ar answers."
+  - "bbox is the Neuquén Basin, approximate; the catalogue states no extent."
+added: 2026-10-23

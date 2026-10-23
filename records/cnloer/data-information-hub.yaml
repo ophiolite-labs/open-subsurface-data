@@ -1,0 +1,22 @@
+id: cnloer/data-information-hub
+title: C-NLOER Data and Information Hub (Newfoundland and Labrador offshore)
+summary: >-
+  The Canada-Newfoundland and Labrador Offshore Energy Regulator's geoscience information for the Canada-NL offshore area: geological program, geoscientific report, core, geotechnical, environmental and source rock inventories, exploration and delineation well test summaries, and well and licence layers on the Data and Information Hub.
+publisher: {name: Canada-Newfoundland and Labrador Offshore Energy Regulator (C-NLOER), url: https://www.cnloer.ca, country: CA}
+origin:
+  url: https://www.cnloer.ca/geoscience/
+  access: anonymous
+  notes: "The geoscience page points to the ArcGIS hub https://home-cnlopb.hub.arcgis.com/; further information on request to information@cnlopb.ca. Formerly the C-NLOPB."
+licence:
+  name: C-NLOER website copyright notice
+  spdx: null
+  url: https://www.cnloer.ca/disclaimer/
+  redistribution: forbidden
+  attribution: unknown
+kinds: [wellbore-headers, core, reports, source-list]
+region: {country: CA, basin: Newfoundland and Labrador offshore, bbox: [-60.0, 42.0, -42.0, 61.0]}
+listed_by: [publisher]
+known_issues:
+  - "The copyright notice states the Board owns the information on the website unless otherwise stated and that unauthorized use or reproduction is strictly prohibited; commercial reproduction needs permission."
+  - "bbox is approximate (Canada-NL offshore area); the page states no extent."
+added: 2026-10-23

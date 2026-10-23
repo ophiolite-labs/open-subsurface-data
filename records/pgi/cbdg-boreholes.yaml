@@ -1,0 +1,23 @@
+id: pgi/cbdg-boreholes
+title: Centralna Baza Danych Geologicznych – podsystem Otwory wiertnicze
+summary: >-
+  The Boreholes subsystem of the Central Geological Database (CBDG) holds information on boreholes drilled in Poland and the investigations carried out in them, from the end of the nineteenth century to the present.
+publisher: {name: Państwowy Instytut Geologiczny – Państwowy Instytut Badawczy (PGI-PIB), url: https://www.pgi.gov.pl, country: PL}
+origin:
+  url: https://dane.gov.pl/pl/dataset/677,centralna-baza-danych-geologicznych-podsystem-otwory-wiertnicze
+  access: anonymous
+  manifest_url: https://api.dane.gov.pl/1.4/datasets/677/resources
+  notes: "Entry on the national open data portal dane.gov.pl; it points to https://baza.pgi.gov.pl/cbdg/podsystemy/otwory, the CBDG download manager https://dm.pgi.gov.pl/, GeoLOG and WMS/WFS services."
+licence:
+  name: CC BY 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: PL, bbox: [14.1, 49.0, 24.2, 54.9]}
+listed_by: [publisher]
+known_issues:
+  - "PGI hosts (cbdg.pgi.gov.pl, baza.pgi.gov.pl, dm.pgi.gov.pl, cbdgmapa.pgi.gov.pl) answered an Incapsula challenge ('Request unsuccessful') to automated requests on 23 Oct 2026: blocked, not dead (OSD-D9). The licence is as stated on dane.gov.pl."
+  - "bbox is the extent of Poland, approximate."
+added: 2026-10-23

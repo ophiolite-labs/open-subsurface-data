@@ -1,0 +1,21 @@
+id: gfz/cosc-1-zero-offset-vsp
+title: Zero-offset vertical seismic profiling (VSP) data from the COSC-1 borehole, Sweden
+summary: >-
+  High-resolution zero-offset VSP recorded in 2014 in the ICDP COSC-1 borehole near Åre, central Sweden (Collisional Orogeny in the Scandinavian Caledonides), with 15 three-component borehole receivers at 2 m spacing over the whole borehole. Two data sets: the decoded, pre-processed three-component shot gather and the final-processed vertical-component shot gather.
+publisher: {name: GFZ Helmholtz Centre for Geosciences (GFZ Data Services), url: https://www.gfz.de, country: DE}
+origin:
+  url: https://dataservices.gfz.de/10.5880/gfz.4.2.2020.010/zero-offset-vertical-seismic-profiling-vsp
+  access: anonymous
+  notes: DOI 10.5880/gfz.4.2.2020.010. ICDP project COSC (5054).
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [time-depth]
+region: {country: SE, basin: "Scandinavian Caledonides (Seve Nappe, Åre, Jämtland)", bbox: [13.18, 63.39, 13.23, 63.42]}
+listed_by: [publisher]
+known_issues:
+  - "The VSP page names only 'COSC 1 borehole'; bbox is a small box around the COSC-1 point (63.4063 N, 13.2031 E) stated by the same publisher on the COSC-1 operational data sets, DOI 10.5880/icdp.5054.002."
+added: 2026-10-23

@@ -1,14 +1,17 @@
-"""osd: validate | verify | build | status"""
+"""osd: validate | verify | build | status | new | report"""
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from . import build as build_mod
+from . import new as new_mod
 from . import paths
+from . import report as report_mod
 from .records import load_records, validate_outlines, validate_records
 from .verify import is_stale, verify_all
 
@@ -58,6 +61,33 @@ def cmd_status(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_new(a: argparse.Namespace) -> int:
+    try:
+        out = new_mod.new_record(a.url, title=a.title, rid=a.id, records_dir=paths.RECORDS_DIR)
+    except FileExistsError as e:
+        print(f"refused: {e}")
+        return 1
+    rel = str(out.relative_to(paths.RECORDS_DIR))
+    todo: dict[str, str] = {}  # field -> its last problem (an enum's choices beat "not a string")
+    for p in validate_records(paths.RECORDS_DIR):
+        if p.path == rel:
+            field, _, why = p.message.partition(": ")
+            todo[field] = why
+    print(f"wrote {out}; {len(todo)} fields for a human to fill from the publisher's page:")
+    for field, why in todo.items():
+        print(f"  {field}: {why}")
+    return 0
+
+
+def cmd_report(a: argparse.Namespace) -> int:
+    titles = set(Path(a.open_titles).read_text().splitlines()) if a.open_titles else set()
+    r = report_mod.dead_reports(Path(a.before), Path(a.after), titles)
+    print("\n".join(report_mod.report_lines(r, a.dry_run)))
+    if a.out:
+        Path(a.out).write_text(json.dumps(r["open"], indent=2) + "\n")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="osd", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -71,6 +101,18 @@ def main(argv: list[str] | None = None) -> int:
     pv.set_defaults(fn=cmd_verify)
     sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)
+    pn = sub.add_parser("new", help="scaffold records/<id>.yaml from a dataset page (reads its title)")
+    pn.add_argument("url")
+    pn.add_argument("--id", help="publisher/dataset (default: from the address)")
+    pn.add_argument("--title", help="skip reading the page")
+    pn.set_defaults(fn=cmd_new)
+    pr = sub.add_parser("report", help="dead-link report: records that fell from L1+ to a dead origin")
+    pr.add_argument("--before", required=True, help="verification results stored before the run")
+    pr.add_argument("--after", default=str(paths.VERIFICATION_DIR), help="results after the run")
+    pr.add_argument("--open-titles", help="file with the titles of open issues, one per line")
+    pr.add_argument("--out", help="write the issues to open as JSON")
+    pr.add_argument("--dry-run", action="store_true", help="say 'would open'; the workflow opens nothing")
+    pr.set_defaults(fn=cmd_report)
     a = ap.parse_args(argv)
     return a.fn(a)
 

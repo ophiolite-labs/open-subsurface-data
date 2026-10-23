@@ -1,0 +1,22 @@
+id: ga/l200-southern-carnarvon-seismic
+title: L200 Southern Carnarvon Deep Crustal Seismic Survey, WA, 2011 (line 11GA-SC1)
+summary: >-
+  Processed stacked and migrated SEG-Y seismic data and section images for the Southern Carnarvon Deep Crustal Seismic Survey, run under a National Geoscience Agreement with the Geological Survey of Western Australia to image the Byro Sub-basin of the onshore Carnarvon Basin. Raw data are available on request.
+publisher: {name: Geoscience Australia, url: https://www.ga.gov.au, country: AU}
+origin:
+  url: https://pid.geoscience.gov.au/dataset/ga/72891
+  access: anonymous
+  notes: "eCat record 72891; one package, L200_Processed_Seismic_Package.zip. Raw data from clientservices@ga.gov.au."
+licence:
+  name: Creative Commons Attribution 4.0 International Licence
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-2d]
+region: {country: AU, basin: Carnarvon Basin (Byro Sub-basin), bbox: [114.0, -26.5, 114.5, -26.0]}
+size: {bytes_estimate: 889097830, stated: one zip package}
+listed_by: [publisher]
+known_issues:
+  - "The eCat ISO record states CC BY 4.0; the data.gov.au copy of the same record shows 'Licence Not Specified'."
+added: 2026-10-23
