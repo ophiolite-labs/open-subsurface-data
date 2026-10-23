@@ -414,8 +414,8 @@ def check_files(rec: dict, sample: list[str] | str | None, opener: Opener,
         return check("skip", "; ".join(notes) or "nothing hashed"), files, partial
     total = sum(f["bytes"] for f in files)
     said = [f for f in files if f.get("compared")]
-    parts = [f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed ({total} bytes); "
-             f"{len(entries)} entries listed"]
+    parts = [(f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed "
+              f"({total} bytes); {len(entries)} entries listed")]
     if said:
         parts.append(f"publisher checksums match for {len(said)} of {len(files)}")
     if listing.listed_at:
