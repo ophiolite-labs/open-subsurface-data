@@ -1,0 +1,32 @@
+id: lbeg/tunb3d-ni
+title: Tieferer Untergrund Norddeutsches Becken für Niedersachsen und Bremen (TUNB3D-NI, 2022)
+summary: >-
+  LBEG's geological 3D overview model of the deep subsurface of the North German Basin for Lower
+  Saxony and Bremen, built 2014 to 2020 with BGR and the northern German state surveys and revised
+  to the March 2022 version: 13 base surfaces of lithostratigraphic units from Zechstein to
+  Tertiary plus Top Zechstein, 1592 faults, 2091 fault offsets at Base Zechstein and 130 salt
+  structures, in 20 harmonised model tiles.
+publisher: {name: "Landesamt für Bergbau, Energie und Geologie (LBEG)", url: https://www.lbeg.niedersachsen.de, country: DE}
+origin:
+  url: https://www.lbeg.niedersachsen.de/startseite/geologie/neu_3d_modelle_des_untergrundes/geologische_ubersichtsmodelle/tieferer_untergrund_norddeutsches_becken_tunb3d_ni/tieferer-untergrund-norddeutsches-becken-fur-niedersachsen-und-bremen-tunb3d-ni-2022-206774.html
+  access: anonymous
+  notes: "On the NIBIS map server as 3D PDF and in the NIBIS3D viewer (https://nibis.lbeg.de/cardomap3/?permalink=2HWZoG3t); on request, free of charge, as SKUA-GOCAD ts objects or Esri Multipatch. Final report DOI 10.48476/tunb3d-ni."
+licence:
+  name: Creative Commons CC-BY 4.0 (NIBIS Kartenserver Nutzungsbedingungen, open data)
+  spdx: CC-BY-4.0
+  url: https://nibis.lbeg.de/cardomap3/content.aspx?method=CopyRight,UsageConstraints,ApplicationContent
+  redistribution: allowed
+  attribution: required
+  statement: "LBEG (2022): Geologisches 3D-Modell Tieferer Untergrund Norddeutsches Becken für Niedersachsen und Bremen (TUNB3D-NI) – NIBIS® Kartenserver, Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover"
+kinds: [horizons, faults]
+region: {country: DE, basin: North German Basin (Lower Saxony and Bremen), bbox: [6.6, 51.3, 11.6, 53.9]}
+listed_by: [publisher]
+known_issues:
+  - "The CC BY 4.0 terms cover data on the NIBIS map server; the page states no separate terms for the GOCAD and Multipatch files supplied on request."
+  - "bbox is Lower Saxony and Bremen, approximate; the model covers the state 'nahezu flächendeckend'."
+period:
+  start: "2014"
+  end: "2022-03"
+  stated: "\"wurde durch das LBEG von 2014 bis 2020 ... erstellt. ... die in der aktuellen Modellversion vom März 2022 münden\" (model construction and release)"
+notes: "Want: a kind for a geological 3D model (salt structures, volumes); the record names horizons and faults. Citation form from https://www.lbeg.niedersachsen.de/download/183313/Zitierweise_Modell_und_Abschlussbericht.pdf."
+added: 2026-10-23

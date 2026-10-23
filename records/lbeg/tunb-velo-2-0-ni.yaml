@@ -1,0 +1,28 @@
+id: lbeg/tunb-velo-2-0-ni
+title: Geschwindigkeitsmodell des Norddeutschen Beckens für Niedersachsen und Bremen (TUNB Velo 2.0-NI, 2026)
+summary: >-
+  LBEG's 3D velocity model of the North German Basin for Lower Saxony and Bremen from the joint
+  project TUNB Velo 2.0 led by BGR: regional interval velocities from Base Zechstein to the ground
+  surface, built on 14 lithostratigraphic horizons, salt structures and faults mostly from
+  TUNB3D-NI, in 19 harmonised model tiles, as a basis for time-depth conversion of seismic data.
+publisher: {name: "Landesamt für Bergbau, Energie und Geologie (LBEG)", url: https://www.lbeg.niedersachsen.de, country: DE}
+origin:
+  url: https://www.lbeg.niedersachsen.de/startseite/geologie/3d_modelle_des_untergrundes/geologische_ubersichtsmodelle/geschwindigkeitsmodell_tunb_velo_2_0_ni_2026/geschwindigkeitsmodell-des-norddeutschen-beckens-fur-niedersachsen-und-bremen-tunb-velo-2-0-ni-2026-250388.html
+  access: anonymous
+  notes: "On the NIBIS map server and in the NIBIS3D viewer (https://nibis.lbeg.de/cardomap3/?permalink=17R663Uv); on request, free of charge, in Aspen SKUA vo format (interval and average velocities) and as txt. Final report DOI 10.48476/geober_56_2026."
+licence:
+  name: Creative Commons CC-BY 4.0 (NIBIS Kartenserver Nutzungsbedingungen, open data)
+  spdx: CC-BY-4.0
+  url: https://nibis.lbeg.de/cardomap3/content.aspx?method=CopyRight,UsageConstraints,ApplicationContent
+  redistribution: allowed
+  attribution: required
+  statement: "NIBIS® Kartenserver (<year of download>): <theme, and which data were changed>. - Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover."
+kinds: [time-depth]
+region: {country: DE, basin: North German Basin (Lower Saxony and Bremen), bbox: [6.6, 51.3, 11.6, 53.9]}
+listed_by: [publisher]
+known_issues:
+  - "No model for southern Lower Saxony and the Osnabrück area (\"aufgrund unzureichender Datengrundlagen\")."
+  - "The CC BY 4.0 terms cover data on the NIBIS map server; the page states no separate terms for the files supplied on request."
+  - "bbox is Lower Saxony and Bremen, approximate."
+notes: "Want: a velocity-model kind; time-depth is the nearest (the publisher names time-depth conversion of seismic data as a use). The page names 2026 in the model title and gives no other date, so no period is written."
+added: 2026-10-23

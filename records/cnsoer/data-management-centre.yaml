@@ -1,0 +1,26 @@
+id: cnsoer/data-management-centre
+title: CNSOER Digital Data Management Centre (DMC)
+summary: >-
+  The Canada-Nova Scotia Offshore Energy Regulator's Data Management Centre gives account
+  holders access to non-confidential digital well and geological data and exclusive seismic
+  data for the Nova Scotia offshore area; its public data summary lists the conventional and
+  sidewall core, cuttings, slides and fluid samples held at the Information Management Centre.
+publisher: {name: Canada-Nova Scotia Offshore Energy Regulator (CNSOER), url: https://cnsoer.ca, country: CA}
+origin:
+  url: https://cnsopbdigitaldata.ca/geoviewer/dmc
+  access: request
+  notes: "Account by application (https://cnsopbdigitaldata.ca/ixplor-admin/dmc/apply): \"Your application will be reviewed, and you will be notified by email\". Exclusive seismic data need acceptance of the Exclusive Seismic Data - Data Access & Confidentiality Agreement. Non-exclusive seismic data are excluded from the account."
+licence:
+  name: "DMC Terms and Conditions (no licence for the data stated)"
+  spdx: null
+  url: https://cnsopbdigitaldata.ca/ixplor-admin/dmc/apply
+  redistribution: unknown
+  attribution: unknown
+kinds: [core, reports]
+region: {country: CA, basin: Scotian Shelf and Slope (Canada-Nova Scotia offshore area), bbox: [-67.0, 40.5, -56.0, 47.0]}
+listed_by: [publisher]
+known_issues:
+  - "The terms state that the CNSOER monitors the data each user accesses and makes it available to the data owners; no reuse or redistribution terms are stated for the well data."
+  - "bbox is the Canada-Nova Scotia offshore area, approximate."
+notes: "Kinds are what the public data summary names (core, cuttings, slides, fluids, well and G&G files); the application also offers exclusive seismic data without saying 2D or 3D, so no seismic kind is written. Held back by E17 to stay within six unknown-licence records; added on the E20 retry, 23 Oct 2026. The well list is the separate record cnsoer/directory-of-offshore-wells."
+added: 2026-10-23

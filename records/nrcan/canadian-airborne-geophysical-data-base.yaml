@@ -1,0 +1,29 @@
+id: nrcan/canadian-airborne-geophysical-data-base
+title: Geophysical Data (Canadian Airborne Geophysical Data Base and Geodetic Survey gravity data)
+summary: >-
+  Natural Resources Canada's Geophysical Data portal, the successor of the Geoscience Data
+  Repository (GDR): aeromagnetic, airborne electromagnetic, gravity and radiometric survey and
+  compilation data of the Geological Survey of Canada's Canadian Airborne Geophysical Data Base,
+  and gravity data of the Canadian Geodetic Survey, searched by province, NTS sheet or drawn area.
+publisher: {name: "Natural Resources Canada (Geological Survey of Canada)", url: https://natural-resources.canada.ca, country: CA}
+origin:
+  url: https://geophysical-data.canada.ca/Portal/Search
+  access: anonymous
+  notes: "The former GDR host gdr.agg.nrcan.gc.ca fails TLS from this host (23 Oct 2026); the portal at geophysical-data.canada.ca answers."
+licence:
+  name: "Geophysical Data terms and conditions (Data Usage Conditions; see the Open Government Licence - Canada)"
+  spdx: null
+  url: https://open.canada.ca/en/open-government-licence-canada
+  redistribution: allowed
+  attribution: required
+  statement: "Aeromagnetic, Airborne Electromagnetic, Gravity and Radiometric Survey / Compilation Data 2024, Canadian Airborne Geophysical Data Base, Airborne Geophysics Section, Geological Survey of Canada, Lands and Minerals Sector, Natural Resources Canada"
+kinds: [potential-fields]
+region: {country: CA, basin: Canada (onshore and offshore survey areas), bbox: [-141.0, 41.7, -52.6, 83.1]}
+listed_by: [publisher]
+known_issues:
+  - "Terms: the citation for the data type must appear on any publication of the data and the publisher must be notified of any publication (infogdc-infocdg@nrcan-rncan.gc.ca)."
+  - "Geodetic Survey gravity data carry their own citation: \"Gravity Data (Geodetic Survey): 2024, Canadian Geodetic Survey, Surveyor General Branch, Lands and Minerals Sector, Natural Resources Canada\"."
+  - "The portal names the Open Government Licence - Canada without a version; no SPDX id is inferred."
+  - "bbox is Canada, approximate; the portal states no extent."
+notes: "Want: airborne electromagnetic and radiometric data are not potential fields and have no kind in the vocabulary; the record lists only potential-fields. Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind)."
+added: 2026-10-23
