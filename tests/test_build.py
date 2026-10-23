@@ -233,3 +233,19 @@ def test_records_digest_changes_with_a_record_or_the_verification(tmp_path):
     v.write_text(v.read_text().replace('"checked_at": "2026-10-23T09:00:00+00:00"', '"checked_at": "2026-10-23T10:00:00+00:00"'))
     reverified = _fixture_build(tmp_path, "reverified", vdir=vdir)["catalog"]["records_digest"]
     assert len({base, edited, reverified}) == 3
+
+
+# E26: the record/4 kinds travel from a record to records.json and the STAC Collection keywords unchanged.
+
+@pytest.mark.parametrize("kind", ["velocity-model", "geological-model", "airborne-em", "radiometrics", "stress"])
+def test_new_kinds_travel_to_records_json_and_stac_keywords(tmp_path, kind):
+    recs = tmp_path / "records"
+    shutil.copytree(os.path.join(FIDELITY, "records"), recs)
+    p = recs / "acme" / "two-wells.yaml"
+    p.write_text(p.read_text().replace("kinds: [wellbore-logs]", f"kinds: [wellbore-logs, {kind}]"))
+    doc = _fixture_build(tmp_path, records_dir=recs)
+    (rec,) = [r for r in doc["records"] if r["id"] == "acme/two-wells"]
+    assert rec["kinds"] == ["wellbore-logs", kind]
+    cols = [json.loads(c.read_text()) for c in (tmp_path / "catalog" / "stac").rglob("collection.json")]
+    (col,) = [c for c in cols if kind in c.get("keywords", [])]
+    assert col["keywords"] == ["wellbore-logs", kind] and col["title"] == rec["title"]
