@@ -9,3 +9,6 @@ with the merge commit.
 | scaffold | main | everything | MERGED (initial commit) | 2026-10-23 |
 | E01 | e01-twenty-records | `records/**` | MERGED (PR #1) | 2026-10-23 |
 | E11 | main | `.github/workflows/**`, `site/robots.txt`, `docs/program/**` | MERGED (domain live) | 2026-10-23 |
+| E02 | e02-verifier-to-l2 | `src/osd/verify.py`, `src/osd/build.py`, `src/osd/cli.py`, `schema/verification.schema.json`, `schema/record.schema.json` (optional `verification.sample` only), `tests/test_verify.py`, `.github/workflows/verify.yml` (announced), `docs/program/charters/E02-*` (dispositions) | OPEN (worker osd-e02, worktree ../osd-e02-verifier-to-l2) | 2026-10-23 |
+| E05 | e05-map-that-scales | `site/**`, `tools/shot.mjs`, `tests/site/**`, `package.json`, `Makefile` (site targets only), `.github/workflows/ci.yml` (site test step only, announced) | OPEN (worker osd-e05, worktree ../osd-e05-map-that-scales) | 2026-10-23 |
+
