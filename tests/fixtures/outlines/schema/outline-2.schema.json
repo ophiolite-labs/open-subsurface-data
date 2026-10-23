@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/outline/2",
+  "title": "Outline feature properties, version 2",
+  "description": "Properties every feature in outlines/<record-id>.geojson carries; $defs.collection is the file's own members. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey or field (Polygon or MultiPolygon) or one line (LineString). Version 2: a derived feature (approximate: false) carries feature_id and the name of its input; the collection carries each input's identity once and the licence once (per feature only where it differs within a file). Every version-1 placeholder still validates.",
+  "type": "object",
+  "required": [
+    "record_id",
+    "kind",
+    "name",
+    "approximate",
+    "source"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "wellbore",
+        "survey-3d",
+        "survey-2d",
+        "field",
+        "block",
+        "dataset-extent"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "approximate": {
+      "type": "boolean",
+      "description": "true when the geometry is a placeholder (centroid, hand-drawn box) and not derived from the data; the map draws it differently and L3 requires false"
+    },
+    "source": {
+      "type": "string",
+      "description": "How the geometry was derived: the extractor and the input name of its rule in src/osd/outlines/rules.yaml, or 'hand placed from publisher map' for a placeholder"
+    },
+    "uwi": {
+      "type": "string"
+    },
+    "publisher_id": {
+      "type": "string",
+      "description": "The publisher's own identifier for the wellbore or survey"
+    },
+    "feature_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*#.+$",
+      "description": "<record-id>#[<id_scope>/]<publisher_id|uwi>, unique within the collection"
+    },
+    "licence": {
+      "type": "string",
+      "description": "The record's licence when it differs within a file; otherwise the collection's licence applies (OSD-D13)"
+    },
+    "simplified_m": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Douglas-Peucker tolerance in metres applied to a derived polygon's rings (OSD-D16); absent on points and placeholders"
+    },
+    "input": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "The name of the record input the geometry was derived from: a key of the collection's inputs"
+    },
+    "rings_dropped": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rings of a derived polygon dropped because their area was below simplified_m squared (OSD-D16)"
+    }
+  },
+  "if": {
+    "properties": {
+      "approximate": {
+        "const": false
+      }
+    },
+    "required": [
+      "approximate"
+    ]
+  },
+  "then": {
+    "required": [
+      "feature_id",
+      "input"
+    ]
+  },
+  "$defs": {
+    "collection": {
+      "description": "Members of the FeatureCollection beside type and features",
+      "type": "object",
+      "properties": {
+        "licence": {
+          "type": "string",
+          "description": "The licence of the record the features were derived from (OSD-D13)"
+        },
+        "inputs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "url",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "The record input's url"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "description": "sha256 of the input's SHA256SUMS (one sha256sum line per fetched part, in fetch order)"
+              }
+            }
+          }
+        },
+        "unplaced": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "feature_ids the publisher lists without a position: not drawn"
+        }
+      }
+    }
+  }
+}

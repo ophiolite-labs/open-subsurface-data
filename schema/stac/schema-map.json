@@ -14,6 +14,7 @@
     "https://stac-extensions.github.io/file/v2.1.0/schema.json": "stac-extensions.github.io/file/v2.1.0/schema.json",
     "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json": "stac-extensions.github.io/alternate-assets/v1.2.0/schema.json",
     "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json": "../stac-osd.json",
-    "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2": "../stac-osd.json"
+    "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2": "../stac-osd.json",
+    "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=3": "../stac-osd.json"
   }
 }

@@ -1,0 +1,34 @@
+{
+ "tile": "z12/2088/1168",
+ "decoded_by": "tippecanoe-decode (tippecanoe v2.49.0)",
+ "feature": {
+  "type": "Feature",
+  "properties": {
+   "record_id": "sodir/factpages",
+   "kind": "wellbore",
+   "name": "31/2-O-13 BY2H",
+   "approximate": false,
+   "source": "register-wfs (wellbores)",
+   "publisher_id": "5250",
+   "osd:period_start_raw": "1955-05-20",
+   "osd:period_start": "2006-03-02T00:00:00Z",
+   "osd:period_end_raw": "3/25/2006",
+   "osd:period_end": "2006-03-25T23:59:59Z",
+   "feature_id": "sodir/factpages#wellbore/5250",
+   "input": "wellbores",
+   "title": "Sodir FactPages and FactMaps (Norwegian continental shelf)",
+   "publisher": "Norwegian Offshore Directorate (Sodir)",
+   "kinds": "[\"wellbore-headers\",\"wellbore-paths\",\"tops\",\"production\",\"source-list\"]",
+   "licence": "Norwegian Licence for Open Government Data 2.0",
+   "redistribution": "allowed",
+   "level": "L3"
+  },
+  "geometry": {
+   "type": "Point",
+   "coordinates": [
+    3.564656,
+    60.88912
+   ]
+  }
+ }
+}

@@ -15,6 +15,11 @@
 #   in rings_dropped, and the rules applied are named in the feature's source (OSD-D16 amended,
 #   answers E03-2, E03-3). Per record, over `defaults`. Points are never moved. unplaced: report lists features
 #   the register serves without a position in the file's "unplaced" member instead of refusing.
+# period_fields {start, end} (E18): the service properties holding the feature's own dates, also
+#   named in params.propertyName; period_format the string form the service writes (iso, the
+#   default, or m/d/y for M/D/YYYY[ h:mm:ss AM|PM]); period_placeholders values that mean "no
+#   date". An input without period_fields keeps its record's period on every Item. Field names
+#   confirmed on the live services 23 Oct 2026: docs/program/evidence/e18/fields.md.
 
 defaults:
   simplify_m: 50
@@ -31,8 +36,10 @@ sodir/factpages:
       id_scope: wellbore   # NPDIDs of wellbores and surveys overlap (wellbore 2000, survey 2000)
       name: Wellbore_name
       unplaced: report   # FactMaps serves [nan,nan] for wellbores without a position
+      period_fields: {start: Entered_date, end: Completed_date}
+      period_format: m/d/y   # xsd:dateTime written as 2/15/1983 in the GeoJSON
       page_size: 1000
-      params: {outputFormat: GEOJSON, propertyName: "Wellbore_name,NPDID_wellbore,SHAPE"}
+      params: {outputFormat: GEOJSON, propertyName: "Wellbore_name,NPDID_wellbore,Entered_date,Completed_date,SHAPE"}
     seismic-finished: &sodir-seismic
       extractor: register-wfs
       kind: {field: Sub_type, map: {"2D": survey-2d}, default: survey-3d}
@@ -41,8 +48,11 @@ sodir/factpages:
       name: Survey_name
       keep: {Net_or_gross: net}   # every survey has one net area; 634 also have a gross area incl. turns
       unplaced: report            # FactMaps serves {"type":"MultiPolygon",} for old surveys without an area
+      period_fields: {start: Start_date, end: Completed_date}   # not the ___planned dates
+      period_format: m/d/y        # 5/1/2021 2:19:33 PM
       page_size: 1000
-      params: {outputFormat: GEOJSON, propertyName: "Survey_name,NPDID_for_survey,Sub_type,Net_or_gross,SHAPE"}
+      params: {outputFormat: GEOJSON,
+               propertyName: "Survey_name,NPDID_for_survey,Sub_type,Net_or_gross,Start_date,Completed_date,SHAPE"}
     seismic-ongoing: *sodir-seismic
     seismic-paused: *sodir-seismic
     # planned, pending and cancelled surveys hold no data and are not outlined
@@ -56,14 +66,18 @@ nlog/nlog:
       id: BOREHOLE_CODE
       uwi: UWI
       name: BOREHOLE_NAME
+      period_fields: {start: START_DATE_DRILLING, end: END_DATE_DRILLING}   # xsd:date
+      period_placeholders: []   # 1800-01-01 (5 boreholes) is not marked unknown by the service: evidence/e18
       page_size: 1000
-      params: {outputFormat: application/json, propertyName: "BOREHOLE_CODE,BOREHOLE_NAME,UWI,GEOMETRY",
+      params: {outputFormat: application/json,
+               propertyName: "BOREHOLE_CODE,BOREHOLE_NAME,UWI,START_DATE_DRILLING,END_DATE_DRILLING,GEOMETRY",
                sortBy: BOREHOLE_CODE}
     surveys-3d:
       extractor: register-wfs
       kind: survey-3d
       id: SIGNAL_COLLECTION_ID
       name: SURVEY_ID
+      # no period_fields: the layer's only date is DATE_RELEASE, not when the survey was shot
       page_size: 1000
       params: {outputFormat: application/json, propertyName: "SIGNAL_COLLECTION_ID,SURVEY_ID,GEOMETRY",
                sortBy: SIGNAL_COLLECTION_ID}

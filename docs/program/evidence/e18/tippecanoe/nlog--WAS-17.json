@@ -1,0 +1,35 @@
+{
+ "tile": "z12/2097/1351",
+ "decoded_by": "tippecanoe-decode (tippecanoe v2.49.0)",
+ "feature": {
+  "type": "Feature",
+  "properties": {
+   "record_id": "nlog/nlog",
+   "kind": "wellbore",
+   "name": "WASSENAAR-17",
+   "approximate": false,
+   "source": "register-wfs (boreholes)",
+   "publisher_id": "2012-12-24",
+   "uwi": "2398",
+   "osd:period_start_raw": "1959-02-08",
+   "osd:period_start": "1959-02-08T00:00:00Z",
+   "osd:period_end_raw": "1959-02-23",
+   "osd:period_end": "1959-02-23T23:59:59Z",
+   "feature_id": "nlog/nlog#WAS-17",
+   "input": "boreholes",
+   "title": "NLOG, Netherlands Oil and Gas Portal",
+   "publisher": "TNO Geological Survey of the Netherlands",
+   "kinds": "[\"wellbore-headers\",\"wellbore-logs\",\"wellbore-paths\",\"tops\",\"seismic-2d\",\"seismic-3d\",\"production\",\"reports\"]",
+   "licence": "NLOG terms of use (public data under the Dutch Mining Act)",
+   "redistribution": "unknown",
+   "level": "L3"
+  },
+  "geometry": {
+   "type": "Point",
+   "coordinates": [
+    4.356401,
+    52.106308
+   ]
+  }
+ }
+}
