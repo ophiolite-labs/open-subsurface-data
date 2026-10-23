@@ -1,0 +1,32 @@
+# E06 slice 2 round trip, 23 Oct 2026 (local run of `npm run site-test`, test
+# "select: a #pick= link restores the selection ..."):
+#   1. the page opened at #pick=opm/norne,sodir/factpages,terranubis/f3-demo-2020
+#   2. "Download osd.manifest.json" -> site-manifest.json beside this file
+#   3. tests/site/manifest_roundtrip.py: osd.manifest.read accepts it; its entries equal what
+#      `osd manifest` writes for the same ids from the same catalogue; then `osd get --dest`.
+# Fixture origin: the test's 127.0.0.1 server; the Collection assets (sha256 multihash) are the
+# test's, served to the page in data/collections.json as the verifier would write them.
+
+$ osd get osd.manifest-shared.json --dest retrieved-shared
+  verified      opm--norne/norne/NORNE_ATW2013.DATA  (28 bytes)
+  verified      sodir--factpages/wellbore_exploration_all.csv  (28 bytes)
+  to-do         terranubis--f3-demo-2020: access registration: sign in or ask at the origin page; no file address is published to us -> https://terranubis.com/datainfo/F3-Demo-2020
+2 verified
+1 item requires derived work to carry CC-BY-SA-3.0
+1 item requires derived work to carry ODbL-1.0
+2 items: the files the verifier sampled, not the whole dataset
+attribution -> build/site-test/retrieved-shared/ATTRIBUTION.md
+exit 0
+
+$ grep '^## \|Statement\|Share-alike\|  >' build/site-test/retrieved-shared/ATTRIBUTION.md
+Written by `osd get` from the licence objects the catalogue records state. Statements are copied verbatim; what a record does not state is shown as not stated.
+## Norne field simulation case (OPM data)
+- Share-alike: derived work must carry ODbL-1.0
+- Statement: none stated by the publisher in the record
+## Sodir FactPages and FactMaps (Norwegian continental shelf)
+- Share-alike: not stated
+- Statement, verbatim:
+  > Contains data under the Norwegian licence for Open Government data (NLOD) distributed by the Norwegian Offshore Directorate
+## F3 Demo 2020 (Dutch North Sea)
+- Share-alike: derived work must carry CC-BY-SA-3.0
+- Statement: none stated by the publisher in the record
