@@ -1,16 +1,29 @@
 # Network verification. Never a required check: a publisher's outage must not stop merges.
-# Pull requests touching records: verify the changed records, comment the levels.
-# Dispatch on main: verify (all or some), store the results on the `verification-results`
-# branch (OSD-D5: no bucket, no secret), then republish the site so the map shows them.
+# Pull requests touching records, and dispatches naming ids: one job verifies those records (the PR
+# gets a comment with the levels). A dispatch with empty ids verifies every record in 12 shards (H2):
+# `snapshot` fetches the stored results once, each `shard` verifies the records whose origin host
+# hashes to it (osd.shards), `finish` lays the accepted shards over the snapshot (a failed shard's
+# records keep their earlier results), reports, runs `make check-full`, and on main stores the
+# results on the `verification-results` branch (OSD-D5: no bucket, no secret) and republishes.
 name: verify
 on:
   workflow_dispatch:
     inputs:
-      ids: { description: "record ids, space separated (empty = all)", required: false, default: "" }
+      ids: { description: "record ids, space separated (empty = all, in shards)", required: false, default: "" }
+      fail_shard: { description: "branch dispatches only: this shard exits 1 before verifying (H2 evidence)", required: false, default: "" }
   pull_request:
     paths: ["records/**", "outlines/**"]
+# One dispatch on main at a time, all-record and explicit-id alike, so two never overwrite each
+# other's stored results. cancel-in-progress false: a running dispatch finishes; GitHub keeps one
+# pending run and replaces an older pending one. Accepted: the replaced dispatch is covered by the
+# newer one when that one is all-record, and the supervisor dispatches all-record runs after merges.
+# Pull requests and branch dispatches each get their own group (outside).
+concurrency:
+  group: "${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && 'verify-main' || format('verify-{0}', github.run_id) }}"
+  cancel-in-progress: false
 jobs:
   verify:
+    if: github.event_name == 'pull_request' || inputs.ids != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 60   # L2 hashes up to 2 GB per run, 2 s pause per host
     permissions: { contents: write, pull-requests: write, actions: write, issues: write }
@@ -84,6 +97,135 @@ jobs:
         run: make check-full
       - name: store results and republish
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          cd build/verification
+          git init -q -b verification-results
+          git config user.name "osd-verifier"; git config user.email "osd-verifier@users.noreply.github.com"
+          git add -A
+          git commit -q -m "verification $(date -u +%FT%TZ) run ${{ github.run_id }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" verification-results
+          gh workflow run pages.yml --repo ${{ github.repository }} --ref main
+
+  snapshot:   # all-record dispatch: the earlier results every shard reads, fetched once (one state)
+    if: github.event_name == 'workflow_dispatch' && inputs.ids == ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - name: earlier results
+        run: |
+          mkdir -p snapshot/verification
+          echo none > snapshot/commit.txt
+          if git ls-remote --exit-code origin verification-results >/dev/null; then
+            git fetch -q --depth 1 origin verification-results
+            git archive FETCH_HEAD | tar -x -C snapshot/verification
+            git rev-parse FETCH_HEAD > snapshot/commit.txt
+          fi
+      - uses: actions/upload-artifact@v4
+        with: { name: snapshot, path: snapshot, if-no-files-found: error }
+
+  shard:
+    needs: snapshot
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40   # one shard's records; L2 hashes up to 2 GiB per process, 2 s pause per host
+    permissions: { contents: read }
+    strategy:
+      fail-fast: false
+      matrix: { shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }   # osd.shards.SHARDS
+    env: { SHARD: "${{ matrix.shard }}/12" }
+    defaults: { run: { shell: bash } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with: { python-version: "3.12" }
+      - run: uv sync
+      - uses: actions/download-artifact@v4
+        with: { name: snapshot, path: build/snapshot }
+      - run: mkdir -p build/verification build/snapshot/verification && cp -r build/snapshot/verification/. build/verification/
+      - name: forced failure (branch dispatches only, H2 evidence)
+        if: inputs.fail_shard != '' && github.ref != 'refs/heads/main' && inputs.fail_shard == format('{0}', matrix.shard)
+        run: |
+          echo "shard $SHARD forced to fail (input fail_shard)"
+          exit 1
+      - name: verify this shard   # L3 compares committed outlines with today's inputs (E03)
+        run: |
+          mkdir -p shard/verification
+          started=$(date +%s)
+          uv run osd verify --outline-inputs --shard "$SHARD" --ids-out shard/ids.txt | tee shard/verify.txt
+          while read -r id; do cp "build/verification/${id//\//__}.json" shard/verification/; done < shard/ids.txt
+          printf '{"shard": %s, "of": %s, "started": %s, "finished": %s}\n' "${SHARD%/*}" "${SHARD#*/}" "$started" "$(date +%s)" > shard/shard.json
+      - uses: actions/upload-artifact@v4   # only after every step above succeeded: a failed shard uploads nothing
+        with: { name: "shard-${{ matrix.shard }}", path: shard, if-no-files-found: error }
+
+  finish:   # runs when any shard failed; the summary names it and its records
+    needs: [snapshot, shard]
+    if: ${{ !cancelled() && needs.snapshot.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions: { contents: write, actions: write, issues: write }
+    defaults: { run: { shell: bash } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with: { python-version: "3.12" }
+      - run: uv sync
+      - uses: actions/download-artifact@v4
+        with: { name: snapshot, path: build/snapshot }
+      - uses: actions/download-artifact@v4   # each accepted or not into build/shards/shard-<I>/
+        continue-on-error: true
+        with: { pattern: "shard-*", path: build/shards }
+      - name: lay the shards over the earlier results
+        run: |
+          mkdir -p build/snapshot/verification build/shards
+          cp -r build/snapshot/verification build/verification-before
+          uv run python -m osd.shards overlay -n 12 --snapshot build/verification-before --shards build/shards \
+            --out build/verification --fresh build/fresh-ids.txt --summary shards.md
+          { echo "Earlier results: verification-results $(cat build/snapshot/commit.txt), checkout $(git rev-parse HEAD)"; echo; cat shards.md; } >> "$GITHUB_STEP_SUMMARY"
+      - name: levels as published (the same levels records.json carries after the republish)
+        run: |
+          uv run osd status | tee status.txt
+          { echo '### osd status'; echo '```'; cat status.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: dead-link report of the fresh ids (issues opened and closed on main, a dry run otherwise)
+        continue-on-error: true
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          GH_REPO: "${{ github.repository }}"
+          EVENT: "${{ github.event_name }}"
+          REF: "${{ github.ref }}"
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          # only the records verified in this run: a result kept from a failed shard is not an observation (H1)
+          fresh=$(tr '\n' ' ' < build/fresh-ids.txt)
+          if [ -z "${fresh// /}" ]; then
+            echo "dead-link report: no record has a fresh result in this run; no issue opened or closed" | tee dead.txt
+          else
+            # an empty file when gh fails: the report then opens and closes nothing (H1)
+            gh issue list --state open --label origin-dead --limit 1000 --json number,title,labels > open-issues.json || : > open-issues.json
+            dry=--dry-run
+            if [ "$EVENT" = "workflow_dispatch" ] && [ "$REF" = "refs/heads/main" ]; then dry=; fi
+            uv run osd report --before build/verification-before --after build/verification \
+              --open-issues open-issues.json --verified "$fresh" --run-url "$RUN_URL" --out report.json $dry | tee dead.txt
+            if [ -z "$dry" ]; then
+              if [ "$(jq '.open | length' report.json)" -gt 0 ]; then
+                gh label create origin-dead --color d93f0b --description "Opened by the dead-link report: an origin fell from L1+ to dead" --force
+              fi
+              jq -c '.open[]' report.json | while read -r issue; do
+                gh issue create --title "$(jq -r .title <<<"$issue")" --body "$(jq -r .body <<<"$issue")" --label origin-dead
+              done
+              jq -c '.recovered[]' report.json | while read -r issue; do
+                gh issue close "$(jq -r .number <<<"$issue")" --comment "$(jq -r .comment <<<"$issue")"
+              done
+            fi
+          fi
+          { echo '### dead-link report'; echo '```'; cat dead.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with: { name: verification, path: build/verification }
+      - name: make check-full (every all-record dispatch, branches too; the gate validates a sample of Items)
+        run: make check-full
+      - name: store results and republish
+        if: github.ref == 'refs/heads/main'
         env: { GH_TOKEN: "${{ github.token }}" }
         run: |
           cd build/verification

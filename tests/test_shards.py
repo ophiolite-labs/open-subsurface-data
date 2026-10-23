@@ -5,6 +5,8 @@ dead-link report step run with a fake `gh` (no network, no issue touched)."""
 import hashlib
 import json
 import os
+import shutil
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -210,3 +212,82 @@ def test_a_shard_artifact_outside_its_shard_is_discarded(tmp_path, case):
         assert result(out, rid) == snapshot_of(rid)
     i = 2 if case == "missing file" else 3
     assert "no id list" not in r["discarded"][i]
+
+
+# --- the workflow -------------------------------------------------------------------------------
+
+WF = yaml.safe_load((paths.ROOT / ".github" / "workflows" / "verify.yml").read_text())
+
+
+def test_the_workflow_runs_the_strategys_shards():
+    n = shards.SHARDS
+    job = WF["jobs"]["shard"]
+    assert job["strategy"]["matrix"]["shard"] == list(range(1, n + 1)) and job["strategy"]["fail-fast"] is False
+    assert job["env"]["SHARD"] == "${{ matrix.shard }}/" + str(n) and job["runs-on"] == "ubuntu-24.04"
+    overlay = next(s for s in WF["jobs"]["finish"]["steps"] if s.get("name", "").startswith("lay the shards"))
+    assert f"overlay -n {n} " in overlay["run"]
+    assert WF["concurrency"]["cancel-in-progress"] is False and "'verify-main'" in WF["concurrency"]["group"]
+    assert "github.ref == 'refs/heads/main'" in WF["concurrency"]["group"]
+
+
+def finish_report_step() -> dict:
+    (step,) = [s for s in WF["jobs"]["finish"]["steps"] if s.get("name", "").startswith("dead-link report")]
+    assert "${{" not in step["run"]  # the script reads only its env, so this test runs it unchanged
+    return step
+
+
+GH = """#!{py}
+import json, os, sys
+a, st = sys.argv[1:], json.load(open(os.environ["GH_STATE"]))
+open(os.environ["GH_LOG"], "a").write(json.dumps(a) + "\\n")
+if a[:2] == ["issue", "list"]:
+    print(json.dumps(st["issues"]))
+elif a[:2] == ["issue", "close"]:
+    st["issues"] = [i for i in st["issues"] if i["number"] != int(a[2])]
+json.dump(st, open(os.environ["GH_STATE"], "w"))
+"""
+UV = """#!/bin/sh
+[ "$1" = run ] && [ "$2" = osd ] || exit 2
+shift 2
+exec {py} -m osd.cli "$@"
+"""
+ISSUES = [{"number": 7, "title": "origin dead: alpha/one", "labels": [{"name": "origin-dead"}]},
+          {"number": 8, "title": "origin dead: beta/two", "labels": [{"name": "origin-dead"}]}]
+
+
+def run_finish_report(tmp_path: Path, fresh_ids: list[str]) -> tuple[str, list[list[str]]]:
+    """The finishing job's report step as the workflow runs it, on main, after shard 1 (alpha/one, fresh
+    at L1) was accepted and shard 2 failed (beta/two keeps an earlier L1 under an open issue)."""
+    work, bin_ = tmp_path / "work", tmp_path / "bin"
+    bin_.mkdir()
+    sd = tmp_path / "shards"
+    artifact(sd, 1, [fresh("alpha/one")])
+    shutil.copytree(FIX / "snapshot", work / "build" / "verification-before")
+    shards.overlay(FIX / "snapshot", sd, work / "build" / "verification", 3, RECS)
+    (work / "build" / "fresh-ids.txt").write_text("".join(r + "\n" for r in fresh_ids))
+    for name, text in (("gh", GH), ("uv", UV)):
+        (bin_ / name).write_text(text.format(py=sys.executable))
+        (bin_ / name).chmod((bin_ / name).stat().st_mode | stat.S_IEXEC)
+    state, log = tmp_path / "gh.json", tmp_path / "gh.log"
+    state.write_text(json.dumps({"issues": ISSUES}))
+    log.write_text("")
+    env = {**os.environ, "PATH": f"{bin_}{os.pathsep}{os.environ['PATH']}", "EVENT": "workflow_dispatch",
+           "REF": "refs/heads/main", "RUN_URL": "https://github.com/o/r/actions/runs/42", "GH_STATE": str(state),
+           "GH_LOG": str(log), "GITHUB_STEP_SUMMARY": str(work / "summary.md"), "GH_TOKEN": "x",
+           "PYTHONPATH": str(paths.ROOT / "src")}
+    p = subprocess.run(["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", finish_report_step()["run"]],
+                       cwd=work, env=env, capture_output=True, text=True, timeout=60, check=False)
+    assert p.returncode == 0, p.stderr
+    return p.stdout, [json.loads(x) for x in log.read_text().splitlines()]
+
+
+def test_the_finishing_report_passes_only_fresh_ids(tmp_path):
+    # mutation: `--verified all` restored in the finishing step -> beta/two's issue #8 closed on a kept result
+    out, gh = run_finish_report(tmp_path, ["alpha/one"])
+    closes = [m for m in gh if m[:2] == ["issue", "close"]]
+    assert [m[2] for m in closes] == ["7"] and "close  #7" in out and "#8" not in out
+
+
+def test_no_fresh_ids_opens_and_closes_no_issue(tmp_path):
+    out, gh = run_finish_report(tmp_path, [])
+    assert gh == [] and "no record has a fresh result in this run; no issue opened or closed" in out
