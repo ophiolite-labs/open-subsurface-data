@@ -23,4 +23,14 @@ listed_by: [publisher]
 known_issues:
   - "The licence depends on the channel: the same layer on the BC Data Catalogue is Access Only under BC copyright, and the BCER Data Centre downloads (iris.bcogc.ca) carry terms that say they may not be reproduced or redistributed. This record is the open data portal item."
   - "bbox is the extent stated in the publisher's ArcGIS item; its east edge (-110.84) lies east of British Columbia."
+inputs:
+  - name: surface-holes
+    url: "https://geoweb-ags.bc-er.ca/arcgis/rest/services/PASR/PASR_WELL_SURFACE_STATE_PT/MapServer/0"
+    format: arcgis
+    crs: "EPSG:3005"
+    stated: "Layer description (?f=json): spatialReference wkid 102190, latestWkid 3005 (NAD83 / BC Albers); query pages state the same"
+period:
+  start: "1918-11-27"
+  end: "2026-10-23"
+  stated: "Earliest WELL_AUTHORIZATION_GRANT_DATE in the publisher's own layer is 1918-11-27 (outStatistics, 23 Oct 2026 17:00 UTC); the open data item states \"Data is updated nightly\", end = date read"
 added: 2026-10-23
