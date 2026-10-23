@@ -24,9 +24,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "22", cache: npm }
       - name: site test (Playwright, offline; E05)
+        timeout-minutes: 4
         run: |
           npm ci --no-audit --no-fund
-          npx playwright install --with-deps chromium
+          npx playwright install --only-shell chromium   # the runner image has Chromium's system libraries; --with-deps stalls on apt
           make site-test
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main'
