@@ -111,3 +111,8 @@ sgudds/register-geotermalnych-vrtov:
   min_features: 307   # 23 Oct 2026: 307 boreholes drawn, as the layer counted
   inputs:
     boreholes: {extractor: register-arcgis, kind: wellbore, name: technickeoznaceniezdroja}
+
+nzpam/petroleum-wells:
+  min_features: 1302   # 23 Oct 2026: 1302 wells drawn, as the layer counted
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: UWI, name: Title, period_fields: {"start": "Start_Date", "end": "End_Date"}, period_format: epoch-ms}
