@@ -37,3 +37,11 @@ canonical types.
 
 **Dependencies.** E85, E55 (merged); E35 for slice (c); OSD E09 slice 1 for the fidelity schema and
 manifest/3 (fixtures live in the OSD repository, which is public).
+
+**Fixture pin (OSD E09-fx).** The static manifest/3 files E127 reads by path are
+`tests/fixtures/fidelity/manifest-two-wells.json` (the two LAS files `well-a.las`, `well-b.las`),
+`manifest-no-statement.json` and `manifest-null-attribution.json`, with `fidelity.json` and the LAS
+files beside them. E127 pins the merge commit of the OSD pull request "E09: static manifest/3
+fixtures for E127" for those files, never main. In OSD,
+`test_static_manifest_3_fixtures_equal_what_osd_manifest_writes` keeps each file equal to what
+`osd manifest` writes from the fixture catalogue; a change to them is a new pin.

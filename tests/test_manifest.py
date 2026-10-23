@@ -556,3 +556,17 @@ def test_norne_manifest_3(tmp_path):
     assert "item_id" not in e
     m = mf.read(mf.write(doc, tmp_path / "norne.manifest.json"))
     assert m.catalog.records_digest == doc["metadata"]["catalog"]["records_digest"]
+
+
+@pytest.mark.parametrize("rid", RIGHTS_IDS)
+def test_static_manifest_3_fixtures_equal_what_osd_manifest_writes(tmp_path, rid):
+    """Ophiolite E127 reads tests/fixtures/fidelity/manifest-*.json by path (pinned to a commit):
+    each must stay exactly what `osd manifest <rid>` writes from the fixture catalogue."""
+    out = tmp_path / "catalog"
+    build(out, FIDELITY / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror",
+          records_dir=FIDELITY / "records", source_commit="1" * 40, verification_commit="2" * 40)
+    written = mf.write(mf.from_catalog([rid], out, now=NOW), tmp_path / "manifest.json")
+    committed = FIDELITY / f"manifest-{rid.split('/')[1]}.json"
+    assert json.loads(committed.read_text()) == json.loads(written.read_text()), (
+        f"{committed.name} drifted from osd manifest; regenerate it and tell E127 the new pin")
+    assert mf.read(committed).catalog == mf.Catalog(**json.loads((FIDELITY / "fidelity.json").read_text())["catalog"])

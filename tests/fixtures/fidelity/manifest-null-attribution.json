@@ -1,0 +1,31 @@
+{
+  "format": "osd.manifest/3",
+  "created": "2026-10-23T12:00:00Z",
+  "catalog_url": "https://opensubsurfacedata.org/data/stac/catalog.json",
+  "selection": "collections",
+  "entries": [
+    {
+      "collection_id": "acme--null-attribution",
+      "record_id": "acme/null-attribution",
+      "title": "Licence with attribution null (E09 rights fixture)",
+      "origin_url": "https://acme.example/null-attribution",
+      "access": "request",
+      "licence": {
+        "name": "Acme Silent Terms",
+        "redistribution": "forbidden",
+        "attribution": null,
+        "statement": "Courtesy of Acme"
+      },
+      "assets": {},
+      "unresolved": "access request: sign in or ask at the origin page; no file address is published to us"
+    }
+  ],
+  "metadata": {
+    "catalog": {
+      "source_commit": "1111111111111111111111111111111111111111",
+      "verification_commit": "2222222222222222222222222222222222222222",
+      "built_at": "2026-10-23T12:00:00Z",
+      "records_digest": "0aa23aa46181ee776770dd02b7d5acdaaedfbc36904160ae53e42b119d43b4a5"
+    }
+  }
+}
