@@ -1,8 +1,5 @@
-Reading additional input from stdin...
-OpenAI Codex v0.159.0
---------
-workdir: /home/epic/src/open-subsurface-data
-model: gpt-6-astra
+review written to /home/epic/src/open-subsurface-data/docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.md
+el: gpt-6-astra
 provider: openai
 approval: never
 sandbox: danger-full-access
@@ -1580,3 +1577,268 @@ records/opm/norne.yaml:9:  manifest_url: https://api.github.com/repos/OPM/opm-da
    434	
    435	
 
+**Verifying final diff completeness**
+codex
+The main dependency claim is wrong: E04 publishes checksummed assets on Collections; its Items have empty assets. The charter also leaves dataset versus wellbore identity unresolved. I’m checking the retrieval contract and acceptance tests against those boundaries.
+exec
+/bin/bash -lc "nl -ba records/terranubis/f3-demo-2020.yaml; nl -ba records/nopims/poseidon.yaml | head -48; git ls-tree -r --name-only HEAD src/osd schema; nl -ba docs/program/CLAIMS.md | tail -3; nl -ba docs/program/charters/E09-ophiolite-reads-the-catalogue.md | sed -n '17,31p'; nl -ba tests/site/site.test.mjs | head -25; cat src/osd/__init__.py; nl -ba schema/verification.schema.json | sed -n '40,46p'; rg -n 'manifest|def .*get|def .*fetch' src/osd tests --glob '*.py'" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	id: terranubis/f3-demo-2020
+     2	title: F3 Demo 2020 (Dutch North Sea)
+     3	summary: >-
+     4	  The F3 block 3D seismic survey with four wells, horizons and interpretations, packaged
+     5	  as an OpendTect demonstration project by dGB Earth Sciences.
+     6	publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+     7	origin:
+     8	  url: https://terranubis.com/datainfo/F3-Demo-2020
+     9	  access: registration
+    10	licence:
+    11	  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+    12	  spdx: CC-BY-SA-3.0
+    13	  url: https://creativecommons.org/licenses/by-sa/3.0/
+    14	  redistribution: allowed
+    15	  attribution: required
+    16	  share_alike: true
+    17	kinds: [seismic-3d, wellbore-logs, wellbore-headers, horizons]
+    18	region: {country: NL, basin: Dutch North Sea (F3 block), bbox: [4.6, 54.75, 5.05, 54.95], crs: "EPSG:23031"}
+    19	size: {stated: "about 1.3 GB"}
+    20	listed_by: [seg-wiki, publisher]
+    21	known_issues:
+    22	  - "Publisher replaced F3-Demo-2020 with F3 Demo 2023 on 12 June 2023; /datainfo/F3-Demo-2020 now serves the 2023 page (7.6 GB, 4.5 GB download), whose licence label links the BY-SA 3.0 deed. Licence fields corrected from the earlier BY-SA 4.0 entry to what the page states."
+    23	added: 2026-10-23
+     1	id: nopims/poseidon
+     2	title: Poseidon 3D (Browse Basin)
+     3	summary: >-
+     4	  The Poseidon 3D seismic survey and associated wells on the North West Shelf of Australia,
+     5	  released through the National Offshore Petroleum Information Management System.
+     6	publisher: {name: TGS (AWS Open Data), url: https://registry.opendata.aws/tgs-opendata-poseidon, country: US}
+     7	origin:
+     8	  url: https://registry.opendata.aws/tgs-opendata-poseidon
+     9	  access: anonymous
+    10	  manifest_url: https://tgs-opendata-poseidon.s3.amazonaws.com/?list-type=2&max-keys=1000
+    11	licence:
+    12	  name: CC BY 4.0 (as the TGS Open Data page states)
+    13	  spdx: CC-BY-4.0
+    14	  url: https://creativecommons.org/licenses/by/4.0/
+    15	  redistribution: allowed
+    16	  attribution: required
+    17	kinds: [seismic-3d, wellbore-logs, wellbore-headers]
+    18	region: {country: AU, basin: Browse Basin, bbox: [122.4, -13.6, 123.6, -12.4]}
+    19	listed_by: [seg-wiki]
+    20	known_issues:
+    21	  - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the TGS Open Data page on the AWS Registry of Open Data (opened 23 Oct 2026; CC BY 4.0, MDIO, public S3 bucket). Original survey: Geoscience Australia / ConocoPhillips via NOPIMS."
+    22	  - "Licence to be confirmed against the NOPIMS terms page by the verifier (L2)."
+    23	inputs:
+    24	  - name: full-stack-agc
+    25	    url: "https://tgs-opendata-poseidon.s3.amazonaws.com/full_stack_agc.mdio/"
+    26	    format: mdio
+    27	    crs: "EPSG:28351"
+    28	    stated: "Registry page: \"Coordinate system used is: GDA94 / MGA Zone 51\"; cdp-x/cdp-y carry unitsV1 length m"
+    29	added: 2026-10-23
+schema/outline.schema.json
+schema/record.schema.json
+schema/stac-osd.json
+schema/stac/README.md
+schema/stac/geojson.org/schema/Feature.json
+schema/stac/geojson.org/schema/Geometry.json
+schema/stac/json-schema.org/draft-07/schema.json
+schema/stac/schema-map.json
+schema/stac/schemas.stacspec.org/v1.0.0/catalog-spec/json-schema/catalog.json
+schema/stac/schemas.stacspec.org/v1.0.0/collection-spec/json-schema/collection.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/basics.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/datetime.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/instrument.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/item.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/licensing.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/provider.json
+schema/stac/stac-extensions.github.io/file/v2.1.0/schema.json
+schema/verification.schema.json
+src/osd/__init__.py
+src/osd/build.py
+src/osd/cli.py
+src/osd/new.py
+src/osd/outlines/__init__.py
+src/osd/outlines/codecs.py
+src/osd/outlines/extractors.py
+src/osd/outlines/geometry.py
+src/osd/outlines/rules.yaml
+src/osd/paths.py
+src/osd/records.py
+src/osd/report.py
+src/osd/stac.py
+src/osd/verifier/samples.yaml
+src/osd/verify.py
+    19	| E15 | e15-tiles-for-the-registers | `Makefile` (build target: tiling), `src/osd/build.py` (one tiling call at the end of build), `.github/workflows/ci.yml` and `pages.yml` (tippecanoe install step, announced), `site/app.js`, `site/index.html` (if needed), `tests/site/**`, `tests/test_build.py` (tile count test), `docs/program/evidence/e15/**` | OPEN (worker osd-e15, worktree ../osd-e15-tiles-for-the-registers; shares build.py with E04: second to merge rebases) | 2026-10-23 |
+    20	| E16 | e16-periods-from-the-publishers | `records/**` (`period` and `notes` only), `docs/program/evidence/e16/**` | OPEN (worker osd-e16, worktree ../osd-e16-periods-from-the-publishers) | 2026-10-23 |
+    21	| E06 | e06-retrieval-by-manifest | `src/osd/manifest.py`, `src/osd/get.py`, `src/osd/cli.py` (`get` and `manifest` subcommands), `schema/manifest.schema.json`, `tests/test_manifest.py`, `tests/fixtures/manifest/**`, `docs/program/charters/E06-*` (strategy, dispositions), `docs/program/evidence/e06/**`; `site/app.js` (select mode) only after E15 merges, by a claim update | OPEN (worker osd-e06, worktree ../osd-e06-retrieval-by-manifest) | 2026-10-23 |
+    17	**The design the lane must map to.**
+    18	1. Two halves, two repositories, one interface: here, the manifest and STAC are the contract and
+    19	   gain nothing Ophiolite-specific; there, an intake address handler recognises `osd.manifest/1`
+    20	   and STAC collections.
+    21	2. Rights: `licence.{name, spdx, url, statement, share_alike}` map to Ophiolite's rights-basis
+    22	   fields; `redistribution: unknown` becomes the rights-basis state that refuses publication
+    23	   (E35's refusal state) while allowing private use.
+    24	3. Fidelity record: written by the Ophiolite run, exported back as `verification` check
+    25	   `canonical-conversion` with detail "<n> of <m> files to <kinds>", so this repository's
+    26	   verifier can read it from a file the Ophiolite run publishes (no live coupling).
+    27	4. Provenance: each landed item's E122 record names the catalogue item id and the catalogue
+    28	   version (git commit of this repository at build time, written into `records.json`).
+    29	5. The NLOG sample in E79 and the `nlog/nlog` record agree on kinds and licence text.
+    30	
+    31	**Acceptance.**
+     1	// Playwright site test for E05: `make site-test` (node --test tests/site/). Offline by default.
+     2	import { test, before, after } from 'node:test';
+     3	import assert from 'node:assert/strict';
+     4	import { mkdir, readFile } from 'node:fs/promises';
+     5	import { join } from 'node:path';
+     6	import { ROOT, serve, launch, offline, errorsOf, ready } from './harness.mjs';
+     7	
+     8	const OUT = join(ROOT, 'build', 'site-test');
+     9	let server, browser;
+    10	before(async () => { await mkdir(OUT, { recursive: true }); server = await serve(); browser = await launch(); });
+    11	after(async () => { await browser.close(); server.close(); });
+    12	
+    13	async function open(hash = '', { viewport = { width: 1400, height: 900 }, routes } = {}) {
+    14	  const context = await browser.newContext({ viewport });
+    15	  const unexpected = [];
+    16	  await offline(context, unexpected);
+    17	  if (routes) await routes(context);
+    18	  const page = await context.newPage();
+    19	  const errors = errorsOf(page);
+    20	  await page.goto(server.url + (hash ? '#' + hash : ''));
+    21	  await ready(page);
+    22	  return { context, page, errors, unexpected };
+    23	}
+    24	
+    25	test('no console error on load, map and how page', async () => {
+"""Open Subsurface Data tools: validate records, verify origins, build the catalogue."""
+
+__version__ = "0.1.0"
+    40	    "files": {
+    41	      "type": "array",
+    42	      "items": {
+    43	        "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+    44	        "properties": {"path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+    45	      }
+    46	    },
+tests/test_outlines.py:392:def test_fetch_stores_parts_and_sums(tmp_path):
+tests/test_outlines.py:470:    r["origin"]["manifest_url"], r["licence"]["url"] = base["origin"]["manifest_url"], base["licence"]["url"]
+src/osd/verify.py:95:def http_fetch(url: str, timeout: float = 20.0) -> Fetched:
+src/osd/verify.py:144:def paced(fetch: Fetcher, opener: Opener, pacer: Pacer) -> tuple[Fetcher, Opener]:
+src/osd/verify.py:172:def probe(url: str, fetch: Fetcher) -> Fetched:
+src/osd/verify.py:284:def _hash(stream: Iterable[bytes], budget: ByteBudget) -> tuple[str, int]:
+src/osd/verify.py:322:def check_files(rec: dict, sample: list[str] | None, opener: Opener, budget: ByteBudget) -> tuple[dict, list[dict]]:
+src/osd/verify.py:326:    manifest = rec["origin"].get("manifest_url")
+src/osd/verify.py:327:    if not manifest:
+src/osd/verify.py:328:        return check("skip", "no origin.manifest_url"), []
+src/osd/verify.py:332:    if not robots.allowed(manifest):
+src/osd/verify.py:333:        return check("skip", f"robots.txt disallows the listing {manifest}"), []
+src/osd/verify.py:335:        entries = parse_listing(_read(opener(manifest), LISTING_BYTES), manifest)
+src/osd/verify.py:442:def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime | None = None,
+src/osd/verify.py:519:def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
+src/osd/outlines/__init__.py:101:def _get(url: str, opener, robots) -> bytes:
+src/osd/outlines/__init__.py:115:def fetch_parts(rec_input: dict, rule: dict, opener, robots) -> list[tuple[str, bytes]]:
+src/osd/outlines/__init__.py:150:def fetch_inputs(rec: dict, rules: dict, opener, inputs_dir: Path = INPUTS_DIR) -> dict[str, str]:
+tests/test_report.py:29:def fetcher(phase):
+tests/test_report.py:30:    def fetch(url):
+tests/test_verify.py:33:def fetch_ok(url):
+tests/test_verify.py:37:def fetch_dead(url):
+tests/test_verify.py:83:    rec["origin"]["manifest_url"] = BASE + "index.json"
+tests/test_verify.py:104:def test_classification_four_fetchers(answer, level, origin_outcome, needle):
+tests/test_verify.py:205:def test_sample_cut_at_byte_budget(tmp_path):
+tests/test_verify.py:231:def test_failed_file_fetch_prevents_L2(tmp_path):
+tests/test_verify.py:329:        assert recs[rid]["origin"].get("manifest_url"), rid
+tests/test_verify.py:379:def test_fetch_error_message_names_the_status():
+
+**Checking for HEAD changes**
+exec
+/bin/bash -lc 'git rev-parse HEAD; git diff 381902ed825eae1bc0f716e5a593ed8d7cfa4f0d HEAD --stat; git show 381902ed825eae1bc0f716e5a593ed8d7cfa4f0d:docs/program/CLAIMS.md | tail -3' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+79d279f07fd2be6fa2a263dfe249da88c2804560
+ docs/program/CLAIMS.md                             |    1 +
+ docs/program/PROGRAM.md                            |    2 +-
+ .../E06-retrieval-by-manifest-CODEX-REVIEW.log     | 1582 ++++++++++++++++++++
+ 3 files changed, 1584 insertions(+), 1 deletion(-)
+| E04 | e04-stac-catalogue | `src/osd/stac.py`, `src/osd/build.py` (one call to the STAC writer), `schema/stac-osd.json`, `schema/stac/**`, `schema/record.schema.json` (optional `period` only, announced), `pyproject.toml` and `uv.lock` (stac-validator pinned), `Makefile` (recursive copy of build/catalog), `tests/test_stac.py`, `src/osd/records.py` (period coercion only, ruled 23 Oct), `docs/program/charters/E04-*` (strategy), `docs/program/evidence/e04/**` | MERGED (PR #8, aced173) | 2026-10-23 |
+| E15 | e15-tiles-for-the-registers | `Makefile` (build target: tiling), `src/osd/build.py` (one tiling call at the end of build), `.github/workflows/ci.yml` and `pages.yml` (tippecanoe install step, announced), `site/app.js`, `site/index.html` (if needed), `tests/site/**`, `tests/test_build.py` (tile count test), `docs/program/evidence/e15/**` | OPEN (worker osd-e15, worktree ../osd-e15-tiles-for-the-registers; shares build.py with E04: second to merge rebases) | 2026-10-23 |
+| E16 | e16-periods-from-the-publishers | `records/**` (`period` and `notes` only), `docs/program/evidence/e16/**` | OPEN (worker osd-e16, worktree ../osd-e16-periods-from-the-publishers) | 2026-10-23 |
+
+codex
+**1. Verdict: REWORK** — The charter assumes Item assets that do not exist and leaves selection identity, rights preservation and safe resume behavior undefined.
+
+Verified against `381902ed825eae1bc0f716e5a593ed8d7cfa4f0d` (HEAD at review start). HEAD advanced during review; the intervening changes affect program documents and the review log, not the inspected code or charter. No files modified.
+
+**2. Factual errors and Context verification**
+
+- “E04’s item assets” is false: files belong to Collections because their relationship to Items is unestablished (`src/osd/stac.py:90–97`); Items explicitly contain `assets: {}` (`src/osd/stac.py:115`).
+- “Records carry `origin.url` only” is false: Poseidon carries `origin.manifest_url` and `inputs[].url` (`records/nopims/poseidon.yaml:10,25`); both are schema-supported (`schema/record.schema.json:31,91`).
+- “No fetcher” needs qualification: no retrieval command exists, but HTTP fetching and streaming already exist (`src/osd/verify.py:95,114`). Say “no manifest-driven downloader.”
+- E02’s `files[]` already exists and contains fetch URLs, lengths and hashes (`src/osd/verify.py:363`; `schema/verification.schema.json:40–44`); it is verification output, not record content.
+- Confirmed: no retrieval manifest schema/module in HEAD’s tracked tree; no `get` command in `src/osd/cli.py:91–117`. The third detail card does say retrieval is chartered (`site/app.js:238`).
+- Beyond Context, the F3 acceptance fixture is stale: the record says **CC-BY-SA-3.0**, requires registration and has no `statement` (`records/terranubis/f3-demo-2020.yaml:7–16`). A successful unauthenticated F3 download and verbatim existing statement cannot be required evidence.
+
+**3. Design objections and concrete alternatives**
+
+- **Selection ownership:** `item_id` conflates datasets with wellbores. Items require periods (`src/osd/stac.py:141–143`), and Collection files cannot safely be assigned to each well. Distinguish Collection selection from Item selection; preserve standard STAC identities and leave unmapped feature selections unresolved.
+- **Coverage:** verifier files are explicitly a sample (`src/osd/verify.py:367`). State that retrieval fetches selected published assets, not necessarily a complete dataset; carry coverage information instead of implying completeness.
+- **Incomplete format:** design 2 and the stop rule need origin addresses and refusal notes absent from design 1. Define version discrimination, source links and item-level unresolved reasons in the schema; empty assets alone cannot explain anything.
+- **Rights loss:** the manifest omits `url`, `redistribution` and `attribution`; E09 needs rights information including unknown redistribution (`E09-ophiolite-reads-the-catalogue.md:21–23`). Preserve the record licence object without inventing optional statements or treating missing `share_alike` as false (`schema/record.schema.json:36–45`).
+- **Parallel asset vocabulary:** reuse STAC asset keys and File extension fields, or specify exact conversion from `file:size` and SHA-256 multihash `file:checksum` (`src/osd/stac.py:96–97`). Never silently discard unsupported checksum algorithms.
+- **Unsafe resume contract:** define collision-safe paths confined to `--dest`, temporary writes, atomic completion and rehashing before skipping existing files. A failed or truncated file must never count as complete; checksum-free downloads must never report `verified`.
+- **Network boundary:** `osd get` conflicts with the supplied repository rule limiting network entry points. Explicitly amend that boundary for intentional retrieval; inject transport in tests and retain the existing offline gate.
+- **Terms enforcement:** “terms forbid automated download” has no defined input or decision owner. Carry an explicit publisher-grounded restriction and explanation; do not ask the downloader to infer legal permission from arbitrary prose.
+
+**4. Acceptance lines that permit false positives**
+
+- **Schema test (line 31):** rejecting missing `licence` still permits a schema accepting malformed hashes, unsupported versions and invalid nested rights. Add negative fixtures for each contract guard.
+- **Three downloads (lines 32–33):** counters alone permit wrong output bytes; a corrupted source may never be requested after a successful first run. Use separate fresh destinations, assert exact bytes/hashes, and assert mismatch cleanup and preservation of pre-existing files.
+- **Attribution (line 34):** a hard-coded F3 string can pass. Use two distinct supplied statements plus a missing-statement case; assert exact preservation and the correct SPDX version.
+- **Site count (line 35):** two duplicates or unrelated items pass. Assert exact selected identities, asset metadata, rights and unresolved reasons; include a wellbore and a Collection without Items.
+- **Resume count (line 36):** skipping every existing pathname passes despite truncation or corruption. Mutate a completed file and leave a partial file; assert repair, correct bytes and no requests for intact verified files.
+- **Uncovered guards:** typed-reader validation, credential exclusion, checksum-free outcomes, denied downloads and CLI share-alike reporting have no acceptance tests. Add injected-fixture tests and failing mutations inside existing checks.
+
+**5. Scope overlap**
+
+- E15 already owns `site/app.js` and `tests/site/**` (`docs/program/CLAIMS.md:19`). Waiting only for E05 is insufficient; defer selection UI until E15 releases those paths and claim its Playwright test path.
+- Do not manufacture acquisition periods to obtain Item IDs: publisher period curation belongs to E16. Collection selection must work independently.
+- Mirror preference and custody remain E07; Ophiolite rights mapping, conversion and L4 remain E09. E06 should preserve their input facts without implementing those consumers.
+tokens used
+49,851
+**1. Verdict: REWORK** — The charter assumes Item assets that do not exist and leaves selection identity, rights preservation and safe resume behavior undefined.
+
+Verified against `381902ed825eae1bc0f716e5a593ed8d7cfa4f0d` (HEAD at review start). HEAD advanced during review; the intervening changes affect program documents and the review log, not the inspected code or charter. No files modified.
+
+**2. Factual errors and Context verification**
+
+- “E04’s item assets” is false: files belong to Collections because their relationship to Items is unestablished (`src/osd/stac.py:90–97`); Items explicitly contain `assets: {}` (`src/osd/stac.py:115`).
+- “Records carry `origin.url` only” is false: Poseidon carries `origin.manifest_url` and `inputs[].url` (`records/nopims/poseidon.yaml:10,25`); both are schema-supported (`schema/record.schema.json:31,91`).
+- “No fetcher” needs qualification: no retrieval command exists, but HTTP fetching and streaming already exist (`src/osd/verify.py:95,114`). Say “no manifest-driven downloader.”
+- E02’s `files[]` already exists and contains fetch URLs, lengths and hashes (`src/osd/verify.py:363`; `schema/verification.schema.json:40–44`); it is verification output, not record content.
+- Confirmed: no retrieval manifest schema/module in HEAD’s tracked tree; no `get` command in `src/osd/cli.py:91–117`. The third detail card does say retrieval is chartered (`site/app.js:238`).
+- Beyond Context, the F3 acceptance fixture is stale: the record says **CC-BY-SA-3.0**, requires registration and has no `statement` (`records/terranubis/f3-demo-2020.yaml:7–16`). A successful unauthenticated F3 download and verbatim existing statement cannot be required evidence.
+
+**3. Design objections and concrete alternatives**
+
+- **Selection ownership:** `item_id` conflates datasets with wellbores. Items require periods (`src/osd/stac.py:141–143`), and Collection files cannot safely be assigned to each well. Distinguish Collection selection from Item selection; preserve standard STAC identities and leave unmapped feature selections unresolved.
+- **Coverage:** verifier files are explicitly a sample (`src/osd/verify.py:367`). State that retrieval fetches selected published assets, not necessarily a complete dataset; carry coverage information instead of implying completeness.
+- **Incomplete format:** design 2 and the stop rule need origin addresses and refusal notes absent from design 1. Define version discrimination, source links and item-level unresolved reasons in the schema; empty assets alone cannot explain anything.
+- **Rights loss:** the manifest omits `url`, `redistribution` and `attribution`; E09 needs rights information including unknown redistribution (`E09-ophiolite-reads-the-catalogue.md:21–23`). Preserve the record licence object without inventing optional statements or treating missing `share_alike` as false (`schema/record.schema.json:36–45`).
+- **Parallel asset vocabulary:** reuse STAC asset keys and File extension fields, or specify exact conversion from `file:size` and SHA-256 multihash `file:checksum` (`src/osd/stac.py:96–97`). Never silently discard unsupported checksum algorithms.
+- **Unsafe resume contract:** define collision-safe paths confined to `--dest`, temporary writes, atomic completion and rehashing before skipping existing files. A failed or truncated file must never count as complete; checksum-free downloads must never report `verified`.
+- **Network boundary:** `osd get` conflicts with the supplied repository rule limiting network entry points. Explicitly amend that boundary for intentional retrieval; inject transport in tests and retain the existing offline gate.
+- **Terms enforcement:** “terms forbid automated download” has no defined input or decision owner. Carry an explicit publisher-grounded restriction and explanation; do not ask the downloader to infer legal permission from arbitrary prose.
+
+**4. Acceptance lines that permit false positives**
+
+- **Schema test (line 31):** rejecting missing `licence` still permits a schema accepting malformed hashes, unsupported versions and invalid nested rights. Add negative fixtures for each contract guard.
+- **Three downloads (lines 32–33):** counters alone permit wrong output bytes; a corrupted source may never be requested after a successful first run. Use separate fresh destinations, assert exact bytes/hashes, and assert mismatch cleanup and preservation of pre-existing files.
+- **Attribution (line 34):** a hard-coded F3 string can pass. Use two distinct supplied statements plus a missing-statement case; assert exact preservation and the correct SPDX version.
+- **Site count (line 35):** two duplicates or unrelated items pass. Assert exact selected identities, asset metadata, rights and unresolved reasons; include a wellbore and a Collection without Items.
+- **Resume count (line 36):** skipping every existing pathname passes despite truncation or corruption. Mutate a completed file and leave a partial file; assert repair, correct bytes and no requests for intact verified files.
+- **Uncovered guards:** typed-reader validation, credential exclusion, checksum-free outcomes, denied downloads and CLI share-alike reporting have no acceptance tests. Add injected-fixture tests and failing mutations inside existing checks.
+
+**5. Scope overlap**
+
+- E15 already owns `site/app.js` and `tests/site/**` (`docs/program/CLAIMS.md:19`). Waiting only for E05 is insufficient; defer selection UI until E15 releases those paths and claim its Playwright test path.
+- Do not manufacture acquisition periods to obtain Item IDs: publisher period curation belongs to E16. Collection selection must work independently.
+- Mirror preference and custody remain E07; Ophiolite rights mapping, conversion and L4 remain E09. E06 should preserve their input facts without implementing those consumers.
