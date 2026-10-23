@@ -1,4 +1,4 @@
-"""Retrieval manifests, osd.manifest/2 (E06; alternates E07): write one from the built catalogue, read one typed.
+"""Retrieval manifests, osd.manifest/3 (E06; alternates E07; snapshot E09): write one from the built catalogue, read one typed.
 
 `from_catalog(ids)` reads build/catalog/ (records.json, stac/, outlines.geojson) and returns a
 manifest dict for a Collection selection (record or collection ids) or an Item selection (feature
@@ -14,6 +14,12 @@ multihash; any other checksum algorithm raises.
 osd.manifest/2 (E07) adds `alternates` per asset: other locations of the same bytes (the mirror,
 from the STAC asset's `alternate`). A manifest is written as /2 only when an asset has one, so
 a manifest without alternates stays readable by a /1 reader; both read here.
+
+osd.manifest/3 (E09) adds `metadata.catalog`, the snapshot identity of the catalogue it was written
+from (records.json `catalog`, copied whole), which a fidelity/1 record carries back. It is written
+whenever records.json has one; a catalogue built before E09 still gives /1 or /2, and those read
+with `catalog` None. The licence keeps exactly the keys the record states (`Licence.stated`), so a
+missing statement stays missing and an `attribution: null` stays null (/3 only).
 """
 
 from __future__ import annotations
@@ -30,6 +36,7 @@ from .stac import collection_id
 
 FORMAT = "osd.manifest/1"
 FORMAT_2 = "osd.manifest/2"
+FORMAT_3 = "osd.manifest/3"
 CATALOG_URL = "https://opensubsurfacedata.org/data/stac/catalog.json"
 SHA256_MULTIHASH = "1220"
 LICENCE_FIELDS = ("name", "spdx", "url", "redistribution", "attribution", "share_alike", "statement")
@@ -53,11 +60,12 @@ class Asset:
 class Licence:
     name: str
     redistribution: str
-    attribution: str
+    attribution: str | None             # None: stated as null (/3), the source gives no value
     spdx: str | None = None
     url: str | None = None
     share_alike: bool | None = None   # None: the record does not state it
     statement: str | None = None      # None: the publisher prescribes none we know of
+    stated: frozenset[str] = frozenset()   # the keys the manifest states: absent and null differ
 
 
 @dataclass(frozen=True)
@@ -77,11 +85,20 @@ class Entry:
 
 
 @dataclass(frozen=True)
+class Catalog:
+    source_commit: str | None
+    verification_commit: str | None
+    built_at: str
+    records_digest: str
+
+
+@dataclass(frozen=True)
 class Manifest:
     created: str
     catalog_url: str
     selection: str
     entries: tuple[Entry, ...]
+    catalog: Catalog | None = None   # /3; None for /1 and /2
 
 
 def _validator() -> Draft202012Validator:
@@ -105,24 +122,29 @@ def sha256_of(checksum: str | None, where: str) -> str | None:
 
 
 def read(path: Path | str) -> Manifest:
-    doc = json.loads(Path(path).read_text())
+    return read_doc(json.loads(Path(path).read_text()), str(path))
+
+
+def read_doc(doc: dict, where: str = "manifest") -> Manifest:
     bad = problems(doc)
     if bad:
-        raise ManifestError(f"{path}: not an {FORMAT} or {FORMAT_2} manifest:\n  " + "\n  ".join(bad))
+        raise ManifestError(f"{where}: not an {FORMAT}, {FORMAT_2} or {FORMAT_3} manifest:\n  " + "\n  ".join(bad))
     entries = []
     for i, e in enumerate(doc["entries"]):
         assets = tuple(Asset(key=k, href=a["href"], size=a.get("file:size"), title=a.get("title"),
                              sha256=sha256_of(a.get("file:checksum"), f"entries/{i}/assets/{k}"),
                              alternates=tuple((n, x["href"]) for n, x in a.get("alternates", {}).items()))
                        for k, a in e["assets"].items())
-        lic = Licence(**{k: e["licence"][k] for k in LICENCE_FIELDS if k in e["licence"]})
+        stated = {k: e["licence"][k] for k in LICENCE_FIELDS if k in e["licence"]}
+        lic = Licence(**stated, stated=frozenset(stated))
         entries.append(Entry(collection_id=e["collection_id"], record_id=e["record_id"], title=e["title"],
                              origin_url=e["origin_url"], access=e["access"], licence=lic, assets=assets,
                              item_id=e.get("item_id"), feature_id=e.get("feature_id"),
                              coverage=e.get("coverage"), unresolved=e.get("unresolved"),
                              known_issues=tuple(e.get("known_issues", []))))
+    cat = doc.get("metadata", {}).get("catalog")
     return Manifest(created=doc["created"], catalog_url=doc["catalog_url"], selection=doc["selection"],
-                    entries=tuple(entries))
+                    entries=tuple(entries), catalog=Catalog(**cat) if cat else None)
 
 
 def _no_assets_reason(rec: dict) -> str:
@@ -159,7 +181,8 @@ def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_
     if features and len(features) != len(ids):
         raise ManifestError("a selection is Collections or Items, never a mix: "
                             f"{len(features)} feature ids and {len(ids) - len(features)} record ids given")
-    recs = {r["id"]: r for r in json.loads((catalog_dir / "records.json").read_text())["records"]}
+    built = json.loads((catalog_dir / "records.json").read_text())
+    recs = {r["id"]: r for r in built["records"]}
     by_cid = {collection_id(rid): rid for rid in recs}
     stac_dir = catalog_dir / "stac"
 
@@ -203,8 +226,12 @@ def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_
             entries.append(e)
         selection = "items"
     v2 = any("alternates" in a for e in entries for a in e["assets"].values())
-    doc = {"format": FORMAT_2 if v2 else FORMAT, "created": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    snapshot = built.get("catalog")   # absent from a catalogue built before E09
+    doc = {"format": FORMAT_3 if snapshot else FORMAT_2 if v2 else FORMAT,
+           "created": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "catalog_url": catalog_url, "selection": selection, "entries": entries}
+    if snapshot:
+        doc["metadata"] = {"catalog": dict(snapshot)}
     bad = problems(doc)
     if bad:   # never write a manifest the reader would refuse
         raise ManifestError("built an invalid manifest:\n  " + "\n  ".join(bad))

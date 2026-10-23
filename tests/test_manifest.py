@@ -5,6 +5,7 @@ E06-retrieval-by-manifest-STRATEGY.md). Every download is served by a local HTTP
 import copy
 import hashlib
 import json
+import shutil
 import threading
 from collections import Counter
 from datetime import UTC, datetime
@@ -12,10 +13,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
+import yaml
 
 from osd import cli, stac
 from osd import get as get_mod
 from osd import manifest as mf
+from osd.build import build
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "manifest"
@@ -428,3 +431,126 @@ def test_cli_get_summary_names_share_alike(tmp_path, origin, capsys):
     origin.corrupt.add("/b/three.dat")
     (tmp_path / "d/beta-co--beta/three.dat").unlink()
     assert cli.main(["get", str(p), "--dest", str(tmp_path / "d")]) == 1
+
+
+# --- E09: manifest/3, the catalogue snapshot and rights that travel whole -------------------------
+
+FIDELITY = ROOT / "tests" / "fixtures" / "fidelity"
+RIGHTS_IDS = ["acme/two-wells", "acme/no-statement", "acme/null-attribution"]
+
+
+def _snapshot_manifest(tmp_path) -> tuple[dict, Path, dict]:
+    """build -> manifest -> file, from the fidelity fixture's records (three licence shapes)."""
+    out = tmp_path / "catalog"
+    build(out, FIDELITY / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror",
+          records_dir=FIDELITY / "records", source_commit="1" * 40, verification_commit="2" * 40)
+    doc = mf.from_catalog(RIGHTS_IDS, out, now=NOW)
+    return doc, mf.write(doc, tmp_path / "manifest.json"), json.loads((out / "records.json").read_text())
+
+
+def _stated(rid: str) -> dict:
+    return yaml.safe_load((FIDELITY / "records" / f"{rid}.yaml").read_text())["licence"]
+
+
+def _round_trip(tmp_path, rid):
+    _, path, _ = _snapshot_manifest(tmp_path)
+    raw = next(e for e in json.loads(path.read_text())["entries"] if e["record_id"] == rid)["licence"]
+    lic = next(e for e in mf.read(path).entries if e.record_id == rid).licence
+    return raw, lic
+
+
+def test_licence_round_trip_every_field_exact(tmp_path):
+    stated = _stated("acme/two-wells")
+    assert set(stated) == set(mf.LICENCE_FIELDS) and len({str(v) for v in stated.values()}) == len(stated)
+    raw, lic = _round_trip(tmp_path, "acme/two-wells")
+    assert raw == stated
+    assert lic.stated == frozenset(stated)
+    for k, v in stated.items():
+        assert getattr(lic, k) == v, k
+
+
+def test_licence_round_trip_statement_absent(tmp_path):
+    stated = _stated("acme/no-statement")
+    raw, lic = _round_trip(tmp_path, "acme/no-statement")
+    assert raw == stated and "statement" not in raw and "url" not in raw
+    assert lic.stated == frozenset(stated) and lic.statement is None and lic.url is None
+    assert (lic.spdx, lic.share_alike, lic.attribution) == (None, False, "not-required")
+    assert "spdx" in lic.stated   # stated as null: no SPDX identifier, not "not stated"
+
+
+def test_licence_round_trip_attribution_null(tmp_path):
+    stated = _stated("acme/null-attribution")
+    raw, lic = _round_trip(tmp_path, "acme/null-attribution")
+    assert raw == stated and raw["attribution"] is None
+    assert lic.attribution is None and "attribution" in lic.stated
+    assert {"spdx", "share_alike", "url"}.isdisjoint(lic.stated)
+    assert lic.statement == "Courtesy of Acme"
+
+
+def test_v3_carries_catalog_and_reads(tmp_path):
+    doc, path, built = _snapshot_manifest(tmp_path)
+    assert doc["format"] == "osd.manifest/3"
+    assert doc["metadata"] == {"catalog": built["catalog"]}
+    m = mf.read(path)
+    assert m.catalog == mf.Catalog(**built["catalog"])
+    (e,) = [e for e in m.entries if e.record_id == "acme/two-wells"]
+    assert e.collection_id == "acme--two-wells" and e.item_id is None
+    assert {(a.key, a.sha256) for a in e.assets} == {
+        ("well-a.las", _sha((FIDELITY / "well-a.las").read_bytes())),
+        ("well-b.las", _sha((FIDELITY / "well-b.las").read_bytes()))}
+
+
+def test_v1_and_v2_read_with_catalog_null():
+    v1 = json.loads((FIXTURES / "two-records.json").read_text())
+    v2 = copy.deepcopy(v1)
+    v2["format"] = "osd.manifest/2"
+    v2["entries"][0]["assets"]["one.bin"]["alternates"] = {"mirror": {"href": "https://mirror.example/one.bin"}}
+    for doc in (v1, v2):
+        assert mf.problems(doc) == []
+        assert mf.read_doc(doc).catalog is None
+
+
+def test_catalog_on_v2_refused(tmp_path):
+    doc, _, _ = _snapshot_manifest(tmp_path)
+    for fmt in ("osd.manifest/2", "osd.manifest/1"):
+        old = dict(copy.deepcopy(doc), format=fmt)
+        old["entries"] = [e for e in old["entries"] if e["licence"]["attribution"] is not None]
+        assert mf.problems(old) != [], fmt
+        assert mf.problems({k: v for k, v in old.items() if k != "metadata"}) == [], fmt   # the control
+    no_meta = {k: v for k, v in copy.deepcopy(doc).items() if k != "metadata"}
+    assert mf.problems(dict(no_meta, format="osd.manifest/2")) != []   # attribution null is /3 only
+
+
+def test_v3_without_catalog_refused(tmp_path):
+    doc, _, _ = _snapshot_manifest(tmp_path)
+    assert mf.problems({k: v for k, v in doc.items() if k != "metadata"}) != []
+    bad = copy.deepcopy(doc)
+    del bad["metadata"]["catalog"]["records_digest"]
+    assert mf.problems(bad) != []
+
+
+def test_manifest_without_snapshot_stays_v1(tmp_path):
+    """A records.json written before E09 (no `catalog`) still gives the manifest it gave."""
+    doc = mf.from_catalog(["acme/alpha"], catalogue(tmp_path, "https://f.example"), now=NOW)
+    assert doc["format"] == "osd.manifest/1" and "metadata" not in doc
+
+
+def test_norne_manifest_3(tmp_path):
+    """The real-record case: Norne's record, with the verification E07 recorded for it."""
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    shutil.copy(ROOT / "tests" / "fixtures" / "mirror" / "verification-2-norne.json", vdir / "opm__norne.json")
+    out = tmp_path / "catalog"
+    build(out, vdir, now=NOW, mirror_dir=tmp_path / "no-mirror", source_commit="1" * 40, verification_commit=None)
+    doc = mf.from_catalog(["opm/norne"], out, now=NOW)
+    assert doc["format"] == "osd.manifest/3"
+    assert doc["metadata"]["catalog"] == json.loads((out / "records.json").read_text())["catalog"]
+    assert doc["metadata"]["catalog"]["verification_commit"] is None
+    (e,) = doc["entries"]
+    norne = yaml.safe_load((ROOT / "records" / "opm" / "norne.yaml").read_text())
+    assert e["licence"] == norne["licence"] and "statement" not in e["licence"]
+    assert e["assets"]["norne/NORNE_ATW2013.DATA"]["file:checksum"] == (
+        "1220f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080")
+    assert "item_id" not in e
+    m = mf.read(mf.write(doc, tmp_path / "norne.manifest.json"))
+    assert m.catalog.records_digest == doc["metadata"]["catalog"]["records_digest"]
