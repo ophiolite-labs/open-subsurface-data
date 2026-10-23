@@ -60,7 +60,7 @@ osd status ─▶ "L1 (terms expire 2027-01-01)" for an absolute licence.terms.e
 | scaffold comments read from the schema | `test_schema.py::test_new_scaffold_comments_list_the_schema_values` |
 | six record diffs exact; 92 records, 0 problems | `test_schema.py::test_the_six_records_state_the_new_values`, `osd validate`, evidence diff |
 
-## Guards and their mutations (each shown red, then restored)
+## Guards and their mutations (each shown red, then restored; `docs/program/evidence/e19/mutations.txt`)
 
 1. record schema: `terms.required` emptied → `test_terms_without_stated_refused`.
 2. record schema: `expires` pattern and format dropped → `test_expires_not_a_date_refused`.
@@ -74,9 +74,11 @@ osd status ─▶ "L1 (terms expire 2027-01-01)" for an absolute licence.terms.e
 10. `new.py` access comment hard-coded to the record/2 list → `test_new_scaffold_comments_list_the_schema_values`.
 11. `get.py` terms lines dropped → `test_attribution_carries_the_terms`.
 12. `manifest.py` reader fills absent terms keys with None → `test_terms_absence_and_null_travel`.
+13. `records/_template.yaml` access comment without `purchase` → `test_template_access_comment_lists_the_schema_values` (added on the supervisor's ruling 7).
 
 ## Outside the claim, named
 
 Raising `$id` to record/3 turns two existing asserts red (`tests/test_outlines.py:517`, `tests/test_stac.py:318`
 read the live schema's `$id` as `/record/2`). Both are E18's paths; the one-token edits are in this PR and in
 the inbox note; E18, merging second, rebases over them.
+Granted with `tests/test_report.py:123` (the record/2 access enum in an `osd new` message) on the inbox answer.

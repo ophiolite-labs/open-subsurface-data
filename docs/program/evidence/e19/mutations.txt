@@ -1,0 +1,14 @@
+# Mutations: each applied alone to the unchanged suite, the named test run, the file restored byte for byte (scratchpad mut.py)
+RED  M1 terms.required emptied: tests/test_schema.py::test_terms_without_stated_refused -> 1 failed in 0.18s
+RED  M2 expires pattern+format dropped: tests/test_schema.py::test_expires_not_a_date_refused -> 1 failed in 0.22s
+RED  M3 terms open: tests/test_schema.py::test_unknown_values_refused -> 1 failed, 3 passed in 0.18s
+RED  M4 Python LICENCE_FIELDS without terms: tests/test_manifest.py::test_purchase_and_terms_round_trip -> 1 failed in 4.46s
+RED  M6 below-/4 refusal dropped: tests/test_manifest.py::test_new_values_refused_below_v4 -> 1 failed in 4.88s
+RED  M7 expiry comparison dropped: tests/test_schema.py::test_status_terms_expiry -> 1 failed in 0.19s
+RED  M8 purchase not in stac-osd enum: tests/test_schema.py::test_stac_collection_carries_purchase_and_keyword -> 1 failed in 0.26s
+RED  M9 stac_extensions v2 URL only: tests/test_schema.py::test_stac_osd_1_collection_still_validates -> 1 failed in 0.24s
+RED  M10 new.py access comment hard-coded: tests/test_schema.py::test_new_scaffold_comments_list_the_schema_values -> 1 failed in 0.20s
+RED  M11 get.py terms lines dropped: tests/test_manifest.py::test_attribution_carries_the_terms -> 1 failed in 0.20s
+RED  M12 reader fills absent terms keys: tests/test_manifest.py::test_terms_absence_and_null_travel -> 1 failed in 0.19s
+RED  M13 template access comment without purchase: tests/test_schema.py::test_template_access_comment_lists_the_schema_values -> 1 failed in 0.16s
+RED  M5 browser LICENCE_FIELDS without terms: site.test.mjs 'select: a purchase dataset with terms ...' -> not ok 2, AssertionError: pasa.licence lacks terms (deepStrictEqual against the record's licence)
