@@ -9,10 +9,14 @@ Output (build/catalog/stac/), all links relative so the tree serves from any add
                                    interval is the feature's own dates where the outline carries them
                                    (E18, `osd:period_source`); validate() fails an Item whose
                                    interval leaves its Collection's
+  <cid>/shards/<k>/catalog.json   above SHARD_SIZE Items (E32): the Collection links child Catalogs of
+                                   at most SHARD_SIZE `item` links each, in outline order; the Items
+                                   keep their Collection as `collection` and `parent`
 
 `<cid>` is the record id with '/' replaced by '--'. Collection fields carry record-level assurance
 from the verification record; Item fields carry the outline's provenance. Both are the `osd`
-extension (schema/stac-osd.json). Validation runs offline against the schemas bundled in
+extension (schema/stac-osd.json). Collections and shards are written compact; everything that walks
+the tree follows `child` as well as `item` links. Validation runs offline against the schemas bundled in
 schema/stac/ (schema/stac/schema-map.json).
 """
 
@@ -21,6 +25,7 @@ from __future__ import annotations
 import calendar
 import hashlib
 import json
+import os
 import re
 import shutil
 from pathlib import Path
@@ -36,6 +41,8 @@ ALTERNATE_EXTENSION = "https://stac-extensions.github.io/alternate-assets/v1.2.0
 MIRROR_TITLE = "Open Subsurface Data mirror"
 SCHEMA_MAP = paths.SCHEMA_DIR / "stac" / "schema-map.json"
 WORLD = [-180.0, -90.0, 180.0, 90.0]
+SHARD_SIZE = 2000   # Items a Collection links directly; above it, child Catalogs of this many (E32)
+COMPACT = {"separators": (",", ":"), "ensure_ascii": False}
 
 
 def collection_id(record_id: str) -> str:
@@ -192,8 +199,7 @@ def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFIC
                       {"rel": "about", "href": rec["origin"]["url"], "title": "Publisher's page"},
                       {"rel": "license", "href": lic.get("url", rec["origin"]["url"]),
                        "title": lic["name"]}]
-                     + [{"rel": "item", "href": f"./items/{n}", "type": "application/geo+json"}
-                        for n in names],
+                     + _member_links(list(names)),
             "osd:level": rec["level"], "osd:checked_at": rec["checked_at"],
             "osd:access": rec["origin"]["access"], "osd:redistribution": lic["redistribution"],
         }
@@ -203,9 +209,14 @@ def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFIC
             col["assets"] = assets
         d = root / cid
         (d / "items" if items else d).mkdir(parents=True, exist_ok=True)
-        (d / "collection.json").write_text(json.dumps(col, indent=2) + "\n")
+        (d / "collection.json").write_text(json.dumps(col, **COMPACT) + "\n")
+        for k, shard in enumerate(_shards(cid, rec["title"], list(names)), 1):
+            (d / "shards" / str(k)).mkdir(parents=True)
+            (d / "shards" / str(k) / "catalog.json").write_text(json.dumps(shard, **COMPACT) + "\n")
+        item_dir = str(d / "items")   # one file per Item; plain paths, a hundred thousand of them (E32)
         for n, it in zip(names, items):
-            (d / "items" / n).write_text(json.dumps(it) + "\n")
+            with open(os.path.join(item_dir, n), "w", encoding="utf-8") as f:
+                f.write(json.dumps(it) + "\n")
         collections.append(col)
         children.append({"rel": "child", "href": f"./{cid}/collection.json",
                          "type": "application/json", "title": rec["title"]})
@@ -218,6 +229,75 @@ def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFIC
     }
     (root / "catalog.json").write_text(json.dumps(catalog, indent=2) + "\n")
     return collections
+
+
+def link_target(path: Path, href: str | None = None) -> Path:
+    """The absolute, normalised file a relative link of `path` names (`path` itself without one);
+    no symlink resolution, which costs a system call per path part on a hundred thousand Items."""
+    return Path(os.path.normpath(os.path.join(os.path.abspath(path.parent), href) if href
+                                 else os.path.abspath(path)))
+
+
+def _member_links(names: list[str]) -> list[dict]:
+    """A Collection's links to its Items: direct up to SHARD_SIZE, else one `child` per shard."""
+    if len(names) <= SHARD_SIZE:
+        return [{"rel": "item", "href": f"./items/{n}", "type": "application/geo+json"} for n in names]
+    return [{"rel": "child", "href": f"./shards/{k}/catalog.json", "type": "application/json",
+             "title": f"Items {i + 1} to {min(i + SHARD_SIZE, len(names))}"}
+            for k, i in enumerate(range(0, len(names), SHARD_SIZE), 1)]
+
+
+def _shards(cid: str, title: str, names: list[str]) -> list[dict]:
+    """The child Catalogs of a Collection above SHARD_SIZE Items (standard STAC Catalogs whose
+    `item` links point at the Collection's items/); none at or below it."""
+    if len(names) <= SHARD_SIZE:
+        return []
+    out = []
+    for i in range(0, len(names), SHARD_SIZE):
+        part = names[i:i + SHARD_SIZE]
+        what = f"Items {i + 1} to {i + len(part)}"
+        out.append({
+            "type": "Catalog", "stac_version": STAC_VERSION, "id": f"{cid}-{len(out) + 1}",
+            "title": f"{title}: {what}", "description": f"{what} of {len(names)} in the Collection {cid}.",
+            "links": [{"rel": "root", "href": "../../../catalog.json", "type": "application/json"},
+                      {"rel": "parent", "href": "../../collection.json", "type": "application/json"}]
+                     + [{"rel": "item", "href": f"../../items/{n}", "type": "application/geo+json"} for n in part],
+        })
+    return out
+
+
+def collection_items(col_path: Path) -> list[Path]:
+    """The Item files one Collection reaches: its `item` links, then those of its `child` Catalogs
+    in link order (E32 shards)."""
+    out, todo, seen = [], [link_target(col_path)], set()
+    while todo:
+        p = todo.pop(0)
+        if p in seen:
+            continue
+        seen.add(p)
+        for link in _links(p):
+            target = link_target(p, link["href"])
+            if link["rel"] == "item":
+                out.append(target)
+            elif link["rel"] == "child":
+                todo.append(target)
+    return out
+
+
+def collections(catalog: Path) -> list[Path]:
+    """The Collection files reached from a Catalog by `child` links (not descending into them)."""
+    start = link_target(catalog)
+    out, todo, seen = [], [start], set()
+    while todo:
+        p = todo.pop(0)
+        if p in seen:
+            continue
+        seen.add(p)
+        if p != start and json.loads(p.read_text()).get("type") == "Collection":
+            out.append(p)
+            continue
+        todo += [link_target(p, x["href"]) for x in _links(p) if x["rel"] == "child"]
+    return out
 
 
 def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MAP) -> tuple[bool, list]:
@@ -236,11 +316,12 @@ def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MA
 
 
 def containment_problems(root: Path) -> list[str]:
-    """Every Item whose interval is not inside its Collection's temporal extent (E18)."""
+    """Every Item whose interval is not inside its Collection's temporal extent (E18), the Items
+    found by the Collection's links, shards included (E32)."""
     out = []
-    for col_path in sorted(root.glob("*/collection.json")):
+    for col_path in collections(root / "catalog.json"):
         [[lo, hi]] = json.loads(col_path.read_text())["extent"]["temporal"]["interval"]
-        for it in sorted((col_path.parent / "items").glob("*.json")):
+        for it in collection_items(col_path):
             item = json.loads(it.read_text())
             p = item["properties"]
             start, end = p.get("start_datetime") or p.get("datetime"), p.get("end_datetime") or p.get("datetime")
@@ -255,19 +336,24 @@ def _links(path: Path) -> list[dict]:
 
 def link_problems(root: Path) -> list[str]:
     """Every relative link in the tree points at a file that exists."""
+    top = os.path.normpath(root)
+    files = {os.path.join(parent, n) for parent, _, names in os.walk(top) for n in names}
     out = []
-    for p in sorted(root.rglob("*.json")):
-        for link in _links(p):
+    for path in sorted(f for f in files if f.endswith(".json")):
+        parent = os.path.dirname(path)
+        with open(path, encoding="utf-8") as f:
+            links = json.load(f).get("links", [])
+        for link in links:
             href = link["href"]
-            if "://" not in href and not (p.parent / href).resolve().is_file():
-                out.append(f"{p.relative_to(root)}: {link['rel']} -> {href} does not exist")
+            if "://" not in href and os.path.normpath(os.path.join(parent, href)) not in files:
+                out.append(f"{os.path.relpath(path, top)}: {link['rel']} -> {href} does not exist")
     return out
 
 
 def reachable(catalog: Path) -> dict[str, set[str]]:
     """Collection and Item ids a client reaches from the root by child and item links."""
     out: dict[str, set[str]] = {"collections": set(), "items": set()}
-    todo, seen = [catalog.resolve()], set()
+    todo, seen = [link_target(catalog)], set()
     while todo:
         p = todo.pop()
         if p in seen:
@@ -278,6 +364,6 @@ def reachable(catalog: Path) -> dict[str, set[str]]:
             out["collections"].add(doc["id"])
         elif doc["type"] == "Feature":
             out["items"].add(doc["id"])
-        todo += [(p.parent / x["href"]).resolve() for x in doc.get("links", [])
+        todo += [link_target(p, x["href"]) for x in doc.get("links", [])
                  if x["rel"] in ("child", "item")]
     return out

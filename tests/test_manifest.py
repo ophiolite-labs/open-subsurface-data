@@ -83,7 +83,7 @@ def _record(rid, *, access="anonymous", licence=None, known_issues=None):
     return rec
 
 
-def catalogue(tmp_path: Path, base: str, records=None, files=None) -> Path:
+def catalogue(tmp_path: Path, base: str, records=None, files=None, wells=1) -> Path:
     """build/catalog/ as `osd build` writes it, through E04's own STAC writer."""
     out, vdir, odir = tmp_path / "catalog", tmp_path / "verification", tmp_path / "outlines"
     for d in (out, vdir, odir):
@@ -108,13 +108,14 @@ def catalogue(tmp_path: Path, base: str, records=None, files=None) -> Path:
     for rec, with_period in ((records[0], True), (records[1], False)):
         rid = rec["id"]
         fc = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {
-            "record_id": rid, "kind": "wellbore", "name": "W-1", "approximate": False, "source": "publisher",
-            "feature_id": f"{rid}#w-1"}, "geometry": {"type": "Point", "coordinates": [4.5, 54.5]}}]}
+            "record_id": rid, "kind": "wellbore", "name": f"W-{n}", "approximate": False, "source": "publisher",
+            "feature_id": f"{rid}#w-{n}"}, "geometry": {"type": "Point", "coordinates": [4.5, 54.5]}}
+            for n in range(1, wells + 1)]}
         (odir / (rid.replace("/", "__") + ".geojson")).write_text(json.dumps(fc))
         if with_period:
             rec["period"] = {"start": "2019", "end": "2019"}
-        features.append({"type": "Feature", "id": f"{rid}#w-1", "properties": fc["features"][0]["properties"],
-                         "geometry": fc["features"][0]["geometry"]})
+        features += [{"type": "Feature", "id": f["properties"]["feature_id"], "properties": f["properties"],
+                      "geometry": f["geometry"]} for f in fc["features"]]
     stac.write_catalog(out, records, vdir, odir)
     (out / "records.json").write_text(json.dumps({"count": len(records), "records": records}))
     (out / "outlines.geojson").write_text(json.dumps({"type": "FeatureCollection", "features": features}))
@@ -216,6 +217,18 @@ def test_item_selection_carries_no_assets(tmp_path):
     assert doc["selection"] == "items"
     assert e["item_id"] == "acme/alpha#w-1" and e["feature_id"] == "acme/alpha#w-1"
     assert e["assets"] == {} and "Collection acme--alpha" in e["unresolved"]
+    assert mf.problems(doc) == []
+
+
+def test_item_on_a_later_shard_is_found(tmp_path, monkeypatch):
+    # mutation: the lookup reads only the Collection's direct item links -> item_id None, red
+    monkeypatch.setattr(stac, "SHARD_SIZE", 2)
+    out = catalogue(tmp_path, "https://f.example", wells=5)
+    links = json.loads((out / "stac" / "acme--alpha" / "collection.json").read_text())["links"]
+    assert [x["rel"] for x in links].count("child") == 3 and "item" not in [x["rel"] for x in links]
+    doc = mf.from_catalog(["acme/alpha#w-5", "acme/alpha#w-1"], out, now=NOW)
+    assert [(e["feature_id"], e["item_id"]) for e in doc["entries"]] == [
+        ("acme/alpha#w-5", "acme/alpha#w-5"), ("acme/alpha#w-1", "acme/alpha#w-1")]
     assert mf.problems(doc) == []
 
 
