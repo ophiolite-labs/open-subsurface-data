@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
-from datetime import datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from . import build as build_mod
@@ -77,16 +78,38 @@ def cmd_build(_: argparse.Namespace) -> int:
     return 0
 
 
+def terms_note(rec: dict, now: datetime | None = None) -> str:
+    """"terms expire D" for a publisher-stated absolute `licence.terms.expires` (record/3, E19). The
+    date is a UTC calendar day and the terms hold through its end; nothing is computed from a
+    duration. Empty when the record states no date."""
+    x = (rec.get("licence", {}).get("terms") or {}).get("expires")
+    if x is None:
+        return ""
+    try:
+        if not isinstance(x, date) and not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", str(x)):
+            raise ValueError(x)
+        day = x if isinstance(x, date) else date.fromisoformat(x)
+    except ValueError:
+        return f"terms expire ? ({x!r} is not a date)"
+    today = (now or datetime.now(UTC)).astimezone(UTC).date()
+    if today > day:
+        return f"terms expired {day.isoformat()}"
+    return f"terms expire {day.isoformat()}" + (" (today)" if today == day else "")
+
+
 def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = None,
                  records_dir: Path = paths.RECORDS_DIR) -> list[str]:
     """The levels `osd build` publishes, read from the same verification directory; an L4 shows
-    its coverage beside it, "L4 (2 of 2 converted)" (E09)."""
+    its coverage beside it, "L4 (2 of 2 converted)" (E09), and a stated expiry of the terms,
+    "L1 (terms expire 2027-01-01)" (E19)."""
     rows = []
     for rid, r in load_records(records_dir).items():
         v = build_mod.latest_verification(rid, vdir)
         lv, checked = (v["level"], v["checked_at"]) if v else ("L0", None)
         coverage = conversion_coverage(v)
         lv += f" ({coverage})" if coverage else ""
+        terms = terms_note(r, now)
+        lv += f" ({terms})" if terms else ""
         when = (checked or "never")[:10] + (" stale" if is_stale(checked, now) else "")
         blocked = (v or {}).get("origin", {}).get("blocked_since")
         when += f" blocked since {blocked[:10]}" if blocked else ""

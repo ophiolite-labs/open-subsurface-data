@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from jsonschema import Draft202012Validator, FormatChecker
 
 from osd import cli, stac
 from osd import get as get_mod
@@ -461,7 +462,8 @@ def _round_trip(tmp_path, rid):
 
 def test_licence_round_trip_every_field_exact(tmp_path):
     stated = _stated("acme/two-wells")
-    assert set(stated) == set(mf.LICENCE_FIELDS) and len({str(v) for v in stated.values()}) == len(stated)
+    # every record/2 licence field; terms (record/3) has its own round trip, test_purchase_and_terms_round_trip
+    assert set(stated) == set(mf.LICENCE_FIELDS) - {"terms"} and len({str(v) for v in stated.values()}) == len(stated)
     raw, lic = _round_trip(tmp_path, "acme/two-wells")
     assert raw == stated
     assert lic.stated == frozenset(stated)
@@ -570,3 +572,107 @@ def test_static_manifest_3_fixtures_equal_what_osd_manifest_writes(tmp_path, rid
     assert json.loads(committed.read_text()) == json.loads(written.read_text()), (
         f"{committed.name} drifted from osd manifest; regenerate it and tell E127 the new pin")
     assert mf.read(committed).catalog == mf.Catalog(**json.loads((FIDELITY / "fidelity.json").read_text())["catalog"])
+
+
+# --- E19: record/3 vocabulary, manifest/4 ---------------------------------------------------------
+
+VOCAB = ROOT / "tests" / "fixtures" / "vocabulary" / "records"
+FROZEN_3 = ROOT / "tests" / "fixtures" / "schema" / "manifest-3.schema.json"
+
+
+def _vocab_catalogue(tmp_path) -> Path:
+    out = tmp_path / "catalog"
+    (tmp_path / "verification").mkdir()
+    build(out, tmp_path / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror", records_dir=VOCAB,
+          source_commit="1" * 40, verification_commit="2" * 40)
+    return out
+
+
+def test_purchase_and_terms_round_trip(tmp_path):
+    """build -> osd manifest -> osd.manifest.read: purchase and the whole terms object, exact values."""
+    out = _vocab_catalogue(tmp_path)
+    rec = yaml.safe_load((VOCAB / "acme" / "sold.yaml").read_text())
+    doc = mf.from_catalog(["acme/sold"], out, now=NOW)
+    assert doc["format"] == "osd.manifest/4" and mf.problems(doc) == []
+    assert doc["metadata"]["catalog"] == json.loads((out / "records.json").read_text())["catalog"]
+    (e,) = doc["entries"]
+    assert e["access"] == "purchase" and e["licence"] == rec["licence"]
+    assert e["unresolved"] == "access purchase: the publisher sells the files; buy them at the origin page"
+    assert cli.main(["manifest", "acme/sold", "--catalog", str(out), "--out", str(tmp_path / "m.json")]) == 0
+    m = mf.read(tmp_path / "m.json")
+    (x,) = m.entries
+    assert x.access == "purchase"
+    assert x.licence.terms == mf.Terms(stated=rec["licence"]["terms"]["stated"], duration="at most 10 years from purchase",
+                                       review_before_publication=True, expires=None,
+                                       stated_keys=frozenset({"stated", "duration", "review_before_publication", "expires"}))
+    assert "terms" in x.licence.stated and m.catalog.records_digest == doc["metadata"]["catalog"]["records_digest"]
+
+
+def test_terms_absence_and_null_travel(tmp_path):
+    out = _vocab_catalogue(tmp_path)
+    doc = mf.from_catalog(["acme/words", "acme/sold"], out, now=NOW)
+    words, sold = doc["entries"]
+    assert words["licence"]["terms"] == {"stated": "The licence ends on 31 December 2030.", "expires": "2030-12-31"}
+    assert sold["licence"]["terms"]["expires"] is None
+    assert "spdx" not in words["licence"] and "url" not in words["licence"]
+    tw, ts = (e.licence.terms for e in mf.read_doc(doc).entries)
+    assert tw.stated_keys == {"stated", "expires"} and tw.duration is None and tw.expires == "2030-12-31"
+    assert "expires" in ts.stated_keys and ts.expires is None      # null stated, not absent
+
+
+def test_manifest_without_record_3_values_stays_v3(tmp_path):
+    doc = mf.from_catalog(["acme/plain"], _vocab_catalogue(tmp_path), now=NOW)
+    assert doc["format"] == "osd.manifest/3" and "terms" not in doc["entries"][0]["licence"]
+
+
+def test_new_values_refused_below_v4(tmp_path):
+    doc = mf.from_catalog(["acme/sold", "acme/words"], _vocab_catalogue(tmp_path), now=NOW)
+    assert mf.problems(doc) == []
+    v3 = dict(copy.deepcopy(doc), format="osd.manifest/3")
+    assert mf.problems(v3) != []
+    no_terms = copy.deepcopy(v3)
+    for e in no_terms["entries"]:
+        e["licence"].pop("terms")
+    assert mf.problems(no_terms) != []                               # purchase alone is /4
+    no_purchase = copy.deepcopy(v3)
+    no_purchase["entries"][0]["access"] = "request"
+    assert mf.problems(no_purchase) != []                            # terms alone is /4
+    no_terms["entries"][0]["access"] = "request"
+    assert mf.problems(no_terms) == []                               # the control: a /3 manifest
+    old = {k: x for k, x in no_purchase.items() if k != "metadata"}
+    for fmt in ("osd.manifest/1", "osd.manifest/2"):
+        assert mf.problems(dict(old, format=fmt)) != [], fmt
+    v4_no_meta = {k: x for k, x in doc.items() if k != "metadata"}
+    assert mf.problems(v4_no_meta) != []                             # /4 carries the snapshot like /3
+    bad = copy.deepcopy(doc)
+    bad["entries"][0]["licence"]["terms"]["price"] = "40 USD"
+    assert mf.problems(bad) != []
+
+
+def test_manifest_1_to_3_still_read():
+    """The committed /1 and /3 files validate under manifest/4 and under the frozen manifest/3 schema."""
+    frozen = Draft202012Validator(json.loads(FROZEN_3.read_text()), format_checker=FormatChecker())
+    assert json.loads((ROOT / "schema" / "manifest.schema.json").read_text())["$id"].endswith("/manifest/4")
+    files = [FIXTURES / "two-records.json", *sorted(FIDELITY.glob("manifest-*.json"))]
+    assert len(files) == 4
+    for p in files:
+        doc = json.loads(p.read_text())
+        assert not list(frozen.iter_errors(doc)), p
+        assert mf.problems(doc) == [], p
+        assert all(e.licence.terms is None for e in mf.read(p).entries)
+
+
+def test_attribution_carries_the_terms(tmp_path):
+    doc = mf.from_catalog(["acme/sold", "acme/words", "acme/plain"], _vocab_catalogue(tmp_path), now=NOW)
+    sold, words, plain = (get_mod.entry_attribution(e) for e in mf.read_doc(doc).entries)
+    stated = yaml.safe_load((VOCAB / "acme" / "sold.yaml").read_text())["licence"]["terms"]["stated"]
+    i = sold.index("- Terms, as the record states them:")
+    assert sold[i + 2] == f"  > {stated}" and i > sold.index("- Redistribution: forbidden")
+    assert "- Terms duration: at most 10 years from purchase" in sold
+    assert "- Review before publication: required by the publisher" in sold
+    assert "- Terms expire: no date stated" in sold
+    assert "- Terms expire: 2030-12-31" in words and not any(x.startswith("- Terms duration") for x in words)
+    assert not any("Terms" in x for x in plain)
+    m = mf.read_doc(doc)
+    get_mod.get(m, tmp_path / "dest")
+    assert f"  > {stated}" in (tmp_path / "dest" / "ATTRIBUTION.md").read_text()

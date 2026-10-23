@@ -1,4 +1,4 @@
-"""Retrieval manifests, osd.manifest/3 (E06; alternates E07; snapshot E09): write one from the built catalogue, read one typed.
+"""Retrieval manifests, osd.manifest/4 (E06; alternates E07; snapshot E09; record/3 vocabulary E19): write one from the built catalogue, read one typed.
 
 `from_catalog(ids)` reads build/catalog/ (records.json, stac/, outlines.geojson) and returns a
 manifest dict for a Collection selection (record or collection ids) or an Item selection (feature
@@ -20,6 +20,11 @@ from (records.json `catalog`, copied whole), which a fidelity/1 record carries b
 whenever records.json has one; a catalogue built before E09 still gives /1 or /2, and those read
 with `catalog` None. The licence keeps exactly the keys the record states (`Licence.stated`), so a
 missing statement stays missing and an `attribution: null` stays null (/3 only).
+
+osd.manifest/4 (E19) carries the record/3 vocabulary: `access: purchase` and `licence.terms`, the
+publisher's terms copied whole (`Terms.stated_keys`: absent and null differ here too). A manifest is
+written as /4 only when an entry carries one of them, so every other manifest is what it was; /4
+carries `metadata.catalog` like /3.
 """
 
 from __future__ import annotations
@@ -37,9 +42,11 @@ from .stac import collection_id
 FORMAT = "osd.manifest/1"
 FORMAT_2 = "osd.manifest/2"
 FORMAT_3 = "osd.manifest/3"
+FORMAT_4 = "osd.manifest/4"
 CATALOG_URL = "https://opensubsurfacedata.org/data/stac/catalog.json"
 SHA256_MULTIHASH = "1220"
-LICENCE_FIELDS = ("name", "spdx", "url", "redistribution", "attribution", "share_alike", "statement")
+LICENCE_FIELDS = ("name", "spdx", "url", "redistribution", "attribution", "share_alike", "statement", "terms")
+TERMS_FIELDS = ("stated", "duration", "review_before_publication", "expires")
 
 
 class ManifestError(ValueError):
@@ -57,6 +64,16 @@ class Asset:
 
 
 @dataclass(frozen=True)
+class Terms:
+    """licence.terms (record/3): the publisher's words; nothing here is computed."""
+    stated: str
+    duration: str | None = None                    # the publisher's wording, e.g. "at most 10 years from purchase"
+    review_before_publication: bool | None = None
+    expires: str | None = None                     # YYYY-MM-DD, only when the publisher states the date
+    stated_keys: frozenset[str] = frozenset()      # the keys the manifest states: absent and null differ
+
+
+@dataclass(frozen=True)
 class Licence:
     name: str
     redistribution: str
@@ -65,7 +82,13 @@ class Licence:
     url: str | None = None
     share_alike: bool | None = None   # None: the record does not state it
     statement: str | None = None      # None: the publisher prescribes none we know of
+    terms: Terms | None = None        # None: the record states no terms (record/3, manifest/4)
     stated: frozenset[str] = frozenset()   # the keys the manifest states: absent and null differ
+
+    def __post_init__(self):
+        if isinstance(self.terms, dict):   # a licence mapping read whole (here and in custody, E07)
+            t = {k: self.terms[k] for k in TERMS_FIELDS if k in self.terms}
+            object.__setattr__(self, "terms", Terms(**t, stated_keys=frozenset(t)))
 
 
 @dataclass(frozen=True)
@@ -98,7 +121,7 @@ class Manifest:
     catalog_url: str
     selection: str
     entries: tuple[Entry, ...]
-    catalog: Catalog | None = None   # /3; None for /1 and /2
+    catalog: Catalog | None = None   # /3 and /4; None for /1 and /2
 
 
 def _validator() -> Draft202012Validator:
@@ -128,7 +151,7 @@ def read(path: Path | str) -> Manifest:
 def read_doc(doc: dict, where: str = "manifest") -> Manifest:
     bad = problems(doc)
     if bad:
-        raise ManifestError(f"{where}: not an {FORMAT}, {FORMAT_2} or {FORMAT_3} manifest:\n  " + "\n  ".join(bad))
+        raise ManifestError(f"{where}: not an {FORMAT}, {FORMAT_2}, {FORMAT_3} or {FORMAT_4} manifest:\n  " + "\n  ".join(bad))
     entries = []
     for i, e in enumerate(doc["entries"]):
         assets = tuple(Asset(key=k, href=a["href"], size=a.get("file:size"), title=a.get("title"),
@@ -151,6 +174,8 @@ def _no_assets_reason(rec: dict) -> str:
     access = rec["origin"]["access"]
     if access in ("registration", "request"):
         return f"access {access}: sign in or ask at the origin page; no file address is published to us"
+    if access == "purchase":
+        return "access purchase: the publisher sells the files; buy them at the origin page"
     return "the verifier has hashed no file with a fetch address for this record; get the files at the origin page"
 
 
@@ -226,8 +251,12 @@ def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_
             entries.append(e)
         selection = "items"
     v2 = any("alternates" in a for e in entries for a in e["assets"].values())
+    v4 = any(e["access"] == "purchase" or "terms" in e["licence"] for e in entries)
     snapshot = built.get("catalog")   # absent from a catalogue built before E09
-    doc = {"format": FORMAT_3 if snapshot else FORMAT_2 if v2 else FORMAT,
+    if v4 and not snapshot:
+        raise ManifestError("an entry carries record/3 values (purchase, terms) but records.json has no "
+                            "`catalog`: rebuild the catalogue")
+    doc = {"format": FORMAT_4 if v4 else FORMAT_3 if snapshot else FORMAT_2 if v2 else FORMAT,
            "created": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "catalog_url": catalog_url, "selection": selection, "entries": entries}
     if snapshot:

@@ -1,0 +1,19 @@
+id: acme/sold
+title: Sold survey set
+publisher: {name: Acme Petroleum Agency, url: https://acme.example, country: ZA}
+origin: {url: https://acme.example/sold, access: purchase}
+licence:
+  name: Acme Data Use Agreement
+  spdx: null
+  url: https://acme.example/terms
+  redistribution: forbidden
+  attribution: unknown
+  terms:
+    stated: "A purchase is a licence to use the data for at most 10 years; publications go to the Agency for review first."
+    duration: "at most 10 years from purchase"
+    review_before_publication: true
+    expires: null
+kinds: [seismic-2d, potential-fields]
+region: {country: ZA}
+listed_by: [publisher]
+added: 2026-10-23

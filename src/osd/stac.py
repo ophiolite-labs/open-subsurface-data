@@ -27,7 +27,7 @@ from .records import load_outline
 
 STAC_VERSION = "1.0.0"
 OSD_EXTENSION = ("https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/"
-                 "schema/stac-osd.json")
+                 "schema/stac-osd.json?v=2")   # v2 (E19): osd:access admits purchase; the v1 URL still validates
 FILE_EXTENSION = "https://stac-extensions.github.io/file/v2.1.0/schema.json"
 ALTERNATE_EXTENSION = "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"
 MIRROR_TITLE = "Open Subsurface Data mirror"

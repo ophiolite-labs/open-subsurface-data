@@ -164,6 +164,17 @@ def entry_attribution(e: Entry) -> list[str]:
         lines += ["- Statement, verbatim:", "", f"  > {lic.statement}"]
     else:
         lines.append("- Statement: none stated by the publisher in the record")
+    if lic.terms is not None:   # record/3 terms (E19): as stated, nothing computed
+        t = lic.terms
+        lines += ["- Terms, as the record states them:", "", f"  > {t.stated}", ""]
+        if "duration" in t.stated_keys:
+            lines.append(f"- Terms duration: {t.duration if t.duration is not None else 'none stated'}")
+        if "review_before_publication" in t.stated_keys:
+            r = t.review_before_publication
+            lines.append("- Review before publication: "
+                         + ("not stated" if r is None else "required by the publisher" if r else "no"))
+        if "expires" in t.stated_keys:
+            lines.append(f"- Terms expire: {t.expires if t.expires is not None else 'no date stated'}")
     for k in e.known_issues:
         lines.append(f"- Known issue: {k}")
     return lines

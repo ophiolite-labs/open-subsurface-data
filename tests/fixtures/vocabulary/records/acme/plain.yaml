@@ -1,0 +1,9 @@
+id: acme/plain
+title: Plain open set
+publisher: {name: Acme Petroleum Agency, url: https://acme.example, country: ZA}
+origin: {url: https://acme.example/plain, access: anonymous}
+licence: {name: CC BY 4.0, spdx: CC-BY-4.0, redistribution: allowed, attribution: required}
+kinds: [seismic-3d]
+region: {country: ZA}
+listed_by: [publisher]
+added: 2026-10-23
