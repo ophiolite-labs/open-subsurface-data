@@ -1,14 +1,21 @@
 name: Suggest a dataset
 description: A public subsurface dataset that should be in the catalogue
-labels: [record]
+labels: [suggestion]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        A maintainer turns this into a record pull request with `uv run osd new <url>`, which
+        writes the record from the template and the page's title and leaves the licence fields
+        for a human to read from the publisher's page. You are welcome to do that yourself
+        instead: see CONTRIBUTING.md.
   - type: input
     id: url
-    attributes: { label: Where is it published?, placeholder: "https://..." }
+    attributes: { label: "Where is it published?", placeholder: "https://..." }
     validations: { required: true }
   - type: input
     id: licence
-    attributes: { label: Licence, as the publisher names it }
+    attributes: { label: "Licence, as the publisher names it" }
   - type: textarea
     id: holds
-    attributes: { label: What does it hold? (wells, seismic, horizons, production...) }
+    attributes: { label: "What does it hold? (wells, seismic, horizons, production...)" }

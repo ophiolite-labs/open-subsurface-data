@@ -1,0 +1,25 @@
+# Label every pull request by what it touches (.github/labeler.yml). pull_request_target so a
+# contributor's fork gets labels too; it checks out nothing and runs no code from the pull request.
+# Never a required check.
+name: labels
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+permissions: { contents: read, pull-requests: write, issues: write }
+jobs:
+  label:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: the labels exist
+        env: { GH_TOKEN: "${{ github.token }}", GH_REPO: "${{ github.repository }}" }
+        run: |
+          gh label create record --color 1f883d --description "A dataset record (licence fields read by a records maintainer)" --force
+          gh label create outline --color 0e8a16 --description "An outline under outlines/" --force
+          gh label create kernel --color b60205 --description "Schemas or tools: a kernel maintainer reviews" --force
+          gh label create site --color 1d76db --description "The static site" --force
+          gh label create docs --color 0075ca --description "Documentation" --force
+          gh label create origin-dead --color d93f0b --description "Opened by the dead-link report: an origin fell from L1+ to dead" --force
+          gh label create suggestion --color c5def5 --description "A suggested dataset; a maintainer turns it into a record with osd new" --force
+      - uses: actions/labeler@v5
+        with: { sync-labels: false }
