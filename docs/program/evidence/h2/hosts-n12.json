@@ -1,0 +1,317 @@
+{
+ "origin_hosts": {
+  "1": [
+   "dataverse.geus.dk",
+   "gis.utah.gov",
+   "jf.fo",
+   "newdata-padep-1.opendata.arcgis.com",
+   "noc.ly",
+   "www.co2stored.co.uk",
+   "www.gsa.state.al.us",
+   "www.jamstec.go.jp",
+   "www.kgs.ku.edu",
+   "www.pdok.nl"
+  ],
+  "2": [
+   "dane.gov.pl",
+   "nogcc.ne.gov",
+   "petrocom.gov.gh",
+   "tethys.at",
+   "www.lbeg.niedersachsen.de",
+   "www.ndrdgh.gov.in",
+   "www.petrocivirtualdataroom.ci",
+   "www.videpi.com"
+  ],
+  "3": [
+   "bancodedatos.perupetro.com.pe",
+   "geoportal-staatsolie.hub.arcgis.com",
+   "novascotia.ca",
+   "www.anh.gob.bo",
+   "www.equinor.com",
+   "www.inp.gov.mz",
+   "www.manitoba.ca",
+   "www.petronas.com"
+  ],
+  "4": [
+   "data.colorado.gov",
+   "eng.geus.dk",
+   "eprints.soton.ac.uk",
+   "ndr.nstauthority.co.uk",
+   "ogcc.idaho.gov",
+   "pubs.usgs.gov",
+   "store.beg.utexas.edu",
+   "ukogl.org.uk"
+  ],
+  "5": [
+   "data.ca.gov",
+   "gis.nzpam.govt.nz",
+   "gisappl.saskatchewan.ca",
+   "ohiodnr.gov",
+   "walrus.wr.usgs.gov",
+   "www.aer.ca",
+   "www.data.boem.gov"
+  ],
+  "6": [
+   "data.kigam.re.kr",
+   "data.nsw.gov.au",
+   "datos-sgcolombiano.opendata.arcgis.com",
+   "doi.org",
+   "ecat.ga.gov.au",
+   "egeologija.si",
+   "hugeo.hu",
+   "nationaloil.co.ke",
+   "ppepdr.net",
+   "www.gov.br",
+   "www.rrc.texas.gov",
+   "www.wvgs.wvnet.edu"
+  ],
+  "7": [
+   "co2datashare.org",
+   "data.gov.ie",
+   "data.gov.tw",
+   "oklahoma.gov",
+   "registry.opendata.aws",
+   "wiki.seg.org",
+   "www.azu.hr",
+   "www.energy.gov.tt"
+  ],
+  "8": [
+   "cgs.gov.cz",
+   "data.gov.lt",
+   "floridadep.gov",
+   "mlp.ldeo.columbia.edu",
+   "petroleum.gov.gy",
+   "www.bgs.ac.uk",
+   "www.isapp2.com",
+   "zenodo.org"
+  ],
+  "9": [
+   "catalog.sarig.sa.gov.au",
+   "catalogue.data.wa.gov.au",
+   "data.nt.gov.au",
+   "data.ny.gov",
+   "dataexplorer.wogcc.wyo.gov",
+   "dataservices.gfz.de",
+   "discover.data.vic.gov.au",
+   "energy.virginia.gov",
+   "exploracionyproduccion.ancap.com.uy",
+   "fzzg.gov.ba",
+   "geodata.nzpam.govt.nz",
+   "geophysical-data.canada.ca",
+   "terranubis.com",
+   "www.agl.uh.edu",
+   "www.cnloer.ca",
+   "www.sgu.se",
+   "www.spe.org",
+   "www.unisim.cepetro.unicamp.br"
+  ],
+  "10": [
+   "data-bc-er.opendata.arcgis.com",
+   "data-nbmg.opendata.arcgis.com",
+   "dggs.alaska.gov",
+   "eug.petroleum.gov.eg",
+   "gdr.openei.org",
+   "info.igme.es",
+   "opendata.swiss",
+   "prime.energy.gov.il",
+   "www.namcor.com.na",
+   "www.petroleumagencysa.com"
+  ],
+  "11": [
+   "datamigas.esdm.go.id",
+   "edx.netl.doe.gov",
+   "geoscience.data.qld.gov.au",
+   "ocd-hub-nm-emnrd.hub.arcgis.com",
+   "seg.org",
+   "www.anpg.co.ao",
+   "www.dmr.nd.gov",
+   "www.geology.sk",
+   "www.pau.go.ug",
+   "www.sintef.no"
+  ],
+  "12": [
+   "cnsopbdigitaldata.ca",
+   "datos.gob.ar",
+   "factpages.sodir.no",
+   "gis.egt.ee",
+   "github.com",
+   "iodp.tamu.edu",
+   "pid.geoscience.gov.au",
+   "www.datos.gov.co",
+   "www.dgeg.gov.pt",
+   "www.dov.vlaanderen.be",
+   "www.marum.de",
+   "www.nlog.nl"
+  ]
+ },
+ "other_hosts": {
+  "ags.geology.sk": [
+   11
+  ],
+  "api.datacite.org": [
+   6
+  ],
+  "api.github.com": [
+   9,
+   12
+  ],
+  "atlas.marine.ie": [
+   7
+  ],
+  "cbdgmapa.pgi.gov.pl": [
+   2
+  ],
+  "cnsoer.ca": [
+   12
+  ],
+  "creativecommons.org": [
+   1,
+   2,
+   4,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ],
+  "data.geo.admin.ch": [
+   10
+  ],
+  "data.geus.dk": [
+   1,
+   4
+  ],
+  "data.norge.no": [
+   12
+  ],
+  "data.overheid.nl": [
+   1
+  ],
+  "dnr.alaska.gov": [
+   10
+  ],
+  "factmaps.sodir.no": [
+   12
+  ],
+  "geoweb-ags.bc-er.ca": [
+   10
+  ],
+  "gis.dmr.nd.gov": [
+   11
+  ],
+  "gis.saskatchewan.ca": [
+   5
+  ],
+  "gisweb.unr.edu": [
+   10
+  ],
+  "mapy.geology.cz": [
+   8
+  ],
+  "narodne-novine.nn.hr": [
+   7
+  ],
+  "nibis.lbeg.de": [
+   2
+  ],
+  "open.canada.ca": [
+   9
+  ],
+  "opendata.maps.vic.gov.au": [
+   9
+  ],
+  "opendatacommons.org": [
+   9,
+   11,
+   12
+  ],
+  "public-gs.geoscience.nsw.gov.au": [
+   6
+  ],
+  "public-services.slip.wa.gov.au": [
+   9
+  ],
+  "raw.githubusercontent.com": [
+   9,
+   12
+  ],
+  "resource.sgu.se": [
+   9
+  ],
+  "seam-open-data.s3.us-west-2.amazonaws.com": [
+   11
+  ],
+  "service.pdok.nl": [
+   1
+  ],
+  "services.arcgis.com": [
+   1
+  ],
+  "services1.arcgis.com": [
+   6
+  ],
+  "services3.arcgis.com": [
+   3
+  ],
+  "tgs-opendata-poseidon.s3.amazonaws.com": [
+   7
+  ],
+  "www.arcgis.com": [
+   5,
+   8,
+   9
+  ],
+  "www.bc-er.ca": [
+   10
+  ],
+  "www.cnlopb.ca": [
+   9
+  ],
+  "www.data.qld.gov.au": [
+   11
+  ],
+  "www.egt.ee": [
+   12
+  ],
+  "www.gdngeoservices.nl": [
+   12
+  ],
+  "www.gov.mb.ca": [
+   3
+  ],
+  "www.gsmma.gov.tw": [
+   7
+  ],
+  "www.iodp.org": [
+   12
+  ],
+  "www.nationalarchives.gov.uk": [
+   9
+  ],
+  "www.nstauthority.co.uk": [
+   4
+  ],
+  "www.nzpam.govt.nz": [
+   5,
+   9
+  ],
+  "www.ogb.state.al.us": [
+   1
+  ],
+  "www.opendefinition.org": [
+   5,
+   6
+  ],
+  "www.usa.gov": [
+   11
+  ],
+  "www.usgs.gov": [
+   4
+  ],
+  "www3.cpc.com.tw": [
+   7
+  ]
+ }
+}
