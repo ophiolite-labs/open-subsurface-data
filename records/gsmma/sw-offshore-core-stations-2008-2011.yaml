@@ -1,0 +1,29 @@
+id: gsmma/sw-offshore-core-stations-2008-2011
+title: "97～100年度西南海域岩心採樣 (Southwest offshore core sampling, 2008-2011)"
+summary: >-
+  Core sampling stations of the natural gas hydrate resource potential investigation offshore
+  southwest Taiwan, 2008 to 2011: year, station number, sampling date, latitude, longitude,
+  depth, core type and attributes.
+publisher: {name: "經濟部地質調查及礦業管理中心 Geological Survey and Mining Management Agency (GSMMA), MOEA", url: https://www.gsmma.gov.tw, country: TW}
+origin:
+  url: https://data.gov.tw/dataset/32564
+  access: anonymous
+  manifest_url: https://data.gov.tw/api/v2/rest/dataset/32564
+  notes: "CSV at https://www.gsmma.gov.tw/uploads/1750385221191OCgiYACA.csv; Cloudflare challenge (403) to this host on 23 Oct 2026. Sibling 77891 covers 2012-2015."
+licence:
+  name: "政府資料開放授權條款-第1版 (Open Government Data License, version 1.0)"
+  spdx: OGDL-Taiwan-1.0
+  url: https://data.gov.tw/license
+  redistribution: allowed
+  attribution: required
+kinds: [core]
+region: {country: TW, basin: Offshore southwest Taiwan (gas hydrate province)}
+listed_by: [publisher]
+known_issues:
+  - "A station list (locations, depth, core type), not core measurements."
+  - "No extent is stated; no bbox."
+period:
+  start: "2008-01-01"
+  end: "2011-12-31"
+  stated: "data.gov.tw metadata: coverageStartedDate 2008-01-01, coverageEndedDate 2011-12-31 (title: 97～100年度, ROC years 97-100)"
+added: 2026-10-23

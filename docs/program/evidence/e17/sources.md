@@ -140,3 +140,15 @@ E13 and E14.
 ## Not recorded (Asia)
 
 - Kochi Core Center: 503 (emergency maintenance). JAMSTEC J-CORES / SIO7: connection reset. GSJ gbank: every page "メンテナンス中"; GSJ's terms are CC BY 4.0 compatible, a strong retry. JOGMEC data, PETRONAS MPM: no DNS. data.gov.in: no connection. Philippines DOE PECR: soft 404.
+
+## gsmma/hydrogeological-drilling-database, gsmma/sw-offshore-seismic-lines-2008-2011, gsmma/sw-offshore-core-stations-2008-2011, cpc/onshore-well-locations
+
+- Pages: <https://data.gov.tw/dataset/16799>, <https://data.gov.tw/dataset/32556>, <https://data.gov.tw/dataset/32564>, <https://data.gov.tw/dataset/62919>; metadata <https://data.gov.tw/api/v2/rest/dataset/{id}>
+  - 16799: "地質鑽井基本資料、鑽探岩心紀錄、井測紀錄 1.地質鑽井基本資料(包括TWD97_X坐標、TWD97_Y坐標、井址) 2.地質鑽井岩心紀錄(包括井名、井號、深度、岩性判釋紀錄) 3.地質鑽井地物井測紀錄(包括自然電位、16吋電阻、64吋電阻、自然伽瑪)"; "授權方式 政府資料開放授權條款-第1版 計費方式 免費"
+  - 32556: "天然氣水合物資源潛能調查2D、3D反射震測測線"; "coverageStartedDate": "2008-01-01", "coverageEndedDate": "2011-12-31"
+  - 32564: "天然氣水合物資源潛能調查岩心採樣站"; "coverageStartedDate": "2008-01-01", "coverageEndedDate": "2011-12-31"
+  - 62919: "提供探採研究所收集相關台灣陸域鑽井位置資訊，以WGS84為標準的座標系統，度為單位"; "notes": "授權說明網址:https://data.gov.tw/license"
+  - spatialCoverage is empty on all four.
+- Licence: <https://data.gov.tw/en/license>: "The Data Providing Organization grants User a perpetual, worldwide, non-exclusive, irrevocable, royalty-free copyright license to reproduce, distribute ... for any purpose" and "The License is compatible with the Creative Commons Attribution License 4.0 International."
+- Downloads: www.gsmma.gov.tw answered a Cloudflare challenge (403); www3.cpc.com.tw timed out. Metadata hosts answered.
+- Extent: Taiwan (approximate) for the island-wide sets; none for the offshore surveys.
