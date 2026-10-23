@@ -25,4 +25,5 @@ listed_by: [publisher]
 known_issues:
   - "The licence is named on the Government of Manitoba copyright page (https://www.gov.mb.ca/legal/copyright.html), linked from the well-files page; it excludes 'third party rights the Information Provider is not authorized to license', and operator-submitted reports may fall under that exemption."
   - "bbox is southern Manitoba, approximate; the page states no extent."
+notes: "No period stated: the page gives only its own update date."
 added: 2026-10-23

@@ -24,4 +24,5 @@ known_issues:
   - "The policy governs requests for samples and data and a one-year moratorium; it grants no redistribution terms for curatorial data."
   - "Several oceans; no region country or bbox."
   - "Physical archive: the record lists the cores, not files."
+notes: "No period stated: the page says the repository was established in 1994 but gives no period for the cores. No bbox: a repository of cores from several oceans and seas, with no single area."
 added: 2026-10-23

@@ -18,4 +18,5 @@ region: {country: GB, basin: UK continental shelf, bbox: [-12.0, 49.5, 3.5, 62.0
 listed_by: [publisher, community]
 known_issues:
   - Bulk downloads are terabyte scale; the catalogue points, never mirrors.
+notes: "No period stated: the NDR front page gives only terms and site version dates."
 added: 2026-10-23

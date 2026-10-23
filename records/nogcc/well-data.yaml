@@ -22,4 +22,8 @@ listed_by: [publisher]
 known_issues:
   - "The site answers only over http://; https:// was refused on 23 Oct 2026."
   - "bbox is the State of Nebraska, approximate."
+period:
+  start: "2026-06-04"
+  end: "2026-06-04"
+  stated: "NOGCC Data & Publications page: 'Well Data including formation tops - Access 2003 Format (6/4/2026)'"
 added: 2026-10-23
