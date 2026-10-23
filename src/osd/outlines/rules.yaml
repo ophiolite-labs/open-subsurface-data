@@ -136,3 +136,8 @@ bcer/well-surface-holes-permitted:
   min_features: 34431   # 23 Oct 2026: 34431 surface holes derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
   inputs:
     surface-holes: {extractor: register-arcgis, kind: wellbore, name: WELL_NAME}
+
+sgc/banco-informacion-petrolera-pozos:
+  min_features: 25013   # 23 Oct 2026: 25013 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: UWI, name: WELL_NAME}
