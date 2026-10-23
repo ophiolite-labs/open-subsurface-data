@@ -22,4 +22,5 @@ listed_by: [publisher]
 known_issues:
   - "bbox is Taiwan with Penghu, approximate; the metadata states no spatial coverage. Coordinates are TWD97 二度分帶 (TM2) as the CSV header names them."
   - "The metadata cites a fee rule (計費法令依據) but marks the dataset 免費 (free)."
+  - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (404 to curl's), which RFC 9309 treats as disallow; the CSV the package names is on www.gsmma.gov.tw, which answered a Cloudflare 403 page or nothing to automated requests that day, so the listing is left as it is."
 added: 2026-10-23

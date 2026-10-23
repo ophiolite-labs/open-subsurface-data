@@ -20,6 +20,7 @@ known_issues:
   - "The CSV is served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026; datos.gob.ar answers."
   - "pressure here is the maximum fracture treatment pressure per well, not reservoir pressure."
   - "bbox is the extent of Argentina, approximate."
+  - "datos.gob.ar robots.txt says 'Disallow: /api/' (23 Oct 2026); the files' host datos.energia.gob.ar timed out again that day, so the listing is left as it is."
 period:
   start: "2019-10-25"
   end: "2019-10-25"

@@ -20,6 +20,7 @@ listed_by: [publisher]
 known_issues:
   - "The seismic terms and conditions do not mention well data. The site-wide DNR copyright notice forbids republication of department material without permission; whether it covers operator well submittals is not stated."
   - "bbox is the State of Alaska, approximate."
+  - "dggs.alaska.gov/robots.txt (read 23 Oct 2026) says 'Disallow: /webpubs/dggs/gmc/well_data/', the directory the Free Data link opens and where the zip files live; no other path lists them."
 period:
   start: "2004-02-11"
   end: "2018-07-14"

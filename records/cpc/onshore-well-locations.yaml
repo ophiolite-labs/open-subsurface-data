@@ -20,4 +20,5 @@ region: {country: TW, basin: Onshore Taiwan, bbox: [119.3, 21.8, 122.1, 25.4], c
 listed_by: [publisher]
 known_issues:
   - "bbox is Taiwan, approximate; the metadata states no spatial coverage."
+  - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (404 to curl's), which RFC 9309 treats as disallow; the CSV the package names is on www3.cpc.com.tw, which answered a Cloudflare 403 page or nothing to automated requests that day, so the listing is left as it is."
 added: 2026-10-23

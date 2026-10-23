@@ -6,7 +6,7 @@ publisher: {name: Państwowy Instytut Geologiczny – Państwowy Instytut Badawc
 origin:
   url: https://dane.gov.pl/pl/dataset/677,centralna-baza-danych-geologicznych-podsystem-otwory-wiertnicze
   access: anonymous
-  manifest_url: https://api.dane.gov.pl/1.4/datasets/677/resources
+  manifest_url: https://cbdgmapa.pgi.gov.pl/arcgis/rest/services/cbdg_otwory/MapServer/0?f=json
   notes: "Entry on the national open data portal dane.gov.pl; it points to https://baza.pgi.gov.pl/cbdg/podsystemy/otwory, the CBDG download manager https://dm.pgi.gov.pl/, GeoLOG and WMS/WFS services."
 licence:
   name: CC BY 4.0
@@ -19,5 +19,6 @@ region: {country: PL, bbox: [14.1, 49.0, 24.2, 54.9]}
 listed_by: [publisher]
 known_issues:
   - "PGI hosts (cbdg.pgi.gov.pl, baza.pgi.gov.pl, dm.pgi.gov.pl, cbdgmapa.pgi.gov.pl) answered an Incapsula challenge ('Request unsuccessful') to automated requests on 23 Oct 2026: blocked, not dead (OSD-D9). The licence is as stated on dane.gov.pl."
+  - "At 15:08 UTC the same day cbdgmapa.pgi.gov.pl answered the ArcGIS service behind the WFS dane.gov.pl names; that layer is the manifest_url."
   - "bbox is the extent of Poland, approximate."
 added: 2026-10-23
