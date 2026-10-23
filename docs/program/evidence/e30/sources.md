@@ -79,3 +79,8 @@ Excerpts (verbatim, from the pages opened):
 - F8. ArcGIS Hub downloads (CalGEM) come through a 302 to `hub.arcgis.com/api/v3/…/downloads/data`, a generated export with no length;
   gis-cnra.hub.arcgis.com states `Crawl-delay: 60`.
 - F9. Record fact for a later lane: nzpam/parihaka's files need a RealMe login today ("Login to download"), though the record says `access: anonymous`.
+
+## Retries for the next records lane (supervisor, 23 Oct)
+
+Eleven listings accepted. Retry: `data.tethys.at` (503 to `/api/dataset/<id>` and the OAI endpoint;
+geosphere-at x2) and `datapub.gfz.de` (robots.txt timed out; gfz x4).
