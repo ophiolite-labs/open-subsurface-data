@@ -1,0 +1,30 @@
+id: unisim/unisim-i
+title: "UNISIM-I: Benchmark Case"
+summary: >-
+  The first benchmark model created by UNISIM-CEPETRO-Unicamp, to compare methodologies and
+  performance of techniques, simulators and algorithms, built on Namorado field data. Cases for
+  production-strategy selection (UNISIM-I-D), history matching (-H) and management (-M) ship IMEX,
+  ECLIPSE and OPM Flow decks with history data; UNISIM-I-R adds synthetic seismic volumes.
+publisher: {name: UNISIM-CEPETRO-Unicamp, url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/, country: BR}
+origin:
+  url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-i/overview
+  access: anonymous
+  notes: "Files on the case pages, e.g. https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-i/unisim-i-d. Files updated after release (OPM Flow decks 15-SEP-2023, seismic 26-JUN-2023)."
+licence:
+  name: Open Database License 1.0 (decks); Database Contents License 1.0 (contents)
+  spdx: ODbL-1.0
+  url: http://opendatacommons.org/licenses/odbl/1.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [reservoir-model, production, seismic-4d]
+region: {basin: "Synthetic, based on the Namorado field (Campos Basin, Brazil)"}
+listed_by: [community]
+known_issues:
+  - "Use of the benchmark must be cited by name in every publication or report; the site footer also reserves all rights beside the ODbL grant."
+  - "Synthetic model; no bbox. seismic-4d is the synthetic baseline and monitor amplitude volumes of UNISIM-I-R."
+period:
+  start: "2013-09-24"
+  end: "2013-10-01"
+  stated: "UNISIM-I-D page: \"UNISIM-I-D-deterministic.zip 24-SEP-2013 ... UNISIM-I-D-HistoryData-t1-2013-OCT-01.zip 01-OCT-2013\" (release)"
+added: 2026-10-23

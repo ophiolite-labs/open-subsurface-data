@@ -1,0 +1,30 @@
+id: tno/olympus
+title: "ISAPP Field Development Optimization Challenge: OLYMPUS reservoir model"
+summary: >-
+  TNO's benchmark for field development optimization under uncertainty in the ISAPP-2 programme,
+  after the PUNQ and Brugge studies: a reservoir model based on synthetic data for the fictitious
+  field Olympus, with Eclipse decks and compatible IMEX, AD-GPRS, OPM Flow, INTERSECT and NEXUS
+  decks.
+publisher: {name: TNO (ISAPP programme), url: https://www.isapp2.com, country: NL}
+origin:
+  url: https://www.isapp2.com/optimization-challenge.html
+  access: request
+  notes: "Input decks: \"To get acces, please register via a request to one of the contact persons found on the support page\". Documentation PDFs download without an account, e.g. https://www.isapp2.com/downloads/olympus-reservoir-model.pdf."
+licence:
+  name: TNO terms (© 2017 TNO, all rights reserved, with a grant to redistribute unchanged)
+  spdx: null
+  url: https://www.isapp2.com/optimization-challenge/optimization-challenge-download-files.html
+  redistribution: restricted
+  attribution: required
+  statement: "all references to TNO in the file headers should be maintained as is"
+kinds: [reservoir-model]
+region: {basin: "Synthetic (fictitious Olympus field)"}
+listed_by: [community]
+known_issues:
+  - "Files may be redistributed only unchanged and with TNO's file headers kept."
+  - "Synthetic model; no bbox."
+period:
+  start: "2017-02"
+  end: "2017-02"
+  stated: "Timeline: \"February 2017: Launch of Olympus optimization challenge.\" (release)"
+added: 2026-10-23

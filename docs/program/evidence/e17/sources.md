@@ -152,3 +152,26 @@ E13 and E14.
 - Licence: <https://data.gov.tw/en/license>: "The Data Providing Organization grants User a perpetual, worldwide, non-exclusive, irrevocable, royalty-free copyright license to reproduce, distribute ... for any purpose" and "The License is compatible with the Creative Commons Attribution License 4.0 International."
 - Downloads: www.gsmma.gov.tw answered a Cloudflare challenge (403); www3.cpc.com.tw timed out. Metadata hosts answered.
 - Extent: Taiwan (approximate) for the island-wide sets; none for the offshore surveys.
+
+## unisim/unisim-i, unisim/unisim-ii, unisim/unisim-iv
+
+- Licence: <https://www.unisim.cepetro.unicamp.br/benchmarks/en/>
+  - "These data and contents are freely accessible and can be freely used, modified, and shared by anyone for reservoir numerical simulation studies. ... It is mandatory to quote the use of this benchmark, duly named, in all scientific publications, reports, and other documents reporting studies where it is used. ... The reservoir simulation decks are made available under the Open Database License: http://opendatacommons.org/licenses/odbl/1.0/ . Any rights in individual contents of the database are licensed under the Database Contents License: http://opendatacommons.org/licenses/dbcl/1.0/"
+  - Footer: "© 2023 UNISIM-CEPETRO-Unicamp. All copyright and other intellectual property rights reserved"
+- UNISIM-I: <https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-i/overview>; period from <https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-i/unisim-i-d>: "UNISIM-I-D-deterministic.zip 24-SEP-2013 ... UNISIM-I-D-HistoryData-t1-2013-OCT-01.zip 01-OCT-2013"
+- UNISIM-II: <https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/overview>; period from <https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/unisim-ii-d>: "UNISIM-II-D-BO_deterministic.ZIP 03-ABR-2018 new ... UNISIM-II-D_uncertainties.zip 03-ABR-2018 new"
+- UNISIM-IV: <https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-iv/overview> ("UNISIM-IV is an open-source benchmark with geological and operational characteristics of Brazilian pre-salt fields, consisting of a light-oil carbonate reservoir with high CO2 content."); period from <https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-iv/unisim-iv-2019>: "History_Data.rar 23-SEP-2022 new ... Nominal.rar 23-SEP-2022 new"
+- Synthetic: no extent.
+
+## spe/csp11
+
+- Page: <https://www.spe.org/en/csp/>: "29 March 2023 Official announcement at 2023 SPE Reservoir Simulation Conference"; links the associated GitHub repository.
+- Repository: <https://github.com/Simulation-Benchmarks/11thSPE-CSP>: REUSE.toml `path = "description/spe_csp11_description.pdf" ... SPDX-License-Identifier = "CC-BY-4.0"`; spe11a.geo "SPDX-License-Identifier: MIT"; LICENSES/ holds CC-BY-4.0, CC0-1.0 and MIT.
+- DataCite <https://api.datacite.org/dois/10.5281/zenodo.20760402>: "Simulation-Benchmarks/11thSPE-CSP: Initial Release", rights "Creative Commons Attribution 4.0 International", issued 2026-06-19.
+- <https://spe.org/csp/spe11/> answered 403.
+
+## tno/olympus
+
+- Page: <https://www.isapp2.com/optimization-challenge.html>: "To get acces, please register via a request to one of the contact persons found on the support page"
+- Licence: <https://www.isapp2.com/optimization-challenge/optimization-challenge-download-files.html>: "(c) 2017 TNO, The Hague, the Netherlands. All copyrights and other intellectual property rights reserved. ... You may redistribute the files for your own purposes, however all references to TNO in the file headers should be maintained as is and the files must remain unchanged."
+- Period: <https://www.isapp2.com/optimization-challenge/timeline.html>: "February 2017: Launch of Olympus optimization challenge."

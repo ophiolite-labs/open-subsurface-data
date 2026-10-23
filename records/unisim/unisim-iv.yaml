@@ -1,0 +1,30 @@
+id: unisim/unisim-iv
+title: "UNISIM-IV: Benchmark Proposal for Light-Oil Carbonate Reservoir with High CO2 Content"
+summary: >-
+  An open-source benchmark with geological and operational characteristics of Brazilian pre-salt
+  fields: a light-oil carbonate reservoir with high CO2 content. Each case provides prior
+  uncertainties for probabilistic studies, production, injection and history data, and a
+  suggested base-case simulation model (compositional, WAG-CO2).
+publisher: {name: UNISIM-CEPETRO-Unicamp, url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/, country: BR}
+origin:
+  url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-iv/overview
+  access: anonymous
+  notes: "Files (.rar) on the case pages, e.g. https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-iv/unisim-iv-2019. The years in case names (2019, 2022, 2024, 2026) are fictitious field-life dates."
+licence:
+  name: Open Database License 1.0 (decks); Database Contents License 1.0 (contents)
+  spdx: ODbL-1.0
+  url: http://opendatacommons.org/licenses/odbl/1.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [reservoir-model, production]
+region: {basin: "Synthetic, Brazilian pre-salt analogue"}
+listed_by: [community]
+known_issues:
+  - "Use of the benchmark must be cited by name in every publication or report."
+  - "Synthetic model; no bbox."
+period:
+  start: "2022-09-23"
+  end: "2022-09-23"
+  stated: "UNISIM-IV-2019 page: \"History_Data.rar 23-SEP-2022 new ... Nominal.rar 23-SEP-2022 new\" (first release)"
+added: 2026-10-23

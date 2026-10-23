@@ -1,0 +1,30 @@
+id: unisim/unisim-ii
+title: "UNISIM-II: Benchmark Case Proposal Based on a Carbonate Reservoir"
+summary: >-
+  A synthetic carbonate reservoir model created by UNISIM-CEPETRO-Unicamp to compare methodologies
+  and performance of techniques, simulators and algorithms. Cases for field development
+  (UNISIM-II-D), field management (-M) and uncertainty reduction (-H), with black-oil (IMEX) and
+  compositional (GEM) decks, uncertainty sets and history data.
+publisher: {name: UNISIM-CEPETRO-Unicamp, url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/, country: BR}
+origin:
+  url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/overview
+  access: anonymous
+  notes: "Files on https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/unisim-ii-d; CMG decks only on that case; still updated (study PDF 21-SEP-2026)."
+licence:
+  name: Open Database License 1.0 (decks); Database Contents License 1.0 (contents)
+  spdx: ODbL-1.0
+  url: http://opendatacommons.org/licenses/odbl/1.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [reservoir-model, production]
+region: {basin: "Synthetic carbonate reservoir (Brazil)"}
+listed_by: [community]
+known_issues:
+  - "Use of the benchmark must be cited by name in every publication or report."
+  - "Synthetic model; no bbox."
+period:
+  start: "2018-04-03"
+  end: "2018-04-03"
+  stated: "UNISIM-II-D page: \"UNISIM-II-D-BO_deterministic.ZIP 03-ABR-2018 new ... UNISIM-II-D_uncertainties.zip 03-ABR-2018 new\" (release)"
+added: 2026-10-23
