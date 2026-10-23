@@ -1,0 +1,22 @@
+id: helsinki-univ/outokumpu-deep-hole-vocs
+title: Volatile organic compounds in deep bedrock groundwater at Outokumpu, Finland
+summary: >-
+  Quantitatively and semiquantitatively determined concentrations of volatile organic compounds (VOCs) in the Outokumpu Deep Drill Hole, Finland, and supplementary hydrogeochemical data.
+publisher: {name: University of Helsinki and VTT Technical Research Centre of Finland (deposited on Zenodo), url: https://www.helsinki.fi, country: FI}
+origin:
+  url: https://zenodo.org/records/14534965
+  access: anonymous
+  notes: DOI 10.5281/zenodo.14534965 (Kietäväinen, Nyyssönen, Nuppunen-Puputti, Bomberg, 2024). Two spreadsheet files.
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [geochemistry]
+region: {country: FI, basin: "Outokumpu Deep Drill Hole (ICDP), eastern Finland"}
+size: {bytes_estimate: 51296, stated: two xlsx files}
+listed_by: [community]
+known_issues:
+  - "No bbox: the Zenodo record states no location coordinates. The ICDP Outokumpu site pages (icdp-online.org, data.icdp-online.org) timed out from this host on 23 Oct 2026."
+added: 2026-10-23
