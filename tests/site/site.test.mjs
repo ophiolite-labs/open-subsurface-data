@@ -422,3 +422,112 @@ test('select: a purchase dataset with terms: the page writes osd.manifest/4 with
   assert.deepEqual(unexpected, []);
   await context.close();
 });
+
+// E21: the map says when. A period filter by year (overlap), `t=` and `dated=1` in the hash, a When row
+// in the detail, the years in the list. The map layer carries no dates; the filter works on record ids.
+const periodCatalogue = async c => {
+  const built = JSON.parse(await readFile(join(ROOT, 'site', 'data', 'records.json'), 'utf8'));
+  const base = records['opm/norne'];
+  const at = (id, period) => ({ ...base, id, title: id, ...(period ? { period } : {}) });
+  const set = [at('t/starts-2004', { start: '2004', end: '2010', stated: 'Acquired 2004 to 2010.' }),
+    at('t/ends-1995', { start: '1980-05', end: '1995-03-01', stated: 'Acquired 1980 to 1995.' }),
+    at('t/open-1999', { start: '1999' }),         // only a start: runs to today
+    at('t/until-1989', { end: '1989' }),          // only an end: runs from the start of record
+    at('t/undated')];
+  await withoutTiles(c);
+  await c.route('**/data/records.json', route => route.fulfill({ json: { ...built, count: set.length, records: set } }));
+  await c.route('**/data/outlines.geojson', route => route.fulfill({ json: { type: 'FeatureCollection', features: [] } }));
+};
+const listed = page => page.locator('#list li').evaluateAll(ls => ls.map(l => l.dataset.id));
+
+test('period: #t=1990-2000 lists the records whose period overlaps plus undated ones; dated=1 drops the undated', async () => {
+  const { context, page, errors, unexpected } = await open('t=1990-2000', { routes: periodCatalogue });
+  assert.deepEqual(await listed(page), ['t/ends-1995', 't/open-1999', 't/undated']);
+  assert.deepEqual([await page.inputValue('#from'), await page.inputValue('#to'), await page.isChecked('#dated')], ['1990', '2000', false]);
+  assert.equal(await page.locator('#list li[data-id="t/ends-1995"] .yr').innerText(), '1980–1995');
+  assert.equal(await page.locator('#list li[data-id="t/open-1999"] .yr').innerText(), '1999–today');
+  assert.equal(await page.locator('#list li[data-id="t/undated"] .yr').count(), 0);
+  await page.check('#dated');
+  assert.deepEqual(await listed(page), ['t/ends-1995', 't/open-1999']);
+  assert.match(await page.evaluate(() => location.hash), /t=1990-2000&dated=1/);
+  // typing: a half-typed year leaves that side open, four digits apply
+  await page.fill('#to', '');
+  await page.fill('#from', '200');
+  assert.equal((await listed(page)).length, 4);
+  await page.fill('#from', '2005');
+  assert.deepEqual(await listed(page), ['t/starts-2004', 't/open-1999']);
+  assert.match(await page.evaluate(() => location.hash), /t=2005-(&|$)/);
+  await page.fill('#from', ''); await page.fill('#to', '1985');
+  assert.deepEqual(await listed(page), ['t/ends-1995', 't/until-1989']);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
+
+test('period: a hash with t=, a kind and a selection renders the same list and detail in a second context', async () => {
+  const a = await open();
+  await a.page.fill('#from', '1990');
+  await a.page.fill('#to', '2000');
+  await a.page.locator('.chip', { hasText: /^seismic-3d$/ }).click();
+  await a.page.locator('#list li[data-id="terranubis/penobscot"]').click();
+  await a.page.waitForFunction(() => /sel=/.test(location.hash) && /map=/.test(location.hash));
+  await a.page.waitForTimeout(1000); // the fly-to ends and writes the viewport
+  const hash = await a.page.evaluate(() => location.hash);
+  assert.match(hash, /t=1990-2000/);
+  assert.match(hash, /k=seismic-3d/);
+  const seen = async p => ({ count: await p.locator('#count').innerText(), items: await listed(p),
+    title: await p.locator('#detail h3 .title').innerText(), when: await p.locator('#detail dd.when').innerText(),
+    years: [await p.inputValue('#from'), await p.inputValue('#to')] });
+  const want = await seen(a.page);
+  assert.ok(want.items.includes('terranubis/penobscot'), 'Penobscot (1992) in');
+  for (const id of want.items) {
+    const p = records[id].period;
+    assert.ok(!p || (Number(p.start.slice(0, 4)) <= 2000 && Number(p.end.slice(0, 4)) >= 1990), `${id} overlaps 1990–2000 or is undated`);
+  }
+  assert.ok(want.items.length < Object.values(records).filter(r => r.kinds.includes('seismic-3d')).length, 'the window drops some 3D records');
+  const b = await open(hash.slice(1));
+  assert.deepEqual(await seen(b.page), want);
+  assert.deepEqual([...a.errors, ...b.errors], []);
+  console.log('# shared period view', hash, want.count);
+  await a.context.close(); await b.context.close();
+});
+
+test('period: the detail of a dated record shows the When row with the stated sentence; undated says not stated', async () => {
+  const { context, page, errors } = await open('sel=equinor/volve');
+  const volve = records['equinor/volve'].period;
+  const when = page.locator('#detail dt', { hasText: /^When$/ });
+  assert.equal(await when.count(), 1);
+  assert.equal(await page.locator('#detail dd.when').innerText(), `${volve.start} to ${volve.end}\n${volve.stated}`);
+  await page.locator('#detail').evaluate(d => { d.scrollTop = d.querySelector('dd.when').offsetTop - d.offsetTop - 120; });
+  await page.screenshot({ path: join(OUT, 'when-detail.png') });
+  await page.evaluate(() => { location.hash = 'sel=opm/norne'; });
+  await page.waitForFunction(() => /Norne/.test(document.querySelector('#detail h3 .title').textContent));
+  assert.equal(records['opm/norne'].period, undefined);
+  assert.equal(await page.locator('#detail dd.when').innerText(), 'not stated by the publisher');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('period: the filter on the real catalogue, desktop and phone width; the year inputs fit the sheet', async () => {
+  const d = await open('t=1990-2000&dated=1');
+  const ids = await listed(d.page);
+  for (const id of ids) {
+    const p = records[id].period;
+    assert.ok(Number(p.start.slice(0, 4)) <= 2000 && Number(p.end.slice(0, 4)) >= 1990, `${id} overlaps 1990–2000`);
+  }
+  assert.ok(ids.length > 5 && ids.length < Object.keys(records).length);
+  await d.page.screenshot({ path: join(OUT, 'when-filter.png') });
+  assert.deepEqual(d.errors, []);
+  await d.context.close();
+
+  const { context, page, errors } = await open('t=1990-2000&dated=1', { viewport: { width: 390, height: 844 } });
+  const sheet = await page.locator('#side').boundingBox();
+  for (const sel of ['#from', '#to', '#dated']) {
+    const b = await page.locator(sel).boundingBox();
+    assert.ok(b.x >= sheet.x && b.x + b.width <= sheet.x + sheet.width, `${sel} inside the sheet`);
+  }
+  assert.ok(await page.evaluate(() => { const s = document.getElementById('side'); return s.scrollWidth <= s.clientWidth; }), 'no horizontal overflow');
+  await page.screenshot({ path: join(OUT, 'when-phone-sheet.png'), clip: { x: 0, y: sheet.y, width: 390, height: sheet.height } });
+  assert.deepEqual(errors, []);
+  await context.close();
+});
