@@ -35,7 +35,7 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 26 | E26 Vocabulary: the kinds the records lanes asked for | Kernel (small) | MERGED (PR #34, 23 Oct; main dcbc1d3; record/4; ten records retagged) | E19, E24 | A record can say velocity model, geological model, airborne EM, radiometrics, stress; ten records lose their want sentence |
 | 27 | E27 The map says why | Surface | IN LANE (osd-e27, 23 Oct) | E23, H1, E08 | A person reads on the map and the status page why a dataset is at its level, in the verifier's words, with the date |
 | 28 | E28 Periods and extents for the newer records | Records | IN LANE (osd-e28, 23 Oct) | E16, E25 | The time filter and STAC reach the datasets added since E16; first zoom right for every located dataset |
-| 29 | E29 Outlines from the registers' map services | Kernel | CHARTERED, Codex round running (23 Oct) | E03, E18, E23, E25 | Registers with an ArcGIS service show their wells and surveys as real points and outlines; L3; one Item per feature |
+| 29 | E29 Outlines from the registers' map services | Kernel | IN LANE (osd-e29, 23 Oct; charter reworked after its Codex round; record/5) | E03, E18, E23, E25, E26 | Registers with an ArcGIS service show their wells and surveys as real points and outlines; L3; one Item per feature |
 | H1 | H1 Origins that recover, and origins that hide from robots | Kernel (hardening) | MERGED (PR #33, 23 Oct; main 5cbe7af; OSD-D20; issues close on recovery; single-file listings) | E08, E23 | Origin-dead issues close themselves; publishers that hide from the verifier are called blocked, not dead |
 | 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
 
