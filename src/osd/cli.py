@@ -1,4 +1,4 @@
-"""osd: validate | verify | build | status | new | report"""
+"""osd: validate | verify | build | status | new | report | manifest | get"""
 
 from __future__ import annotations
 
@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 
 from . import build as build_mod
+from . import get as get_mod
+from . import manifest as manifest_mod
 from . import new as new_mod
 from . import paths
 from . import report as report_mod
@@ -88,6 +90,31 @@ def cmd_report(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_manifest(a: argparse.Namespace) -> int:
+    try:
+        doc = manifest_mod.from_catalog(a.ids, Path(a.catalog), a.catalog_url)
+    except manifest_mod.ManifestError as e:
+        print(f"refused: {e}")
+        return 1
+    out = manifest_mod.write(doc, Path(a.out))
+    n = sum(len(e["assets"]) for e in doc["entries"])
+    todo = sum(1 for e in doc["entries"] if not e["assets"])
+    print(f"wrote {out}: {len(doc['entries'])} {doc['selection']}, {n} assets, {todo} to-do")
+    return 0
+
+
+def cmd_get(a: argparse.Namespace) -> int:
+    try:
+        m = manifest_mod.read(a.manifest)
+        outcomes = get_mod.get(m, Path(a.dest))
+    except manifest_mod.ManifestError as e:
+        print(f"refused: {e}")
+        return 1
+    print("\n".join(get_mod.summary(m, outcomes)))
+    print(f"attribution -> {Path(a.dest) / 'ATTRIBUTION.md'}")
+    return 1 if get_mod.failed(outcomes) else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="osd", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -113,6 +140,16 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--out", help="write the issues to open as JSON")
     pr.add_argument("--dry-run", action="store_true", help="say 'would open'; the workflow opens nothing")
     pr.set_defaults(fn=cmd_report)
+    pm = sub.add_parser("manifest", help="write a retrieval manifest from the built catalogue")
+    pm.add_argument("ids", nargs="+", help="record or collection ids, or feature ids (never a mix)")
+    pm.add_argument("-o", "--out", default="manifest.json")
+    pm.add_argument("--catalog", default=str(paths.CATALOG_DIR), help="the built catalogue (osd build)")
+    pm.add_argument("--catalog-url", default=manifest_mod.CATALOG_URL)
+    pm.set_defaults(fn=cmd_manifest)
+    pg = sub.add_parser("get", help="network: fetch a manifest's assets, verify, write ATTRIBUTION.md")
+    pg.add_argument("manifest")
+    pg.add_argument("--dest", required=True)
+    pg.set_defaults(fn=cmd_get)
     a = ap.parse_args(argv)
     return a.fn(a)
 
