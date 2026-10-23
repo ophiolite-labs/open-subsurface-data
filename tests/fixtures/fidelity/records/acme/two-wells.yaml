@@ -1,0 +1,21 @@
+id: acme/two-wells
+title: Two synthetic wells (E09 fidelity fixture)
+summary: >-
+  Two synthetic LAS 2.0 logs written for the E09 tests. No publisher data.
+publisher: {name: Acme Synthetic, url: https://acme.example, country: NL}
+origin:
+  url: https://acme.example/two-wells
+  access: anonymous
+  manifest_url: https://acme.example/two-wells/index.json
+licence:
+  name: Acme Two Wells Licence 1.0
+  spdx: CC-BY-SA-4.0
+  url: https://acme.example/two-wells/licence
+  redistribution: restricted
+  attribution: required
+  share_alike: true
+  statement: "Contains synthetic Acme data, two wells, 2026"
+kinds: [wellbore-logs]
+region: {country: NL}
+listed_by: [community]
+added: 2026-10-23

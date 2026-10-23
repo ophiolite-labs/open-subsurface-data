@@ -1,0 +1,9 @@
+id: acme/no-statement
+title: Licence without a statement (E09 rights fixture)
+publisher: {name: Acme Synthetic, url: https://acme.example, country: NL}
+origin: {url: https://acme.example/no-statement, access: registration}
+licence: {name: Acme Plain Terms, spdx: null, redistribution: unknown, attribution: not-required, share_alike: false}
+kinds: [tops]
+region: {country: NL}
+listed_by: [community]
+added: 2026-10-23

@@ -1,0 +1,10 @@
+# Reader fixture: attribution null fails the record schema on purpose; the manifest/3 carries it as null.
+id: acme/null-attribution
+title: Licence with attribution null (E09 rights fixture)
+publisher: {name: Acme Synthetic, url: https://acme.example, country: NL}
+origin: {url: https://acme.example/null-attribution, access: request}
+licence: {name: Acme Silent Terms, redistribution: forbidden, attribution: null, statement: "Courtesy of Acme"}
+kinds: [core]
+region: {country: NL}
+listed_by: [community]
+added: 2026-10-23
