@@ -6,6 +6,7 @@ publisher: {name: Society of Petroleum Engineers, url: https://www.spe.org}
 origin:
   url: https://www.spe.org/web/csp/datasets/set02.htm
   access: anonymous
+  manifest_url: https://www.spe.org/web/csp/datasets/set02.htm
   notes: "Organised by Mike Christie (Heriot-Watt University) and Martin Blunt (Imperial College). Downloads: por_perm_case2a.zip (corrected dataset, 18.5 MB) and a relative permeability table. The model was originally generated for the PUNQ project."
 licence:
   name: No licence stated on the dataset page

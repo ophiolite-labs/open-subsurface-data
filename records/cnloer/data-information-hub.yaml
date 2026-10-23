@@ -6,6 +6,7 @@ publisher: {name: Canada-Newfoundland and Labrador Offshore Energy Regulator (C-
 origin:
   url: https://www.cnloer.ca/geoscience/
   access: anonymous
+  manifest_url: https://www.cnloer.ca/geoscience/
   notes: "The geoscience page points to the ArcGIS hub https://home-cnlopb.hub.arcgis.com/; further information on request to information@cnlopb.ca. Formerly the C-NLOPB."
 licence:
   name: C-NLOER website copyright notice

@@ -10,6 +10,7 @@ publisher: {name: "Province of Manitoba, Regulatory Services Branch (Oil and Gas
 origin:
   url: https://www.manitoba.ca/iem/petroleum/gis/technical.html
   access: anonymous
+  manifest_url: https://www.manitoba.ca/iem/petroleum/gis/technical.html
   notes: "Files at http://content.gov.mb.ca/iem/petroleum/documents/technical/<6-digit licence>.pdf (e.g. 008001.pdf, 34 MB); UWI key list https://www.manitoba.ca/iem/petroleum/reports/uwi_weekly.xlsx. Digital well data are by contact with the Branch."
 licence:
   name: OpenMB Information and Data Use Licence

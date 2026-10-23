@@ -6,6 +6,7 @@ publisher: {name: "Petroleum Affairs Division, Department of Communications, Cli
 origin:
   url: https://data.gov.ie/dataset/exploration-wells-in-the-irish-offshore
   access: anonymous
+  manifest_url: https://data.gov.ie/dataset/exploration-wells-in-the-irish-offshore
   notes: "Distributed by the Marine Institute (atlas.marine.ie). The dataset names a well-level search at http://gis.dcenr.gov.ie/internetIPAS/servlet/internet/IPAS2IOffshoreWellsSearch, not opened for this record."
 licence:
   name: Creative Commons Attribution 4.0

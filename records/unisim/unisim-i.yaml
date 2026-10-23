@@ -9,6 +9,7 @@ publisher: {name: UNISIM-CEPETRO-Unicamp, url: https://www.unisim.cepetro.unicam
 origin:
   url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-i/overview
   access: anonymous
+  manifest_url: https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-i/unisim-i-d
   notes: "Files on the case pages, e.g. https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-i/unisim-i-d. Files updated after release (OPM Flow decks 15-SEP-2023, seismic 26-JUN-2023)."
 licence:
   name: Open Database License 1.0 (decks); Database Contents License 1.0 (contents)

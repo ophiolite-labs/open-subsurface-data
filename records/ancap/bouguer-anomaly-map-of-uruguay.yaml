@@ -9,6 +9,7 @@ publisher: {name: "Administración Nacional de Combustibles, Alcohol y Pórtland
 origin:
   url: https://exploracionyproduccion.ancap.com.uy/15944/3/new-bouguer-anomaly-map-of-uruguay.html
   access: anonymous
+  manifest_url: https://exploracionyproduccion.ancap.com.uy/15944/3/new-bouguer-anomaly-map-of-uruguay.html
   notes: "Downloads on the page: the grid https://exploracionyproduccion.ancap.com.uy/innovaportal/file/15944/1/bouguer_anomaly.rar, the article (PDF) and the map (JPG)."
 licence:
   name: none stated

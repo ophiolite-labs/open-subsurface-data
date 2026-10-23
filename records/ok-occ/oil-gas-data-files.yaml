@@ -6,6 +6,7 @@ publisher: {name: Oklahoma Corporation Commission, url: https://oklahoma.gov/occ
 origin:
   url: https://oklahoma.gov/occ/divisions/oil-gas/oil-gas-data.html
   access: anonymous
+  manifest_url: https://oklahoma.gov/occ/divisions/oil-gas/oil-gas-data.html
   notes: "Production is not here: the page points to the Oklahoma Tax Commission as the official recordkeeper for production. UIC files carry 'Vol' and 'PSI' columns per month (checked on the 2025 file)."
 licence:
   name: No licence stated on the data page or the oklahoma.gov policy pages

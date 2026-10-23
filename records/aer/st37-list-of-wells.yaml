@@ -8,6 +8,7 @@ publisher: {name: Alberta Energy Regulator (AER), url: https://www.aer.ca, count
 origin:
   url: https://www.aer.ca/data-and-performance-reports/statistical-reports/st37
   access: anonymous
+  manifest_url: https://www.aer.ca/data-and-performance-reports/statistical-reports/st37
   notes: "Downloads on the page: ST_37_GeoDB.zip, ST_37_Excel.zip, ST37_Shapefiles.zip and ST37_ReferenceGuide.pdf. The page says the shapefile format will be retired after a three-month transition to geodatabase."
 licence:
   name: AER Copyright and Disclaimer

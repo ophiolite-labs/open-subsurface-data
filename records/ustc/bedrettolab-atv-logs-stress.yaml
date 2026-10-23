@@ -10,6 +10,7 @@ publisher: {name: "Guangyu Wang, University of Science and Technology of China (
 origin:
   url: https://zenodo.org/records/15725567
   access: anonymous
+  manifest_url: https://zenodo.org/records/15725567
   notes: "DOI 10.5281/zenodo.15725567. Three files: ATV.zip (2.41 GB), ellipticity.zip, stress_inversion.zip. The lab's own data page (https://bedrettolab.ethz.ch/en/research/Data-access/, ETH Zurich / Swiss Seismological Service) links its datasets in the ETH Research Collection."
 licence:
   name: Creative Commons Attribution 4.0 International

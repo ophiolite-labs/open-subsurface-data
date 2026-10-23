@@ -5,29 +5,48 @@
 # nothing to hash (osd status prints it as the reason). Matching files are hashed for L2, at most
 # 512 MiB per record and 2 GiB per run. A listing that names one object samples that object ("*").
 # Listing shapes are read by osd.verifier.listings; sizes below are as listed on 23 Oct 2026.
+aer/st37-list-of-wells: ["*/ST_37_Excel.zip"]   # page links three zips; the Excel one, 183,921,877 bytes (Shapefiles 565 MB, GeoDB 1.32 GB not sampled)
+agl/marmousi2: ["vp_marmousi-ii.segy.gz"]   # directory index; the P-wave velocity model, 1,766,045 bytes
 ak-dggs/tax-credit-well-data: ["*BadamiUnitB1-11A*.zip"]   # directory index of well zips; this one 413 KB
+ancap/bouguer-anomaly-map-of-uruguay: ["*/bouguer_anomaly.rar"]   # page links one archive; size not stated by the server
 anh/produccion-fiscalizada-crudo: ["*"]          # Socrata view: its rows.csv export, a few MB
 ar-energia/fractura-adjunto-iv: ["*.csv"]         # CKAN: the daily fracture CSV (the PDF infographic is not sampled)
 ar-energia/produccion-por-pozo: ["Listado de pozos cargados*"]   # CKAN: the operators' well list, not the yearly production files (hundreds of MB each)
 ar-energia/trayectorias-vaca-muerta: ["*.csv"]    # CKAN: the trajectory CSV
 bcer/well-surface-holes-permitted: ["*"]          # ArcGIS layer: one geojson export of at most maxRecordCount (2000) features
+cnloer/data-information-hub: ["*/expdwts.xlsx"]   # page links spreadsheets; the exploration wells table, 146,789 bytes
+cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
 cpc/onshore-well-locations: ["*"]                 # data.gov.tw: the CSV of six onshore wells, under 1 KB
 gsmma/hydrogeological-drilling-database: ["*"]    # data.gov.tw: the distribution files, tabular
 gsmma/sw-offshore-core-stations-2008-2011: ["*"]  # data.gov.tw: the core station table
 gsmma/sw-offshore-seismic-lines-2008-2011: ["*"]  # data.gov.tw: the seismic line table (line ids, dates, lengths)
 gsq/qped: "the CKAN package lists no resources (23 Oct 2026); QPED files are reached through its own application"
+helsinki-univ/outokumpu-deep-hole-vocs: ["*/files/*.xlsx?download=1"]   # Zenodo record page (the /api path is disallowed): two spreadsheets, 27,237 and 24,059 bytes
+ie-pad/offshore-exploration-wells: ["*/Exploration_Wells_Irish_Offshore.csv.zip"]   # data.gov.ie page: the CSV zip, 10,487 bytes
 jamstec/seismic-survey-database: "the listing is a cruise index with no file addresses"
+jardfeingi/well-data: ["*FO_Offshore_Wells.zip"]   # page links the offshore wells zip, 3,204 bytes
+kgs/oil-gas-wells: ["*/Ora_Archive/ks_wells.zip"]   # page links the statewide well zip, 44,028,388 bytes
 kigam/marine-geological-map-korea-strait: "the listing is a search result with no file addresses"
+manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links the weekly well list, 1,233,013 bytes
+meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
+ok-occ/oil-gas-data-files: ["*/esri/files/RBDMS_WELLS.zip"]   # page links many files; the RBDMS wells zip, 45,897,943 bytes
 opm/norne: ["*.DATA"]                             # the simulation deck
-pgi/cbdg-boreholes: "the dataset lists web applications and WMS/WFS services, no files"
+pgi/cbdg-boreholes: ["*"]   # ArcGIS layer: one geojson export of at most 1000 of 334,145 features (kept as partial)
 sgc/banco-informacion-petrolera-pozos: ["*"]      # ArcGIS layer: one geojson export of at most 2000 features
+sintef/johansen: ["*/Sector5.zip"]   # page links eight zips; the 5-layer sector model, 3,943,155 bytes
 sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the exploration wellbore table
-spe/csp11: "the listing is the repository's HTML page, which links pages, not files (the GitHub contents API would list files)"
+spe/csp10-model-2: ["*por_perm_case2a.zip"]   # page links the corrected dataset, 19,476,344 bytes
+spe/csp11: ["*.geo"]   # GitHub contents API of geometries/: spe11a.geo 29,309 bytes, spe11b.geo 611 bytes
 tudelft/egg-model: "the DOI metadata names no content URL, only the landing page"
+ukogl/uk-onshore-geophysical-library: ["*/UK-Onshore-BHT-Bottom-Hole.xlsx"]   # archives page: the bottom-hole temperature table, 214,639 bytes
+unisim/unisim-i: ["https://*/UNISIM-I-D-deterministic-OPM-Flow.zip"]   # case page: the OPM Flow deck, 1,042,091 bytes
+unisim/unisim-ii: ["*/UNISIM-II-D-BO_deterministic.ZIP"]   # case page: the black-oil deck, 3,540,807 bytes
+unisim/unisim-iv: ["*/UNISIM-IV-2019/Nominal.rar"]   # case page: the nominal model, 4,419,578 bytes
+ustc/bedrettolab-atv-logs-stress: ["*/files/stress_inversion.zip?download=1"]   # Zenodo record page: stress_inversion.zip, 5,491,891 bytes (ATV.zip 2.4 GB not sampled)
 ut-dogm/oil-gas-wells: ["*"]                      # ArcGIS layer: one geojson export of at most 2000 features
-wa-demirs/petroleum-wells: "the package lists web services and a download application page, no files"
+wa-demirs/petroleum-wells: ["*"]   # ArcGIS layer 13: one geojson export, all 4,371 features (maxRecordCount 10000), 1,978,900 bytes
 
 # Mirror rules (E07): the files `osd mirror put` copies, keyed by record id. The verifier hashes every
 # entry of the listing a rule selects (its `inventory`), within the same budget as the sample.
