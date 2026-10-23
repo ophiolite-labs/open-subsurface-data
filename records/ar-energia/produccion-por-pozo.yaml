@@ -1,0 +1,22 @@
+id: ar-energia/produccion-por-pozo
+title: Producción de petróleo y gas por pozo (Capítulo IV)
+summary: >-
+  Monthly production detail by well, field, concession and province: oil in m3, gas in thousand m3 and water in m3, with the well list (CSV and shapefile) and yearly production files.
+publisher: {name: Secretaría de Energía (Argentina), url: https://www.argentina.gob.ar/economia/energia, country: AR}
+origin:
+  url: https://datos.gob.ar/dataset/produccion-de-petroleo-y-gas-por-pozo
+  access: anonymous
+  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=produccion-de-petroleo-y-gas-por-pozo
+licence:
+  name: CC-BY-4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [production, wellbore-headers]
+region: {country: AR, basin: "Neuquén, Golfo San Jorge, Austral, Cuyo and Noroeste basins", bbox: [-73.6, -55.1, -53.6, -21.8]}
+listed_by: [publisher]
+known_issues:
+  - "The files are served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026 (connection timeout); datos.gob.ar answers."
+  - "bbox is the extent of Argentina, approximate."
+added: 2026-10-23
