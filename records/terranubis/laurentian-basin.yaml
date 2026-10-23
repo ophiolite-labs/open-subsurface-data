@@ -1,0 +1,22 @@
+id: terranubis/laurentian-basin
+title: Laurentian Basin, complete (North Atlantic, Canada)
+summary: >-
+  OpendTect project with 29 full-stack 2D lines after pre-stack time migration over the Laurentian Deep rift extensional basin. Original seismic from Natural Resources Canada.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/Laurentian-Basin-Complete
+  access: anonymous
+licence:
+  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [seismic-2d]
+region: {country: CA, basin: Laurentian Basin, bbox: [-58.0, 43.5, -54.5, 46.0]}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+  - "bbox is approximate, read from the page's map view."
+added: 2026-10-23

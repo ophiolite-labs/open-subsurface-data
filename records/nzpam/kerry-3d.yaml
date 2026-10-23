@@ -1,0 +1,21 @@
+id: nzpam/kerry-3d
+title: Kerry 3D (Taranaki Basin)
+summary: >-
+  Marine 3D seismic survey PR1556 acquired in 1996 for permit 38146 by Western Mining Corporation Ltd (contractor Digicon Exploration Ltd), held in the NZP&M geodata catalogue.
+publisher: {name: New Zealand Petroleum and Minerals, url: https://www.nzpam.govt.nz, country: NZ}
+origin:
+  url: https://geodata.nzpam.govt.nz/survey/8223848313
+  access: registration
+licence:
+  name: New Zealand Crown copyright (no dataset licence stated on the survey page)
+  spdx: null
+  url: https://www.nzpam.govt.nz/about-us/copyright
+  redistribution: unknown
+  attribution: required
+kinds: [seismic-3d]
+region: {country: NZ, basin: Taranaki Basin, bbox: [173.0, -40.0, 174.5, -38.5]}
+listed_by: [seg-wiki, publisher]
+known_issues:
+  - "Downloads need a RealMe login; the survey page states no licence. Copyright page says Crown copyright material on the website may be reproduced free of charge, which is not stated for datasets."
+  - "bbox is the whole basin, approximate; the page names only 'Taranaki Basin'."
+added: 2026-10-23

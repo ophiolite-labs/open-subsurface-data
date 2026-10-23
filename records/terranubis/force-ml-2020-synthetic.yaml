@@ -1,0 +1,22 @@
+id: terranubis/force-ml-2020-synthetic
+title: FORCE ML Competition 2020, synthetic models and wells
+summary: >-
+  OpendTect project with synthetic models and wells for image data extraction and training. Synthetic models created by Equinor and Schlumberger; project by dGB Earth Sciences.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/FORCE-ML-Competition-2020-Synthetic-Models-and-Wells
+  access: anonymous
+licence:
+  name: Creative Commons 4.0 (the page links the BY-SA 4.0 deed)
+  spdx: CC-BY-SA-4.0
+  url: https://creativecommons.org/licenses/by-sa/4.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [wellbore-logs, reservoir-model]
+region: {country: "NO", basin: Synthetic (no real location)}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 4.0'; the variant (BY-SA 4.0) is taken from the deed the label links to."
+  - "Synthetic data; the page gives Country N/A. region.country is set to the creator's country only because the schema requires one."
+added: 2026-10-23

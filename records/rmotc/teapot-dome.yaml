@@ -6,9 +6,9 @@ summary: >-
   well logs, well headers and production history.
 publisher: {name: "US Department of Energy, RMOTC", url: https://www.energy.gov, country: US}
 origin:
-  url: https://wiki.seg.org/wiki/Teapot_dome_3D_survey
-  access: anonymous
-  notes: RMOTC closed in 2014; the SEG wiki page is the surviving index of mirrors.
+  url: https://edx.netl.doe.gov/dataset/rocky-mountain-oilfield-testing-center-rmotc-teapot-dome-data
+  access: registration
+  notes: RMOTC closed in 2014; the DOE NETL Energy Data Exchange hosts the data set.
 licence:
   name: US Government work (public domain)
   spdx: null
@@ -19,5 +19,6 @@ kinds: [seismic-3d, wellbore-logs, wellbore-headers, tops, production]
 region: {country: US, basin: Powder River Basin (Wyoming), bbox: [-106.3, 43.2, -106.1, 43.4], crs: "EPSG:32056"}
 listed_by: [seg-wiki]
 known_issues:
-  - Origin is a wiki page of mirrors; the verifier must record which mirror it checksummed.
+  - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the DOE NETL EDX dataset page; that URL answers 200 but redirects to an EDX login, so the licence field there could not be read (licence below is the US Government works statement, not read from EDX)."
+  - "Replaces the former 'wiki page of mirrors' issue: the verifier should record the EDX resource it checksummed."
 added: 2026-10-23

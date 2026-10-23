@@ -1,0 +1,21 @@
+id: terranubis/oga-mnsh
+title: OGA Mid North Sea High
+summary: >-
+  OpendTect project with 2D seismic, wells, horizons, faults, gravity and magnetics over the Mid North Sea High. Original seismic from the UK Oil and Gas Authority.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/OGA-MNSH
+  access: anonymous
+licence:
+  name: Open Government Licence v3.0 (as the page labels it)
+  spdx: OGL-UK-3.0
+  url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-2d, wellbore-logs, horizons, faults]
+region: {country: GB, basin: Mid North Sea High, bbox: [-1.0, 55.0, 2.0, 57.0]}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+  - "The page's printed coordinates (44 07 N / 60 06 W) are those of Penobscot, not of this survey; bbox follows the page's map link."
+added: 2026-10-23

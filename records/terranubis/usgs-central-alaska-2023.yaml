@@ -1,0 +1,22 @@
+id: terranubis/usgs-central-alaska-2023
+title: USGS Central Alaska (2023 version)
+summary: >-
+  OpendTect project with 16 2D seismic lines onshore Alaska (National Petroleum Reserve in Alaska blocks). Original seismic from the USGS; replaces the earlier version (publisher news, 17 Jan 2024).
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/USGS-Central-Alaska-2023
+  access: anonymous
+licence:
+  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [seismic-2d]
+region: {country: US, basin: National Petroleum Reserve in Alaska, bbox: [-156.0, 69.0, -150.0, 71.0]}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+  - "bbox is approximate, from the page's coordinates N 70 4 / W 152 46."
+added: 2026-10-23

@@ -1,0 +1,23 @@
+id: terranubis/force-ml-2020-ichthys-3d
+title: FORCE ML Competition 2020, Ichthys 3D (prediction set)
+summary: >-
+  OpendTect project with a 3D seismic volume offshore Ichthys, provided for prediction with trained models only.
+  Original seismic from Geoscience Australia; competition organiser FORCE.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/FORCE-ML-Competition-2020
+  access: anonymous
+licence:
+  name: Creative Commons 4.0 (the page links the BY-SA 4.0 deed)
+  spdx: CC-BY-SA-4.0
+  url: https://creativecommons.org/licenses/by-sa/4.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [seismic-3d]
+region: {country: AU, basin: Browse Basin, bbox: [122.9, -14.2, 123.5, -13.7], crs: "EPSG:32751"}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 4.0'; the variant (BY-SA 4.0) is taken from the deed the label links to."
+  - "bbox is approximate, from the page's map link."
+added: 2026-10-23

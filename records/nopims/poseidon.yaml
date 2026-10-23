@@ -3,12 +3,12 @@ title: Poseidon 3D (Browse Basin)
 summary: >-
   The Poseidon 3D seismic survey and associated wells on the North West Shelf of Australia,
   released through the National Offshore Petroleum Information Management System.
-publisher: {name: Geoscience Australia / NOPTA (NOPIMS), url: https://nopims.dmp.wa.gov.au/nopims, country: AU}
+publisher: {name: TGS (AWS Open Data), url: https://registry.opendata.aws/tgs-opendata-poseidon, country: US}
 origin:
-  url: https://wiki.seg.org/wiki/Poseidon_3D
+  url: https://registry.opendata.aws/tgs-opendata-poseidon
   access: anonymous
 licence:
-  name: Creative Commons Attribution 4.0 (Commonwealth of Australia)
+  name: CC BY 4.0 (as the TGS Open Data page states)
   spdx: CC-BY-4.0
   url: https://creativecommons.org/licenses/by/4.0/
   redistribution: allowed
@@ -17,5 +17,6 @@ kinds: [seismic-3d, wellbore-logs, wellbore-headers]
 region: {country: AU, basin: Browse Basin, bbox: [122.4, -13.6, 123.6, -12.4]}
 listed_by: [seg-wiki]
 known_issues:
-  - Licence to be confirmed against the NOPIMS terms page by the verifier (L2).
+  - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the TGS Open Data page on the AWS Registry of Open Data (opened 23 Oct 2026; CC BY 4.0, MDIO, public S3 bucket). Original survey: Geoscience Australia / ConocoPhillips via NOPIMS."
+  - "Licence to be confirmed against the NOPIMS terms page by the verifier (L2)."
 added: 2026-10-23

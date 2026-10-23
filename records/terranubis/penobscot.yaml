@@ -1,0 +1,22 @@
+id: terranubis/penobscot
+title: Penobscot (Scotian Shelf, offshore Nova Scotia)
+summary: >-
+  OpendTect project with 3D and 2D seismic, 3D and 2D prestack data, stacking velocities, wells,
+  markers and horizons from the Scotian Shelf, packaged by dGB Earth Sciences. Original seismic from the Nova Scotia Department of Energy and the Canada Nova Scotia Offshore Petroleum Board.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/Penobscot
+  access: anonymous
+licence:
+  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [seismic-3d, seismic-2d, horizons, wellbore-logs, tops, time-depth]
+region: {country: CA, basin: Scotian Shelf, bbox: [-60.4, 43.9, -59.7, 44.4]}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+added: 2026-10-23

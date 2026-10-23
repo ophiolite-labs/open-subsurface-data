@@ -1,0 +1,22 @@
+id: terranubis/blake-ridge-hydrates-3d
+title: Blake Ridge Hydrates 3D (offshore South Carolina)
+summary: >-
+  OpendTect project with a 3D seismic volume and PSTM data over Blake Ridge, acquired in 2000 by an NSF project led by Dr. W. Steven Holbrook, University of Wyoming.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/Blake-Ridge-Hydrates-3D
+  access: anonymous
+licence:
+  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [seismic-3d]
+region: {country: US, basin: Blake Ridge, bbox: [-77.0, 31.5, -76.4, 32.1]}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+  - "The page text gives coordinates W 74 43 but its map link points near W 76.7; bbox follows the map link."
+added: 2026-10-23

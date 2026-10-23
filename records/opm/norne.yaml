@@ -1,0 +1,23 @@
+id: opm/norne
+title: Norne field simulation case (OPM data)
+summary: >-
+  Real-field Norne black-oil reservoir model decks from the Norwegian Sea, distributed in the Open Porous Media opm-data repository. The README states decks are under the Open Database License and contained data under the Database Contents License.
+publisher: {name: Open Porous Media Initiative, url: https://opm-project.org, country: "NO"}
+origin:
+  url: https://github.com/OPM/opm-data
+  access: anonymous
+licence:
+  name: Open Database License 1.0 (decks); Database Contents License 1.0 (data)
+  spdx: ODbL-1.0
+  url: https://opendatacommons.org/licenses/odbl/1-0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [reservoir-model]
+region: {country: "NO", basin: Norwegian Sea (Halten Terrace), bbox: [7.9, 65.9, 8.4, 66.2]}
+listed_by: [community]
+known_issues:
+  - "README adds: git history contains proprietary decks (now removed) where usage restrictions may apply."
+  - "NTNU's own Norne hosting is no longer the source; OPM is the live home (search result, not opened on the NTNU side)."
+  - "share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+added: 2026-10-23
