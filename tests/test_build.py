@@ -184,3 +184,52 @@ def test_build_without_tippecanoe_prints_the_notice_and_writes_no_tiles(tmp_path
     assert "notice: tippecanoe not found" in capsys.readouterr().err
     assert not (out / "outlines.pmtiles").exists()
     assert (out / "outlines.geojson").exists()
+
+
+# E09: snapshot identity. records.json `catalog` names the commits and a digest of the records array.
+
+FIDELITY = os.path.join(os.path.dirname(__file__), "fixtures", "fidelity")
+SRC, VER = "1" * 40, "2" * 40
+
+
+def _fixture_build(tmp_path, name="catalog", now=None, vdir=None, records_dir=None):
+    from datetime import UTC, datetime
+    from pathlib import Path
+    out = tmp_path / name
+    build(out, Path(vdir or os.path.join(FIDELITY, "verification")),
+          now=now or datetime(2026, 10, 23, 12, tzinfo=UTC), mirror_dir=tmp_path / "no-mirror",
+          records_dir=Path(records_dir or os.path.join(FIDELITY, "records")), source_commit=SRC, verification_commit=VER)
+    return json.loads((out / "records.json").read_text())
+
+
+def test_records_json_carries_catalog_identity(tmp_path):
+    import hashlib
+    doc = _fixture_build(tmp_path)
+    cat = doc["catalog"]
+    assert set(cat) == {"source_commit", "verification_commit", "built_at", "records_digest"}
+    assert (cat["source_commit"], cat["verification_commit"], cat["built_at"]) == (SRC, VER, "2026-10-23T12:00:00Z")
+    canonical = json.dumps(doc["records"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    assert cat["records_digest"] == hashlib.sha256(canonical.encode()).hexdigest()
+
+
+def test_records_digest_same_for_same_inputs(tmp_path):
+    from datetime import UTC, datetime
+    a = _fixture_build(tmp_path, "a", now=datetime(2026, 10, 23, 12, tzinfo=UTC))
+    b = _fixture_build(tmp_path, "b", now=datetime(2026, 10, 23, 12, 5, tzinfo=UTC))
+    assert a["catalog"]["built_at"] != b["catalog"]["built_at"]
+    assert a["catalog"]["records_digest"] == b["catalog"]["records_digest"]
+
+
+def test_records_digest_changes_with_a_record_or_the_verification(tmp_path):
+    base = _fixture_build(tmp_path, "base")["catalog"]["records_digest"]
+    recs = tmp_path / "records"
+    shutil.copytree(os.path.join(FIDELITY, "records"), recs)
+    p = recs / "acme" / "two-wells.yaml"
+    p.write_text(p.read_text().replace("Two synthetic wells", "Two synthetic wells, renamed"))
+    edited = _fixture_build(tmp_path, "edited", records_dir=recs)["catalog"]["records_digest"]
+    vdir = tmp_path / "verification"
+    shutil.copytree(os.path.join(FIDELITY, "verification"), vdir)
+    v = vdir / "acme__two-wells.json"
+    v.write_text(v.read_text().replace('"checked_at": "2026-10-23T09:00:00+00:00"', '"checked_at": "2026-10-23T10:00:00+00:00"'))
+    reverified = _fixture_build(tmp_path, "reverified", vdir=vdir)["catalog"]["records_digest"]
+    assert len({base, edited, reverified}) == 3

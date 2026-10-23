@@ -1,0 +1,5 @@
+$ osd status   (fixture records, after the accepted fidelity)
+level                 id                                   checked                              access       redistribution kinds
+L0                    acme/no-statement                    never stale                          registration unknown        tops
+L0                    acme/null-attribution                never stale                          request      forbidden      core
+L4 (2 of 2 converted) acme/two-wells                       2026-10-23                           anonymous    restricted     wellbore-logs

@@ -3,7 +3,10 @@
 Outputs (build/catalog/):
   records.json    every record, joined with its latest verification level, the date it was
                    established, `stale` when that date is over 30 days old (or absent) and
-                   `blocked_since` while the origin refuses this runner (OSD-D9)
+                   `blocked_since` while the origin refuses this runner (OSD-D9); and `catalog`,
+                   the snapshot identity (E09): source_commit, verification_commit, built_at and
+                   records_digest, the sha256 of the records array as canonical JSON (keys sorted,
+                   separators "," ":", UTF-8), which manifest/3 and fidelity/1 carry back
   outlines.geojson one FeatureCollection, every feature joined with record title, kinds,
                    licence and level so the map needs no second lookup
   stac/            the static STAC catalogue (src/osd/stac.py)
@@ -15,8 +18,12 @@ Outputs (build/catalog/):
 
 from __future__ import annotations
 
+import hashlib
 import json
-from datetime import datetime
+import os
+import re
+import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 from . import __version__, mirror, paths, stac
@@ -29,10 +36,39 @@ def latest_verification(rid: str, vdir: Path = paths.VERIFICATION_DIR) -> dict |
     return json.loads(p.read_text()) if p.exists() else None
 
 
+COMMIT = re.compile(r"^[0-9a-f]{40}$")
+FROM_ENVIRONMENT = "from-environment"
+
+
+def records_digest(records: list[dict]) -> str:
+    canonical = json.dumps(records, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode()).hexdigest()
+
+
+def git_head(root: Path = paths.ROOT) -> str | None:
+    """HEAD of the checkout the records come from; None outside git."""
+    try:
+        r = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True, check=False)
+    except OSError:
+        return None
+    return r.stdout.strip() if r.returncode == 0 and COMMIT.match(r.stdout.strip()) else None
+
+
+def verification_commit_from_env() -> str | None:
+    """The verification-results commit the workflow extracted into build/verification, as it says in
+    OSD_VERIFICATION_COMMIT; None when it says nothing (a local build)."""
+    v = os.environ.get("OSD_VERIFICATION_COMMIT", "").strip()
+    if v and not COMMIT.match(v):
+        raise ValueError(f"OSD_VERIFICATION_COMMIT={v!r} is not a 40-character commit id")
+    return v or None
+
+
 def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
-          now: datetime | None = None, mirror_dir: Path = mirror.MIRROR_DIR) -> dict:
+          now: datetime | None = None, mirror_dir: Path = mirror.MIRROR_DIR,
+          records_dir: Path = paths.RECORDS_DIR, source_commit: str | None = FROM_ENVIRONMENT,
+          verification_commit: str | None = FROM_ENVIRONMENT) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
-    recs = load_records()
+    recs = load_records(records_dir)
     records_out = []
     features = []
     for rid, rec in recs.items():
@@ -53,8 +89,16 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
                 })
                 fid = {"id": props["feature_id"]} if "feature_id" in props else {}
                 features.append({"type": "Feature", **fid, "properties": props, "geometry": f["geometry"]})
+    catalog = {
+        "source_commit": git_head() if source_commit == FROM_ENVIRONMENT else source_commit,
+        "verification_commit": (verification_commit_from_env() if verification_commit == FROM_ENVIRONMENT
+                                else verification_commit),
+        "built_at": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "records_digest": records_digest(records_out),
+    }
     (out_dir / "records.json").write_text(json.dumps(
-        {"tool_version": __version__, "count": len(records_out), "records": records_out}, indent=2) + "\n")
+        {"tool_version": __version__, "count": len(records_out), "catalog": catalog, "records": records_out},
+        indent=2) + "\n")
     (out_dir / "outlines.geojson").write_text(json.dumps(
         {"type": "FeatureCollection", "features": features}) + "\n")
     index = mirror.public_index(mirror_dir / "custody")

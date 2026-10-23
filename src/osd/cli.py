@@ -15,8 +15,9 @@ from . import mirror as mirror_mod
 from . import new as new_mod
 from . import paths
 from . import report as report_mod
+from . import verify as verify_mod
 from .records import load_records, validate_outlines, validate_records
-from .verify import http_open, is_stale, verify_all
+from .verify import apply_fidelity, conversion_coverage, http_open, is_stale, verify_all
 
 
 def cmd_validate(_: argparse.Namespace) -> int:
@@ -28,7 +29,38 @@ def cmd_validate(_: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def cmd_fidelity(a: argparse.Namespace) -> int:
+    """osd verify <id> --fidelity-from F: offline, the L4 rule (E09). Writes the verification back."""
+    if len(a.ids) != 1:
+        print("refused: --fidelity-from takes exactly one record id, the record the fidelity is for")
+        return 2
+    (rid,) = a.ids
+    vdir = Path(a.vdir)
+    try:
+        doc = json.loads(Path(a.fidelity_from).read_text())
+    except (OSError, ValueError) as e:
+        print(f"refused: {a.fidelity_from}: {e}")
+        return 1
+    v, reasons = apply_fidelity(rid, doc if isinstance(doc, dict) else {}, build_mod.latest_verification(rid, vdir))
+    if v is None:
+        print(f"refused: {reasons[0]}")
+        return 1
+    verify_mod._validator().validate(v)   # never write a record the schema refuses
+    (vdir / (rid.replace("/", "__") + ".json")).write_text(json.dumps(v, indent=2) + "\n")
+    c = next(c for c in v["checks"] if c["name"] == "canonical-conversion")
+    if c["outcome"] == "fail":
+        for r in reasons:
+            print(f"  {v['level']}  {rid}  fidelity rejected: {r}")
+        return 1
+    print(f"  {v['level']}  {rid}  canonical-conversion: pass ({c['detail']})")
+    for r in reasons:
+        print(f"  {v['level']}  {rid}  L4 not awarded: {r}")
+    return 0
+
+
 def cmd_verify(a: argparse.Namespace) -> int:
+    if a.fidelity_from:
+        return cmd_fidelity(a)
     results = verify_all(ids=a.ids or None, derive=a.outlines, fetch_inputs=a.outline_inputs)
     for v in results:
         o = v["origin"]
@@ -45,18 +77,24 @@ def cmd_build(_: argparse.Namespace) -> int:
     return 0
 
 
-def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = None) -> list[str]:
-    """The levels `osd build` publishes, read from the same verification directory."""
-    lines = [f"{'level':5} {'id':36} {'checked':36} {'access':12} {'redistribution':14} kinds"]
-    for rid, r in load_records().items():
+def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = None,
+                 records_dir: Path = paths.RECORDS_DIR) -> list[str]:
+    """The levels `osd build` publishes, read from the same verification directory; an L4 shows
+    its coverage beside it, "L4 (2 of 2 converted)" (E09)."""
+    rows = []
+    for rid, r in load_records(records_dir).items():
         v = build_mod.latest_verification(rid, vdir)
         lv, checked = (v["level"], v["checked_at"]) if v else ("L0", None)
+        coverage = conversion_coverage(v)
+        lv += f" ({coverage})" if coverage else ""
         when = (checked or "never")[:10] + (" stale" if is_stale(checked, now) else "")
         blocked = (v or {}).get("origin", {}).get("blocked_since")
         when += f" blocked since {blocked[:10]}" if blocked else ""
-        lines.append(f"{lv:5} {rid:36} {when:36} {r['origin']['access']:12} "
-                     f"{r['licence']['redistribution']:14} {','.join(r['kinds'])}")
-    return lines
+        rows.append((lv, (f"{rid:36} {when:36} {r['origin']['access']:12} "
+                          f"{r['licence']['redistribution']:14} {','.join(r['kinds'])}")))
+    w = max([5] + [len(lv) for lv, _ in rows])
+    return ([f"{'level':{w}} {'id':36} {'checked':36} {'access':12} {'redistribution':14} kinds"]
+            + [f"{lv:{w}} {rest}" for lv, rest in rows])
 
 
 def cmd_status(_: argparse.Namespace) -> int:
@@ -174,6 +212,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="also fetch outline inputs and rewrite outlines/ (osd.outlines, E03)")
     pv.add_argument("--outline-inputs", action="store_true",
                     help="also fetch outline inputs and check the committed outlines against them (CI)")
+    pv.add_argument("--fidelity-from", metavar="FILE",
+                    help="offline: derive L4 for the one record id from a fidelity/1 record (E09)")
+    pv.add_argument("--vdir", default=str(paths.VERIFICATION_DIR), help="with --fidelity-from: verifications")
     pv.set_defaults(fn=cmd_verify)
     sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)

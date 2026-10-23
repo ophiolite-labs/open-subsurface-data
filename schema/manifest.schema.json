@@ -1,22 +1,43 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/manifest/2",
-  "title": "Retrieval manifest, version 2 (osd.manifest/2; osd.manifest/1 still validates)",
-  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials. v2 (E07): an asset may name `alternates`, other locations of the same bytes (the mirror), tried before `href`; a manifest with alternates says osd.manifest/2, one without may stay osd.manifest/1.",
+  "$id": "https://open-subsurface-data.org/schema/manifest/3",
+  "title": "Retrieval manifest, version 3 (osd.manifest/3; osd.manifest/1 and /2 still validate)",
+  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials. v2 (E07): an asset may name `alternates`, other locations of the same bytes (the mirror), tried before `href`; a manifest with alternates says osd.manifest/2, one without may stay osd.manifest/1. v3 (E09): `metadata.catalog` names the catalogue snapshot the manifest was written from (records.json `catalog`, copied whole); a /3 manifest carries it, /1 and /2 must not. A /3 licence may state `attribution: null` (the source states no value), which /1 and /2 refuse.",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "created", "catalog_url", "selection", "entries"],
   "properties": {
-    "format": {"enum": ["osd.manifest/1", "osd.manifest/2"]},
+    "format": {"enum": ["osd.manifest/1", "osd.manifest/2", "osd.manifest/3"]},
     "created": {"type": "string", "format": "date-time"},
     "catalog_url": {"type": "string", "format": "uri", "description": "The STAC root the ids resolve against"},
     "selection": {"enum": ["collections", "items"], "description": "Collection selection or Item selection, never a mix"},
-    "entries": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/entry"}}
+    "entries": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/entry"}},
+    "metadata": {"type": "object", "additionalProperties": false, "required": ["catalog"],
+                 "description": "v3. About the manifest itself: the catalogue snapshot it was written from",
+                 "properties": {"catalog": {"$ref": "#/$defs/catalog"}}}
   },
-  "if": {"properties": {"format": {"const": "osd.manifest/1"}}},
-  "then": {"properties": {"entries": {"items": {"properties": {"assets": {
-    "additionalProperties": {"not": {"required": ["alternates"]}}}}}}}},
+  "allOf": [
+    {"if": {"properties": {"format": {"const": "osd.manifest/1"}}},
+     "then": {"properties": {"entries": {"items": {"properties": {"assets": {
+       "additionalProperties": {"not": {"required": ["alternates"]}}}}}}}}},
+    {"if": {"properties": {"format": {"const": "osd.manifest/3"}}},
+     "then": {"required": ["metadata"]},
+     "else": {"not": {"required": ["metadata"]},
+              "properties": {"entries": {"items": {"properties": {"licence": {"properties": {
+                "attribution": {"type": "string"}}}}}}}}}
+  ],
   "$defs": {
+    "catalog": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_commit", "verification_commit", "built_at", "records_digest"],
+      "description": "The catalogue snapshot, copied whole from records.json `catalog`. records_digest is the sha256 of the records array as canonical JSON: keys sorted, separators ',' and ':', UTF-8, no escaping of non-ASCII",
+      "properties": {
+        "source_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$", "description": "Commit of the repository the catalogue was built from; null outside git"},
+        "verification_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$", "description": "Commit of the verification-results branch the levels came from; null when the build was not told"},
+        "built_at": {"type": "string", "format": "date-time"},
+        "records_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
     "href": {
       "type": "string",
       "pattern": "^https?://[^/?#@]+(/|$)",
@@ -46,7 +67,8 @@
         "spdx": {"type": ["string", "null"]},
         "url": {"type": "string", "format": "uri"},
         "redistribution": {"enum": ["allowed", "restricted", "forbidden", "unknown"]},
-        "attribution": {"enum": ["required", "not-required", "unknown"]},
+        "attribution": {"enum": ["required", "not-required", "unknown", null],
+                        "description": "v3 admits null: the source states no value; a reader treats it as not stated and supplies no default"},
         "share_alike": {"type": "boolean"},
         "statement": {"type": "string", "maxLength": 300}
       }

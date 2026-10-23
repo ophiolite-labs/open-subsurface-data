@@ -1,0 +1,9 @@
+tests/test_manifest.py::test_licence_round_trip_every_field_exact PASSED
+tests/test_manifest.py::test_licence_round_trip_statement_absent PASSED
+tests/test_manifest.py::test_licence_round_trip_attribution_null PASSED
+tests/test_manifest.py::test_v3_carries_catalog_and_reads PASSED
+tests/test_manifest.py::test_v1_and_v2_read_with_catalog_null PASSED
+tests/test_manifest.py::test_catalog_on_v2_refused PASSED
+tests/test_manifest.py::test_v3_without_catalog_refused PASSED
+tests/test_manifest.py::test_norne_manifest_3 PASSED
+======================= 8 passed, 38 deselected in 3.15s =======================

@@ -1,0 +1,19 @@
+{
+  "record_id": "acme/two-wells",
+  "checked_at": "2026-10-23T09:00:00+00:00",
+  "tool_version": "0.1.0",
+  "level": "L3",
+  "checks": [
+    {"name": "origin-reachable", "level": "L1", "outcome": "pass", "detail": "HTTP 200 from https://acme.example/two-wells"},
+    {"name": "files-checksummed", "level": "L2", "outcome": "pass", "detail": "sample, not the whole dataset: 2 of 2 selected files hashed (1518 bytes); 2 entries listed"},
+    {"name": "licence-text-captured", "level": "L2", "outcome": "pass", "detail": "120 characters captured from https://acme.example/two-wells/licence"},
+    {"name": "outline-present", "level": "L3", "outcome": "pass", "detail": "2 features"},
+    {"name": "outline-derived", "level": "L3", "outcome": "pass", "detail": "2 of 2 features derived from the LAS headers"},
+    {"name": "canonical-conversion", "level": "L4", "outcome": "skip", "detail": "no fidelity record (osd verify <id> --fidelity-from)"}
+  ],
+  "origin": {"http_status": 200, "final_url": "https://acme.example/two-wells", "content_type": "text/html", "elapsed_ms": 12, "reachability": "ok"},
+  "files": [
+    {"path": "well-a.las", "url": "https://acme.example/two-wells/well-a.las", "bytes": 787, "sha256": "172d963522d1df1bdbaffac11a85eb11fe3fcc32fe7f005959e63042d6202830"},
+    {"path": "well-b.las", "url": "https://acme.example/two-wells/well-b.las", "bytes": 731, "sha256": "be341779f2c0a7f799ab94f84ccf709c82553875dec59caca097b4058c06bc31"}
+  ]
+}

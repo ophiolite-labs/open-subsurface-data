@@ -25,6 +25,7 @@ jobs:
             git fetch -q origin verification-results
             mkdir -p build/verification
             git archive origin/verification-results | tar -x -C build/verification
+            echo "OSD_VERIFICATION_COMMIT=$(git rev-parse origin/verification-results)" >> "$GITHUB_ENV"   # records.json catalog (E09)
           fi
       - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
         run: |
