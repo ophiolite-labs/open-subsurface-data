@@ -1,0 +1,30 @@
+id: dov/formele-stratigrafie
+title: Formele stratigrafie (DOV formal stratigraphy interpretations, WFS layer interpretaties:formele_stratigrafie)
+summary: >-
+  DOV's formal stratigraphy of boreholes and cone penetration tests: "Een formele stratigrafie van een
+  boring of een sondering is een lithostratigrafische interpretatie van een (gecodeerde) lithologische
+  beschrijving ... per diepte-interval." It is used to identify the thickness of the Quaternary and the
+  underlying Neogene, Paleogene and older units. Each interpretation links its record sheet and test.
+publisher: {name: Databank Ondergrond Vlaanderen (DOV), url: https://www.dov.vlaanderen.be, country: BE}
+origin:
+  url: https://www.dov.vlaanderen.be/geonetwork/srv/api/records/212af8cd-bffd-423c-9d2b-69c544ab3b04
+  access: anonymous
+  manifest_url: "https://www.dov.vlaanderen.be/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=interpretaties:formele_stratigrafie&count=1000&outputFormat=application/json"
+  notes: "The layer is named in the DOV WFS capabilities (https://www.dov.vlaanderen.be/geoserver/wfs) with metadata record 212af8cd-bffd-423c-9d2b-69c544ab3b04. The manifest_url is a GetFeature of the first 1,000 of 107,753 interpretations (numberMatched on 23 Oct 2026), 635,336 bytes, filename=formele_stratigrafie.json; the depth intervals are on each interpretation sheet."
+licence:
+  name: Modellicentie voor gratis hergebruik (Vlaamse overheid), per the DOV services terms of use
+  spdx: null
+  url: https://www.dov.vlaanderen.be/page/gebruiksvoorwaarden-dov-services
+  redistribution: allowed
+  attribution: required
+  statement: "Databank Ondergrond Vlaanderen - (vermelding van de beheerder en de specifieke geraadpleegde gegevens) - Geraadpleegd op dd/mm/jjjj, op https://www.dov.vlaanderen.be"
+kinds: [tops]
+region: {country: BE, basin: Flanders, bbox: [2.4118, 50.4732, 5.9607, 51.5052], crs: "EPSG:31370 (Belgian Lambert 72)"}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'Voor de gebruiksvoorwaarden op de DOV-data wordt verder verwezen naar de modellicentie voor gratis hergebruik. Onder deze licentie doet de instantie geen afstand van haar intellectuele rechten, maar mag de data voor eender welk doel hergebruikt worden, gratis en onder minimale restricties.'"
+  - "Metadata: 'elk commercieel of niet-commercieel hergebruik voor onbepaalde duur is toegelaten, zonder dat daar kosten aan verbonden zijn. Als enige gebruiksvoorwaarde geldt een bronvermeldingsplicht.'"
+  - "bbox is the layer's WGS84BoundingBox in the WFS capabilities."
+  - "The WFS layer gives one row per interpretation; the intervals themselves are on the linked sheets."
+notes: "No period stated."
+added: 2026-10-23

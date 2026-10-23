@@ -18,12 +18,12 @@ licence:
   redistribution: allowed
   attribution: unknown
 kinds: [wellbore-headers, reports]
-region: {country: BE, basin: Flanders, crs: "EPSG:31370 (Belgian Lambert 72)"}
+region: {country: BE, basin: Flanders, bbox: [2.3763, 49.1677, 5.9961, 52.7875], crs: "EPSG:31370 (Belgian Lambert 72)"}
 listed_by: [publisher]
 known_issues:
   - "Terms: 'Voor de gebruiksvoorwaarden op de DOV-data wordt verder verwezen naar de modellicentie voor gratis hergebruik. Onder deze licentie doet de instantie geen afstand van haar intellectuele rechten, maar mag de data voor eender welk doel hergebruikt worden, gratis en onder minimale restricties.'"
   - "The terms page also says to read the access and use conditions in each dataset's metadata."
-  - "No bbox: the pages name Flanders but state no extent."
+  - "bbox is the layer's WGS84BoundingBox in the WFS capabilities (it reaches beyond Flanders)."
   - "Many boreholes are surface observations: 'In de databank staan er dan ook verschillende boringen met een diepte van 0 meter.'"
 notes: "No period stated."
 added: 2026-10-23

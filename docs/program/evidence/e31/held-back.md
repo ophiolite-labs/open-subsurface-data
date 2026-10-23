@@ -24,3 +24,21 @@ can add it once the publisher has been asked and has agreed.
   If JCCS gives permission, the record would be `japanccs/tomakomai-monitoring` with kinds
   pressure and reports. Its manifest_url would be the top_e page, with the newest `*_ENG.pdf` as
   the sample.
+
+## Four finished records held back under the `unknown` cap
+
+The charter allows at most six new records with `licence.redistribution: unknown`. The lane wrote ten
+such records. It kept six: the four new records that carry a `manifest_url` and the two that add new
+countries with a listing (anh-bo for BO, noc-ly for LY). It held back the four below and moved them
+unchanged into `held-back/`, so a later lane can restore them with `git mv` once its cap allows.
+Their evidence rows are in `sources.md` part A.
+
+| Record (file in `held-back/`) | Country | Why it was the one held back |
+|---|---|---|
+| fig-dmr/offshore-data-release | FK (new) | access `request`, no listing |
+| mra-pg/geoscientific-data | PG (new) | access `purchase`, no listing |
+| pdasl/national-petroleum-data-repository | LK (new) | access `request` ('qualified operators'), no listing |
+| sd-danr/oil-gas-production-injection | US | has a listing, but Idaho's LAS files were kept in its place |
+
+To restore sd-danr, add this samples.yaml entry as well:
+`sd-danr/oil-gas-production-injection: ["*/pubs/og/Oil_Gas_Production_All_Years.xlsx"]   # data page links the production and injection workbooks on sddenr.net; production, 14,332,260 bytes`
