@@ -1,0 +1,12 @@
+$ # mirror server on 127.0.0.1:8766 stopped (curl: connection refused)
+$ uv run osd get manifest.json --dest get-origin
+  verified      opm--norne/norne/NORNE_ATW2013.DATA  (12129 bytes from origin; mirror unreachable: connection at http://127.0.0.1:8766/mirror/opm/norne/f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080/NORNE_ATW2013.DATA)
+  verified      opm--norne/norne/Norne_model_for_atw2013.pdf  (1320215 bytes from origin; mirror unreachable: connection at http://127.0.0.1:8766/mirror/opm/norne/b6c7aaa9eb09470ce9555906cbc2b6a394d08ad6532750b604f8a6f2c364153e/Norne_model_for_atw2013.pdf)
+  verified      opm--norne/norne/README  (687 bytes from origin; mirror unreachable: connection at http://127.0.0.1:8766/mirror/opm/norne/73be5dd043960904321c8ccc62de52a03036669364c588b3e5de1decce049842/README)
+  verified      opm--norne/norne/plothelper.sh  (5893 bytes from origin; mirror unreachable: connection at http://127.0.0.1:8766/mirror/opm/norne/380d97662683715979ed3289e36818c292d42fde39caa6612d5cecdb78636113/plothelper.sh)
+  verified      opm--norne/norne/plotwells.sh  (3270 bytes from origin; mirror unreachable: connection at http://127.0.0.1:8766/mirror/opm/norne/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96/plotwells.sh)
+5 verified
+1 item requires derived work to carry ODbL-1.0
+1 item: the files the verifier sampled, not the whole dataset
+attribution -> get-origin/ATTRIBUTION.md
+exit 0

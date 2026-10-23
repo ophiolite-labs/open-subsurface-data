@@ -1,0 +1,14 @@
+$ uv run osd build && uv run osd manifest opm/norne -o manifest.json
+wrote manifest.json: 1 collections, 5 assets, 0 to-do
+
+$ uv run osd get manifest.json --dest get-mirror   # mirror served on 127.0.0.1:8766
+  verified      opm--norne/norne/NORNE_ATW2013.DATA  (12129 bytes from mirror)
+  verified      opm--norne/norne/Norne_model_for_atw2013.pdf  (1320215 bytes from mirror)
+  verified      opm--norne/norne/README  (687 bytes from mirror)
+  verified      opm--norne/norne/plothelper.sh  (5893 bytes from mirror)
+  verified      opm--norne/norne/plotwells.sh  (3270 bytes from mirror)
+5 verified
+1 item requires derived work to carry ODbL-1.0
+1 item: the files the verifier sampled, not the whole dataset
+attribution -> get-mirror/ATTRIBUTION.md
+exit 0

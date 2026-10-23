@@ -146,7 +146,9 @@ def cmd_mirror_put(a: argparse.Namespace, opener=http_open) -> int:
         for c in out:
             print(f"  {c.outcome:11} {rid} {c.path} {c.sha256[:12]}  ({c.detail})")
             bad |= c.outcome in ("mismatch", "origin-dead")
-    print(f"store {store.root}: {len(store.keys('mirror/'))} objects, {len(store.keys('custody/'))} custody documents")
+    tombs = sum(k.endswith(".removed.json") for k in store.keys("custody/"))
+    print(f"store {store.root}: {len(store.keys('mirror/'))} objects, "
+          f"{len(store.keys('custody/')) - tombs} custody documents, {tombs} tombstones")
     return 1 if bad else 0
 
 

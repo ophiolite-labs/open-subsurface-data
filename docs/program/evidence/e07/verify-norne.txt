@@ -1,0 +1,3 @@
+$ uv run osd verify opm/norne   # network, this host, 23 Oct
+  L2  opm/norne  (origin ok HTTP 206; files-checksummed: pass (sample, not the whole dataset: 1 of 1 selected files hashed (12129 bytes); 5 entries listed); licence-text-captured: pass (26152 characters captured from https://opendatacommons.org/licenses/odbl/1-0/); outline-present: fail (no outlines file))
+1 verified -> /home/epic/src/osd-e07-mirror-store-and-custody/build/verification

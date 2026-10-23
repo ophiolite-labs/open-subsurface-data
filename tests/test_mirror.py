@@ -361,7 +361,7 @@ def test_get_falls_back_when_mirror_unreachable(tmp_path):
     net.dead.add(MIRROR)
     out = get_mod.get(m, tmp_path / "dest", opener=net)
     assert [(r.outcome, r.source) for r in out] == [("verified", "origin")] * 3
-    assert all(r.attempts[0][:2] == ("mirror", "origin-dead") for r in out)
+    assert all(r.attempts[0][:2] == ("mirror", "unreachable") for r in out)
     assert net.origin_requests() == 3
 
 
@@ -501,7 +501,7 @@ def test_cli_put_eligible_remove(tmp_path, capsys):
     assert "eligible opm/norne" in out and "1 eligible" in out and "redistribution unknown" in out
     args = cli.argparse.Namespace(ids=["opm/norne"], vdir=str(vdir), store=str(tmp_path / "s"), public_url=MIRROR)
     assert cli.cmd_mirror_put(args, opener=net) == 0
-    assert "5 objects, 5 custody documents" in capsys.readouterr().out
+    assert "5 objects, 5 custody documents, 0 tombstones" in capsys.readouterr().out
     sha = _sha(NORNE_LISTING["norne/README"])
     assert cli.main(["mirror", "remove", sha, "--store", str(tmp_path / "s"), "--public-url", MIRROR,
                      "--request", "https://github.com/ophiolite-labs/open-subsurface-data/issues/1",

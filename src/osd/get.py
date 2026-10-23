@@ -116,7 +116,7 @@ def _fetch_one(e: Entry, a, p: Path, opener: Opener) -> Outcome:
         what, detail = _download(e, a, href, p, opener)
         if what == "verified":
             return Outcome(e.collection_id, a.key, what, detail, True, name)
-        attempts.append((name, what, detail))
+        attempts.append((name, "unreachable" if what == "origin-dead" else what, detail))
     what, detail = _download(e, a, a.href, p, opener)
     return Outcome(e.collection_id, a.key, what, detail, True, "origin", tuple(attempts))
 

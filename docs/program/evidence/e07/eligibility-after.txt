@@ -1,0 +1,70 @@
+$ uv run osd mirror eligible   # the same 68 verifications, Norne re-verified with its inventory (verification/3)
+  no       agl/marmousi2                            redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ak-dggs/tax-credit-seismic-data          redistribution restricted, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ak-dggs/tax-credit-well-data             redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       anh/produccion-fiscalizada-crudo         level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       anp/bdep                                 redistribution forbidden, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ar-energia/fractura-adjunto-iv           level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ar-energia/produccion-por-pozo           level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ar-energia/trayectorias-vaca-muerta      level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       bgs/single-onshore-borehole-index        level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       cnloer/data-information-hub              redistribution forbidden, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       co2datashare/eos-31-5-7-rock-mechanics   level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       co2datashare/illinois-basin-decatur      declared size 67.2 GB, not under 20 GB; level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       co2datashare/sleipner-2019-benchmark-model level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       co2datashare/sleipner-4d-seismic         level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       co2datashare/smeaheia                    level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       equinor/volve                            redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ga/brumbys-1-otway                       level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ga/l200-southern-carnarvon-seismic       level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       geus/deep-subsurface-data                redistribution restricted, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       geus/formation-tops-denmark              level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       geus/havnso-reservoir-model              redistribution restricted, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       gfz/cosc-1-zero-offset-vsp               level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       gfz/dekorp-9n-reprocessed                level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       gfz/ketzin-brine-injection               level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       gfz/ktb-data                             level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       gsv/petroleum-wells                      level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       helsinki-univ/outokumpu-deep-hole-vocs   level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ie-pad/offshore-exploration-wells        level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       iodp-jrso/lims-expedition-data           level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       kgs/oil-gas-wells                        level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       lbeg/kw-fis                              level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ldeo-brg/logdb                           level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       mase-unmig/videpi-seismic                level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       mase-unmig/videpi-wells                  level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       nlog/nlog                                redistribution unknown, not allowed (OSD-D6); no mirror: rule in verifier/samples.yaml
+  no       nopims/poseidon                          no mirror: rule in verifier/samples.yaml
+  no       nsta/ndr                                 redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ntgs/core-library                        level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       nzpam/kerry-3d                           redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       nzpam/parihaka                           redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ok-occ/oil-gas-data-files                redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  eligible opm/norne                                5 files, 1342194 bytes
+  no       pgi/cbdg-boreholes                       level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       rmotc/teapot-dome                        level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       sa-dem/moorari-3d-2005-reprocessing      level L0, L2 required; origin blocked; no mirror: rule in verifier/samples.yaml
+  no       seg/open-data-wiki                       level L0, L2 required; origin blocked; no mirror: rule in verifier/samples.yaml
+  no       sgc/banco-informacion-petrolera-pozos    level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       sintef/johansen                          level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       sodir/factpages                          no mirror: rule in verifier/samples.yaml
+  no       spe/csp10-model-2                        redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/blake-ridge-hydrates-3d       level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/delft                         level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/f3-demo-2020                  level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/force-ml-2020-ichthys-3d      level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/force-ml-2020-synthetic       level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/laurentian-basin              level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/oga-mnsh                      level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/oga-rockall-trough            level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/penobscot                     level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/usgs-beaufort-sea-2023        level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       terranubis/usgs-central-alaska-2023      level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       tno/bro-geological-boreholes             level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       tx-rrc/full-wellbore                     redistribution restricted, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       tx-rrc/production-data-query-dump        redistribution restricted, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ukogl/uk-onshore-geophysical-library     redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       usgs/namss                               level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       ut-dogm/oil-gas-wells                    redistribution unknown, not allowed (OSD-D6); level L1, L2 required; no mirror: rule in verifier/samples.yaml
+  no       wa-demirs/petroleum-wells                level L1, L2 required; no mirror: rule in verifier/samples.yaml
+1 eligible, 1342194 bytes of inventory
