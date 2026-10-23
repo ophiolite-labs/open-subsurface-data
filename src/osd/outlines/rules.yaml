@@ -141,3 +141,8 @@ sgc/banco-informacion-petrolera-pozos:
   min_features: 25013   # 23 Oct 2026: 25013 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
   inputs:
     wells: {extractor: register-arcgis, kind: wellbore, uwi: UWI, name: WELL_NAME}
+
+ut-dogm/oil-gas-wells:
+  min_features: 40422   # 23 Oct 2026: 40422 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: API, name: WellName}
