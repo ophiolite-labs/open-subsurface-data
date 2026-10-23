@@ -25,4 +25,5 @@ known_issues:
   - "The EULA says 'Users must, however, obtain a license from SEG to hold and use the data, and pay a nominal fee' and that an executed agreement must be on file before any use; the page offers the files as free downloads. Not resolved here."
   - "Synthetic data; no geographic extent."
   - "The 'Elastic 2DEW Classic' download link points at SEAM_I_2D_Model.zip, the same file as the 2D model."
+notes: "No period: the page answered HTTP 403 (Cloudflare) on 23 Oct 2026, so no page could be read. No bbox: a synthetic earth model."
 added: 2026-10-23

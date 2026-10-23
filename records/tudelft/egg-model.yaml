@@ -27,4 +27,5 @@ period:
   start: "2013-11-12"
   end: "2013-11-12"
   stated: "DataCite: dates [{date: 2013-11-12, dateType: Issued}], publicationYear 2013 (release)"
+notes: "No bbox: a synthetic model; the DataCite place 'Netherlands' is the depositor's country."
 added: 2026-10-23

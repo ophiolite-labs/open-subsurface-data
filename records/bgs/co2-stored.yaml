@@ -25,4 +25,8 @@ known_issues:
   - "Storage-unit properties and capacity estimates, not gridded models; reservoir-model is the nearest kind."
   - "No files without a login, so no manifest_url."
   - "bbox is the UK Continental Shelf, approximate."
+period:
+  start: "2024-11-20"
+  end: "2024-11-20"
+  stated: "CO2 Stored Version Log, column 'When CO2 Stored updated': current database version 20th November 2024 (entries back to 18 May 2015); no data period stated; database originally developed in UKSAP (History page, undated)"
 added: 2026-10-23

@@ -25,4 +25,8 @@ known_issues:
   - "Report metadata (fund number, type, authors, title, year, restriction date, description); the reports themselves are not downloadable here."
   - "lgt.lrv.lt answered a Cloudflare 403 challenge to automated requests on 23 Oct 2026; the dataset is published by LGT on data.gov.lt."
   - "bbox is Lithuania, approximate."
+period:
+  start: "2022-10-05"
+  end: "2022-10-05"
+  stated: "data.gov.lt dataset page: distributions 'Publikuota 2022-10-05' (last 'Atnaujinta 2025-09-26'); 'Laikotarpis 2022 m. spalio 5 d. -' with open end; updated weekly ('Kas savaitę')"
 added: 2026-10-23

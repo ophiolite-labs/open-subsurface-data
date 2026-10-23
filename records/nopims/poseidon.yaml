@@ -26,4 +26,5 @@ inputs:
     format: mdio
     crs: "EPSG:28351"
     stated: "Registry page: \"Coordinate system used is: GDA94 / MGA Zone 51\"; cdp-x/cdp-y carry unitsV1 length m"
+notes: "No period stated: the registry page says only 'Dataset is static', no acquisition or release date."
 added: 2026-10-23

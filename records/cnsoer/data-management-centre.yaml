@@ -22,5 +22,5 @@ listed_by: [publisher]
 known_issues:
   - "The terms state that the CNSOER monitors the data each user accesses and makes it available to the data owners; no reuse or redistribution terms are stated for the well data."
   - "bbox is the Canada-Nova Scotia offshore area, approximate."
-notes: "Kinds are what the public data summary names (core, cuttings, slides, fluids, well and G&G files); the application also offers exclusive seismic data without saying 2D or 3D, so no seismic kind is written. Held back by E17 to stay within six unknown-licence records; added on the E20 retry, 23 Oct 2026. The well list is the separate record cnsoer/directory-of-offshore-wells."
+notes: "Kinds are what the public data summary names (core, cuttings, slides, fluids, well and G&G files); the application also offers exclusive seismic data without saying 2D or 3D, so no seismic kind is written. Held back by E17 to stay within six unknown-licence records; added on the E20 retry, 23 Oct 2026. The well list is the separate record cnsoer/directory-of-offshore-wells. No period stated: the DMC pages give no period for the holdings."
 added: 2026-10-23

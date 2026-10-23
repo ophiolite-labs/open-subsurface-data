@@ -25,4 +25,8 @@ known_issues:
   - "The layer gives basic data per object (depth, coordinates, rock, stratigraphy, purpose, year, flags for logging and hydrogeology); profiles and logs are in the paid GDO database."
   - "The GDO database lags the archive by about four years (publisher's notice). www.geology.cz timed out on 23 Oct 2026; cgs.gov.cz and mapy.geology.cz answer. bbox is the Czech Republic, approximate."
 notes: "Layer 1 (Vrty) of the Vrtna_prozkoumanost map service, copyright text \"© ČGS\", 746,789 features and maxRecordCount 3000 on 23 Oct 2026. The GDO database covers about 720 thousand objects including about 620 thousand geological borehole profiles."
+period:
+  start: "1500"
+  end: "2026-10-23"
+  stated: "ČGS Vrtná prozkoumanost layer 1 (Vrty), field rok_obj 'Rok': earliest 1500, latest 2025; GDO database still filled from archive reports with a lag of 'zhruba 4 roky' (ongoing), so to today"
 added: 2026-10-23

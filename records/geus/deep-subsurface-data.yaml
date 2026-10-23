@@ -20,5 +20,5 @@ known_issues:
   - "Terms 2.2: the user may 'in specific cases' make the data available to others free of charge and must tell them GEUS' rights apply; GEUS keeps all rights. Read here as restricted redistribution."
   - "https://data.geus.dk/ugdata2d3d/ answers 403 to an automated request (23 Oct 2026); the terms PDF in that path answers 200."
   - "bbox is approximate (Danish land area and Danish North Sea sector); the page states no extent."
-notes: "On 23 Oct 2026 (13:26 UTC) eng.geus.dk and www.geus.dk answer HTTP 404 at every path including the home page (502 earlier that day, issue #17); data.geus.dk (the map portal and the terms PDF) answers 200; no status notice is published."
+notes: "On 23 Oct 2026 (13:26 UTC) eng.geus.dk and www.geus.dk answer HTTP 404 at every path including the home page (502 earlier that day, issue #17); data.geus.dk (the map portal and the terms PDF) answers 200; no status notice is published. No period: eng.geus.dk and www.geus.dk refused connections on 23 Oct 2026 (16:44 UTC), so no page could be read."
 added: 2026-10-23

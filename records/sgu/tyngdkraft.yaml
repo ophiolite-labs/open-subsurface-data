@@ -22,4 +22,5 @@ region: {country: SE, basin: Sweden, bbox: [10.96, 55.34, 24.17, 69.06]}
 listed_by: [publisher]
 known_issues:
   - "bbox is Sweden, approximate; the airborne surveys cover only the Kiruna area."
+notes: "No period stated: the product page gives only a decade ('slutet av 1950-talet') for when the measurements began."
 added: 2026-10-23

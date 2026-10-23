@@ -25,4 +25,8 @@ known_issues:
   - "No licence for the data is published; 'All rights reserved' in the footer is read as restricted redistribution."
   - "The manifest_url names one year's workbook; a new year is a new address."
   - "bbox is the area of the Jubilee, TEN and OCTP fields, approximate."
+period:
+  start: "2024"
+  end: "2026-06"
+  stated: "Production Volume page: downloads '2024 Fields Production Data' and '2025 Fields Production Data'; 2026 monthly tables for Jubilee, TEN and OCTP/Sankofa-Gye Nyame filled January to June 2026"
 added: 2026-10-23

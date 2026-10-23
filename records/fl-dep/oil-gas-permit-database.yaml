@@ -23,4 +23,8 @@ listed_by: [publisher]
 known_issues:
   - "The disclaimer is on the FDEP ArcGIS item of the well layer: 'The data are presented \"as is\", without a warranty of any kind'; the spreadsheet page states no terms."
   - "bbox is the State of Florida, approximate."
+period:
+  start: "1943-02-28"
+  end: "2026-10-23"
+  stated: "FDEP OIL_WELLS MapServer layer 0 (the permitted-well layer the page's database feeds): earliest SPUD_DATE 1943-02-28; register 'updated on a quarterly basis or as needed', end = date read 2026-10-23"
 added: 2026-10-23

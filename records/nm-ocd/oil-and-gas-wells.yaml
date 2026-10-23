@@ -23,4 +23,5 @@ known_issues:
   - "Use statement only: \"OCD geospatial data is intended for general reference use by the public, and should not be construed as the definitive record for legal purposes, locations, etc.\""
   - "Locations come from Form C-102 \"and should be considered approximate\"; not all wells are active."
   - "bbox is the State of New Mexico, approximate (the item's stated extent stops at 32° N)."
+notes: "No period stated: the item says wells are updated daily but gives no start; the layer's spud dates hold placeholders (1900-01-01, 9999-12-31)."
 added: 2026-10-23

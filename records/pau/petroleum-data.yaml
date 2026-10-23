@@ -24,4 +24,5 @@ known_issues:
   - "The page names wells and seismic data without splitting 2D from 3D; kinds seismic-2d and seismic-3d and wellbore-logs are the nearest reading of 'wells and seismic data'."
   - "The page mentions a 'PAU Exploration and Production (E&P) Fact site (link)' but gives no address; the National Petroleum Data Repository is stated as under development."
   - "bbox is Uganda, approximate."
+notes: "No period stated: the page describes the data categories but gives no dates."
 added: 2026-10-23

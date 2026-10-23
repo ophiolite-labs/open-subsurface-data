@@ -25,4 +25,5 @@ known_issues:
   - "The deck notes: 'This data set is currently not supported by the OPM simulator flow due to a bug in how Cartesian grids are handled'; the corner-point variants are the work-around."
   - "Synthetic model with no geographic location; no country or bbox."
   - "share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+notes: "No period stated: the deck gives only a copyright year (2015) and the 1995 paper it cites. No bbox: a synthetic model."
 added: 2026-10-23

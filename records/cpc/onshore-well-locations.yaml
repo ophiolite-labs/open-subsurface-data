@@ -21,4 +21,8 @@ listed_by: [publisher]
 known_issues:
   - "bbox is Taiwan, approximate; the metadata states no spatial coverage."
   - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (RFC 9309: disallow), so the manifest_url is the one CSV the package names; www3.cpc.com.tw timed out to automated requests that day."
+period:
+  start: "2017-11-22"
+  end: "2017-11-22"
+  stated: "data.gov.tw dataset 62919 (provider 台灣中油股份有限公司): 上架日期 (listing date) 2017-11-22; fields have no dates; metadata updated 2024-05-29; no temporal coverage stated"
 added: 2026-10-23

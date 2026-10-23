@@ -24,4 +24,8 @@ known_issues:
   - "The ArcGIS item behind the entry carries CalGEM's data disclaimer instead ('provides the data contained in this website for informational purposes', no warranty). Recorded, not resolved (OSD-D15)."
   - "The disclaimer refers to the Department of Conservation 'Conditions of Use' policy, which could not be opened (host timed out, 23 Oct 2026)."
   - "bbox is the State of California, approximate."
+period:
+  start: "1801"
+  end: "2026-10-23"
+  stated: "WellSTAR Wells MapServer layer 0 (CKAN 'ArcGIS GeoService' resource): earliest SpudDate 01/01/1801 (9 wells, likely placeholder; next 1867-08-01), latest 2026-07-30; 'Update Frequency: As Needed', so to today"
 added: 2026-10-23

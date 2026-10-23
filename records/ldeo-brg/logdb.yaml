@@ -23,4 +23,5 @@ period:
   start: "1968"
   end: "2024"
   stated: "LDEO LogDB landing page: logging data recorded by DSDP (1968-1983) through International Ocean Discovery Program (2014-2024); origin page itself lists legs but no dates"
+notes: "No bbox: a global repository; the holes are in all ocean basins."
 added: 2026-10-23

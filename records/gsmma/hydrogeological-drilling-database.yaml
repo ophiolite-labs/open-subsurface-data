@@ -23,4 +23,8 @@ known_issues:
   - "bbox is Taiwan with Penghu, approximate; the metadata states no spatial coverage. Coordinates are TWD97 二度分帶 (TM2) as the CSV header names them."
   - "The metadata cites a fee rule (計費法令依據) but marks the dataset 免費 (free)."
   - "data.gov.tw/robots.txt answered HTTP 500 to the verifier's agent on 23 Oct 2026 (RFC 9309: disallow), so the manifest_url is the one CSV the package names; www.gsmma.gov.tw answered a Cloudflare 403 page to automated requests that day."
+period:
+  start: "2015-07-30"
+  end: "2015-07-30"
+  stated: "data.gov.tw metadata for dataset 16799: publishedDate 2015-07-30 (release); coverageStartedDate/coverageEndedDate empty; modifiedDate 2025-06-20; per-well 建置年分 is in the CSV only"
 added: 2026-10-23

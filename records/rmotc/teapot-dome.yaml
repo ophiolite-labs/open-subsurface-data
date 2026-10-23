@@ -21,4 +21,5 @@ listed_by: [seg-wiki]
 known_issues:
   - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the DOE NETL EDX dataset page; that URL answers 200 but redirects to an EDX login, so the licence field there could not be read (licence below is the US Government works statement, not read from EDX)."
   - "Replaces the former 'wiki page of mirrors' issue: the verifier should record the EDX resource it checksummed."
+notes: "No period: on 23 Oct 2026 the EDX page redirected to a login, so no page could be read."
 added: 2026-10-23

@@ -24,4 +24,5 @@ known_issues:
   - "\"Please Note: The Oil and Gas Well Database is not accessible to locations outside the United States.\" (online search); the download is also \"available free on CD\"."
   - "The wells service carries only a liability statement (\"provides this geographic data 'as is.'\"); no terms of use for the database found on 23 Oct 2026."
   - "bbox is the wells service's stated extent (Ohio), approximate."
+notes: "No period stated: the page says RBDMS holds wells permitted since 1980 plus scanned cards for older wells, so no start for the whole database."
 added: 2026-10-23

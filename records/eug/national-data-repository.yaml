@@ -21,5 +21,5 @@ size: {stated: "16,981+ Wells, 465+ Seismic 3D, 658+ Seismic 2D, 106+ Gravity/Ma
 listed_by: [publisher]
 known_issues:
   - "bbox is Egypt with its offshore, approximate."
-notes: "Want: the schema cannot say paid membership tiers. Bid rounds are run here for EGPC, EGAS and GANOPE."
+notes: "Want: the schema cannot say paid membership tiers. Bid rounds are run here for EGPC, EGAS and GANOPE. No period stated: the public pages give no acquisition, coverage or release range; holdings are behind login."
 added: 2026-10-23

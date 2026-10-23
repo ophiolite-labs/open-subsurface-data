@@ -23,4 +23,8 @@ known_issues:
   - "The licence is the one on the data.colorado.gov entry attributed to the commission; the ECMC site (an Angular application) shows no terms in its page text."
   - "The statement is the entry's 'Citation' field; CC0 asks for none."
   - "bbox is the State of Colorado, approximate."
+period:
+  start: "2016-08-08"
+  end: "2016-08-08"
+  stated: "data.colorado.gov (Socrata) view hvzn-ur6t metadata: publicationDate 2016-08-08 (link entry to ECMC WELLS_SHP.ZIP, 'Update Schedule: Daily'); no columns or temporal coverage stated"
 added: 2026-10-23

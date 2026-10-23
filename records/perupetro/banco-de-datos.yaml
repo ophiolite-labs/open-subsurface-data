@@ -22,5 +22,5 @@ listed_by: [publisher]
 known_issues:
   - "The portal's conditions say the information \"is for reference purposes only\" and that PERUPETRO \"reserves the right to initiate appropriate legal action in cases where improper use of the information contained in the Database is verified\"; they name no licence and no terms for reuse."
   - "bbox is Peru with its offshore, approximate."
-notes: "The public part of the portal does not list what the data bank holds, so no kind beyond source-list is written; the catalogue sits behind registration."
+notes: "The public part of the portal does not list what the data bank holds, so no kind beyond source-list is written; the catalogue sits behind registration. No period stated: the public portal is a script-only page, and the catalogue is behind registration."
 added: 2026-10-23

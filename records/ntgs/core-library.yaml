@@ -20,4 +20,5 @@ listed_by: [publisher]
 known_issues:
   - "geoscience.nt.gov.au (GEMIS and the download files) served a 'website temporarily unavailable' maintenance page on 23 Oct 2026; the catalogue and NTLIS metadata answer."
   - "The catalogue slug is water-bore-cuttings though the title is Northern Territory Core Library."
+notes: "No period stated: the metadata leaves its data currency start and end dates empty."
 added: 2026-10-23

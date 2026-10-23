@@ -25,4 +25,5 @@ listed_by: [publisher]
 known_issues:
   - "bbox is Pakistan, approximate; the site states no extent."
   - "The site names 'seismic, well, and physical' data without a list; kinds are the ones it names."
+notes: "No period stated: the subscribe page gives tiers and fees but no data dates."
 added: 2026-10-23

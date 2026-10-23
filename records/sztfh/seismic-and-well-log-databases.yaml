@@ -27,5 +27,5 @@ known_issues:
   - "Fee schedule (1. függelék): processed 2D line in SEGY 14 000 to 47 000 Ft by CDP count; processed 3D survey 254 000 to 977 000 Ft by volume; LAS logs 31 000 Ft base fee per well plus 4 900 to 98 000 Ft by curve length."
   - "Data obtained during exploration are business secrets until the exploration right ends (Mining Act s. 25); such data need the data owner's permission."
   - "map.hugeo.hu robots.txt disallows /arcgis/, so no service listing is named. bbox is Hungary, approximate."
-notes: "Predecessor bodies named by the publisher: MBFSZ, MFGI, ELGI, MÁFI. The terms quote points 7.3 and 9 of the SZTFH notice as read on 23 Oct 2026; the free reading room and Digital Data Room view data without copies."
+notes: "Predecessor bodies named by the publisher: MBFSZ, MFGI, ELGI, MÁFI. The terms quote points 7.3 and 9 of the SZTFH notice as read on 23 Oct 2026; the free reading room and Digital Data Room view data without copies. No period stated: the page gives no date range for the databases, only history (first logging in 1935)."
 added: 2026-10-23

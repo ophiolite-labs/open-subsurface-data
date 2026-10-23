@@ -27,4 +27,8 @@ known_issues:
   - "bbox is India with its offshore, approximate."
   - "The bare host https://www.ndrdgh.gov.in/ answers with a redirect to /NDR; a client that does not follow redirects sees no answer."
 notes: "licence.terms.stated quotes clause 5.2.5 of the E&P Data Policy (https://www.ndrdgh.gov.in/NDR/pdf/data_policy.pdf, published 17.05.2017) as read on 23 Oct 2026; the policy states no licence duration and no review before publication (academic and government institutes share study reports with DGH within three months of completing a project, clauses 5.3.4 and 5.4.3)."
+period:
+  start: "2017-07-28"
+  end: "2017-07-28"
+  stated: "NDR home page: 'National Data Repository (NDR) was launched for public on 28th July 2017'; no period for the data holdings stated"
 added: 2026-10-23

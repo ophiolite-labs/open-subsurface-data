@@ -23,4 +23,8 @@ listed_by: [publisher]
 known_issues:
   - "Mostly mineral-exploration and construction boreholes, not petroleum wells."
   - "bbox is Sweden, approximate; the page states no extent."
+period:
+  start: "1898"
+  end: "2022"
+  stated: "SGU OGC API Features collection 'borrhal' (linked from the product page), field drillyear 'År när borrhålet borrats': earliest 1898, latest 2022 over 36,672 boreholes"
 added: 2026-10-23

@@ -25,5 +25,5 @@ known_issues:
   - "Geodetic Survey gravity data carry their own citation: \"Gravity Data (Geodetic Survey): 2024, Canadian Geodetic Survey, Surveyor General Branch, Lands and Minerals Sector, Natural Resources Canada\"."
   - "The portal names the Open Government Licence - Canada without a version; no SPDX id is inferred."
   - "bbox is Canada, approximate; the portal states no extent."
-notes: "Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind)."
+notes: "Retried for E20 on 23 Oct 2026 (E14 and E17 had held it back for want of the kind). No period stated: the portal gives only a citation year (2024), no acquisition or coverage period."
 added: 2026-10-23

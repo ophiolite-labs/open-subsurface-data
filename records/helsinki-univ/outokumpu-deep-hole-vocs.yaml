@@ -15,13 +15,12 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [geochemistry]
-region: {country: FI, basin: "Outokumpu Deep Drill Hole (ICDP), eastern Finland"}
+region: {country: FI, basin: "Outokumpu Deep Drill Hole (ICDP), eastern Finland", bbox: [29.04, 62.69, 29.09, 62.74]}
 size: {bytes_estimate: 51296, stated: two xlsx files}
 listed_by: [community]
-known_issues:
-  - "No bbox: the Zenodo record states no location coordinates. The ICDP Outokumpu site pages (icdp-online.org, data.icdp-online.org) timed out from this host on 23 Oct 2026."
 period:
   start: "2024-12-20"
   end: "2024-12-20"
   stated: "Zenodo record 14534965 (the publisher's deposit): publication_date 2024-12-20; no sampling dates or temporal fields stated"
+notes: "bbox is a small box around the drill hole coordinates the authors state (62°43′02.63′′N, 29°03′55.01′′E) in the article the Zenodo deposit links as isSupplementTo."
 added: 2026-10-23

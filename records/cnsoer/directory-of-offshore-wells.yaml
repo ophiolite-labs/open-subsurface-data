@@ -24,4 +24,8 @@ known_issues:
   - "The cnsoer.ca website terms prohibit unauthorized reproduction of website materials; the DMC host states only a copyright line, so redistribution of the well list is not inferred."
   - "bbox is the Canada-Nova Scotia offshore area, approximate."
   - "Coordinates in the PDF are DMS with the degree sign rendered as 0."
+period:
+  start: "1967-06-07"
+  end: "2018-04-22"
+  stated: "CNSOER Directory of Offshore Wells (dow-2025.xlsx, linked from the DMC data summary): Spud Date column runs from 1967-06-07 (Sable Island C-67) to 2018-04-22 (Aspy D-11/D-11A), 211 wells"
 added: 2026-10-23

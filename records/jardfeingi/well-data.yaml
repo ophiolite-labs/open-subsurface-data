@@ -23,4 +23,8 @@ known_issues:
   - "No licence or terms on the well data page; the Data-package terms PDF is referenced but not linked."
   - "bbox is the Faroese area, approximate."
 notes: "Want: the Data-package (seismic and well data, fee £400) could be a separate purchase record once its terms are readable."
+period:
+  start: "1980-09-17"
+  end: "2014-08-18"
+  stated: "Per-well 'Well fakta'/'Well info' PDFs linked from Boridátur (12 wells): earliest spud Vestmanna-1 17 September 1980, latest completion 6104/25-1 18 August 2014; the page itself states no dates"
 added: 2026-10-23

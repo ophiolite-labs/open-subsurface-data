@@ -29,4 +29,8 @@ known_issues:
   - "Data are leased, not sold; no licence text, lease length or reuse terms are stated on the GeoPortal pages read. The 2025-2027 dates are the offer's validity, not a licence term."
   - "Kinds follow the data types offered; wellbore-headers stands for \"All Wells\", whose contents are not itemised. bbox is Suriname with its offshore, approximate."
 notes: "licence.terms.stated quotes the Open-Door Offering page (ArcGIS Hub page item 262b5d99691a48c983b1de427bee60e1, updated 2026-06-23) as read on 23 Oct 2026. The page adds that data newly added to a leased type in the five years from 24 November 2025 is provided at the same discount rate."
+period:
+  start: "1963"
+  end: "2024"
+  stated: "Staatsolie GeoPortal LeaseStore FeatureServer SHI_0001 (layers WELLS_JOINED, SEISMIC_2D_JOINED, SEISMIC_3D_JOINED, with LEASE_PRICE_USD): well Year 1963-2024, 2D YEAR_ACQUIRED_TXT 1968-2017, 3D YEAR_ACQUIRED 2005-2021; the Open-Door page states only the offer's validity (24 Nov 2025 - 24 Nov 2027)"
 added: 2026-10-23
