@@ -1,0 +1,35 @@
+# npm run site-test on 0c98be7 (rebased on main 258cb51), 2026-10-23T13:58:18Z
+✔ no console error on load, map and how page (1911.376959ms)
+✔ #q=volve lists one dataset (1206.118899ms)
+# shared view #k=production&sel=ar-energia/produccion-por-pozo&map=3.64/-40.4696/-63.6000 {"count":"(12 OF 96)","items":12,"title":"Producción de petróleo y gas por pozo (Capítulo IV)","zoom":"3.6"}
+✔ a hash with a kind filter and a selection renders the same view in a second context (3642.669635ms)
+✔ stale: checked_at older than 30 days shows "stale" next to the level (1181.860009ms)
+# 10k wellbores at zoom 5: {"zoom":5,"clusters":70,"singles":1,"points":10000} frame after moveend (ms): 27.0, 28.2, 27.4, 28.2, 27.0
+✔ 10,000 wellbores cluster at zoom 5 and the frame after moveend arrives under 100 ms (3973.554239ms)
+✔ phone width: the panel is a bottom sheet (1101.551072ms)
+✔ tiles: the page loads tiles for the viewport, under 1 MB from the site, and never outlines.geojson (4491.300337ms)
+✔ tiles: #q=sodir, a click on a wellbore shows the same detail title as the GeoJSON path (2498.376227ms)
+✔ tiles: a server without byte ranges (python3 -m http.server) falls back to outlines.geojson (1707.432681ms)
+✔ tiles: phone width with tiles, Sodir wells clustered (1133.44796ms)
+✔ select (tiles): tick a dataset on the map and one in the list, see the rights, download a manifest osd get reads (2704.722272ms)
+✔ select (geojson): tick a dataset on the map and one in the list, see the rights, download a manifest osd get reads (3323.416466ms)
+✔ select: a #pick= link restores the selection in a new context; a registration dataset is a to-do (2416.443047ms)
+✔ select: phone width, the basket and the download button are reachable in the sheet (1505.683254ms)
+✔ kinds: a potential-fields chip appears from the data and filters one record in, one out (1294.574389ms)
+✔ select: a purchase dataset with terms: the page writes osd.manifest/4 with the same terms object osd manifest writes (1745.058384ms)
+✔ period: #t=1990-2000 lists the records whose period overlaps plus undated ones; dated=1 drops the undated (1336.550785ms)
+# shared period view #k=seismic-3d&t=1990-2000&sel=terranubis/penobscot&map=9.00/44.1505/-60.0500 (19 OF 96)
+✔ period: a hash with t=, a kind and a selection renders the same list and detail in a second context (4674.769222ms)
+✔ period: the detail of a dated record shows the When row with the stated sentence; undated says not stated (1559.625974ms)
+✔ period: the filter on the real catalogue, desktop and phone width; the year inputs fit the sheet (2603.474885ms)
+✔ status.html lists every record with its level and the date it was checked (733.458026ms)
+✔ the built catalogue renders: a record never checked says so (158.105559ms)
+✔ a column header sorts, a second click reverses (317.57521ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46556.999811
