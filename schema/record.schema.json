@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/record/4",
+  "$id": "https://open-subsurface-data.org/schema/record/5",
   "title": "Open Subsurface Data record, version 4",
   "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record. Version 3 (E19, additive) adds the kind `potential-fields`, the access `purchase` and the optional `licence.terms`; every version-2 record is a valid version-3 record. Version 4 (E26, additive) adds the kinds `velocity-model`, `geological-model`, `airborne-em`, `radiometrics` and `stress`; every version-3 record is a valid version-4 record.",
   "type": "object",
@@ -101,8 +101,8 @@
         "properties": {
           "name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Unique within the record; the key of its rule in rules.yaml."},
           "url": {"type": "string", "format": "uri", "description": "As the publisher serves it, e.g. a WFS GetFeature request for one layer, a file, or a store prefix."},
-          "format": {"type": "string", "enum": ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson"],
-                     "description": "html-geojson: a page that carries a GeoJSON geometry the publisher labels as the extent."},
+          "format": {"type": "string", "enum": ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson", "arcgis"],
+                     "description": "html-geojson: a page that carries a GeoJSON geometry the publisher labels as the extent; arcgis: an ArcGIS Map or Feature Server layer, url without a query (record/5)."},
           "crs": {"type": "string", "pattern": "^EPSG:[0-9]+$", "description": "The CRS the publisher declares for the coordinates. Absent means not declared: the input is refused, never guessed."},
           "units": {"type": "string", "enum": ["m", "ft", "ftUS", "degree"], "description": "Coordinate units when the publisher states them outside the data."},
           "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states the CRS and units, verbatim where short."}

@@ -2,7 +2,8 @@
 strategy E19-vocabulary-from-the-records-lanes-STRATEGY.md): record/3, the stac-osd v2 access value, the
 status expiry note, the scaffold's comment lists and the six record edits. E26 (charter
 E26-vocabulary-kinds-the-records-lanes-asked-for.md): record/4's five kinds, record/3 compatibility and the
-scaffold's kinds comment."""
+scaffold's kinds comment. E29 (charter E29-outlines-from-the-map-services.md): record/5's `arcgis` input
+format and record/4 compatibility."""
 
 import copy
 import json
@@ -30,7 +31,8 @@ def _v(schema: dict) -> Draft202012Validator:
     return Draft202012Validator(schema, format_checker=FormatChecker())
 
 
-RECORD = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))   # the live schema, record/4 (E26)
+RECORD = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))   # the live schema, record/5 (E29)
+RECORD_4 = _v(json.loads((FROZEN / "record-4.schema.json").read_text()))
 RECORD_3 = _v(json.loads((FROZEN / "record-3.schema.json").read_text()))
 RECORD_2 = _v(json.loads((FROZEN / "record-2.schema.json").read_text()))
 NEW_KINDS = ["velocity-model", "geological-model", "airborne-em", "radiometrics", "stress"]   # E26, literal
@@ -58,7 +60,8 @@ def _errors(rec: dict) -> list:
 # --- record/3 --------------------------------------------------------------------------------------
 
 def test_record_ids_are_versioned():
-    assert RECORD.schema["$id"].endswith("/record/4") and RECORD_3.schema["$id"].endswith("/record/3")
+    assert RECORD.schema["$id"].endswith("/record/5") and RECORD_4.schema["$id"].endswith("/record/4")
+    assert RECORD_3.schema["$id"].endswith("/record/3")
     assert RECORD_2.schema["$id"].endswith("/record/2")
 
 
@@ -157,6 +160,35 @@ def test_record_3_fixtures_validate_under_record_3_and_record_4():
         assert not _errors(rec), kind
     for kind in NEW_KINDS:
         assert list(RECORD_3.iter_errors(_base(kinds=[kind]))), kind
+
+
+# --- record/5 (E29): inputs read from an ArcGIS layer -------------------------------------------
+
+RECORD_4_FORMATS = ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson"]   # every record/4 format, literal
+
+
+def _with_input(fmt: str) -> dict:
+    return _base(inputs=[{"name": "layer", "url": "https://acme.example/arcgis/rest/services/W/MapServer/0",
+                          "format": fmt, "crs": "EPSG:2193", "stated": "layer description: wkid 2193"}])
+
+
+def test_record_4_fixtures_validate_under_record_4_and_record_5():
+    """The same record/4 files, one per record/4 input format and one per record/4 kind, are valid under
+    the frozen record/4 and under record/5; every stored record is valid under record/5."""
+    for fmt in RECORD_4_FORMATS:
+        assert not list(RECORD_4.iter_errors(_with_input(fmt))), fmt
+        assert not _errors(_with_input(fmt)), fmt
+    for kind in RECORD_3_KINDS + NEW_KINDS:
+        assert not list(RECORD_4.iter_errors(_base(kinds=[kind]))), kind
+        assert not _errors(_base(kinds=[kind])), kind
+    for p in record_files():
+        assert not _errors(load_record(p)), p
+
+
+def test_record_5_admits_arcgis_and_record_4_refuses_it():
+    assert _errors(_with_input("arcgis")) == []
+    assert list(RECORD_4.iter_errors(_with_input("arcgis")))
+    assert _errors(_with_input("ArcGIS")) and _errors(_with_input("esri-json"))
 
 
 # --- osd new: the scaffold's comment lists come from the schema -----------------------------------
