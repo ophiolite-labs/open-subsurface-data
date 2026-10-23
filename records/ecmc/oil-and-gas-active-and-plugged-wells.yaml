@@ -1,0 +1,26 @@
+id: ecmc/oil-and-gas-active-and-plugged-wells
+title: Oil and Gas Active and Plugged Wells
+summary: >-
+  Oil and gas active and plugged wells as reported by the Colorado Oil & Gas Conservation
+  Commission (now the Energy & Carbon Management Commission, ECMC), listed on the Colorado
+  Information Marketplace and downloaded as the commission's daily-updated well shapefile.
+publisher: {name: "Colorado Energy & Carbon Management Commission (formerly Colorado Oil & Gas Conservation Commission)", url: https://ecmc.state.co.us, country: US}
+origin:
+  url: https://data.colorado.gov/Environment/Oil-and-Gas-Active-and-Plugged-Wells/hvzn-ur6t
+  access: anonymous
+  notes: "The entry links the commission's file http://cogcc.state.co.us/documents/data/downloads/gis/WELLS_SHP.ZIP, which redirects to https://ecmc.state.co.us/documents/data/downloads/gis/WELLS_SHP.ZIP (15.8 MB, last modified 22 Oct 2026). Update schedule stated: Daily."
+licence:
+  name: Creative Commons 1.0 Universal (Public Domain Dedication) (Colorado Information Marketplace entry)
+  spdx: CC0-1.0
+  url: http://creativecommons.org/publicdomain/zero/1.0/legalcode
+  redistribution: allowed
+  attribution: not-required
+  statement: "DNR - Colorado Oil & Gas Conservation Commission"
+kinds: [wellbore-headers]
+region: {country: US, basin: "Colorado (Denver-Julesburg, Piceance, San Juan, Raton basins and others)", bbox: [-109.06, 36.99, -102.04, 41.00]}
+listed_by: [publisher]
+known_issues:
+  - "The licence is the one on the data.colorado.gov entry attributed to the commission; the ECMC site (an Angular application) shows no terms in its page text."
+  - "The statement is the entry's 'Citation' field; CC0 asks for none."
+  - "bbox is the State of Colorado, approximate."
+added: 2026-10-23

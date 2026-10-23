@@ -1,0 +1,26 @@
+id: pa-dep/oil-and-gas-well-locations
+title: "Oil & Gas - Oil & Gas Well Locations"
+summary: >-
+  Pennsylvania Department of Environmental Protection layer of oil and gas wells: an Oil and Gas
+  Location is a DEP primary facility type of the Oil & Gas Program, and this layer represents
+  wells. Published on DEP's GIS open data portal with downloads and the eMapPA map service.
+publisher: {name: Pennsylvania Department of Environmental Protection (DEP), url: https://www.pa.gov/agencies/dep, country: US}
+origin:
+  url: https://newdata-padep-1.opendata.arcgis.com/datasets/4300a4d66be4497f8c228bbbeb2401c2
+  access: anonymous
+  notes: "Service https://gis.dep.pa.gov/depgisprd/rest/services/emappa/eMapPA_External/MapServer/89. Production, permits, SPUD and plugged-well reports are on DEP's Oil and Gas Reports page (https://www.pa.gov/agencies/dep/data-and-tools/reports/oil-and-gas-reports). gis.dep.pa.gov/opendata timed out from this host on 23 Oct 2026."
+licence:
+  name: "DEP data terms on the dataset: \"Not for commercial use or resale\""
+  spdx: null
+  url: https://newdata-padep-1.opendata.arcgis.com/datasets/4300a4d66be4497f8c228bbbeb2401c2
+  redistribution: restricted
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: US, basin: "Pennsylvania (Appalachian Basin)", bbox: [-80.96, 39.26, -74.92, 42.97]}
+listed_by: [publisher]
+known_issues:
+  - "Terms: \"Not for commercial use or resale. The User shall save the Commonwealth harmless from any suits, claims or actions arising out of the use of the data files...\"; no attribution rule stated."
+  - "data.pa.gov lists the DEP GIS Open Data Portal as 'Public Domain'; the dataset's own terms say not for commercial use or resale. Recorded, not resolved."
+  - "\"Some sub facility types are not included in this layer due to security policies.\""
+  - "bbox is the layer's stated extent (Pennsylvania), approximate."
+added: 2026-10-23

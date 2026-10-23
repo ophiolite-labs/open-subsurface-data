@@ -1,0 +1,30 @@
+id: nysdec/oil-and-gas-annual-production
+title: "Oil and Gas Annual Production: Beginning 2001"
+summary: >-
+  Annual production information of oil and gas wells in New York State from 2001 to present,
+  from the Department of Environmental Conservation, Division of Mineral Resources, posted
+  annually on Open NY.
+publisher: {name: "New York State Department of Environmental Conservation, Division of Mineral Resources", url: https://dec.ny.gov, country: US}
+origin:
+  url: https://data.ny.gov/Energy-Environment/Oil-and-Gas-Annual-Production-Beginning-2001/mxea-iw3u
+  access: anonymous
+  notes: "Companion Open NY datasets: 'Oil and Gas Annual Production: 1985 - 2000' (qcf2-zajk) and 'Oil and Gas Summary Production Data: 1967-1999' (8y5c-ebxg). DEC production search http://www.dec.ny.gov/cfmx/extapps/GasOil/search/production/index.cfm."
+licence:
+  name: OPEN-NY Terms of Use
+  spdx: null
+  url: https://data.ny.gov/d/77gx-ii52
+  redistribution: allowed
+  attribution: not-required
+kinds: [production]
+region: {country: US, basin: "New York (Appalachian Basin)", bbox: [-79.76, 40.50, -71.86, 45.02]}
+listed_by: [publisher]
+known_issues:
+  - "The dataset carries no licence field; the OPEN-NY Terms of Use (8 March 2013) cover data.ny.gov: they \"do not contain restrictions requiring members of the public to use attribution, to re-post the license terms with any re-uses of the data\"."
+  - "OPEN-NY: \"you may use it as you wish, subject to no other requirements\"; the licence granted is \"non-exclusive, revocable\"."
+  - "DEC's wells layer carries stricter terms (see nysdec/oil-gas-and-other-regulated-wells); none are stated on this dataset."
+  - "bbox is the State of New York, approximate."
+period:
+  start: "2001"
+  end: "2026-10-23"
+  stated: "Open NY: \"annual production information of oil and gas wells in New York State from 2001 to present\" ('Time Period': \"Beginning 2001\", posted annually); end = date read 2026-10-23"
+added: 2026-10-23
