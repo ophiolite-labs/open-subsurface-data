@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verification status · Open Subsurface Data</title>
+<meta name="description" content="Every dataset in the Open Subsurface Data catalogue with its level and the date the verifier last checked it.">
+<link rel="stylesheet" href="style.css">
+<style>
+  .page main { max-width: 1100px; }
+  #status th { cursor: pointer; user-select: none; white-space: nowrap; }
+  #status th[aria-sort="ascending"]::after { content: " ▲"; } #status th[aria-sort="descending"]::after { content: " ▼"; }
+  #status td.id { white-space: nowrap; } #status .p { color: var(--muted); font-size: 12px; display: block; }
+  .blocked { font-size: 11px; padding: 1px 6px; margin-left: 4px; border-radius: 4px; background: #3a2430; color: #f29bb4; }
+  #status td.checked time { white-space: nowrap; } #status td.checked span { display: inline-block; margin: 2px 0 0; }
+  .wrap { overflow-x: auto; }
+  /* Phone: level, dataset and date only; the map's detail panel has the rest. */
+  @media (max-width: 640px) {
+    #status th:nth-child(n+4), #status td:nth-child(n+4) { display: none; }
+    #status td.id { white-space: normal; overflow-wrap: anywhere; }
+  }
+</style>
+</head>
+<body class="page">
+<main>
+<p><a href="./">← Back to the map</a> · <a href="how.html">What the levels mean</a></p>
+<h1>Verification status</h1>
+<p class="muted">One row per dataset: the level the verifier reached and when it last checked. A level
+is set by a tool, never typed into a record. Checks run on demand, by the <code>verify</code> workflow,
+which runs <code>osd verify</code> from the
+<a href="https://github.com/ophiolite-labs/open-subsurface-data">repository</a><span id="tool"></span>.
+Click a column to sort.</p>
+<p id="count" class="muted"></p>
+<div class="wrap">
+<table id="status">
+  <thead><tr>
+    <th data-key="level">Level</th><th data-key="id">Dataset</th><th data-key="checked_at">Last checked</th>
+    <th data-key="access">Access</th><th data-key="redistribution">Redistribution</th><th data-key="kinds">Holds</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+</div>
+<p class="muted"><span class="stale">stale</span> the last check is more than 30 days old.
+<span class="blocked">blocked</span> the publisher refuses automated requests from the verifier; that is
+not the same as the data being gone, and it awards no level.</p>
+</main>
+<script>
+// Reads the same data/records.json as the map. Sorting is local; nothing is stored.
+(async () => {
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const day = s => s ? s.slice(0, 10) : 'never';
+  const data = await (await fetch('data/records.json')).json();
+  const rows = data.records.map(r => ({
+    level: r.level, id: r.id, title: r.title, publisher: r.publisher.name, checked_at: r.checked_at || '',
+    stale: r.stale, blocked_since: r.blocked_since, access: r.origin.access,
+    redistribution: r.licence.redistribution, kinds: r.kinds.join(', '),
+  }));
+  document.getElementById('tool').textContent = data.tool_version ? ` (osd ${data.tool_version})` : '';
+  const checked = rows.filter(r => r.checked_at).length;
+  document.getElementById('count').textContent = `${rows.length} datasets, ${checked} checked at least once.`;
+  const body = document.querySelector('#status tbody');
+  const draw = () => body.innerHTML = rows.map(r => `<tr data-id="${esc(r.id)}">
+    <td><span class="lvl ${esc(r.level)}">${esc(r.level)}</span></td>
+    <td class="id">${esc(r.title)}<span class="p">${esc(r.id)} · ${esc(r.publisher)}</span></td>
+    <td class="checked"><time datetime="${esc(r.checked_at)}" title="${esc(r.checked_at)}">${esc(day(r.checked_at))}</time>${r.stale ? '<span class="stale">stale</span>' : ''}${r.blocked_since ? `<span class="blocked" title="since ${esc(r.blocked_since)}">blocked since ${esc(day(r.blocked_since))}</span>` : ''}</td>
+    <td>${esc(r.access)}</td><td>${esc(r.redistribution)}</td><td>${esc(r.kinds)}</td></tr>`).join('');
+  let sorted = { key: null, dir: 1 };
+  const sort = key => {
+    sorted = { key, dir: sorted.key === key ? -sorted.dir : 1 };
+    rows.sort((a, b) => (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : a.id < b.id ? -1 : 1) * sorted.dir);
+    document.querySelectorAll('#status th').forEach(th =>
+      th.dataset.key === key ? th.setAttribute('aria-sort', sorted.dir > 0 ? 'ascending' : 'descending') : th.removeAttribute('aria-sort'));
+    draw();
+  };
+  document.querySelectorAll('#status th').forEach(th => th.onclick = () => sort(th.dataset.key));
+  sort('id');
+})();
+</script>
+</body>
+</html>

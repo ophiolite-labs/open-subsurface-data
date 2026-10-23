@@ -1,0 +1,15 @@
+# Who is asked to review what (E08). GitHub requests the review on every pull request that touches
+# the path; the last matching line wins. Only @tuna-soup holds write access today, so both groups
+# name that account; when a records team and a kernel team exist, put them here instead.
+# Records maintainers read one thing on a record PR: the licence fields against the publisher's page.
+
+# kernel maintainers: contracts, tools, gate
+/schema/            @tuna-soup
+/src/               @tuna-soup
+/.github/           @tuna-soup
+/Makefile           @tuna-soup
+/pyproject.toml     @tuna-soup
+
+# records maintainers: datasets and outlines
+/records/           @tuna-soup
+/outlines/          @tuna-soup

@@ -1,0 +1,12 @@
+# actions/labeler v5: one label per kind of change, so a records maintainer can filter
+# `label:record` and merge the same day. Read by .github/workflows/labels.yml.
+record:
+  - changed-files: [{ any-glob-to-any-file: ["records/**"] }]
+outline:
+  - changed-files: [{ any-glob-to-any-file: ["outlines/**"] }]
+kernel:
+  - changed-files: [{ any-glob-to-any-file: ["schema/**", "src/**"] }]
+site:
+  - changed-files: [{ any-glob-to-any-file: ["site/**"] }]
+docs:
+  - changed-files: [{ any-glob-to-any-file: ["docs/**", "*.md"] }]
