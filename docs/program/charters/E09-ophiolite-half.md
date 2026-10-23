@@ -1,4 +1,6 @@
-## E09-oph Ophiolite reads the catalogue, the Ophiolite half — charter for the Ophiolite program queue (handed over 23 Oct 2026)
+## E09-oph Ophiolite reads the catalogue, the Ophiolite half — handed over 23 Oct 2026; chartered in the Ophiolite program as **E127** (Ophiolite main d01b5c95e), queued after E121, slices (a)+(b) may fill in earlier
+
+The Ophiolite side's wording rules (planner ophiolite-32, 23 Oct): the catalogue identity and snapshot are written into Ophiolite's provenance record (E122 `source-provenance/1`, a new source-system entry for the catalogue) under a field E127's strategy names; OSD documents never promise an Ophiolite field name. A digest mismatch is a new outcome code in the upload run's closed list. Rights-basis uses are read/derive/export; the refusal for `unknown` is the act E127's strategy names against E35, not a sentence OSD promises.
 
 Authority: OSD charter `E09-ophiolite-reads-the-catalogue.md` (designs 1, 3, 4, 6 and the
 interface); Ophiolite E85 (one intake), E55 (upload run), E35 (rights-basis), E122 (provenance).
@@ -9,7 +11,7 @@ in the open-subsurface-data repository) into E85's intake. The run fetches each 
 its origin or its mirror alternate, verifies the sha256 the manifest states, lands it through the
 normal E55 run with the kind decided from content, and each landed item carries: the manifest
 entry's licence object verbatim (every field, absence preserved), the catalogue item identity
-(collection id, asset key, sha256, Item id when present) and the snapshot (`metadata.catalog`).
+(collection id, asset key, sha256, Item id when present) and the snapshot (the manifest's `metadata.catalog`, carried in Ophiolite's provenance record).
 The run exports a `fidelity/1` document (schema defined in the OSD repository) that the catalogue
 reads back to award L4.
 
@@ -18,16 +20,15 @@ verification (a mismatch is one outcome from E55's closed list, never a landed f
 E122 provenance with the catalogue identity and snapshot. (b) Fidelity export: one document per
 run, every input listed with its result, output identity, converter and version, representative
 values for logs (first curve mnemonic, unit, sample count). (c) Rights, after E35 merges: map
-each `redistribution` state to rights-basis explicitly; `unknown` refuses publication with E35's
-plain-words reason and grants nothing; allowed-publication control in the test. Until E35, the
+each `redistribution` state to rights-basis explicitly; `unknown` grants nothing and refuses the act E127 names against E35, with a plain-words reason; allowed-publication control in the test. Until E35, the
 licence object is stored verbatim and shown on the item.
 
 **Acceptance.** Journey test with the OSD two-well LAS fixture and its manifest/3: two items
 land as wellbore logs with the catalogue identity and snapshot on their provenance; the exported
 fidelity file validates against `fidelity.schema.json` and `osd verify --fidelity-from` on it
 awards L4 in the OSD test suite (fixture shared by path, no live coupling); a manifest whose
-checksum does not match yields the mismatch outcome and no item; slice (c): publication of an
-item from an `unknown` record is refused with the stated reason while an `allowed` item publishes.
+checksum does not match yields the mismatch outcome and no item; slice (c): the E127-named act on an
+item from an `unknown` record is refused with a stated reason while an `allowed` item passes it.
 NLOG: the try-it sample's kinds and licence text agree with `records/nlog/nlog.yaml`; a difference
 is reported as a finding in the PR.
 

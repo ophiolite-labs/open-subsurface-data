@@ -38,8 +38,10 @@ statement, no addressable files: not a fixture of this epic (E06 and E07 disposi
    share_alike, redistribution`) is preserved field by field, including absence; nothing is
    inferred. The Ophiolite half maps each `redistribution` state (`allowed`, `restricted`,
    `forbidden`, `unknown`) to E35's authorisation rules explicitly; `unknown` grants nothing and
-   refuses publication with E35's plain-words reason. Until E35 merges the Ophiolite half stores
-   the object verbatim on the item and shows it.
+   refuses the act Ophiolite E127 names against E35. Until E35 merges the Ophiolite half stores
+   the object verbatim on the item and shows it. `metadata.catalog` is a field of the manifest
+   file; on the Ophiolite side the identity lives in Ophiolite's provenance record (E127), whose
+   field names are Ophiolite's.
 4. Fidelity is a document, `fidelity/1` (`schema/fidelity.schema.json`, defined here, written
    there): `catalog` (the snapshot object), `record`, and per input `{sha256, name, result:
    converted|partial|failed|skipped, output: {kind, id, converter, version}, representative:
