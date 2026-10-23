@@ -86,11 +86,9 @@ test('10,000 wellbores cluster at zoom 5 and the frame after moveend arrives und
   const wells = Array.from({ length: N }, (_, i) => ({ type: 'Feature',
     properties: { record_id: rid, kind: 'wellbore', name: `synthetic ${i}`, approximate: false },
     geometry: { type: 'Point', coordinates: [1 + rnd() * 8, 56 + rnd() * 6] } }));
-  const { context, page, errors } = await open('map=5/59/5', { routes: c => c.route('**/data/outlines.geojson', async route => {
-    const fc = JSON.parse(await (await route.fetch()).text());
-    fc.features.push(...wells);
-    return route.fulfill({ json: fc });
-  }) });
+  // the synthetic set replaces the committed outlines, so the budget measures these N points alone
+  const { context, page, errors } = await open('map=5/59/5', { routes: c => c.route('**/data/outlines.geojson',
+    route => route.fulfill({ json: { type: 'FeatureCollection', features: wells } })) });
 
   const seen = await page.evaluate(() => {
     const m = window.osdMap;
