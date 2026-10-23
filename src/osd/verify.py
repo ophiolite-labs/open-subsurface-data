@@ -314,7 +314,7 @@ class _Robots:
     """robots.txt per host: 2xx is obeyed, 4xx allows everything, anything else disallows (RFC 9309)."""
 
     def __init__(self, opener: Opener):
-        self.opener, self.hosts = opener, {}
+        self.opener, self.hosts, self.unread = opener, {}, {}
 
     def allowed(self, url: str) -> bool:
         u = urlsplit(url)
@@ -328,6 +328,7 @@ class _Robots:
                     rp.allow_all = True
                 else:
                     rp.disallow_all = True
+                    self.unread[key] = str(e)  # E23: the reason says it was not read, not that it disallows
             self.hosts[key] = rp
         return self.hosts[key].can_fetch(USER_AGENT, url)
 
@@ -353,6 +354,10 @@ def check_files(rec: dict, sample: list[str] | str | None, opener: Opener,
         return check("skip", "no sample for this record in verifier/samples.yaml"), [], []
     robots = _Robots(opener)
     if not robots.allowed(manifest):
+        u = urlsplit(manifest)
+        if why := robots.unread.get(f"{u.scheme}://{u.netloc}"):
+            return check("skip", f"robots.txt could not be read ({why}), so the listing is not fetched "
+                                 f"(RFC 9309)"), [], []
         return check("skip", f"robots.txt disallows the listing {manifest}"), [], []
     try:
         stream = opener(manifest)

@@ -81,6 +81,7 @@ manifest_url ──► opener ──► read_listing(body, base, content_type) �
 | M16 | abandoned stream recorded as a file | `test_cut_sample_leaves_no_partial_file` |
 | M17 | `compared` removed from /4 file entries | `test_verification_record_matches_schema` |
 | M18 | GitHub contents walk changed (mirror selection) | `test_mirror_selection_unchanged_through_readers` |
+| M19 | unread robots.txt reported as a disallow (added after the dispatched run) | `test_unreadable_robots_is_not_called_a_disallow` |
 
 ## Out of scope
 

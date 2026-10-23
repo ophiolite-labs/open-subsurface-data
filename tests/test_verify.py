@@ -761,6 +761,20 @@ def test_sample_and_inventory_share_one_budget(tmp_path, monkeypatch):
     assert v["inventory"]["coverage"] == "partial"
 
 
+def test_unreadable_robots_is_not_called_a_disallow(tmp_path):
+    rec = l2_fixture(tmp_path)
+    inner = dir_opener(tmp_path)
+
+    def opener(url):
+        if url.endswith("/robots.txt"):
+            raise FetchError(url, 503)
+        return inner(url)
+
+    c = outcome(verify_record(rec, fetch_ok, None, now=NOW, opener=opener, sample=SAMPLE), "files-checksummed")
+    assert (c["outcome"], c["detail"]) == ("skip", ("robots.txt could not be read (HTTP 503 from "
+                                                    "https://fixture.test/robots.txt), so the listing is not fetched (RFC 9309)"))
+
+
 def test_robots_disallow_never_fetches_the_listing(tmp_path):
     rec = l2_fixture(tmp_path)
     (tmp_path / "robots.txt").write_text("User-agent: *\nDisallow: /index.json\n")
