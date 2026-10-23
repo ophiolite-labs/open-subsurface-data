@@ -7,6 +7,11 @@
 #   keep filters features by property; params are added to every page request; hits: true
 #   compares the service's numberMatched with the features served; id_scope prefixes the
 #   feature_id (<record-id>#<scope>/<id>) where one record holds registers with overlapping ids.
+# register-arcgis (E29, record input format arcgis, url = the layer without a query): the layer
+#   description names the object id field and maxRecordCount; pages of that size in object id
+#   order, native spatial reference, f=json, asking for the object id and the fields named here
+#   (uwi, name, kind field, period_fields, keep). The object id is the feature's key; a feature
+#   without a position is listed in "unplaced". Layers above 50,000 features are refused.
 # segy-hull: x_byte/y_byte/scalar_byte (SEG-Y, 1-based) or x_field/y_field/scalar_field (MDIO).
 # publisher-file: GeoJSON, or the locn:geometry extent of a publisher's page.
 # simplify_m (default 50): Douglas-Peucker tolerance for derived polygons, recorded as

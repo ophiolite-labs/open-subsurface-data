@@ -1,0 +1,89 @@
+{
+ "spatialReference": {
+  "wkid": 2193,
+  "latestWkid": 2193
+ },
+ "features": [
+  {
+   "attributes": {
+    "OBJECTID": 40,
+    "UWI": "100000762213",
+    "Title": "MA-10A",
+    "Start_Date": 1147953600000,
+    "End_Date": 1148644800000,
+    "Type": "petroleum"
+   },
+   "geometry": {
+    "x": 1638611.12,
+    "y": 5621550.6
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 72,
+    "UWI": "100000904778",
+    "Title": "Tui-2HP",
+    "Start_Date": 1166878800000,
+    "End_Date": 1169211600000,
+    "Type": "petroleum"
+   },
+   "geometry": {
+    "x": 1620342.0152000003,
+    "y": 5634024.5228
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 78,
+    "UWI": "100000113291",
+    "Title": "Toetoe-4",
+    "Start_Date": 503326800000,
+    "End_Date": 506005200000,
+    "Type": "petroleum"
+   },
+   "geometry": {
+    "x": 1713585.2629000004,
+    "y": 5668657.2744
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 123,
+    "UWI": "100000290650",
+    "Title": "Ngatoro-11",
+    "Start_Date": 899035200000,
+    "End_Date": 901022400000,
+    "Type": "petroleum"
+   },
+   "geometry": {
+    "x": 1702318.3446000004,
+    "y": 5660923.6869
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 150,
+    "UWI": "100000021892",
+    "Title": "Waimamaku-2",
+    "Start_Date": 57157200000,
+    "End_Date": 67093200000,
+    "Type": "petroleum"
+   },
+   "geometry": {
+    "x": 1642328.8868000004,
+    "y": 6063721.1973
+   }
+  },
+  {
+   "attributes": {
+    "OBJECTID": 151,
+    "UWI": "999999999999",
+    "Title": "Unplaced (synthetic)",
+    "Start_Date": null,
+    "End_Date": null,
+    "Type": "petroleum"
+   },
+   "geometry": null
+  }
+ ]
+}

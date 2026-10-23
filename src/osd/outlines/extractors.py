@@ -11,7 +11,9 @@ from __future__ import annotations
 import csv
 import html
 import io
+import itertools
 import json
+import math
 import re
 import struct
 from datetime import UTC, datetime
@@ -21,7 +23,7 @@ from urllib.parse import urlsplit
 from .codecs import blosc_decode
 from .geometry import Refused, closed_ring, convex_hull, map_positions, to_wgs84
 
-GEOMETRY_TYPES = {"Point", "LineString", "Polygon", "MultiPolygon"}
+GEOMETRY_TYPES = {"Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"}
 
 
 def _kind(rule: dict, props: dict) -> str:
@@ -156,6 +158,173 @@ def register_wfs(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) ->
     if not served:
         raise Refused(f"{rec_input['name']}: empty response")
     return _features(rec_input, rule, pages)
+
+
+# --- ArcGIS Map/Feature Server layers (E29) ------------------------------------------------------
+
+ARCGIS_MAX_FEATURES = 50_000   # charter design 4: a layer is read in full or refused; larger ones get no input
+ARCGIS_MAX_PAGES = 200
+
+
+def _json(b: bytes, what: str):
+    try:
+        return json.loads(b)
+    except ValueError:
+        raise Refused(f"{what} is not JSON: {b[:120]!r}") from None
+
+
+def _arcgis_error(doc, what: str) -> None:
+    if not isinstance(doc, dict):
+        raise Refused(f"{what} is not a JSON object")
+    if "error" in doc:
+        e = doc["error"] if isinstance(doc["error"], dict) else {"message": doc["error"]}
+        raise Refused(f"{what} answered an error: {e.get('code', '')} {e.get('message', '')}".strip())
+
+
+def arcgis_layer(b: bytes) -> tuple[str, int]:
+    """(object id field, maxRecordCount) from a layer description (?f=json); refused unless the
+    layer pages (supportsPagination) and names its object id field (objectIdField, else the one
+    field of type esriFieldTypeOID)."""
+    d = _json(b, "the layer description")
+    _arcgis_error(d, "the layer description")
+    pages = (d.get("advancedQueryCapabilities") or {}).get("supportsPagination", d.get("supportsPagination"))
+    if pages is not True:
+        raise Refused("the layer does not state supportsPagination: true; it cannot be read in full")
+    oid = d.get("objectIdField")
+    if not oid:
+        oids = [f.get("name") for f in d.get("fields") or [] if f.get("type") == "esriFieldTypeOID"]
+        oid = oids[0] if len(oids) == 1 else None
+    if not oid:
+        raise Refused("the layer names no object id field (objectIdField or one esriFieldTypeOID field)")
+    size = d.get("maxRecordCount")
+    if not isinstance(size, int) or isinstance(size, bool) or size < 1:
+        raise Refused(f"the layer states no maxRecordCount ({size!r})")
+    return oid, size
+
+
+def arcgis_count(b: bytes) -> int:
+    """The layer's feature count on the day (returnCountOnly=true), within the cap."""
+    d = _json(b, "the count")
+    _arcgis_error(d, "the count")
+    n = d.get("count")
+    if not isinstance(n, int) or isinstance(n, bool) or n < 0:
+        raise Refused(f"the count response states no count: {b[:120]!r}")
+    if n == 0:
+        raise Refused("empty response: the layer counts 0 features")
+    if n > ARCGIS_MAX_FEATURES:
+        raise Refused(f"the layer counts {n} features, above the {ARCGIS_MAX_FEATURES} an input is read in full to")
+    return n
+
+
+def arcgis_out_fields(rule: dict, oid: str) -> str:
+    """The fields a page asks for: the object id and every field the rule reads, in that order."""
+    kind = rule.get("kind")
+    names = [oid, rule.get("uwi"), rule.get("name"), kind.get("field") if isinstance(kind, dict) else None,
+             *(rule.get("period_fields") or {}).values(), *(rule.get("keep") or {})]
+    return ",".join(dict.fromkeys(n for n in names if n))
+
+
+def page_offsets(count: int, size: int) -> list[int]:
+    offsets = list(range(0, count, size))
+    if len(offsets) > ARCGIS_MAX_PAGES:
+        raise Refused(f"{count} features at {size} per page is more than {ARCGIS_MAX_PAGES} pages")
+    return offsets
+
+
+def _signed_area(ring: list) -> float:
+    return sum(a[0] * b[1] - b[0] * a[1] for a, b in itertools.pairwise(ring)) / 2
+
+
+def _inside(p: list, ring: list) -> bool:
+    x, y, hit = p[0], p[1], False
+    for a, b in itertools.pairwise(ring):
+        if (a[1] > y) != (b[1] > y) and x < a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]):
+            hit = not hit
+    return hit
+
+
+def _number(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and not math.isnan(v)
+
+
+def esri_geometry(g: dict | None) -> dict | None:
+    """An Esri JSON geometry as a GeoJSON geometry in the same (native) coordinates; None when the
+    feature has no position. Polygons: Esri writes exterior rings clockwise and holes
+    counter-clockwise; each hole belongs to the exterior that contains it, and GeoJSON (RFC 7946)
+    gets exteriors counter-clockwise and holes clockwise."""
+    if not g:
+        return None
+    if "x" in g:
+        if not (_number(g.get("x")) and _number(g.get("y"))):
+            return None
+        return {"type": "Point", "coordinates": [g["x"], g["y"]]}
+    if "points" in g:
+        pts = [p[:2] for p in g.get("points") or []]
+        return {"type": "MultiPoint", "coordinates": pts} if pts else None
+    if "paths" in g:
+        paths = [[p[:2] for p in path] for path in g.get("paths") or [] if path]
+        if not paths:
+            return None
+        return ({"type": "LineString", "coordinates": paths[0]} if len(paths) == 1
+                else {"type": "MultiLineString", "coordinates": paths})
+    if "rings" in g:
+        rings = [[p[:2] for p in r] for r in g.get("rings") or [] if r]
+        if not rings:
+            return None
+        exteriors = [[r[::-1]] for r in rings if _signed_area(r) < 0]   # clockwise: an exterior
+        for h in (r for r in rings if _signed_area(r) >= 0):
+            owner = [poly for poly in exteriors if _inside(h[0], poly[0])]
+            if not owner:
+                raise Refused("a polygon hole (counter-clockwise ring) lies inside no exterior ring")
+            min(owner, key=lambda poly: abs(_signed_area(poly[0]))).append(h[::-1])   # the innermost exterior
+        if not exteriors:
+            raise Refused("a polygon has no exterior (clockwise) ring")
+        return ({"type": "Polygon", "coordinates": exteriors[0]} if len(exteriors) == 1
+                else {"type": "MultiPolygon", "coordinates": exteriors})
+    raise Refused(f"an Esri geometry of no known type: {sorted(g)}")
+
+
+def _wkids(sr: dict | None) -> set[str]:
+    return {f"EPSG:{sr[k]}" for k in ("wkid", "latestWkid") if isinstance(sr, dict) and isinstance(sr.get(k), int)}
+
+
+def register_arcgis(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+    """The pages of an ArcGIS layer query, reassembled: every page the count calls for is there,
+    none short but the last, none answered an error, each states the record's CRS, the object ids
+    are unique and as many as the layer counted. Positions are native and transformed from the
+    record's crs as the WFS path does; the object id is the feature's key."""
+    by = dict(parts)
+    name = rec_input["name"]
+    if "layer" not in by or "count" not in by:
+        raise Refused(f"{name}: the layer description or the count was not fetched")
+    oid, size = arcgis_layer(by["layer"])
+    count = arcgis_count(by["count"])
+    feats, seen = [], set()
+    offsets = page_offsets(count, size)
+    for k, off in enumerate(offsets):
+        what = f"{name}: page at offset {off}"
+        if f"page-{off:06d}" not in by:
+            raise Refused(f"{what} is missing")
+        page = _json(by[f"page-{off:06d}"], what)
+        _arcgis_error(page, what)
+        served = _wkids(page.get("spatialReference"))
+        if rec_input.get("crs") not in served:
+            raise Refused(f"{what} states spatialReference {sorted(served) or 'none'}, the record {rec_input.get('crs')}")
+        got = page.get("features") or []
+        if k < len(offsets) - 1 and len(got) != size:
+            raise Refused(f"{what} served {len(got)} features, not the {size} a full page holds")
+        for f in got:
+            a = f.get("attributes") or {}
+            if a.get(oid) in (None, ""):
+                raise Refused(f"{what}: a feature has no {oid}")
+            if a[oid] in seen:
+                raise Refused(f"{name}: object id {a[oid]} served twice")
+            seen.add(a[oid])
+            feats.append({"properties": a, "geometry": esri_geometry(f.get("geometry"))})
+    if len(seen) != count:
+        raise Refused(f"{name}: the layer counts {count} features, the pages served {len(seen)}")
+    rule = {**rule, "id": oid, "unplaced": "report"}   # a feature the register lists without a position
+    return _features(rec_input, rule, [{"features": feats}])
 
 
 def register_csv(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
@@ -344,5 +513,5 @@ def segy_hull(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> li
              "geometry": {"type": "Polygon", "coordinates": [ring]}}]
 
 
-EXTRACTORS = {"register-wfs": register_wfs, "register-csv": register_csv,
+EXTRACTORS = {"register-wfs": register_wfs, "register-csv": register_csv, "register-arcgis": register_arcgis,
               "segy-hull": segy_hull, "publisher-file": publisher_file}

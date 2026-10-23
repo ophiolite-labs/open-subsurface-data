@@ -667,7 +667,7 @@ def test_wfs_requests_carry_the_period_fields():
 
     from osd.outlines import fetch_parts
     dated = {(rid, n) for rid, r in RULES.items() if rid != "defaults"
-             for n, i in r["inputs"].items() if i.get("period_fields")}
+             for n, i in r["inputs"].items() if i.get("period_fields") and i["extractor"] == "register-wfs"}
     assert dated == {("sodir/factpages", "wellbores"), ("sodir/factpages", "seismic-finished"),
                      ("sodir/factpages", "seismic-ongoing"), ("sodir/factpages", "seismic-paused"),
                      ("nlog/nlog", "boreholes")}
@@ -711,3 +711,205 @@ def test_outline_2_files_validate_under_outline_2_and_3(tmp_path):
     bad = copy.deepcopy(new)
     bad["features"][0]["properties"]["osd:period_start"] = "1993-06-01"
     assert validate_outline_3(bad)
+
+
+# --- E29: ArcGIS Map/Feature Server layers ---------------------------------------------------
+
+ARC = FIX / "arcgis"
+ARC_URL = "https://fixture.test/arcgis/rest/services/W/MapServer/4"
+ARC_REC = {**copy.deepcopy(RECS["sodir/factpages"]), "id": "fixture/arcgis-register",
+           "inputs": [{"name": "wells", "url": ARC_URL, "format": "arcgis", "crs": "EPSG:2193"}],
+           "period": {"start": "1960", "end": "2026-10-23"}}   # distinct from every feature's dates
+ARC_RULES = {"fixture/arcgis-register": {"min_features": 5, "inputs": {"wells": {
+    "extractor": "register-arcgis", "kind": "wellbore", "uwi": "UWI", "name": "Title",
+    "period_fields": {"start": "Start_Date", "end": "End_Date"}, "period_format": "epoch-ms"}}}}
+ARC_OIDS = {"40", "72", "78", "123", "150"}   # tests/fixtures/outlines/arcgis/features.json; 151 has no position
+
+
+def arcgis_server(calls: list, layer=None, count=None, sr=None, error_at=None, http_error_at=None,
+                  empty_at=None, repeat_at=None):
+    """Serve the frozen layer as an ArcGIS server does: the description, returnCountOnly, and pages
+    in the asked order and offset with only the asked fields; the keywords break one thing each."""
+    from urllib.parse import parse_qs, urlsplit
+
+    lay = layer or json.loads((ARC / "layer.json").read_text())
+    data = json.loads((ARC / "features.json").read_text())
+
+    def open_(url):
+        calls.append(url)
+        if url.endswith("/robots.txt"):
+            raise FetchError(url, 404)
+        u = urlsplit(url)
+        q = {k: v[0] for k, v in parse_qs(u.query).items()}
+        if not u.path.endswith("/query"):
+            return iter([json.dumps(lay).encode()])
+        if q.get("returnCountOnly") == "true":
+            return iter([json.dumps({"count": len(data["features"]) if count is None else count}).encode()])
+        off, n = int(q["resultOffset"]), int(q["resultRecordCount"])
+        if off == http_error_at:
+            raise FetchError(url, 500)
+        if off == error_at:
+            return iter([b'{"error":{"code":500,"message":"Unable to complete operation.","details":[]}}'])
+        oid = q["orderByFields"].split()[0]
+        rows = sorted(data["features"], key=lambda f: f["attributes"][oid])
+        page = [] if off == empty_at else rows[off - n:off] if off == repeat_at else rows[off:off + n]
+        fields = q["outFields"].split(",")
+        out = [{"attributes": {k: f["attributes"][k] for k in fields if k in f["attributes"]},
+                **({"geometry": f["geometry"]} if f["geometry"] else {})} for f in page]
+        return iter([json.dumps({"spatialReference": sr or data["spatialReference"], "features": out}).encode()])
+
+    return open_
+
+
+def arcgis_derive(tmp_path, rec=ARC_REC, rules=ARC_RULES, **server):
+    calls = []
+    fetch_inputs(rec, rules, arcgis_server(calls, **server), tmp_path)
+    return derive(rec, rules, tmp_path), calls
+
+
+def test_arcgis_pages_reassemble_the_object_id_set(tmp_path):
+    fc, _ = arcgis_derive(tmp_path)
+    got = published_ids(fc)
+    assert len(got) == len(set(got)) and set(got) == ARC_OIDS
+    assert fc["unplaced"] == ["fixture/arcgis-register#151"]   # null geometry: listed, not drawn
+    assert {f["properties"]["feature_id"] for f in fc["features"]} == {f"fixture/arcgis-register#{i}" for i in ARC_OIDS}
+    d = tmp_path / "fixture__arcgis-register" / "wells"
+    assert sorted(p.name for p in d.iterdir()) == ["SHA256SUMS", "count", "layer", "page-000000", "page-000002",
+                                                   "page-000004"]
+    by = {f["properties"]["publisher_id"]: f["properties"] for f in fc["features"]}
+    assert (by["40"]["name"], by["40"]["uwi"], by["40"]["kind"]) == ("MA-10A", "100000762213", "wellbore")
+
+
+def test_arcgis_duplicate_object_ids_are_refused(tmp_path):
+    with pytest.raises(Refused, match="object id 40 served twice"):   # a server that ignores resultOffset
+        arcgis_derive(tmp_path, repeat_at=2)
+
+
+def test_arcgis_missing_page_is_refused(tmp_path):
+    from osd.outlines.extractors import register_arcgis
+    arcgis_derive(tmp_path)
+    parts = [p for p in outlines.read_parts(tmp_path / "fixture__arcgis-register" / "wells") if p[0] != "page-000002"]
+    with pytest.raises(Refused, match="page at offset 2 is missing"):
+        register_arcgis(ARC_REC["inputs"][0], ARC_RULES[ARC_REC["id"]]["inputs"]["wells"], parts)
+    with pytest.raises(Refused, match="page at offset 2 served 0 features, not the 2"):
+        arcgis_derive(tmp_path, empty_at=2)
+
+
+def test_arcgis_page_error_is_refused(tmp_path):
+    with pytest.raises(Refused, match="page at offset 2 answered an error: 500 Unable to complete operation"):
+        arcgis_derive(tmp_path, error_at=2)
+    with pytest.raises(Refused, match="fetch failed"):
+        arcgis_derive(tmp_path, http_error_at=4)
+
+
+def test_arcgis_count_mismatch_is_refused(tmp_path):
+    for count in (5, 7):
+        with pytest.raises(Refused, match=f"the layer counts {count} features, the pages served 6"):
+            arcgis_derive(tmp_path, count=count)
+
+
+def test_arcgis_without_pagination_or_object_ids_is_refused(tmp_path):
+    lay = json.loads((ARC / "layer.json").read_text())
+    no_paging = {**lay, "advancedQueryCapabilities": {"supportsPagination": False}}
+    no_oid = {**lay, "fields": [f for f in lay["fields"] if f["type"] != "esriFieldTypeOID"]}
+    for layer, why in ((no_paging, "supportsPagination"), (no_oid, "no object id field")):
+        calls = []
+        with pytest.raises(Refused, match=why):
+            fetch_inputs(ARC_REC, ARC_RULES, arcgis_server(calls, layer=layer), tmp_path)
+        assert not any("resultOffset" in c for c in calls)
+    with_field = {**no_oid, "objectIdField": "OBJECTID"}   # a FeatureServer names it outright
+    fc, _ = arcgis_derive(tmp_path, layer=with_field)
+    assert set(published_ids(fc)) == ARC_OIDS
+
+
+def test_arcgis_wkid_mismatch_is_refused(tmp_path):
+    with pytest.raises(Refused, match=r"states spatialReference \['EPSG:4326'\], the record EPSG:2193"):
+        arcgis_derive(tmp_path, sr={"wkid": 4326, "latestWkid": 4326})
+    with pytest.raises(Refused, match="states spatialReference none"):
+        arcgis_derive(tmp_path, sr={"wkt": "PROJCS[...]"})
+    fc, _ = arcgis_derive(tmp_path, sr={"wkid": 102193, "latestWkid": 2193})   # an Esri code with its EPSG code
+    assert set(published_ids(fc)) == ARC_OIDS
+
+
+def test_arcgis_layer_above_the_cap_is_refused(tmp_path):
+    calls = []
+    with pytest.raises(Refused, match="counts 50001 features, above the 50000"):
+        fetch_inputs(ARC_REC, ARC_RULES, arcgis_server(calls, count=50001), tmp_path)
+    assert not any("resultOffset" in c for c in calls)
+
+
+@pytest.mark.parametrize("case", ["point", "polyline-two-paths", "polygon-with-hole", "polygon-two-exteriors",
+                                  "multipoint", "null", "nan-point"])
+def test_esri_json_geometries_match_geojson_fixtures(case):
+    from osd.outlines.extractors import esri_geometry
+    c = json.loads((ARC / "geometries.json").read_text())[case]
+    assert esri_geometry(c["esri"]) == c["geojson"]
+
+
+def test_esri_hole_outside_every_exterior_is_refused():
+    from osd.outlines.extractors import esri_geometry
+    with pytest.raises(Refused, match="inside no exterior"):
+        esri_geometry({"rings": [[[0, 0], [0, 10], [10, 10], [10, 0], [0, 0]], [[20, 20], [28, 20], [28, 28], [20, 20]]]})
+
+
+def test_arcgis_native_coordinates_transform_like_wfs(tmp_path):
+    """The Esri point (1638611.12, 5621550.6) in NZTM2000 lands where pyproj puts it and where the WFS
+    path puts the same native position: one transform, from the record's crs."""
+    from osd.outlines.extractors import register_wfs
+    fc, _ = arcgis_derive(tmp_path)
+    [got] = [f["geometry"]["coordinates"] for f in fc["features"] if f["properties"]["publisher_id"] == "40"]
+    lon, lat = Transformer.from_crs("EPSG:2193", "EPSG:4326", always_xy=True).transform(1638611.12, 5621550.6)
+    assert got == [round(lon, 6), round(lat, 6)] and 173 < lon < 174 and -40 < lat < -39   # Maui, offshore Taranaki
+    page = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"ID": 40},
+            "geometry": {"type": "Point", "coordinates": [1638611.12, 5621550.6]}}]}
+    [wfs] = register_wfs({"name": "w", "crs": "EPSG:2193"}, {"kind": "wellbore", "id": "ID"},
+                         [("page-000000", json.dumps(page).encode())])
+    assert wfs["geometry"]["coordinates"] == got
+
+
+
+
+def test_arcgis_requests_page_by_object_id(tmp_path):
+    from urllib.parse import parse_qs, urlsplit
+    _, calls = arcgis_derive(tmp_path)
+    assert f"{ARC_URL}?f=json" in calls
+    assert any(c.startswith(ARC_URL + "/query?") and "returnCountOnly=true" in c for c in calls)
+    pages = [parse_qs(urlsplit(c).query) for c in calls if "resultOffset=" in c]
+    assert [q["resultOffset"] for q in pages] == [["0"], ["2"], ["4"]]
+    for q in pages:
+        assert q["orderByFields"] == ["OBJECTID ASC"] and q["resultRecordCount"] == ["2"] and q["f"] == ["json"]
+        assert q["outFields"] == ["OBJECTID,UWI,Title,Start_Date,End_Date"] and "outSR" not in q
+    for rid, r in RULES.items():   # every ArcGIS input of the catalogue asks for the fields its rule reads
+        for name, rule in (r.get("inputs") or {}).items() if rid != "defaults" else ():
+            if rule["extractor"] == "register-arcgis":
+                from osd.outlines.extractors import arcgis_out_fields
+                asked = arcgis_out_fields(rule, "OID").split(",")
+                assert set((rule.get("period_fields") or {}).values()) <= set(asked), (rid, name)
+                assert [i["format"] for i in RECS[rid]["inputs"] if i["name"] == name] == ["arcgis"]
+
+
+def test_refused_arcgis_input_demotes_an_l3_record(tmp_path):
+    fc, _ = arcgis_derive(tmp_path / "in")
+    rec, opener, sample = l2_passing(tmp_path, ARC_REC)
+    kw = {"now": NOW, "opener": opener, "sample": sample, "outline_rule": {"min_features": 5}, "stored": stored_of(fc)}
+    v = verify_record(rec, fetch_ok, fc, **kw)
+    assert v["level"] == "L3"
+    today = verify_record(rec, fetch_ok, fc, previous=v, refused="wells: the layer counts 7 features, the pages served 6", **kw)
+    assert outcome(today, "outline-derived")["outcome"] == "fail" and today["level"] == "L2"
+
+
+def test_multilinestring_parts_follow_linestring_rules():
+    from osd.records import geometry_problems
+    assert geometry_problems({"type": "MultiLineString", "coordinates": [[[174, -39], [175, -40]], [[176, -41], [177, -41]]]}) == []
+    assert geometry_problems({"type": "MultiLineString", "coordinates": [[[174, -39], [175, -40]], [[176, -41]]]}) == \
+        ["line has fewer than 2 positions"]
+    assert geometry_problems({"type": "MultiLineString", "coordinates": [[[174, -39], [1750000, -40]]]})
+    assert geometry_problems({"type": "MultiLineString", "coordinates": []}) == ["multilinestring has no lines"]
+
+
+def test_multipoint_parts_follow_point_rules():
+    from osd.records import geometry_problems
+    assert geometry_problems({"type": "MultiPoint", "coordinates": [[174, -39], [175, -40]]}) == []
+    assert geometry_problems({"type": "MultiPoint", "coordinates": [[174, -39], [1638611.12, 5621550.6]]}) == \
+        ["position [1638611.12, 5621550.6] outside WGS84 lon/lat"]
+    assert geometry_problems({"type": "MultiPoint", "coordinates": []}) == ["multipoint has no positions"]

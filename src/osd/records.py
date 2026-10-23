@@ -171,6 +171,12 @@ def _ring_problems(ring) -> list[str]:
     return out
 
 
+def _line_problems(line) -> list[str]:
+    if not isinstance(line, list) or len(line) < 2:
+        return ["line has fewer than 2 positions"]
+    return [m for m in map(_position_problem, line) if m][:1]
+
+
 def geometry_problems(g: dict) -> list[str]:
     """WGS84 positions, closed non-empty rings, lines of at least two positions."""
     t, c = g.get("type"), g.get("coordinates")
@@ -178,9 +184,15 @@ def geometry_problems(g: dict) -> list[str]:
         m = _position_problem(c)
         return [m] if m else []
     if t == "LineString":
-        if not isinstance(c, list) or len(c) < 2:
-            return ["line has fewer than 2 positions"]
+        return _line_problems(c)
+    if t == "MultiPoint":   # E29: an Esri multipoint; each part as a Point
+        if not isinstance(c, list) or not c:
+            return ["multipoint has no positions"]
         return [m for m in map(_position_problem, c) if m][:1]
+    if t == "MultiLineString":   # E29: an Esri polyline with several paths; each part as a LineString
+        if not isinstance(c, list) or not c:
+            return ["multilinestring has no lines"]
+        return [m for line in c for m in _line_problems(line)][:1]
     if t == "Polygon":
         if not isinstance(c, list) or not c:
             return ["polygon has no rings"]
