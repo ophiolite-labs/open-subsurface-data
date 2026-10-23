@@ -24,6 +24,9 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
 map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
 (three of them the SEG wiki blocking this host with HTTP 403, one NOPIMS 403; see OSD-D9).
+Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
+`verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
+with real levels through the `verification-results` branch. `main` requires `check`.
 
 ## The loop
 

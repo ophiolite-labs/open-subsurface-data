@@ -13,5 +13,5 @@ Open items are for the owner. A default is applied under the standing delegation
 | OSD-D6 | Mirror policy: mirror only `redistribution: allowed`, under 20 GB, with a takedown contact; never `unknown` | As stated | DEFAULT |
 | OSD-D7 | First twenty datasets: the SEG open-data list plus Sodir, NLOG, NDR, NOPIMS, NZP&M registers | As stated; E01 may swap entries with reasons | DEFAULT |
 | OSD-D8 | Codex review: one round per kernel charter, none for surface and records | As stated | DEFAULT |
-| OSD-D9 | Verification runner: the SEG wiki and NOPIMS refuse this VPS (403). Options: run `verify` on GitHub-hosted runners (different egress), or the MacBook, or treat a 403 from a challenge page as "blocked, not dead" | Treat as blocked-not-dead in E02 and run verify on GitHub-hosted runners first | DEFAULT |
+| OSD-D9 | Publishers that refuse automated requests | Measured 23 Oct: the SEG wiki and NOPIMS answer 403 from the VPS and from GitHub-hosted runners alike, so a runner change does not help. E02 classifies a 403 or challenge page as `blocked` (level stays L1 with that detail, never 'dead'); E01 points records at the publisher's own page where one exists instead of a SEG wiki page | DEFAULT 23 Oct, revised on evidence |
 | OSD-D10 | Name of the product on the site: "Open Subsurface Data" | As stated | DEFAULT |
