@@ -1,0 +1,32 @@
+id: doe-gdr/utah-forge-well-58-32-logs
+title: "Utah FORGE: Logs and Data from Deep Well 58-32 (MU-ESW1)"
+summary: >-
+  Data, logs and graphics from the drilling and testing of Utah FORGE deep test well 58-32
+  (MU-ESW1) near Roosevelt Hot Springs, Milford, Utah: Schlumberger logs (dipole shear sonic, FMI,
+  array induction, porosity, triple combo, cement), a sonic LAS, dipole sonic waveforms,
+  pressure/temperature logs, a one-foot drilling dataset to 7536 ft TD, Pason drilling logs,
+  directional survey, mud log, daily drilling reports and the end of well report.
+publisher: {name: "Energy and Geoscience Institute at the University of Utah (Utah FORGE), via the DOE Geothermal Data Repository", url: https://gdr.openei.org, country: US}
+origin:
+  url: https://gdr.openei.org/submissions/1006
+  access: anonymous
+  notes: "DOI 10.15121/1452735 (Nash and Moore, 2018). 'Download All Resources 2.24 GB — 11 files'. DOE project EE0007080 (Utah FORGE)."
+licence:
+  name: Creative Commons Attribution 4.0 (CC BY 4.0)
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+  statement: "Nash, Greg, and Joe Moore. Utah FORGE: Logs and Data from Deep Well 58-32 (MU-ESW1). Energy and Geoscience Institute at the University of Utah, 11 April, 2018, Geothermal Data Repository. https://doi.org/10.15121/1452735."
+kinds: [wellbore-logs, wellbore-paths, reports]
+region: {country: US, basin: "Utah FORGE site, Roosevelt Hot Springs, Mineral Mountains, Beaver County, Utah", bbox: [-112.916367, 38.483935, -112.879748, 38.5148]}
+size: {bytes_estimate: 2240000000, stated: "2.24 GB — 11 files"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the box the page's machine-readable metadata gives for every file (FORGE site), not the well location alone."
+period:
+  start: "2017-07-31"
+  end: "2017-09-13"
+  stated: "Resource 'Well 58-32 Pason Logs.zip': \"Pason drilling logs from well 58-32 in CSV format from 7/31/2017 to 9/13/2017\" (drilling); submitted Apr 11, 2018"
+notes: "The page shows the licence as a CC BY link beside 'License' (JSON-LD license https://creativecommons.org/licenses/by/4.0/); the footer says 'Content is available under Creative Commons Attribution 4.0 unless otherwise noted.'"
+added: 2026-10-23
