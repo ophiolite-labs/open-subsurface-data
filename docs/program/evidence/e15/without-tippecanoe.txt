@@ -1,0 +1,31 @@
+$ which tippecanoe   # (none: package removed for this run)
+$ make check
+All checks passed!
+125 passed, 1 skipped in 10.01s
+68 records, 0 problems
+notice: tippecanoe not found, outlines.pmtiles not written; the map reads outlines.geojson whole (install tippecanoe 2.49.0, see .github/workflows/ci.yml)
+built {'records': 68, 'features': 18436, 'collections': 68} -> /home/epic/src/osd-e15-tiles-for-the-registers/build/catalog
+mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
+
+$ cat site/data/files.txt
+collections.json
+outlines.geojson
+records.json
+stac
+$ make site-test
+✔ no console error on load, map and how page (2773.878022ms)
+✔ #q=volve lists one dataset (1689.31869ms)
+✔ a hash with a kind filter and a selection renders the same view in a second context (5525.069212ms)
+✔ stale: checked_at older than 30 days shows "stale" next to the level (1690.44655ms)
+✔ 10,000 wellbores cluster at zoom 5 and the frame after moveend arrives under 100 ms (4035.73155ms)
+✔ phone width: the panel is a bottom sheet (1224.804992ms)
+﹣ tiles: the page loads tiles for the viewport, under 1 MB from the site, and never outlines.geojson (0.363507ms) # no data/outlines.pmtiles (tippecanoe not installed)
+﹣ tiles: #q=sodir, a click on a wellbore shows the same detail title as the GeoJSON path (0.269355ms) # no data/outlines.pmtiles (tippecanoe not installed)
+﹣ tiles: a server without byte ranges (python3 -m http.server) falls back to outlines.geojson (0.348145ms) # no data/outlines.pmtiles (tippecanoe not installed)
+﹣ tiles: phone width with tiles, Sodir wells clustered (0.318619ms) # no data/outlines.pmtiles (tippecanoe not installed)
+✔ status.html lists every record with its level and the date it was checked (571.347466ms)
+✔ the built catalogue renders: a record never checked says so (122.641993ms)
+✔ a column header sorts, a second click reverses (295.078083ms)
+ℹ pass 9
+ℹ fail 0
+ℹ skipped 4
