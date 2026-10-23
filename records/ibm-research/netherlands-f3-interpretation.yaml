@@ -1,0 +1,30 @@
+id: ibm-research/netherlands-f3-interpretation
+title: Netherlands F3 Interpretation Dataset
+summary: >-
+  Reinterpretation of the public Netherlands F3 post-stack seismic for machine learning: nine
+  horizons separating seismic facies intervals, used to create 651 labelled masks for inlines and
+  951 for crosslines, with the inline and crossline sections, masks and training tiles in ten classes.
+publisher: {name: "IBM Research (Baroni, Silva, Ferreira, Chevitarese, Szwarcman, Vital Brazil), deposited on Zenodo", url: https://zenodo.org}
+origin:
+  url: https://zenodo.org/records/1471548
+  access: anonymous
+  manifest_url: https://zenodo.org/records/1471548
+  notes: "DOI 10.5281/zenodo.1471548, version 2.0.0. Files: inlines.zip (637 MB), crosslines.zip (639 MB), horizons.tar.gz (95 MB), masks.tar.gz (4.8 MB), tiles_inlines.tar.gz and tiles_crosslines.tar.gz (about 140 MB each) and two example images."
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-3d, horizons]
+region: {country: NL, basin: "Dutch North Sea (F3 block)", bbox: [4.6, 54.75, 5.05, 54.95]}
+size: {bytes_estimate: 1657611714, stated: "Zenodo file list, eight files"}
+listed_by: [community]
+known_issues:
+  - "Derived from the public F3 survey (listed separately from TerraNubis); sections are labelled image slices of the 3D volume, not the SEG-Y cube."
+  - "bbox is approximate, taken from the F3 block extent; the deposit states no coordinates."
+period:
+  start: "2018-09-20"
+  end: "2018-09-20"
+  stated: "Zenodo record 1471548: publication_date 2018-09-20 (version 2.0.0 release); no acquisition date stated"
+added: 2026-10-23

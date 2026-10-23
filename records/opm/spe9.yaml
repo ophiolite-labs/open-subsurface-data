@@ -1,0 +1,28 @@
+id: opm/spe9
+title: SPE9 simulation deck (OPM data)
+summary: >-
+  Reservoir simulation decks for the Ninth SPE Comparative Solution Project (Killough, 1995, a
+  reexamination of black-oil simulation) in the Open Porous Media opm-data repository: a 24 x 25 x 15
+  grid with Cartesian and corner-point geometry variants, permeability and tops include files.
+publisher: {name: Open Porous Media Initiative, url: https://opm-project.org, country: "NO"}
+origin:
+  url: https://github.com/OPM/opm-data/tree/master/spe9
+  access: anonymous
+  manifest_url: https://api.github.com/repos/OPM/opm-data/contents/spe9
+  notes: "Files: SPE9.DATA, SPE9_CP*.DATA variants, SPE9.GRDECL (806 KB), PERMVALUES.DATA, TOPSVALUES.DATA and a README. The deck header reads 'Copyright (C) 2015 Statoil'."
+licence:
+  name: Open Database License 1.0 (deck); Database Contents License 1.0 (contents)
+  spdx: ODbL-1.0
+  url: https://opendatacommons.org/licenses/odbl/1-0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [reservoir-model]
+region: {basin: "Synthetic (SPE9 comparative solution model)"}
+size: {bytes_estimate: 1039535, stated: "GitHub contents listing of spe9, nine files"}
+listed_by: [community]
+known_issues:
+  - "The deck notes: 'This data set is currently not supported by the OPM simulator flow due to a bug in how Cartesian grids are handled'; the corner-point variants are the work-around."
+  - "Synthetic model with no geographic location; no country or bbox."
+  - "share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+added: 2026-10-23

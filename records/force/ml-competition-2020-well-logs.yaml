@@ -1,0 +1,32 @@
+id: force/ml-competition-2020-well-logs
+title: FORCE 2020 well log and lithofacies dataset for machine learning competition
+summary: >-
+  Well log dataset from 118 wells used in the FORCE 2020 machine learning competition to predict
+  lithofacies: logs slightly cleaned up and partially despiked, with hand-crafted lithofacies and
+  lithology interpretation, as LAS files for the train, test, blind and hidden wells, plus NPD
+  lithostratigraphy (groups, formations and members) and casing depth tables.
+publisher: {name: "FORCE 2020 competition organisers (Bormann, Aursand, Dilib, Manral, Dischington), deposited on Zenodo", url: https://zenodo.org, country: "NO"}
+origin:
+  url: https://zenodo.org/records/4351156
+  access: anonymous
+  manifest_url: https://zenodo.org/records/4351156
+  notes: "DOI 10.5281/zenodo.4351156. Five files: LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip (169.8 MB) and four spreadsheets. Documentation, starter notebook, competition CSVs and trained models: https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition"
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-logs, tops]
+region: {country: "NO", basin: "Norwegian continental shelf (the deposit says 'Norwegian Sea')"}
+size: {bytes_estimate: 170076108, stated: "Zenodo file list: LAS zip 169,785,172 bytes and four xlsx files"}
+listed_by: [community]
+known_issues:
+  - "The description adds: 'The original well log data comes form the Norwegian government and is provided by a NOLD 2.0 license'; the deposit itself is CC BY 4.0."
+  - "No bbox: the deposit states no coordinates; wells are named by their NPD wellbore names."
+  - "Lithofacies labels have no kind of their own; tops (lithostratigraphy tables) and wellbore-logs are the nearest."
+period:
+  start: "2020-12-18"
+  end: "2020-12-18"
+  stated: "Zenodo record 4351156: publication_date 2020-12-18 (release); the GitHub CITATION.cff gives date-released 2020-11-18"
+added: 2026-10-23

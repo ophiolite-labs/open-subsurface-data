@@ -1,0 +1,31 @@
+id: equinor/drogon
+title: Drogon FMU model
+summary: >-
+  Drogon is a synthetic reservoir model developed and maintained by Equinor, the successor of the
+  Reek model, with a complete FMU (Fast Model Update) set-up: Eclipse simulation decks and include
+  files, an RMS project archive, sim2seis, ERT and webviz configuration.
+publisher: {name: Equinor, url: https://www.equinor.com, country: "NO"}
+origin:
+  url: https://github.com/equinor/fmu-drogon
+  access: anonymous
+  manifest_url: https://api.github.com/repos/equinor/fmu-drogon/contents/eclipse/model
+  notes: "The GitHub version is minimized; large binaries (the RMS project rms/model/drogon.tar.gz and a restored bundle in share/external) are stored with Git LFS. Tagged releases 24.4.0, 25.0.0 and 26.0.0."
+licence:
+  name: Creative Commons Attribution-ShareAlike 4.0 International (data and text); GPL-3.0 or later (code)
+  spdx: CC-BY-SA-4.0
+  url: https://creativecommons.org/licenses/by-sa/4.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [reservoir-model]
+region: {basin: "Synthetic (fictitious Drogon field)"}
+listed_by: [community]
+known_issues:
+  - "README: 'This GitHub version is a minimized version that requires a restoring workflow to be run after a git clone (Equinor)'; the grid itself is not in the repository outside the LFS archives."
+  - "README: 'the latest commit(s) may have inconsistencies. For tagged versions however, RMS should always be at par with all other files.'"
+  - "Synthetic model with no geographic location; no country or bbox."
+period:
+  start: "2024-12-20"
+  end: "2026-03-23"
+  stated: "GitHub releases: 24.4.0 published 2024-12-20, 25.0.0 on 2025-05-20, 26.0.0 on 2026-03-23; the deck title reads 'Synthetic reservoir simulation model Drogon (2020)'"
+added: 2026-10-23
