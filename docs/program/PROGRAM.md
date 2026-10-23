@@ -9,8 +9,8 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | # | Epic | Class | Status | Depends on | Outcome a user can observe |
 |---|---|---|---|---|---|
 | 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
-| 2 | E02 Verifier to L2 | Kernel | IN LANE (osd-e02, Codex round done 23 Oct) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
-| 3 | E03 Outlines from the data | Kernel | QUEUED (charter reworked 23 Oct after its Codex round; no second round) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
+| 2 | E02 Verifier to L2 | Kernel | MERGED 23 Oct (PR #3, 37c010c; 18 mutations; three records at L2, SEG wiki blocked) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
+| 3 | E03 Outlines from the data | Kernel | IN LANE (osd-e03, 23 Oct; charter reworked after its Codex round, no second round) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
 | 4 | E05 Map that scales | Surface | IN LANE (osd-e05, parallel with E02) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
 | 5 | E04 STAC catalogue | Kernel | QUEUED (charter reworked 23 Oct after its Codex round; no second round) | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
 | 6 | E06 Retrieval by manifest | Kernel | QUEUED | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
