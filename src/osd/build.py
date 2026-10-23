@@ -3,7 +3,11 @@
 Outputs (build/catalog/):
   records.json    every record, joined with its latest verification level, the date it was
                    established, `stale` when that date is over 30 days old (or absent) and
-                   `blocked_since` while the origin refuses this runner (OSD-D9); and `catalog`,
+                   `blocked_since` while the origin refuses this runner (OSD-D9); `reasons`, by record
+                   id, why the record is at its level in the verifier's words ("never verified" when
+                   it never was), the very string `osd status` prints (osd.reasons, E27), kept beside
+                   the records array so records_digest and the manifests that pin it are unchanged;
+                   and `catalog`,
                    the snapshot identity (E09): source_commit, verification_commit, built_at and
                    records_digest, the sha256 of the records array as canonical JSON (keys sorted,
                    separators "," ":", UTF-8), which manifest/3 and fidelity/1 carry back
@@ -27,6 +31,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from . import __version__, mirror, paths, stac
+from .reasons import reason
 from .records import load_outline, load_records
 from .verify import is_stale
 
@@ -70,6 +75,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
     recs = load_records(records_dir)
     records_out = []
+    reasons = {}
     features = []
     for rid, rec in recs.items():
         v = latest_verification(rid, vdir)
@@ -77,6 +83,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         checked = v["checked_at"] if v else None
         blocked = (v or {}).get("origin", {}).get("blocked_since")
         joined = dict(rec, level=level, checked_at=checked, stale=is_stale(checked, now), blocked_since=blocked)
+        reasons[rid] = reason(v, rec)
         records_out.append(joined)
         op = paths.outline_path(rid)
         if op.exists():
@@ -99,7 +106,8 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         "records_digest": records_digest(records_out),
     }
     (out_dir / "records.json").write_text(json.dumps(
-        {"tool_version": __version__, "count": len(records_out), "catalog": catalog, "records": records_out},
+        {"tool_version": __version__, "count": len(records_out), "catalog": catalog, "records": records_out,
+         "reasons": reasons},
         indent=2) + "\n")
     (out_dir / "outlines.geojson").write_text(json.dumps(
         {"type": "FeatureCollection", "features": features}) + "\n")

@@ -1,0 +1,45 @@
+{
+  "record_id": "nzpam/kerry-3d",
+  "checked_at": "2026-10-23T14:02:00+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.nzpam.govt.nz/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4486 characters captured from https://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.nzpam.govt.nz/",
+    "content_type": "text/html",
+    "elapsed_ms": 300,
+    "reachability": "ok"
+  }
+}

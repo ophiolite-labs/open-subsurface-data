@@ -2,6 +2,7 @@ import collections
 import json
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 
@@ -249,3 +250,56 @@ def test_new_kinds_travel_to_records_json_and_stac_keywords(tmp_path, kind):
     cols = [json.loads(c.read_text()) for c in (tmp_path / "catalog" / "stac").rglob("collection.json")]
     (col,) = [c for c in cols if kind in c.get("keywords", [])]
     assert col["keywords"] == ["wellbore-logs", kind] and col["title"] == rec["title"]
+
+
+# E27: why a record is at its level. One source (osd.reasons): records.json carries the string
+# `osd status` prints, for every level, for blocked and for a record never verified.
+
+SITE_VDIR = Path(__file__).parent / "fixtures" / "site" / "verification"
+L4 = {"record_id": "opm/norne", "checked_at": "2026-10-23T14:10:00+00:00", "tool_version": "0.1.0", "level": "L4",
+      "origin": {"http_status": 200, "final_url": "https://opm-project.org/", "reachability": "ok"},
+      "checks": [{"name": "origin-reachable", "level": "L1", "outcome": "pass", "detail": "HTTP 200"},
+                 {"name": "files-checksummed", "level": "L2", "outcome": "pass", "detail": "sample: 2 of 2 hashed"},
+                 {"name": "canonical-conversion", "level": "L4", "outcome": "pass",
+                  "detail": "2 of 2 inputs converted to kinds well-log, grid"}]}
+WHY = {
+    "bgs/single-onshore-borehole-index": "files-checksummed: no file address is published to us "
+                                         "(no origin.manifest_url; access anonymous)",
+    "nzpam/kerry-3d": "files-checksummed: no file address is published to us (no origin.manifest_url; access registration)",
+    "gsq/qped": "files-checksummed: the listing (ckan) names no files",
+    "ak-dggs/tax-credit-well-data": "files-checksummed: robots.txt disallows the listing https://dggs.alaska.gov/pubs/id/30000",
+    "nm-ocd/oil-and-gas-wells": "origin-reachable: answers a browser, not the verifier (HTTP 404 to osd-verifier, "
+                                "HTTP 200 to a browser agent); blocked since 2026-10-21",
+    "seg/open-data-wiki": "origin-reachable: blocked from this runner (challenge page, HTTP 403 from "
+                          "https://wiki.seg.org/wiki/Open_data); blocked since 2026-10-20",
+    "geus/deep-subsurface-data": "origin-reachable: HTTP 502 from "
+                                 "https://eng.geus.dk/products-services-facilities/data-and-maps/subsurface-data-denmark",
+    "sodir/factpages": "sample, not the whole dataset: 3 of 3 selected files hashed (1732088 bytes); 48 entries listed",
+    "nopims/poseidon": "1 features derived from 1 inputs, every input sha256 equal to the stored bytes (min_features 1)",
+    "opm/norne": "2 of 2 inputs converted to kinds well-log, grid",
+    "equinor/volve": "never verified",
+}
+
+
+def test_site_fixture_verifications_validate():
+    from osd.verify import _validator
+    for p in sorted(SITE_VDIR.glob("*.json")):
+        _validator().validate(json.loads(p.read_text()))
+
+
+def test_records_json_reason_is_the_status_reason(tmp_path):
+    # mutation: build.py formats its own sentence (the E23 l2_reason copied in) -> L2 and up differ, red
+    from osd.cli import status_lines
+    vdir = tmp_path / "verification"
+    shutil.copytree(SITE_VDIR, vdir)
+    (vdir / "opm__norne.json").write_text(json.dumps(L4))
+    build(tmp_path / "catalog", vdir)
+    built = json.loads((tmp_path / "catalog" / "records.json").read_text())
+    recs, why = {r["id"]: r for r in built["records"]}, built["reasons"]
+    status = dict(zip(recs, status_lines(vdir)[1:]))   # one line per record, in the same order
+    assert why.keys() == recs.keys()
+    for rid in recs:
+        assert f" {rid} " in status[rid] and why[rid] and status[rid].endswith(" " + why[rid]), rid
+    assert {rid: why[rid] for rid in WHY} == WHY
+    assert {recs[rid]["level"] for rid in WHY} == {"L0", "L1", "L2", "L3", "L4"}
+    assert recs["nm-ocd/oil-and-gas-wells"]["blocked_since"] and recs["equinor/volve"]["checked_at"] is None
