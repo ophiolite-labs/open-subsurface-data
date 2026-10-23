@@ -35,3 +35,14 @@ catches data-dependent escapes before publication. The gate budget stays at two 
 it with its records (claim extended to `tests/test_stac.py`, `tests/test_outlines.py` one line for the
 record/2 `period` field, `Makefile` `check-full`, `.github/workflows/verify.yml` one step).
 
+## OSD-D19 (23 Oct 2026, supervisor): the STAC `osd` extension is versioned in its identifier's query string; frozen copies live in the test fixtures
+
+Facts: OSD-D17 placed the extension schema at one file on main's raw URL, which is also its STAC
+identifier. AGENTS.md requires a new identifier on a schema change. A path-based version would
+need a new file per version at a new URL. Ruling: the identifier gains `?v=<n>` (the host ignores the
+query, so every version resolves to the current file online); the current schema accepts documents
+naming any earlier version's URL; each superseded version is frozen as `tests/fixtures/schema/
+stac-osd-<n>.json` and the compatibility test validates old documents against their frozen copy.
+E19 moves to v2, E18 to v3 on its rebase. Revisit if a STAC client refuses a query string in an
+extension identifier.
+
