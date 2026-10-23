@@ -15,7 +15,7 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 5 | E04 STAC catalogue | Kernel | QUEUED | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
 | 6 | E06 Retrieval by manifest | Kernel | QUEUED | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
 | 7 | E08 Curation that runs itself | Surface | QUEUED | E02 | An outside contributor's record merges the same day; dead links become issues |
-| 8 | E11 Hosting and domain | Ops | IN PROGRESS (DNS is an owner action) | none | The site at opensubsurfacedata.org with real levels |
+| 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
 | 9 | E07 Mirror store and custody | Kernel | QUEUED | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
 | 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | QUEUED | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
 | 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
@@ -27,7 +27,7 @@ map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins a
 Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
 `verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
 with real levels through the `verification-results` branch. `main` requires `check`.
-DNS for opensubsurfacedata.org entered by the owner 23 Oct and resolving; HTTPS certificate pending at GitHub.
+DNS entered and the domain verified for ophiolite-labs by the owner 23 Oct; HTTPS enforced (certificate issued after re-setting the custom domain).
 E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
 opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
 
