@@ -10,6 +10,7 @@
 aer/st37-list-of-wells: ["*/ST_37_Excel.zip"]   # page links three zips; the Excel one, 183,921,877 bytes (Shapefiles 565 MB, GeoDB 1.32 GB not sampled)
 agl/marmousi2: ["vp_marmousi-ii.segy.gz"]   # directory index; the P-wave velocity model, 1,766,045 bytes
 ak-dggs/tax-credit-well-data: ["*BadamiUnitB1-11A*.zip"]   # directory index of well zips; this one 413 KB
+al-ogb/wells: ["*"]   # the bare wells.zip the GIS page links (application/x-zip-compressed: a file by its headers), 3,562,207 bytes
 ancap/bouguer-anomaly-map-of-uruguay: ["*/bouguer_anomaly.rar"]   # page links one archive; size not stated by the server
 anh/produccion-fiscalizada-crudo: ["*"]          # Socrata view: its rows.csv export, a few MB
 ar-energia/fractura-adjunto-iv: ["*/datos-de-fractura-de-pozos-de-hidrocarburos-adjunto-iv-*.csv"]   # datos.gob.ar dataset page (47 links): the daily fracture CSV on datos.energia.gob.ar; size not read (host timed out 23 Oct)
@@ -21,6 +22,7 @@ cnloer/data-information-hub: ["*/expdwts.xlsx"]   # page links spreadsheets; the
 cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
 cpc/onshore-well-locations: {file: true, sample: ["*"]}   # the bare CSV of six onshore wells, under 1 KB (data.gov.tw); content type not read (www3.cpc.com.tw timed out 23 Oct)
 equinor/drogon: ["DROGON_HIST.DATA"]   # GitHub contents API of eclipse/model: the history deck, 6,010 bytes
+fl-dep/oil-gas-permit-database: ["*.xlsx"]   # page links one spreadsheet: OG_WELLS_WEBSITE_4.xlsx, 703,015 bytes
 force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip?download=1"]   # Zenodo record page: the LAS zip, 169,785,172 bytes
 gsmma/hydrogeological-drilling-database: {file: true, sample: ["*"]}   # the bare CSV data.gov.tw names; content type and size not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-core-stations-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the core station table; not read (Cloudflare 403 text/html, 23 Oct)
@@ -38,8 +40,10 @@ kigam/marine-geological-map-korea-strait: "the listing is a search result with n
 lgt/geologiniai-tyrimai: ["*/GeologinisTyrimas/csv/download/"]   # data.gov.lt dataset page (66 links): the CSV export of the report catalogue (302 to get.data.gov.lt, text/csv, no length stated)
 manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links the weekly well list, 1,233,013 bytes
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
+nd-dmr/wells: ["*"]   # ArcGIS layer: one geojson export of at most 2000 of 44,018 features (kept as partial), 1,118,791 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
 nock/wells-drilled: ["*/pdf/Wells__Drilled.pdf"]   # page links one PDF table: Wells__Drilled.pdf, 266,101 bytes
+nogcc/well-data: ["*/NebraskaWellData_Tops.zip"]   # page links 236 files; the well data with formation tops, 5,438,416 bytes
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
 ns-energy/onshore-2d-seismic-navigation: ["*2017-11*Cumberland*region.zip"]   # atlas page: OFR 2017-11 Part 2 Cumberland shapefile zip, 1,954,295 bytes
 ns-energy/onshore-petroleum-well-log-database: ["*2017-09*Cape*Breton*region.zip"]   # atlas page: OFR 2017-09 Part 1 Cape Breton LAS zip, 4,837,104 bytes
@@ -70,6 +74,7 @@ unisim/unisim-iv: ["*/UNISIM-IV-2019/Nominal.rar"]   # case page: the nominal mo
 usgs/ofr-2009-1021-las-gamma-ray-logs: ["*.zip"]   # report index page (20 links): C-Cfiles.zip of LAS files, 982,712 bytes
 ustc/bedrettolab-atv-logs-stress: ["*/files/stress_inversion.zip?download=1"]   # Zenodo record page: stress_inversion.zip, 5,491,891 bytes (ATV.zip 2.4 GB not sampled)
 ut-dogm/oil-gas-wells: ["*"]                      # ArcGIS layer: one geojson export of at most 2000 features
+va-energy/gas-oil-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 8,605 features (kept as partial), 1,185,609 bytes
 wa-demirs/petroleum-wells: ["*"]   # ArcGIS layer 13: one geojson export, all 4,371 features (maxRecordCount 10000), 1,978,900 bytes
 
 # Mirror rules (E07): the files `osd mirror put` copies, keyed by record id. The verifier hashes every

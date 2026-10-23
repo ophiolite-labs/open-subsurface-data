@@ -1,0 +1,26 @@
+id: al-ogb/wells
+title: OGB GIS Data (wells, bottomholes and directional boreholes)
+summary: >-
+  The State Oil and Gas Board of Alabama's GIS data: "Wells (Surface Locations- UTM Zone 16N - NAD27)",
+  "Bottomholes", "Bottomhole Lines" and "Directional Boreholes", with permit, API number, well name,
+  operator, field, status, type and permit date for each well.
+publisher: {name: State Oil and Gas Board of Alabama, url: https://www.gsa.state.al.us/ogb/, country: US}
+origin:
+  url: https://www.gsa.state.al.us/ogb/gisdata
+  access: anonymous
+  manifest_url: https://www.gsa.state.al.us/img/ogb/gis/wells.zip
+  notes: "The GIS page offers wells.zip (3,562,207 bytes on 23 Oct 2026, the manifest_url) and the bottomhole, bottomhole-line and directional-borehole shapefiles. The Wells layer of the Board's online map is https://gis.ogb.state.al.us/arcgis/rest/services/OGB/OGBOnlineMap/MapServer/0 (16,235 features)."
+licence:
+  name: OGB GIS Use Constraints
+  spdx: null
+  url: https://www.ogb.state.al.us/img/ogb/gis_constraints.txt
+  redistribution: forbidden
+  attribution: required
+kinds: [wellbore-headers, wellbore-paths]
+region: {country: US, basin: "Black Warrior Basin and Gulf Coast (Alabama onshore and state waters)", bbox: [-88.47, 29.9, -84.89, 35.01], crs: "UTM Zone 16N, NAD27"}
+listed_by: [publisher]
+known_issues:
+  - "Use Constraints: 'Reproduction or redistribution of digital data sets or products derived therefrom to a third party organization or entity is expressly forbidden.' 'The OGB should be acknowledged as the originator of the data.'"
+  - "The GIS page template starts with a UTF-8 byte-order mark; read as a listing it names no files, so the manifest_url is the wells shapefile zip itself."
+  - "bbox is Alabama with state waters, approximate."
+added: 2026-10-23

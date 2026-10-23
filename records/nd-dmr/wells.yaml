@@ -1,0 +1,30 @@
+id: nd-dmr/wells
+title: North Dakota oil and gas wells (OGD_Wells, DMR public GIS) and the well data subscription
+summary: >-
+  The Oil and Gas Division's well layer "Contains Lat/Long data and footage descriptions (legal
+  description), as well as operator information, type/status, NDIC File number and other oil and gas
+  related information." Scout tickets (log tops, completions, tests, production, DST recoveries, core
+  photographs), well files and "More than 100,600 digital and image logs ... for over 18,650 wells"
+  are sold by subscription.
+publisher: {name: "North Dakota Industrial Commission, Department of Mineral Resources, Oil and Gas Division", url: https://www.dmr.nd.gov/oilgas/, country: US}
+origin:
+  url: https://www.dmr.nd.gov/oilgas/subscriptionservice.asp
+  access: purchase
+  manifest_url: https://gis.dmr.nd.gov/dmrpublicservices/rest/services/Wells/FeatureServer/0?f=json
+  notes: "The well layer is free (44,018 features on 23 Oct 2026, 2000 per query); the subscription covers the well index, scout tickets, well files and logs. The same GIS server has Seismic3D, Seismic2D, Directional_Well_Bore and Horizontal_Well_Bore services."
+licence:
+  name: Legal Disclaimer (NDIC Oil and Gas Division)
+  spdx: null
+  url: https://www.dmr.nd.gov/oilgas/disclaimer.asp
+  redistribution: unknown
+  attribution: unknown
+  terms:
+    stated: "As of January 1, 2026, our Basic Subscription rate is $100/year and our Premium Subscription rate is $500/year."
+kinds: [wellbore-headers, tops, wellbore-logs, core, pressure, production, reports]
+region: {country: US, basin: Williston Basin (North Dakota), bbox: [-104.05, 45.93, -96.55, 49.0]}
+listed_by: [publisher]
+known_issues:
+  - "Only the well locations and headers are free; the other kinds are subscription products."
+  - "The disclaimer disowns accuracy and states no licence."
+  - "bbox is the State of North Dakota, approximate."
+added: 2026-10-23
