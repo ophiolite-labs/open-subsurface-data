@@ -15,10 +15,11 @@ from . import manifest as manifest_mod
 from . import mirror as mirror_mod
 from . import new as new_mod
 from . import paths
+from . import reasons as reasons_mod
 from . import report as report_mod
 from . import verify as verify_mod
 from .records import load_records, validate_outlines, validate_records
-from .verify import LEVELS, apply_fidelity, conversion_coverage, http_open, is_stale, verify_all
+from .verify import apply_fidelity, conversion_coverage, http_open, is_stale, verify_all
 
 
 def cmd_validate(_: argparse.Namespace) -> int:
@@ -99,30 +100,12 @@ def terms_note(rec: dict, now: datetime | None = None) -> str:
     return f"terms expire {day.isoformat()}" + (" (today)" if today == day else "")
 
 
-def l2_reason(v: dict | None) -> str:
-    """Why a record is below L2 (E23): for a blocked origin the origin check's detail (H1), else the
-    detail of its first L2 check that did not pass, else of the first check below L2 that did not
-    pass; empty at L2 and above."""
-    if v is None:
-        return "never verified"
-    if LEVELS.index(v["level"]) >= LEVELS.index("L2"):
-        return ""
-    if v.get("origin", {}).get("reachability") == "blocked":  # H1: how, e.g. "answers a browser, not the verifier"
-        for c in v["checks"]:
-            if c["name"] == "origin-reachable":
-                return f"{c['name']}: {c.get('detail') or c['outcome']}"
-    for levels in (("L2",), ("L1",)):
-        for c in v["checks"]:
-            if c["level"] in levels and c["outcome"] != "pass":
-                return f"{c['name']}: {c.get('detail') or c['outcome']}"
-    return ""
-
-
 def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = None,
                  records_dir: Path = paths.RECORDS_DIR) -> list[str]:
     """The levels `osd build` publishes, read from the same verification directory; an L4 shows
     its coverage beside it, "L4 (2 of 2 converted)" (E09), and a stated expiry of the terms,
-    "L1 (terms expire 2027-01-01)" (E19); a record below L2 ends with the reason (E23)."""
+    "L1 (terms expire 2027-01-01)" (E19); every line ends with the reason, the string records.json
+    carries (osd.reasons, E23/E27)."""
     rows = []
     for rid, r in load_records(records_dir).items():
         v = build_mod.latest_verification(rid, vdir)
@@ -135,7 +118,7 @@ def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = Non
         blocked = (v or {}).get("origin", {}).get("blocked_since")
         when += f" blocked since {blocked[:10]}" if blocked else ""
         rows.append((lv, (f"{rid:36} {when:36} {r['origin']['access']:12} "
-                          f"{r['licence']['redistribution']:14}"), ",".join(r["kinds"]), l2_reason(v)))
+                          f"{r['licence']['redistribution']:14}"), ",".join(r["kinds"]), reasons_mod.reason(v, r)))
     w = max([5] + [len(lv) for lv, *_ in rows])
     k = max([5] + [len(kinds) for _, _, kinds, _ in rows])
     return ([f"{'level':{w}} {'id':36} {'checked':36} {'access':12} {'redistribution':14} {'kinds':{k}} reason"]
