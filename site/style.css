@@ -58,6 +58,8 @@ h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: v
   #list { overflow: visible; min-height: 0; }
 }
 .stale { font-size: 11px; padding: 1px 6px; margin-left: 4px; border-radius: 4px; background: #4a3a1a; color: #f2c46b; }
+.blocked { font-size: 11px; padding: 1px 6px; margin-left: 4px; border-radius: 4px; background: #3a2430; color: #f29bb4; white-space: nowrap; }
+#detail dd.why .checked { color: var(--muted); }
 #list li .badges { white-space: nowrap; }
 #detail .how { margin: 8px 0 0; font-size: 12px; }
 .sw.cluster { border-color: #0f1419; background: var(--well); width: 14px; height: 14px; border-radius: 50%; border-width: 1px; }
