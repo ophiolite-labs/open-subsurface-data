@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 from urllib.parse import urlsplit
 
 import pytest
@@ -116,3 +117,96 @@ def test_parse_bounds():
     assert shards.parse("1/1") == (1, 1) and shards.parse("16/16") == (16, 16)
     with pytest.raises(ValueError):
         shards.parse("17/17")
+
+
+# --- the finishing job: overlay -------------------------------------------------------------------
+# Fixture records, N = 3: alpha/one in shard 1, beta/two and delta/four in shard 2, gamma/three in 3.
+
+RECS = load_records(FIX / "records")
+
+
+def fresh(rid: str, level: str = "L1", when: str = "2026-10-23T07:00:00+00:00") -> dict:
+    v = json.loads((FIX / "snapshot" / (rid.replace("/", "__") + ".json")).read_text())
+    host = rid.split("/")[0]
+    return {**v, "checked_at": when, "level": level,
+            "checks": [{"name": "origin-reachable", "level": "L1", "outcome": "pass",
+                        "detail": f"HTTP 200 at https://{host}.example/data"}],
+            "origin": {**v["origin"], "http_status": 200, "reachability": "ok"},
+            "files": [{"path": "a.csv", "url": f"https://{host}.example/a.csv", "bytes": 1000, "sha256": "0" * 64}]}
+
+
+def artifact(shards_dir: Path, i: int, results: list[dict], n: int = 3, ids: list[str] | None = None) -> Path:
+    """A shard's upload as the workflow writes it (ids.txt, verification/, shard.json)."""
+    d = shards_dir / f"shard-{i}"
+    (d / "verification").mkdir(parents=True)
+    for v in results:
+        (d / "verification" / (v["record_id"].replace("/", "__") + ".json")).write_text(json.dumps(v))
+    ids = [v["record_id"] for v in results] if ids is None else ids
+    (d / "ids.txt").write_text("".join(r + "\n" for r in ids))
+    (d / "shard.json").write_text(json.dumps({"shard": i, "of": n, "started": 1761202800, "finished": 1761203100}))
+    return d
+
+
+def result(out: Path, rid: str) -> dict:
+    return json.loads((out / (rid.replace("/", "__") + ".json")).read_text())
+
+
+def snapshot_of(rid: str) -> dict:
+    return json.loads((FIX / "snapshot" / (rid.replace("/", "__") + ".json")).read_text())
+
+
+def test_fixture_shards():
+    assert [shards.select(RECS, i, 3) for i in (1, 2, 3)] == [["alpha/one"], ["beta/two", "delta/four"], ["gamma/three"]]
+
+
+def test_a_fresh_file_replaces_the_earlier_one(tmp_path):
+    # mutation: overwrite suppressed (copy only when the destination is absent) -> red
+    sd, out = tmp_path / "shards", tmp_path / "out"
+    artifact(sd, 1, [fresh("alpha/one")])
+    artifact(sd, 3, [fresh("gamma/three", "L2")])
+    r = shards.overlay(FIX / "snapshot", sd, out, 3, RECS)
+    assert result(out, "alpha/one") == fresh("alpha/one") and result(out, "gamma/three")["level"] == "L2"
+    assert r["fresh"] == ["alpha/one", "gamma/three"] and sorted(r["accepted"]) == [1, 3]
+
+
+def test_a_failed_shards_records_keep_their_earlier_files(tmp_path):
+    # mutation: destination deleted before the overlay (only fresh files survive) -> red
+    sd, out = tmp_path / "shards", tmp_path / "out"
+    artifact(sd, 1, [fresh("alpha/one")])
+    artifact(sd, 3, [fresh("gamma/three")])
+    r = shards.overlay(FIX / "snapshot", sd, out, 3, RECS)    # shard 2 uploaded nothing
+    assert result(out, "beta/two") == snapshot_of("beta/two") and result(out, "delta/four") == snapshot_of("delta/four")
+    assert r["discarded"] == {2: "no id list (the shard failed, was cancelled or uploaded nothing)"}
+    assert r["kept"] == ["beta/two", "delta/four"]
+    text = "\n".join(shards.summary_lines(r, 3, RECS, shards.timings(sd, r["accepted"])))
+    assert "| 2/3 | 2 | **failed**: no id list" in text
+    assert "Shard 2/3 failed (no id list (the shard failed, was cancelled or uploaded nothing)); its records keep" in text
+    assert "- beta/two\n- delta/four" in text
+    assert "2 of 4 records verified in this run; 2 keep their earlier result." in text
+    assert "Records without a fresh result: beta/two delta/four" in text
+    assert "| 1/3 | 1 | 5.0 min | 1,000 | alpha/one" in text
+
+
+@pytest.mark.parametrize("case", ["foreign id", "foreign file", "missing file", "wrong shard.json", "wrong record_id",
+                                  "unknown id"])
+def test_a_shard_artifact_outside_its_shard_is_discarded(tmp_path, case):
+    sd, out = tmp_path / "shards", tmp_path / "out"
+    if case == "foreign id":           # shard 3 claims alpha/one, a record of shard 1
+        artifact(sd, 3, [fresh("gamma/three"), fresh("alpha/one")])
+    elif case == "foreign file":       # a file its id list does not name
+        artifact(sd, 3, [fresh("gamma/three"), fresh("alpha/one")], ids=["gamma/three"])
+    elif case == "missing file":
+        artifact(sd, 2, [fresh("beta/two")], ids=["beta/two", "delta/four"])
+    elif case == "wrong shard.json":
+        artifact(sd, 3, [fresh("gamma/three")], n=4)
+    elif case == "wrong record_id":
+        d = artifact(sd, 3, [fresh("gamma/three")])
+        (d / "verification" / "gamma__three.json").write_text(json.dumps(fresh("alpha/one")))
+    else:
+        d = artifact(sd, 3, [fresh("gamma/three")], ids=["gamma/three", "zeta/none"])
+    r = shards.overlay(FIX / "snapshot", sd, out, 3, RECS)
+    assert r["fresh"] == [] and r["accepted"] == {}
+    for rid in RECS:
+        assert result(out, rid) == snapshot_of(rid)
+    i = 2 if case == "missing file" else 3
+    assert "no id list" not in r["discarded"][i]
