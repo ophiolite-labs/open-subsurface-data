@@ -42,20 +42,32 @@ jobs:
         run: |
           uv run osd status | tee status.txt
           { echo '### osd status'; echo '```'; cat status.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - name: dead-link report (issues on a dispatch on main, a dry run otherwise)
+      - name: dead-link report (issues opened and closed on a dispatch on main, a dry run otherwise)
         continue-on-error: true
-        env: { GH_TOKEN: "${{ github.token }}", GH_REPO: "${{ github.repository }}" }
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          GH_REPO: "${{ github.repository }}"
+          EVENT: "${{ github.event_name }}"
+          REF: "${{ github.ref }}"
+          IDS: "${{ steps.ids.outputs.ids }}"
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         run: |
-          gh issue list --state open --limit 1000 --json title --jq '.[].title' > open-titles.txt || : > open-titles.txt
+          # an empty file when gh fails: the report then opens and closes nothing (H1)
+          gh issue list --state open --label origin-dead --limit 1000 --json number,title,labels > open-issues.json || : > open-issues.json
           dry=--dry-run
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then dry=; fi
+          if [ "$EVENT" = "workflow_dispatch" ] && [ "$REF" = "refs/heads/main" ]; then dry=; fi
           uv run osd report --before build/verification-before --after build/verification \
-            --open-titles open-titles.txt --out dead.json $dry | tee dead.txt
+            --open-issues open-issues.json --verified "${IDS:-all}" --run-url "$RUN_URL" --out report.json $dry | tee dead.txt
           { echo '### dead-link report'; echo '```'; cat dead.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-          if [ -z "$dry" ] && [ "$(jq length dead.json)" -gt 0 ]; then
-            gh label create origin-dead --color d93f0b --description "Opened by the dead-link report: an origin fell from L1+ to dead" --force
-            jq -c '.[]' dead.json | while read -r issue; do
+          if [ -z "$dry" ]; then
+            if [ "$(jq '.open | length' report.json)" -gt 0 ]; then
+              gh label create origin-dead --color d93f0b --description "Opened by the dead-link report: an origin fell from L1+ to dead" --force
+            fi
+            jq -c '.open[]' report.json | while read -r issue; do
               gh issue create --title "$(jq -r .title <<<"$issue")" --body "$(jq -r .body <<<"$issue")" --label origin-dead
+            done
+            jq -c '.recovered[]' report.json | while read -r issue; do
+              gh issue close "$(jq -r .number <<<"$issue")" --comment "$(jq -r .comment <<<"$issue")"
             done
           fi
       - uses: actions/upload-artifact@v4

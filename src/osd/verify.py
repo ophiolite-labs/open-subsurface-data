@@ -15,18 +15,24 @@ Reachability is one of four closed, exclusive classes, decided on the final resp
   moved    2xx/3xx on another host: passes, the detail suggests a record update
   dead     anything else: status 0 (DNS, timeout, refused), 401, 404, 410, other 4xx, 5xx;
            timeouts, refused connections and 5xx are retried once first
+A terminal 404, 410 or 5xx is asked once more, paced, with a browser's user agent (OSD-D20, H1): if
+that answers 2xx after redirects the publisher hides from the verifier, and the origin is `blocked`
+("answers a browser, not the verifier"), not dead. That request's body is never read; the browser
+agent reaches no listing, licence page or file.
 Sampling policy (which listed files L2 hashes) is tool configuration in verifier/samples.yaml,
 keyed by record id, never a record field (OSD-D11). Listings are read by shape (osd.verifier.listings,
 E23); a publisher's stated checksum is computed from the same stream beside SHA-256 and compared, and
 an export the server truncated is kept apart from `files` as a partial export.
 
-The network is injected twice: a Fetcher probes an origin (first 16 KB), an Opener streams a
-body in chunks and raises FetchError. Tests pass fakes, so the required CI check stays offline.
+The network is injected three times: a Fetcher probes an origin (first 16 KB), an Opener streams a
+body in chunks and raises FetchError, a BrowserProbe answers (status, final URL) for the browser
+agent. Tests pass fakes, so the required CI check stays offline.
 """
 
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import re
 import socket
@@ -48,13 +54,25 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from . import __version__, outlines, paths
 from .records import load_outline, load_records
-from .verifier.listings import TRUNCATED, Entry, ListingError, parse_listing, read_listing  # noqa: F401 (E07)
+from .verifier.listings import (  # noqa: F401 (E07)
+    TRUNCATED,
+    Entry,
+    ListingError,
+    file_listing,
+    names_a_file,
+    parse_listing,
+    read_listing,
+)
 
 SAMPLES_PATH = Path(__file__).parent / "verifier" / "samples.yaml"
 
 LEVELS = ["L0", "L1", "L2", "L3", "L4"]
 USER_AGENT = ("open-subsurface-data-verifier/" + __version__
               + " (+https://github.com/ophiolite-labs/open-subsurface-data)")
+# OSD-D20: a desktop browser's agent, for one request about an origin whose body is never read
+BROWSER_USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/130.0.0.0 Safari/537.36")
+BROWSER_RETRY = frozenset({404, 410})  # and every 5xx: the answers a hiding publisher gives the verifier
 PROBE_BYTES = 16384
 CHUNK = 1 << 20
 RUN_BYTE_BUDGET = 2 * 1024**3  # charter: never hash more than 2 GB per run
@@ -89,6 +107,7 @@ class FetchError(Exception):
 
 Fetcher = Callable[[str], Fetched]
 Opener = Callable[[str], Iterable[bytes]]
+BrowserProbe = Callable[[str], tuple[int, str]]  # (status after redirects, final URL); 0 for no answer
 
 
 # --- network (only used outside tests) ---------------------------------------------------
@@ -121,17 +140,35 @@ def http_fetch(url: str, timeout: float = 20.0) -> Fetched:
         return Fetched(0, url, "", ms(), error=_error_kind(e))
 
 
+def http_browser_probe(url: str, timeout: float = 20.0) -> tuple[int, str]:
+    """GET with the browser agent; the response, an error response included, is closed unread."""
+    req = urllib.request.Request(url, headers={"User-Agent": BROWSER_USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.status, resp.geturl()
+    except urllib.error.HTTPError as e:
+        e.close()
+        return e.code, e.filename or url
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return 0, url
+
+
 class _Body:
-    """A streamed GET; `content_type` is known once iteration has started (listing reasons name it)."""
+    """A streamed GET; `content_type`, `content_disposition` and `content_length` are known once
+    iteration has started (listing reasons name the type; a manifest that is a file is told by them)."""
 
     def __init__(self, url: str, timeout: float):
         self.url, self.timeout, self.content_type = url, timeout, ""
+        self.content_disposition, self.content_length = "", None
 
     def __iter__(self):
         req = urllib.request.Request(self.url, headers={"User-Agent": USER_AGENT})
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 self.content_type = resp.headers.get("Content-Type", "")
+                self.content_disposition = resp.headers.get("Content-Disposition", "")
+                n = resp.headers.get("Content-Length", "")
+                self.content_length = int(n) if n.isdigit() else None
                 while chunk := resp.read(CHUNK):
                     yield chunk
         except urllib.error.HTTPError as e:
@@ -178,6 +215,14 @@ def paced(fetch: Fetcher, opener: Opener, pacer: Pacer) -> tuple[Fetcher, Opener
         def content_type(self) -> str:
             return getattr(self.inner, "content_type", "")
 
+        @property
+        def content_disposition(self) -> str:
+            return getattr(self.inner, "content_disposition", "")
+
+        @property
+        def content_length(self) -> int | None:
+            return getattr(self.inner, "content_length", None)
+
         def __iter__(self):
             pacer.wait(self.url)
             try:
@@ -187,6 +232,16 @@ def paced(fetch: Fetcher, opener: Opener, pacer: Pacer) -> tuple[Fetcher, Opener
                 pacer.done(self.url)
 
     return f, _Paced
+
+
+def paced_probe(browser_probe: BrowserProbe, pacer: Pacer) -> BrowserProbe:
+    def b(url: str) -> tuple[int, str]:
+        pacer.wait(url)
+        try:
+            return browser_probe(url)
+        finally:
+            pacer.done(url)
+    return b
 
 
 # --- L1 ------------------------------------------------------------------------------------
@@ -217,6 +272,17 @@ def classify(f: Fetched, url: str) -> tuple[str, str]:
                              f"origin.url is due")
         return "ok", f"HTTP {f.status} from {f.final_url}"
     return "dead", (f"HTTP {f.status} from {f.final_url}" if f.status else f"{f.error or 'error'} at {url}")
+
+
+def hides(f: Fetched, url: str, browser_probe: BrowserProbe | None) -> str | None:
+    """OSD-D20: after a terminal dead 404, 410 or 5xx, the detail of a `blocked` origin when the same
+    URL answers a browser agent 2xx; None otherwise (no probe, other answers, the browser refused)."""
+    if browser_probe is None or not (f.status in BROWSER_RETRY or f.status >= 500):
+        return None
+    status, _ = browser_probe(url)
+    if not 200 <= status < 300:
+        return None
+    return f"answers a browser, not the verifier (HTTP {f.status} to osd-verifier, HTTP {status} to a browser agent)"
 
 
 # --- L2 ------------------------------------------------------------------------------------
@@ -311,7 +377,8 @@ def comparable(checksum: dict | None) -> str | None:
 
 
 class _Robots:
-    """robots.txt per host: 2xx is obeyed, 4xx allows everything, anything else disallows (RFC 9309)."""
+    """robots.txt per host: 2xx is obeyed, 4xx allows everything, anything else (5xx, no answer) is
+    unreadable and treated as disallow (RFC 9309 section 2.3.1.4); `unread` says why, per host."""
 
     def __init__(self, opener: Opener):
         self.opener, self.hosts, self.unread = opener, {}, {}
@@ -328,41 +395,58 @@ class _Robots:
                     rp.allow_all = True
                 else:
                     rp.disallow_all = True
-                    self.unread[key] = str(e)  # E23: the reason says it was not read, not that it disallows
+                    self.unread[key] = f"HTTP {e.status}" if e.status else (e.error or "no answer")
             self.hosts[key] = rp
         return self.hosts[key].can_fetch(USER_AGENT, url)
 
+    def refusal(self, url: str, what: str) -> str:
+        """Why `url` is not fetched: an unreadable robots.txt (H1 design 9) or an explicit disallow."""
+        u = urlsplit(url)
+        if why := self.unread.get(f"{u.scheme}://{u.netloc}"):
+            return f"robots.txt unreadable ({why}), treated as disallow (RFC 9309 section 2.3.1.4): {what} not fetched"
+        return f"robots.txt disallows {what}"
 
-def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str] | str]:
-    """Sample globs by record id, or a sentence saying why the listing has nothing to sample; the
+
+def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str] | str | dict]:
+    """Sample globs by record id, or a sentence saying why the listing has nothing to sample, or
+    `{file: true, sample: [globs]}` for a manifest_url that is the file itself (H1 design 8); the
     `mirror:` section is the mirror's (osd.mirror.load_rules)."""
     return {k: v for k, v in (yaml.safe_load(path.read_text()) or {}).items() if k != "mirror"}
 
 
-def check_files(rec: dict, sample: list[str] | str | None, opener: Opener,
+def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener,
                 budget: ByteBudget) -> tuple[dict, list[dict], list[dict]]:
-    """The files-checksummed check, the files hashed, and the exports the server truncated."""
+    """The files-checksummed check, the files hashed, and the exports the server truncated. A
+    manifest_url answering a data file (by its headers, or `file: true` in samples.yaml) is the one
+    entry, and the response already open is the one hashed: one GET."""
     def check(outcome: str, detail: str) -> dict:
         return {"name": "files-checksummed", "level": "L2", "outcome": outcome, "detail": detail[:500]}
 
     manifest = rec["origin"].get("manifest_url")
     if not manifest:
         return check("skip", "no origin.manifest_url"), [], []
+    is_file = False
+    if isinstance(sample, dict):  # H1 design 8: {file: true, sample: [globs]}
+        is_file, sample = sample.get("file") is True, sample.get("sample", ["*"])
     if isinstance(sample, str):
         return check("skip", f"nothing to sample (verifier/samples.yaml): {sample}"), [], []
     if not sample:
         return check("skip", "no sample for this record in verifier/samples.yaml"), [], []
     robots = _Robots(opener)
     if not robots.allowed(manifest):
-        u = urlsplit(manifest)
-        if why := robots.unread.get(f"{u.scheme}://{u.netloc}"):
-            return check("skip", f"robots.txt could not be read ({why}), so the listing is not fetched "
-                                 f"(RFC 9309)"), [], []
-        return check("skip", f"robots.txt disallows the listing {manifest}"), [], []
+        return check("skip", robots.refusal(manifest, f"the listing {manifest}")), [], []
+    opened: dict[str, Iterable[bytes]] = {}
     try:
         stream = opener(manifest)
-        body = _read(stream, LISTING_BYTES)
-        listing = read_listing(body, manifest, getattr(stream, "content_type", "") or "")
+        chunks = iter(stream)
+        first = next(chunks, b"")  # the response has started: its headers are known
+        body = itertools.chain([first], chunks)
+        if is_file or names_a_file(getattr(stream, "content_type", "") or "",
+                                   getattr(stream, "content_disposition", "") or ""):
+            listing = file_listing(manifest, getattr(stream, "content_length", None))
+            opened[manifest] = body  # hashed below as it streams, never read as a listing
+        else:
+            listing = read_listing(_read(body, LISTING_BYTES), manifest, getattr(stream, "content_type", "") or "")
     except FetchError as e:
         return check("fail", f"listing: {e}"), [], []
     except ListingError as e:
@@ -385,7 +469,7 @@ def check_files(rec: dict, sample: list[str] | str | None, opener: Opener,
     mismatches: list[str] = []
     for e in picked:
         if not robots.allowed(e.url):
-            notes.append(f"robots.txt disallows {e.name}")
+            notes.append(robots.refusal(e.url, e.name))
             continue
         if budget.remaining <= 0 or (e.size is not None and e.size > budget.remaining):
             notes.append(f"sample would exceed the run budget ({e.size if e.size is not None else 'unknown'} "
@@ -393,7 +477,8 @@ def check_files(rec: dict, sample: list[str] | str | None, opener: Opener,
             continue
         alg = comparable(e.checksum)
         try:
-            digest, n, theirs, truncated = _digest(opener(e.url), budget, [alg] if alg else [], e.generated)
+            digest, n, theirs, truncated = _digest(opened.pop(e.url, None) or opener(e.url), budget,
+                                                   [alg] if alg else [], e.generated)
         except _OverBudget:
             notes.append(f"sample cut at the run budget: {e.name} abandoned mid-stream and not recorded; "
                          f"{len(files)} of {len(picked)} files hashed")
@@ -423,6 +508,8 @@ def check_files(rec: dict, sample: list[str] | str | None, opener: Opener,
               f"({total} bytes); {len(entries)} entries listed")]
     if said:
         parts.append(f"publisher checksums match for {len(said)} of {len(files)}")
+    if listing.shape == "file":
+        parts.append("the manifest_url is the file itself")
     if listing.listed_at:
         parts.append(f"listing dated {listing.listed_at}")
     return check("pass", "; ".join(parts + notes)), files, partial
@@ -506,7 +593,8 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
                   opener: Opener | None = None, previous: dict | None = None,
                   budget: ByteBudget | None = None, sample: list[str] | None = None,
                   outline_rule: dict | None = None, stored: dict[str, str] | None = None,
-                  refused: str | None = None, mirror_rule: list[str] | None = None) -> dict:
+                  refused: str | None = None, mirror_rule: list[str] | None = None,
+                  browser_probe: BrowserProbe | None = None) -> dict:
     checks: list[dict] = []
     extra: dict = {}
 
@@ -514,6 +602,8 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
     url = rec["origin"]["url"]
     f = probe(url, fetch)
     reach, detail = classify(f, url)
+    if reach == "dead" and (browser := hides(f, url, browser_probe)):
+        reach, detail = "blocked", browser
     origin = {"http_status": f.status, "final_url": f.final_url, "content_type": f.content_type[:100],
               "elapsed_ms": f.elapsed_ms, "reachability": reach}
     if reach == "blocked":
@@ -682,12 +772,14 @@ def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, out
 def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
                out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None,
                derive: bool = False, fetch_inputs: bool = False, inputs_dir: Path = outlines.INPUTS_DIR,
-               outlines_dir: Path = paths.OUTLINES_DIR) -> list[dict]:
+               outlines_dir: Path = paths.OUTLINES_DIR, browser_probe: BrowserProbe | None = None) -> list[dict]:
     """Defaults are the network, paced; tests inject both and are not paced. `derive` (osd verify
     --outlines) refetches the inputs of records that have outline rules and rewrites their outlines;
     `fetch_inputs` (--outline-inputs) refetches them and checks the committed outlines against them."""
     if fetch is None and opener is None:
-        fetch, opener = paced(http_fetch, http_open, Pacer())
+        pacer = Pacer()
+        fetch, opener = paced(http_fetch, http_open, pacer)
+        browser_probe = browser_probe or paced_probe(http_browser_probe, pacer)
     recs = load_records()
     samples = load_samples()
     from .mirror import load_rules
@@ -709,7 +801,7 @@ def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opene
         v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
                           sample=samples.get(rid), outline_rule=rules.get(rid),
                           stored=outlines.stored_inputs(rid, inputs_dir), refused=refused,
-                          mirror_rule=mirror_rules.get(rid))
+                          mirror_rule=mirror_rules.get(rid), browser_probe=browser_probe)
         _validator().validate(v)  # never write a record the schema refuses
         out.write_text(json.dumps(v, indent=2) + "\n")
         results.append(v)

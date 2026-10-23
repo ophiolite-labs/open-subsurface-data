@@ -4,6 +4,8 @@
 # every entry of that listing as listed or as an absolute URL, or a sentence saying why the listing has
 # nothing to hash (osd status prints it as the reason). Matching files are hashed for L2, at most
 # 512 MiB per record and 2 GiB per run. A listing that names one object samples that object ("*").
+# A manifest_url answering a data file (content type, Content-Disposition: attachment) is its own
+# one-entry listing; `id: {file: true, sample: ["*"]}` says so when the headers do not (H1 design 8).
 # Listing shapes are read by osd.verifier.listings; sizes below are as listed on 23 Oct 2026.
 ak-dggs/tax-credit-well-data: ["*BadamiUnitB1-11A*.zip"]   # directory index of well zips; this one 413 KB
 anh/produccion-fiscalizada-crudo: ["*"]          # Socrata view: its rows.csv export, a few MB

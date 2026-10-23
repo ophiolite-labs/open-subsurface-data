@@ -6,6 +6,10 @@ services and documentation links are left out, and an error body raises ListingE
 publisher's message. The generic readers of E02 (JSON walk, S3 XML, HTML links, text lines) stay
 for everything else, so E07's mirror selection through `parse_listing` is unchanged.
 
+A `manifest_url` whose response is itself a data file (H1 design 8: a content type other than HTML,
+JSON, XML or plain text, or `Content-Disposition: attachment`) is not read as a listing at all: it
+is the one entry, `file_listing`. A CSV served as `text/csv` is a file, never a text list of URLs.
+
 A publisher's checksum, when the listing states one, rides on the entry as `{algorithm, digest}`
 verbatim; `osd.verify` decides whether it can be compared. A generated export (an ArcGIS query) is
 marked so the hasher watches it for truncation.
@@ -25,6 +29,8 @@ FIRST_BYTES = 40
 SERVICE_FORMAT = re.compile(r"^\s*(API\b|HTML?\s*$|WEB\s*PAGE|W[MFC]T?S\s*$|ESRI\s*REST|ARCGIS|OGC\b)", re.IGNORECASE)
 TRUNCATED = re.compile(rb'"exceededTransferLimit"\s*:\s*true')
 SOCRATA_ID = re.compile(r"^[a-z0-9]{4}-[a-z0-9]{4}$")
+LISTING_TYPES = frozenset({"text/html", "application/xhtml+xml", "application/json", "text/json",
+                           "application/xml", "text/xml", "text/plain"})  # and every +json, +xml
 
 
 class ListingError(ValueError):
@@ -253,6 +259,20 @@ def _arcgis_page(text: str, base: str) -> Listing | None:
     when = re.search(r"Last Edit Date:</b>\s*(\d{1,2})/(\d{1,2})/(\d{4})", text)
     listed = f"{when.group(3)}-{int(when.group(1)):02d}-{int(when.group(2)):02d}" if when else None
     return Listing("arcgis-layer", [_arcgis_export(f"{u.scheme}://{u.netloc}{u.path}", int(m.group(1)))], listed)
+
+
+def names_a_file(content_type: str, disposition: str = "") -> bool:
+    """H1 design 8: the response is a data file, not a listing; decided from the headers alone. An
+    unstated content type is not a file (the body's shape decides, as before)."""
+    if disposition.split(";", 1)[0].strip().lower() == "attachment":
+        return True
+    t = content_type.split(";", 1)[0].strip().lower()
+    return bool(t) and t not in LISTING_TYPES and not t.endswith(("+json", "+xml"))
+
+
+def file_listing(url: str, size: int | None = None) -> Listing:
+    """The listing of a `manifest_url` that is itself the file: one entry, named by its last path segment."""
+    return Listing("file", [Entry(_basename(url), url, size)])
 
 
 def read_listing(body: bytes, base: str, content_type: str = "") -> Listing:

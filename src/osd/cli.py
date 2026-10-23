@@ -67,7 +67,9 @@ def cmd_verify(a: argparse.Namespace) -> int:
         o = v["origin"]
         l2 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L2")
         l3 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L3")
-        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}; {l2}; {l3})")
+        l1 = next((c.get("detail", "") for c in v["checks"] if c["name"] == "origin-reachable"), "")
+        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}: {l1}; "
+              f"{l2}; {l3})")
     print(f"{len(results)} verified -> {paths.VERIFICATION_DIR}")
     return 0
 
@@ -98,12 +100,17 @@ def terms_note(rec: dict, now: datetime | None = None) -> str:
 
 
 def l2_reason(v: dict | None) -> str:
-    """Why a record is below L2 (E23): the detail of its first L2 check that did not pass, else of
-    the first check below L2 that did not pass; empty at L2 and above."""
+    """Why a record is below L2 (E23): for a blocked origin the origin check's detail (H1), else the
+    detail of its first L2 check that did not pass, else of the first check below L2 that did not
+    pass; empty at L2 and above."""
     if v is None:
         return "never verified"
     if LEVELS.index(v["level"]) >= LEVELS.index("L2"):
         return ""
+    if v.get("origin", {}).get("reachability") == "blocked":  # H1: how, e.g. "answers a browser, not the verifier"
+        for c in v["checks"]:
+            if c["name"] == "origin-reachable":
+                return f"{c['name']}: {c.get('detail') or c['outcome']}"
     for levels in (("L2",), ("L1",)):
         for c in v["checks"]:
             if c["level"] in levels and c["outcome"] != "pass":
@@ -159,11 +166,12 @@ def cmd_new(a: argparse.Namespace) -> int:
 
 
 def cmd_report(a: argparse.Namespace) -> int:
-    titles = set(Path(a.open_titles).read_text().splitlines()) if a.open_titles else set()
-    r = report_mod.dead_reports(Path(a.before), Path(a.after), titles)
+    issues = report_mod.read_issues(Path(a.open_issues) if a.open_issues else None)
+    verified = "all" if a.verified.strip() in ("", "all") else set(a.verified.split())
+    r = report_mod.report(Path(a.before), Path(a.after), issues, verified, a.run_url)
     print("\n".join(report_mod.report_lines(r, a.dry_run)))
-    if a.out:
-        Path(a.out).write_text(json.dumps(r["open"], indent=2) + "\n")
+    if a.out:  # the workflow reads .open[] and .recovered[] (and mutates nothing on a dry run)
+        Path(a.out).write_text(json.dumps({"open": r["open"], "recovered": r["recovered"]}, indent=2) + "\n")
     return 0
 
 
@@ -261,12 +269,15 @@ def main(argv: list[str] | None = None) -> int:
     pn.add_argument("--id", help="publisher/dataset (default: from the address)")
     pn.add_argument("--title", help="skip reading the page")
     pn.set_defaults(fn=cmd_new)
-    pr = sub.add_parser("report", help="dead-link report: records that fell from L1+ to a dead origin")
+    pr = sub.add_parser("report", help="dead-link report: origins that fell from L1+ to dead, and open issues that recovered")
     pr.add_argument("--before", required=True, help="verification results stored before the run")
     pr.add_argument("--after", default=str(paths.VERIFICATION_DIR), help="results after the run")
-    pr.add_argument("--open-titles", help="file with the titles of open issues, one per line")
-    pr.add_argument("--out", help="write the issues to open as JSON")
-    pr.add_argument("--dry-run", action="store_true", help="say 'would open'; the workflow opens nothing")
+    pr.add_argument("--open-issues", help="the open origin-dead issues, `gh issue list --json number,title,labels`;"
+                                          " absent or unreadable: nothing is opened or closed")
+    pr.add_argument("--verified", default="all", help="the ids this run verified, space separated ('all' or empty: every record)")
+    pr.add_argument("--run-url", default="", help="the run named in a closing comment")
+    pr.add_argument("--out", help='write {"open": [...], "recovered": [...]} as JSON')
+    pr.add_argument("--dry-run", action="store_true", help="say 'would open/close'; the workflow mutates nothing")
     pr.set_defaults(fn=cmd_report)
     pm = sub.add_parser("manifest", help="write a retrieval manifest from the built catalogue")
     pm.add_argument("ids", nargs="+", help="record or collection ids, or feature ids (never a mix)")

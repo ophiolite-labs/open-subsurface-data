@@ -1,0 +1,8 @@
+[
+  {"labels": [{"id": "LA_kwDOQ1", "name": "origin-dead", "description": "Opened by the dead-link report: an origin fell from L1+ to dead", "color": "d93f0b"}], "number": 17, "title": "origin dead: acme/back"},
+  {"labels": [{"id": "LA_kwDOQ1", "name": "origin-dead", "description": "Opened by the dead-link report: an origin fell from L1+ to dead", "color": "d93f0b"}], "number": 23, "title": "origin dead: acme/up"},
+  {"labels": [{"id": "LA_kwDOQ1", "name": "origin-dead", "description": "Opened by the dead-link report: an origin fell from L1+ to dead", "color": "d93f0b"}], "number": 24, "title": "origin dead: acme/kept"},
+  {"labels": [{"id": "LA_kwDOQ1", "name": "origin-dead", "description": "Opened by the dead-link report: an origin fell from L1+ to dead", "color": "d93f0b"}], "number": 25, "title": "origin dead: acme/still-dead"},
+  {"labels": [{"id": "LA_kwDOQ1", "name": "origin-dead", "description": "Opened by the dead-link report: an origin fell from L1+ to dead", "color": "d93f0b"}], "number": 26, "title": "origin dead: acme/blocks"},
+  {"labels": [{"id": "LA_kwDOQ1", "name": "origin-dead", "description": "Opened by the dead-link report: an origin fell from L1+ to dead", "color": "d93f0b"}], "number": 27, "title": "origin dead: acme/gone"}
+]

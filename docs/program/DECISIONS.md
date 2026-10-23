@@ -46,3 +46,24 @@ stac-osd-<n>.json` and the compatibility test validates old documents against th
 E19 moves to v2, E18 to v3 on its rebase. Revisit if a STAC client refuses a query string in an
 extension identifier.
 
+
+## OSD-D20 (23 Oct 2026, lane H1): an origin that answers the verifier 404, 410 or 5xx but a browser 2xx is `blocked`, not dead
+
+Facts: NM OCD and PA DEP (ArcGIS Hub) and ohiodnr.gov answer 404 to the verifier's agent and 200 to a
+browser agent, from the GitHub-hosted runner (verify comment on PR #30) and from the VPS
+(`docs/program/evidence/e22/sources.md`); the dead-link report would open an origin-dead issue for a
+publisher that is up. OSD-D9 already calls a refusal of automated requests `blocked`, which awards
+no level and never opens an issue. Ruling: after the verifier's own probe and its one retry end in a
+terminal 404, 410 or 5xx (never after a 403, 429 or challenge page, which are `blocked` already, and
+never after 2xx), the verifier sends one more request of the same URL, paced like every other, with
+a browser's user agent (`BROWSER_USER_AGENT`), and closes the response without reading it. A 2xx
+after redirects makes the origin `blocked` with the detail "answers a browser, not the verifier
+(HTTP <first> to osd-verifier, HTTP <second> to a browser agent)"; any other answer leaves it dead.
+Headers cannot tell a 200 challenge page from content, so the detail claims no more than that a
+browser was answered, and no level is awarded (OSD-D9). The browser agent is used for that one
+question only: listings, licence pages, inventories and files are always fetched as the verifier,
+under its own name and robots.txt. `origin.http_status` keeps the verifier's status; both statuses
+live in the check detail, so verification/4 is unchanged. `osd verify` prints that detail beside
+the level and `osd status` gives it as a blocked record's reason. Revisit if a publisher answers a
+browser agent with content it refuses the verifier for a reason we should honour (a stated robots
+policy for the origin page, a terms-of-use clause on automated access).
