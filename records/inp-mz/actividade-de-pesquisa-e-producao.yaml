@@ -1,0 +1,32 @@
+id: inp-mz/actividade-de-pesquisa-e-producao
+title: Actividade de Pesquisa e Produção (INP interactive map of wells and seismic surveys)
+summary: >-
+  The Instituto Nacional de Petróleo's interactive map of hydrocarbon exploration and production in
+  Mozambique: the 265 wells drilled to date, the extent of the 2D and 3D seismic campaigns, active
+  concessions, the areas of the six licensing rounds and the sedimentary basins, published as a
+  public ArcGIS map and feature service.
+publisher: {name: "Instituto Nacional de Petróleo (INP)", url: https://www.inp.gov.mz, country: MZ}
+origin:
+  url: https://www.inp.gov.mz/hidrocarbonetos/
+  access: anonymous
+  notes: "The page links the web map https://inp.maps.arcgis.com/apps/webappviewer/index.html?id=cc077e6fdf204ef794dd2d9c810ec765; layers 'Poços' (255 features on 23 Oct 2026), 'Sismica 2D', 'Sismica 3D' in https://services3.arcgis.com/GwpN7CU0VUHlIXMI/arcgis/rest/services/Actividades_de_Pesquisa/FeatureServer (query only)."
+licence:
+  name: "INP website copyright notice (\"Todos os Direitos Reservados\")"
+  spdx: null
+  url: https://www.inp.gov.mz/hidrocarbonetos/
+  redistribution: forbidden
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: MZ, basin: "Rovuma and Mozambique basins (onshore and offshore)", bbox: [30.2, -27.0, 42.6, -10.4], crs: "EPSG:4326"}
+period:
+  start: "1958"
+  end: "2021"
+  stated: "\"Entre 1958 – 2020, foram adquiridos 234.000 km de sísmica 2D ...\"; \"Entre 2007 - 2021, foram adquiridos 54.900 km de sísmica 3D\" (seismic acquisition)"
+listed_by: [publisher]
+known_issues:
+  - "The only rights statement is the site footer \"Copyright Ⓒ 2026 Instituto nacional de petróleo - Todos os Direitos Reservados.\"; neither the map item nor the feature service carries licence information."
+  - "The map item says the data are \"provided only with the best possible effort, using the available information provided by the original operators\"; errors to Comunicacao@inp.gov.mz."
+  - "The page says 265 wells; the wells layer held 255 features on 23 Oct 2026."
+  - "bbox is Mozambique with its offshore basins, approximate; the web map's own extent is [31.24, -24.38, 42.52, -15.80]."
+notes: "Want: the seismic layers are survey outlines and lines, not seismic data; the record lists only wellbore-headers (well locations, spud dates, results), as for the LBEG KW-FIS record. The well data themselves (cores, cuttings, logs, fluids) are in the INP database and the page names no route to them."
+added: 2026-10-23

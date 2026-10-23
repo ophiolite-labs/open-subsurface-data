@@ -1,0 +1,27 @@
+id: gy-mnr/well-activities
+title: Well Activities (Guyana Petroleum Management Programme)
+summary: >-
+  The Ministry of Natural Resources' table of exploration and appraisal wells drilled in Guyana,
+  onshore and offshore: well name, fluid type, block, operator, well type, well date, longitude,
+  latitude and water depth, filterable by fluid, block and operator, from the 1960s Guyana Offshore
+  wells to the Stabroek Block wells of 2025.
+publisher: {name: "Ministry of Natural Resources, Guyana (Petroleum Management Programme)", url: https://petroleum.gov.gy, country: GY}
+origin:
+  url: https://petroleum.gov.gy/well-activities/
+  access: anonymous
+  notes: "An HTML table on the page; no file download. The programme's Data Centre (https://petroleum.gov.gy/data-centre/) also charts oil, gas and water production from 20 December 2019."
+licence:
+  name: "Petroleum Management Programme website notice (\"© 2026 All Rights Reserved.\")"
+  spdx: null
+  url: https://petroleum.gov.gy/well-activities/
+  redistribution: forbidden
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: GY, basin: "Guyana-Suriname Basin and the Takatu (North Savannas) Basin", bbox: [-59.9, 3.4, -56.2, 9.0]}
+listed_by: [publisher]
+known_issues:
+  - "The only rights statement is the site footer \"© 2026 All Rights Reserved.\"; no licence is named for the table."
+  - "Well dates are written in mixed day/month and month/day order (e.g. \"25/05/1971\", \"4/26/1976\"); some wells carry no date or depth."
+  - "bbox is the extent of the coordinates in the table on 23 Oct 2026, rounded outwards."
+notes: "No period is written: the page states dates per well but no interval for the table."
+added: 2026-10-23

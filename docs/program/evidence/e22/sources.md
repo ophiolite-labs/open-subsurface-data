@@ -256,3 +256,86 @@ Pages opened with curl (browser user agent); status is the final answer after re
 - Page: <https://jf.fo/datur/boridatur/> (200, 14:01 UTC): "Below are all the data releases for the wells on the map. Press on the data below each well to download a pdf file. (9 offshore wells and 3 onshore wells)." Zip files 2015.08.24_FO_Offshore_Wells.zip and Onshore_wells_NOV2017.zip. Sample PDFs: 6004-12-1_well_fakta.pdf ("Well information … Spud date 23/7-2001 … Operator BP Amoco Exploration (Faroes) Ltd"), 6004-12-1_digital-logs.pdf ("Digital Logs (LAS)" list).
 - Data-package <https://jf.fo/datur/data-package/> (200, 14:01 UTC): "It includes released 3D-, 2D-seismic and well data."; "There is an administration fee of £400 for sending the data on a harddrive"; "Press here to see the Terms and Conditions (pdf)" (no link in the page).
 - Licence: none stated; recorded `unknown`. Extent: none stated (bbox the Faroese area, approximate). Period: none stated.
+
+## Latin America and Africa (group C)
+
+Opened from the lane host on 2026-10-23 between 13:54 and 14:03 UTC with curl (browser user agent);
+status is the final answer after redirects. Where a host's certificate chain did not verify, the page
+was read with certificate checks off (`-k`) and that is said below.
+
+### Hosts tried for group C
+
+| Host | Address opened | Answer | Result |
+|---|---|---|---|
+| Mexico CNH / CNIH | https://cnih.cnh.gob.mx/, https://cnh.gob.mx/, https://portal.cnih.cnh.gob.mx/ | DNS: could not resolve host (curl exit 6), 13:54 and 13:58 UTC | refused; no record |
+| Mexico gob.mx/cnh | https://www.gob.mx/cnh | 200 with a "Challenge Validation" page, 13:58 UTC | blocked; no record |
+| Mexico hydrocarbon map and rounds | https://mapa.hidrocarburos.gob.mx/, https://rondasmexico.gob.mx/ | 522, 14:02 UTC | refused; no record |
+| Mexico datos.gob.mx | https://www.datos.gob.mx/api/3/action/package_search | 403 Access Denied, 14:02 UTC | blocked; no record |
+| Peru PERUPETRO | https://www.perupetro.com.pe/ | TLS: unable to get local issuer certificate (curl exit 60); with `-k` 200, 13:58 UTC | answered: `perupetro/banco-de-datos` |
+| Uruguay ANCAP E&P | https://exploracionyproduccion.ancap.com.uy/ | 200, 13:54 UTC | answered: `ancap/bouguer-anomaly-map-of-uruguay` |
+| Trinidad and Tobago MEEI | https://www.energy.gov.tt/ | 200, 13:54 UTC | answered: `meei/historical-oil-and-gas-production` |
+| Guyana Petroleum Management Programme | https://petroleum.gov.gy/ | 200, 14:02 UTC | answered: `gy-mnr/well-activities` |
+| Suriname Staatsolie | https://www.staatsolie.com/en/, https://geoportal-staatsolie.hub.arcgis.com/ | 200, 13:54 and 13:56 UTC | answered; held back (lease store, no licence terms stated; see below) |
+| Angola ANPG | https://www.anpg.co.ao/ (content via /api/content-blocks) | 200, 13:54 UTC; https://iona.anpg.co.ao/anpg/home 200 (script-only page) | answered; held back (IONA platform for licensed operators, no licence stated; see below) |
+| Mozambique INP | https://www.inp.gov.mz/ | 200, 13:54 UTC | answered: `inp-mz/actividade-de-pesquisa-e-producao` |
+| Morocco ONHYM | https://www.onhym.com/ | TLS: unable to get local issuer certificate (curl exit 60); with `-k` 200 (and https://hydrocarbons.onhym.com/en 200), 13:58 UTC | answered; no data page (site content "for information purposes only"); no record |
+| Tanzania PURA | https://www.pura.go.tz/ | 200, 13:54 UTC; /licencing-rounds 404 | answered; no data page; no record |
+| Côte d'Ivoire PETROCI | https://www.petrocivirtualdataroom.ci/ | 200, 14:03 UTC | answered; virtual data room behind credentials, no licence stated; no record |
+| Senegal PETROSEN | https://www.petrosen.sn/ | 200 with "PETROSEN - Maintenance", 14:02 UTC | refused (maintenance page); no record |
+| Ecuador | https://www.recursosyenergia.gob.ec/ | DNS: could not resolve host, 14:02 UTC | refused; no record |
+| Chile SERNAGEOMIN | https://www.sernageomin.cl/ | TLS: unable to get local issuer certificate, 14:02 UTC | not pursued; no record |
+
+Held back for the cap on `unknown` (charter: at most six new records): ANPG IONA (Angola), Staatsolie
+LeaseStore (Suriname), PETROCI virtual data room (Côte d'Ivoire), MEEI sale of seismic and well
+data, ANCAP offshore data marketing. Each states access or a price but no licence terms.
+
+- ANPG (https://www.anpg.co.ao/api/content-blocks?page_key=iona): "O acesso à Plataforma IONA está disponível para operadores licenciados e empresas qualificadas do sector petrolífero. Para solicitar credenciais de acesso, contacte o Departamento de Dados E&P da ANPG." Data packages (page_key=data-packages): "Pacote Bacia do Congo", "Pacote Bacia do Kwanza", "Pacote Bacia do Namibe", "Pacote Integrado Multi-Bacia", each "Sob consulta". FAQ: "Para acesso a pacotes de dados detalhados, incluindo informação sísmica, é necessária uma solicitação formal à ANPG, podendo ser aplicadas taxas de acesso."
+- Staatsolie GeoPortal Open-Door Offering (ArcGIS Hub page 262b5d99691a48c983b1de427bee60e1): "Special Open-Door Data Offering ... This special offer will remain available for a period of two (2) years, starting on November 24, 2025." "All Wells USD 127,500 ... All 2D Seismic USD 504,500 ... All 3D Seismic USD 273,000 ... All Gravity & Magnetic USD 7,500 ... All Technical Reports USD 75,000". Downloads page: well, 2D and 3D seismic location shapefiles "available for lease".
+- MEEI sale of data (https://www.energy.gov.tt/services/sale-of-data/): "2D and 3D seismic data, both onshore and offshore, are available for licensing from the Ministry of Energy and Energy Industries, providing that data confidentiality of the dataset has expired." Price images: 3D offshore streamer $250/$200/$100 per km² (2015–present / 2005–2014 / pre 2005); wells $10,000 (prior to 2015) / $12,000.
+- ANCAP offshore price list (https://exploracionyproduccion.ancap.com.uy/innovaportal/file/8491/1/offshore_data_ancap_v6.pdf, PDF of 6 Feb 2025): "11. PRICES AND PURCHASE OPTIONS" (2D 100 USD/km, 3D 250 USD/km², Grav & Mag Datapackage USD 100.000); "All logistics ... should be covered and carried out by the company licensing the data".
+
+### meei/historical-oil-and-gas-production
+
+- Page: <https://www.energy.gov.tt/data/historical-oil-and-gas-production-data/> (title "Ministry of Energy and Energy Industries | Historical Oil and Gas Production Data"), 200 at 13:56 UTC
+  - "Annual Crude Oil and Condensate Production (1908-2018) Download"; links to Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx/.pdf and Annual-Natural-Gas-Production-1908-2018-1.xlsx/.pdf (both xlsx answer 200).
+- Terms: <https://www.energy.gov.tt/help/terms-of-use/> (from /terms-of-use), 200 at 13:56 UTC
+  - "Use of the content of this site for lawful purposes is allowed. Limited copying of material based on the definition of “Fair Use” as described in Web Law FAQ is acceptable."
+  - "For all purposes – commercial and otherwise – ONLY the statistics found at this website can be reproduced in its entirety, with an acknowledgement of the source of the data."
+  - "Graphics at this site are the sole property of the MEEi and copying of such materials is strictly forbidden ."
+- Licence: redistribution allowed, attribution required (acknowledgement of the source), as quoted. Extent: Trinidad and Tobago (approximate). Period: 1908 to 2018, from the download titles.
+
+### inp-mz/actividade-de-pesquisa-e-producao
+
+- Page: <https://www.inp.gov.mz/hidrocarbonetos/> (title "Pesquisa de Hidrocarbonetos – INP"), 200 at 13:57 UTC
+  - "Explore os dados geológicos e geofísicos de Moçambique relacionados à pesquisa e produção de hidrocarbonetos. Descubra a distribuição dos poços e a extensão das campanhas sísmicas realizadas em todo o país."
+  - "Total de 265 poços foram executados até à data em Moçambique. A informação referente aos poços, contempla testemunhos de sondagem, amostras de Calha, diagrafias eléctricas e fluidos."
+  - "Entre 1958 – 2020, foram adquiridos 234.000 km de sísmica 2D em todo o território nacional;" "Entre 2007 - 2021, foram adquiridos 54.900 km de sísmica 3D em todo o território nacional;"
+  - Footer: "Copyright Ⓒ 2026 Instituto nacional de petróleo - Todos os Direitos Reservados."
+- Web map: <https://inp.maps.arcgis.com/apps/webappviewer/index.html?id=cc077e6fdf204ef794dd2d9c810ec765>; its map item 12f9f8c6410943a6baa1287400537299 "Actividade de Pesquisa e Produção": "Este mapa interativo foi produzido pelo INP para ajudar as empresas e o público em geral com informações da distribuição de dados do sector de Hidrocarbonetos em Moçambique." licenseInfo and accessInformation empty; extent [[31.24, -24.38], [42.52, -15.80]].
+- App item cc077e6fdf204ef794dd2d9c810ec765: "These data are provided only with the best possible effort, using the available information provided by the original operators ... contact us: Email: Comunicacao@inp.gov.mz".
+- Feature service: <https://services3.arcgis.com/GwpN7CU0VUHlIXMI/arcgis/rest/services/Actividades_de_Pesquisa/FeatureServer> (capabilities Query, copyrightText empty); layer 0 Poços 255 features, layer 1 Sismica 2D 3832, layer 2 Sismica 3D 14 (counts at 14:00 UTC). Well fields include Spud_date, Completion, Well_kind.
+- Licence: the site's "Todos os Direitos Reservados" is the only statement; recorded `forbidden` as for `cnloer/data-information-hub`. Period: 1958 to 2021 (seismic acquisition), as quoted.
+
+### gy-mnr/well-activities
+
+- Page: <https://petroleum.gov.gy/well-activities/> (title "Well Activities - Petroleum Management Programme"), 200 at 14:03 UTC
+  - Table header: "Well Name Fluid Type Oil Block Operator Well Type Well Date Longitude Latitude Water Depth (m)"; e.g. "Liza-1 Oil Stabroek Block Esso Exploration & Production Guyana Limited Exp 15/05/2015 -56.952723055556 8.0758444444444 1743.00", "Berbice-1 Water Kanuku Block Shell Guyana Exp 25/05/1971 ...", "Mahaica-2 Water Kanuku Block Shell Guyana Exp 4/26/1976 ...".
+  - Footer: "© 2026 All Rights Reserved."
+- Data Centre: <https://petroleum.gov.gy/data-centre/> links charts (Oil Production, Gas Produced, Water Injected ...); <https://petroleum.gov.gy/data-chart/oil-production/>: "20 December 2019 – 31 August 2026".
+- Licence: footer notice only; recorded `forbidden`. Extent: the coordinates in the table span longitude -59.79 to -56.22, latitude 3.44 to 8.93 (bbox rounded outwards). Period: not written (dates per well only).
+
+### ancap/bouguer-anomaly-map-of-uruguay
+
+- Page: <https://exploracionyproduccion.ancap.com.uy/15944/3/new-bouguer-anomaly-map-of-uruguay.html> (title "ANCAP - New Bouguer Anomaly map of Uruguay"), 200 at 13:55 UTC
+  - "Updated Bouguer gravity anomaly map of Uruguay, presented at the X Uruguayan Geology Congress (2022). It was prepared based on data obtained from gravimetric stations measured, between 1950 and 2018, by ANCAP, the Military Geographic Service, the National Directorate of Mining and Geology (DINAMIGE) in cooperation with the Federal Institute of Geosciences and Natural Resources of Germany (BGR for its acronym in German), the College of Engineering of the University of the Republic and the company Campo Alegría."
+  - "Dataset grid used: Bouguer_Anomaly.RAR" (https://exploracionyproduccion.ancap.com.uy/innovaportal/file/15944/1/bouguer_anomaly.rar answers 200).
+- Licence: none stated on the page or the site; recorded `unknown`. Extent: Uruguay (approximate). Period: 1950 to 2018 (station measurements), as quoted.
+
+### perupetro/banco-de-datos
+
+- PERUPETRO site: <https://www.perupetro.com.pe/wps/portal/corporativo/PerupetroSite/...> (title "Perupetro"), 200 at 13:58 UTC with `-k`; menu "Data Bank" → "Web Catalog" https://bancodedatos.perupetro.com.pe/.
+- Portal: <https://bancodedatos.perupetro.com.pe/> (title "Portalbd", single-page application), 200 at 14:00 UTC with `-k`; texts from https://bancodedatos.perupetro.com.pe/assets/i18n/en.json and es.json:
+  - "DATA BANK PORTAL"; sections "DATA BANK", "NORTHWEST BLOCK", "GEOPORTAL", "PROMOTIONAL PACKAGES", "BLOCK Z-69", "PROMOTIONAL AREAS", "BLOCK 207".
+  - "To access this information, you must be registered and have access to the database enabled. If you meet the requirements, click 'Continue'."
+  - Conditions: "The information on hydrocarbon activities managed by the PERUPETRO S.A. Database comes from various sources and is available to assist all interested companies in conducting their own research and evaluation of their areas of interest. ... the information contained in the Database is for reference purposes only ... PERUPETRO S.A. reserves the right to initiate appropriate legal action in cases where improper use of the information contained in the Database is verified."
+- Licence: no licence or reuse terms; recorded `unknown`. Access `request` (registration plus enabled access). Extent: Peru (approximate). Period: none stated.

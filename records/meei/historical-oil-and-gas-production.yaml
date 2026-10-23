@@ -1,0 +1,30 @@
+id: meei/historical-oil-and-gas-production
+title: Historical Oil and Gas Production Data (Trinidad and Tobago, 1908-2018)
+summary: >-
+  The Ministry of Energy and Energy Industries' annual production series for Trinidad and Tobago:
+  Annual Crude Oil and Condensate Production (1908-2018) and Annual Natural Gas Production
+  (1908-2018), each offered for download as PDF and Excel on the Ministry's Data pages.
+publisher: {name: Ministry of Energy and Energy Industries (MEEI), url: https://www.energy.gov.tt, country: TT}
+origin:
+  url: https://www.energy.gov.tt/data/historical-oil-and-gas-production-data/
+  access: anonymous
+  notes: "Two downloads, e.g. https://www.energy.gov.tt/wp-content/uploads/2019/11/Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx and Annual-Natural-Gas-Production-1908-2018-1.xlsx (each also as PDF)."
+licence:
+  name: MEEI website Terms of Use
+  spdx: null
+  url: https://www.energy.gov.tt/help/terms-of-use/
+  redistribution: allowed
+  attribution: required
+kinds: [production]
+region: {country: TT, basin: Trinidad and Tobago (onshore and offshore), bbox: [-62.1, 9.9, -60.0, 11.6]}
+period:
+  start: "1908"
+  end: "2018"
+  stated: "Download titles \"Annual Crude Oil and Condensate Production (1908-2018)\" and \"Annual Natural Gas Production (1908-2018)\""
+listed_by: [publisher]
+known_issues:
+  - "Terms of Use: \"For all purposes – commercial and otherwise – ONLY the statistics found at this website can be reproduced in its entirety, with an acknowledgement of the source of the data.\" Graphics on the site are the Ministry's property and may not be copied."
+  - "The terms name no attribution line; the acknowledgement is of the source of the data."
+  - "bbox is Trinidad and Tobago with its near offshore, approximate; the page states no extent."
+notes: "The Ministry also licenses 2D and 3D seismic and well data for a fee once confidentiality has expired (https://www.energy.gov.tt/services/sale-of-data/, prices in USD by survey age); that offer states no licence terms and is not recorded here."
+added: 2026-10-23
