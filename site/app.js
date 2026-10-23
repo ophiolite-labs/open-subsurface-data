@@ -1,6 +1,7 @@
 /* Open Subsurface Data map. Static: reads what `make build` puts in data/ (records.json, and
    outlines.pmtiles when the build wrote it, else outlines.geojson; wellbores.geojson if present).
-   No framework; one file on purpose (ENGINEERING.md, "surface"). The URL hash is the only state. */
+   No framework; one file on purpose (ENGINEERING.md, "surface"). The URL hash is the only state.
+   Select mode (E06): tick datasets, download an osd.manifest/1 file that `osd get` reads. */
 (async function () {
   // Basemap: OSD-D3. Positron until a dark basemap without a key is confirmed; never add a key.
   const BASEMAP = 'https://tiles.openfreemap.org/styles/positron';
@@ -45,7 +46,8 @@
 
   // State <-> URL hash. Defaults are left out so a plain link stays plain.
   //   #q=volve&k=field,survey-3d&l=2&ext=0&ph=0&sel=equinor/volve&map=6.2/58.40/2.00
-  const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null };
+  //   #pick=opm/norne,sodir/factpages   select mode with two datasets ticked (`pick=` alone: none yet)
+  const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null, pick: null };
   const state = { ...DEFAULTS, kinds: new Set() };
   function readHash() {
     const h = new URLSearchParams(location.hash.slice(1));
@@ -55,6 +57,7 @@
     state.extents = h.get('ext') !== '0';
     state.approx = h.get('ph') !== '0';
     state.sel = byId[h.get('sel')] ? h.get('sel') : null;
+    state.pick = h.has('pick') ? [...new Set(h.get('pick').split(',').filter(id => byId[id]))] : null;
     const m = (h.get('map') || '').split('/').map(Number);
     return m.length === 3 && m.every(Number.isFinite) ? { zoom: m[0], center: [m[2], m[1]] } : null;
   }
@@ -66,6 +69,7 @@
     if (!state.extents) h.set('ext', '0');
     if (!state.approx) h.set('ph', '0');
     if (state.sel) h.set('sel', state.sel);
+    if (state.pick) h.set('pick', state.pick.join(','));
     if (map.loaded() || moved) {
       const c = map.getCenter();
       h.set('map', `${map.getZoom().toFixed(2)}/${c.lat.toFixed(4)}/${c.lng.toFixed(4)}`);
@@ -118,6 +122,7 @@
       map.setLayoutProperty(l, 'visibility', state.extents ? 'visible' : 'none');
       map.setFilter(l, ['all', idFilter]);
     }
+    map.setFilter('picked-line', ['in', ['get', 'record_id'], ['literal', state.pick || []]]);
     // Clustered sources cannot be filtered per feature after clustering, so the wells source
     // gets the filtered points.
     if (pmtilesMode) map.setFilter('wells-tiles', ['all', WELL, idFilter, approxFilter]);
@@ -151,6 +156,7 @@
       cluster: true, clusterMaxZoom: CLUSTER_BELOW_ZOOM - 1, clusterRadius: 40 });
     map.addLayer({ id: 'extents-fill', type: 'fill', source: 'extents', paint: { 'fill-color': '#6ea8fe', 'fill-opacity': 0.06 } });
     map.addLayer({ id: 'extents-line', type: 'line', source: 'extents', paint: { 'line-color': '#6ea8fe', 'line-width': 1, 'line-dasharray': [3, 3], 'line-opacity': 0.7 } });
+    map.addLayer({ id: 'picked-line', type: 'line', source: 'extents', filter: ['in', ['get', 'record_id'], ['literal', []]], paint: { 'line-color': '#ffffff', 'line-width': 2.5 } });
     map.addLayer({ id: 'fields-fill', type: 'fill', ...src, filter: LAYER_BASE['fields-fill'], paint: { 'fill-color': '#e5484d', 'fill-opacity': 0.18 } });
     map.addLayer({ id: 'fields-line', type: 'line', ...src, filter: LAYER_BASE['fields-line'], paint: { 'line-color': '#e5484d', 'line-width': 2 } });
     map.addLayer({ id: 'fields-dash', type: 'line', ...src, filter: LAYER_BASE['fields-dash'], paint: { 'line-color': '#e5484d', 'line-width': 2, 'line-dasharray': [2, 2] } });
@@ -186,7 +192,7 @@
     }
 
     for (const l of ['surveys-fill', 'fields-fill', 'wells', 'extents-fill', ...(pmtilesMode ? ['wells-tiles'] : [])]) {
-      map.on('click', l, e => select(e.features[0].properties.record_id));
+      map.on('click', l, e => state.pick ? tick(e.features[0].properties.record_id) : select(e.features[0].properties.record_id));
     }
     map.on('click', 'wells-cluster', async e => {
       const f = e.features[0];
@@ -231,8 +237,9 @@
       const r = byId[id];
       const li = document.createElement('li'); li.className = id === state.sel ? 'sel' : '';
       li.dataset.id = id;
-      li.innerHTML = `<span class="badges">${levelBadge(r)}</span><span class="t">${esc(r.title)}<span class="p">${esc(r.publisher.name)}</span></span>`;
-      li.onclick = () => select(id, true);
+      const box = state.pick ? `<input type="checkbox" class="tick" aria-label="select ${esc(r.title)}"${state.pick.includes(id) ? ' checked' : ''}>` : '';
+      li.innerHTML = `${box}<span class="badges">${levelBadge(r)}</span><span class="t">${esc(r.title)}<span class="p">${esc(r.publisher.name)}</span></span>`;
+      li.onclick = e => { if (state.pick) { e.preventDefault(); tick(id); } else select(id, true); };
       ul.appendChild(li);
     }
   }
@@ -242,6 +249,7 @@
   function closeDetail() { $('detail').hidden = true; state.sel = null; renderList(visibleIds()); writeHash(); }
 
   function select(id, fly) {
+    if (state.pick) return;
     state.sel = id; const r = byId[id];
     renderList(visibleIds());
     writeHash();
@@ -266,21 +274,124 @@
         <div class="card"><b>Read in Python</b><code>import json, urllib.request
 fc = json.load(urllib.request.urlopen("${esc(geo)}"))
 mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id)}"]</code></div>
-        <div class="card"><b>Get the data</b>Follow the origin link above. Retrieval by manifest and the Ophiolite source are chartered (E06, E09).</div>
+        <div class="card"><b>Get the data</b>Follow the origin link above, or press Select above the list, tick datasets and download a manifest for osd get.</div>
       </div>
       <p class="how"><a href="how.html">What the levels mean, and these three cards explained</a></p>`;
     d.querySelector('.close').onclick = closeDetail;
     if (fly && r.region && r.region.bbox) map.fitBounds(r.region.bbox, { padding: 60, maxZoom: 9, duration: 700 });
   }
 
+  // ---- Select mode (E06 slice 2). Deletable: this block, the `pick` hash key, #pickmode, #basket,
+  // the picked-line layer and the tick() calls. The file it writes is osd.manifest/1 as
+  // src/osd/manifest.py writes it for a Collection selection (schema/manifest.schema.json); the
+  // site test checks the two agree entry for entry and that `osd get` reads it.
+  const MANIFEST_FORMAT = 'osd.manifest/1';
+  const LICENCE_FIELDS = ['name', 'spdx', 'url', 'redistribution', 'attribution', 'share_alike', 'statement'];
+  const ASSET_FIELDS = ['href', 'title', 'roles', 'file:size', 'file:checksum'];
+  const collectionId = id => id.replaceAll('/', '--');
+  let collections = null; // data/collections.json, fetched on the first tick: assets are the verifier's files
+  const loadCollections = () => collections = collections || fetch('data/collections.json').then(r => r.json())
+    .then(d => Object.fromEntries(d.collections.map(c => [c.id, c])));
+  const pick = (o, keys) => Object.fromEntries(keys.filter(k => k in o).map(k => [k, o[k]]));
+  const licenceLabel = l => l.spdx || l.name;
+
+  function noAssetsReason(r) {
+    const a = r.origin.access;
+    return a === 'registration' || a === 'request'
+      ? `access ${a}: sign in or ask at the origin page; no file address is published to us`
+      : 'the verifier has hashed no file with a fetch address for this record; get the files at the origin page';
+  }
+
+  function manifestEntry(r, col) {
+    const e = { collection_id: collectionId(r.id), record_id: r.id, title: r.title, origin_url: r.origin.url,
+      access: r.origin.access, licence: pick(r.licence, LICENCE_FIELDS) };
+    if (r.known_issues && r.known_issues.length) e.known_issues = [...r.known_issues];
+    e.assets = Object.fromEntries(Object.entries((col && col.assets) || {}).map(([k, a]) => [k, pick(a, ASSET_FIELDS)]));
+    if (Object.keys(e.assets).length) e.coverage = 'sampled'; else e.unresolved = noAssetsReason(r);
+    return e;
+  }
+
+  async function buildManifest() {
+    const cols = await loadCollections();
+    return { format: MANIFEST_FORMAT, created: new Date().toISOString().replace(/\.\d+Z$/, 'Z'),
+      catalog_url: base + 'data/stac/catalog.json', selection: 'collections',
+      entries: state.pick.map(id => manifestEntry(byId[id], cols[collectionId(id)])) };
+  }
+
+  async function download() {
+    const doc = await buildManifest();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2) + '\n'], { type: 'application/json' }));
+    a.download = 'osd.manifest.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function setPickMode(on) {
+    state.pick = on ? (state.pick || []) : null;
+    if (on && state.sel) { state.sel = null; $('detail').hidden = true; }
+    applyFilters(); renderBasket();
+  }
+
+  function tick(id) {
+    const i = state.pick.indexOf(id);
+    if (i < 0) state.pick.push(id); else state.pick.splice(i, 1);
+    applyFilters(); renderBasket();
+  }
+
+  // What the person sees before the download: per dataset its licence, the publisher's statement
+  // verbatim (or that none is stated), the files and their digests or the to-do; then share-alike.
+  function renderBasket() {
+    const b = $('basket'), on = !!state.pick;
+    b.hidden = !on;
+    $('pickmode').textContent = on ? 'Done' : 'Select';
+    $('pickmode').classList.toggle('on', on);
+    if (!on) return;
+    if (!state.pick.length) {
+      b.innerHTML = `<h2>Selected (0)</h2><p class="hint">Tick datasets in the list or on the map. The download is a manifest: <code>osd get osd.manifest.json --dest data</code> fetches the files and checks their sha256.</p>`;
+      return;
+    }
+    const items = state.pick.map(id => {
+      const r = byId[id], l = r.licence;
+      const sa = l.share_alike === true ? `share-alike: derived work must carry ${esc(licenceLabel(l))}`
+        : l.share_alike === false ? 'share-alike: no' : 'share-alike: not stated';
+      return `<li data-id="${esc(id)}"><b>${esc(r.title)}</b> <span class="x" title="remove">✕</span>
+        <div class="lic">${esc(l.name)}${l.spdx ? ' (' + esc(l.spdx) + ')' : ''} · attribution ${esc(l.attribution)} · ${sa}</div>
+        ${l.statement ? `<blockquote class="stmt">${esc(l.statement)}</blockquote>` : '<div class="stmt none">No attribution statement stated by the publisher in the record.</div>'}
+        <div class="files" data-files="${esc(id)}">files: …</div></li>`;
+    }).join('');
+    const shared = {};
+    for (const id of state.pick) if (byId[id].licence.share_alike === true) {
+      const k = licenceLabel(byId[id].licence); shared[k] = (shared[k] || 0) + 1;
+    }
+    const saLines = Object.entries(shared).sort().map(([lic, n]) =>
+      `<p class="sa">${n} item${n > 1 ? 's' : ''} require${n === 1 ? 's' : ''} derived work to carry ${esc(lic)}.</p>`).join('');
+    b.innerHTML = `<h2>Selected (${state.pick.length})</h2><ul>${items}</ul>
+      ${saLines || '<p class="sa none">No selected item states share-alike.</p>'}
+      <div class="actions"><button id="download" type="button">Download osd.manifest.json</button>
+      <p class="hint">Then <code>osd get osd.manifest.json --dest data</code>: fetches the files, checks each sha256, writes ATTRIBUTION.md. Files are the ones the verifier sampled, not the whole dataset.</p></div>`;
+    b.querySelectorAll('li .x').forEach(x => x.onclick = () => tick(x.closest('li').dataset.id));
+    $('download').onclick = download;
+    loadCollections().then(cols => {
+      for (const el of b.querySelectorAll('[data-files]')) {
+        const id = el.dataset.files, r = byId[id], n = Object.keys((cols[collectionId(id)] || {}).assets || {}).length;
+        el.textContent = n ? `${n} file${n > 1 ? 's' : ''} with the verifier's sha256 (a sample)` : `to-do: ${noAssetsReason(r)}`;
+        el.classList.toggle('todo', !n);
+      }
+    });
+  }
+
+  $('pickmode').onclick = () => setPickMode(!state.pick);
+
   // A pasted or edited hash in the same tab applies too.
   window.addEventListener('hashchange', () => {
-    const v = readHash(); syncControls(); applyFilters();
-    if (state.sel) select(state.sel, !v); else $('detail').hidden = true;
+    const v = readHash(); syncControls(); applyFilters(); renderBasket();
+    if (state.sel && !state.pick) select(state.sel, !v); else $('detail').hidden = true;
     if (v) map.jumpTo(v);
   });
 
   syncControls();
   applyFilters();
-  if (state.sel) select(state.sel, !view);
+  renderBasket();
+  if (state.sel && !state.pick) select(state.sel, !view);
 })();

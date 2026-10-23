@@ -1,0 +1,90 @@
+{
+  "format": "osd.manifest/1",
+  "created": "2026-10-23T11:21:41Z",
+  "catalog_url": "http://127.0.0.1:36451/data/stac/catalog.json",
+  "selection": "collections",
+  "entries": [
+    {
+      "collection_id": "opm--norne",
+      "record_id": "opm/norne",
+      "title": "Norne field simulation case (OPM data)",
+      "origin_url": "https://github.com/OPM/opm-data",
+      "access": "anonymous",
+      "licence": {
+        "name": "Open Database License 1.0 (decks); Database Contents License 1.0 (data)",
+        "spdx": "ODbL-1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": true
+      },
+      "known_issues": [
+        "README adds: git history contains proprietary decks (now removed) where usage restrictions may apply.",
+        "NTNU's own Norne hosting is no longer the source; OPM is the live home (search result, not opened on the NTNU side).",
+        "share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+      ],
+      "assets": {
+        "norne/NORNE_ATW2013.DATA": {
+          "href": "http://127.0.0.1:41721/norne/NORNE_ATW2013.DATA",
+          "title": "norne/NORNE_ATW2013.DATA",
+          "roles": [
+            "data"
+          ],
+          "file:size": 28,
+          "file:checksum": "12205cfb65e6b12ead74a08dec444515511ed96be2503b3c8b74cbdef1e6b848419b"
+        }
+      },
+      "coverage": "sampled"
+    },
+    {
+      "collection_id": "sodir--factpages",
+      "record_id": "sodir/factpages",
+      "title": "Sodir FactPages and FactMaps (Norwegian continental shelf)",
+      "origin_url": "https://factpages.sodir.no",
+      "access": "api",
+      "licence": {
+        "name": "Norwegian Licence for Open Government Data 2.0",
+        "spdx": "NLOD-2.0",
+        "url": "https://data.norge.no/nlod/en/2.0",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "statement": "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by the Norwegian Offshore Directorate"
+      },
+      "known_issues": [
+        "Geonorge catalogue links NLOD 1.0, the FactPages terms page NLOD 2.0 (23 Oct)"
+      ],
+      "assets": {
+        "wellbore_exploration_all.csv": {
+          "href": "http://127.0.0.1:41721/wellbore_exploration_all.csv",
+          "title": "wellbore_exploration_all.csv",
+          "roles": [
+            "data"
+          ],
+          "file:size": 28,
+          "file:checksum": "1220d0fa65116eb3842fb0ff7ad09158ac84bfcd2ae4b36abb25549474aab835cca2"
+        }
+      },
+      "coverage": "sampled"
+    },
+    {
+      "collection_id": "terranubis--f3-demo-2020",
+      "record_id": "terranubis/f3-demo-2020",
+      "title": "F3 Demo 2020 (Dutch North Sea)",
+      "origin_url": "https://terranubis.com/datainfo/F3-Demo-2020",
+      "access": "registration",
+      "licence": {
+        "name": "Creative Commons 3.0 (the page links the BY-SA 3.0 deed)",
+        "spdx": "CC-BY-SA-3.0",
+        "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": true
+      },
+      "known_issues": [
+        "Publisher replaced F3-Demo-2020 with F3 Demo 2023 on 12 June 2023; /datainfo/F3-Demo-2020 now serves the 2023 page (7.6 GB, 4.5 GB download), whose licence label links the BY-SA 3.0 deed. Licence fields corrected from the earlier BY-SA 4.0 entry to what the page states."
+      ],
+      "assets": {},
+      "unresolved": "access registration: sign in or ask at the origin page; no file address is published to us"
+    }
+  ]
+}

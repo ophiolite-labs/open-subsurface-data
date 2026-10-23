@@ -1,8 +1,12 @@
 // Playwright site test for E05: `make site-test` (node --test tests/site/). Offline by default.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { createServer } from 'node:http';
+import { createHash } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { ROOT, serve, launch, offline, errorsOf, ready } from './harness.mjs';
 
 const OUT = join(ROOT, 'build', 'site-test');
@@ -218,6 +222,151 @@ test('tiles: phone width with tiles, Sodir wells clustered', { skip: noTiles }, 
   assert.equal(await outlinesSource(page), 'vector');
   await page.waitForFunction(() => window.osdMap.queryRenderedFeatures({ layers: ['wells-cluster'] }).length > 0);
   await page.screenshot({ path: join(OUT, 'tiles-phone.png') });
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+// E06 slice 2: select mode. A fixture origin on 127.0.0.1 holds one file per ticked dataset; the
+// page's collections.json is given those files as Collection assets (the verifier's digests), so
+// the downloaded manifest can be read by osd.manifest.read and fetched by `osd get` offline.
+const FIXTURE = { 'opm--norne': { 'norne/NORNE_ATW2013.DATA': 'RUNSPEC\nTITLE\nNORNE fixture\n' },
+  'sodir--factpages': { 'wellbore_exploration_all.csv': 'wlbName,wlbWell\n1/9-1,1/9-1\n' } };
+let fixture;
+before(async () => {
+  const bodies = Object.fromEntries(Object.values(FIXTURE).flatMap(o => Object.entries(o)).map(([k, b]) => ['/' + k, b]));
+  const srv = createServer((req, res) => bodies[req.url] ? res.writeHead(200).end(bodies[req.url]) : res.writeHead(404).end());
+  await new Promise(ok => srv.listen(0, '127.0.0.1', ok));
+  const at = `http://127.0.0.1:${srv.address().port}`;
+  const assets = Object.fromEntries(Object.entries(FIXTURE).map(([cid, files]) => [cid, Object.fromEntries(Object.entries(files)
+    .map(([k, b]) => [k, { href: `${at}/${k}`, title: k, roles: ['data'], 'file:size': Buffer.byteLength(b),
+      'file:checksum': '1220' + createHash('sha256').update(b).digest('hex') }]))]));
+  fixture = { assets, close: () => srv.close() };
+});
+after(() => fixture.close());
+
+const records = Object.fromEntries(JSON.parse(await readFile(join(ROOT, 'site', 'data', 'records.json'), 'utf8')).records.map(r => [r.id, r]));
+const withAssets = c => c.route('**/data/collections.json', async route => {
+  const body = JSON.parse(await (await route.fetch()).text());
+  for (const col of body.collections) if (fixture.assets[col.id]) col.assets = fixture.assets[col.id];
+  return route.fulfill({ json: body });
+});
+
+async function downloadManifest(page, name) {
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#download').click()]);
+  assert.equal(dl.suggestedFilename(), 'osd.manifest.json');
+  const file = join(OUT, name);
+  await dl.saveAs(file);
+  return { file, doc: JSON.parse(await readFile(file, 'utf8')) };
+}
+
+// osd.manifest.read on the page's file, equality with `osd manifest`, then `osd get --dest`.
+async function roundTrip(file, tag) {
+  const assets = join(OUT, `assets-${tag}.json`), dest = join(OUT, `retrieved-${tag}`);
+  await writeFile(assets, JSON.stringify(fixture.assets));
+  await rm(dest, { recursive: true, force: true });
+  const { stdout } = await promisify(execFile)(process.env.UV || 'uv',
+    ['run', '--quiet', 'python', join(ROOT, 'tests', 'site', 'manifest_roundtrip.py'), file, assets, dest], { cwd: ROOT });
+  console.log(stdout.trim().split('\n').slice(0, -1).map(l => '# ' + l).join('\n'));
+  return { entries: JSON.parse(stdout.trim().split('\n').pop()), dest };
+}
+
+const sha = (cid, k) => fixture.assets[cid][k]['file:checksum'].slice(4);
+
+for (const [path, routes, wellLayer] of [['tiles', withAssets, 'wells-tiles'],
+  ['geojson', async c => { await withAssets(c); await withoutTiles(c); }, 'wells']]) {
+  test(`select (${path}): tick a dataset on the map and one in the list, see the rights, download a manifest osd get reads`,
+    { skip: path === 'tiles' && noTiles }, async () => {
+    const { context, page, errors, unexpected } = await open('q=sodir&map=10/60.55/2.85', { routes });
+    assert.equal(await outlinesSource(page), path === 'tiles' ? 'vector' : 'geojson');
+    await page.locator('#pickmode').click();
+    assert.equal(await page.locator('#list li .tick').count(), await page.locator('#list li').count());
+    const at = await page.evaluate(layer => {
+      const f = window.osdMap.queryRenderedFeatures({ layers: [layer] }).find(f => f.properties.record_id === 'sodir/factpages');
+      return f && window.osdMap.project(f.geometry.coordinates);
+    }, wellLayer);
+    assert.ok(at, `a Sodir wellbore on ${wellLayer}`);
+    await page.mouse.click(at.x, at.y);  // a wellbore ticks its dataset (Collection selection)
+    await page.locator('#basket li[data-id="sodir/factpages"]').waitFor();
+    assert.equal(await page.locator('#detail').isHidden(), true, 'select mode opens no detail');
+    await page.fill('#q', 'norne');
+    await page.locator('#list li[data-id="opm/norne"]').click();
+    assert.equal(await page.locator('#list li[data-id="opm/norne"] .tick').isChecked(), true);
+
+    // before the download: the attribution lines and the share-alike note
+    assert.match(await page.locator('#basket h2').innerText(), /\(2\)$/);
+    assert.equal(await page.locator('#basket li[data-id="sodir/factpages"] .stmt').innerText(), records['sodir/factpages'].licence.statement);
+    assert.match(await page.locator('#basket li[data-id="opm/norne"] .stmt').innerText(), /No attribution statement stated/);
+    assert.match(await page.locator('#basket li[data-id="opm/norne"] .lic').innerText(), /share-alike: derived work must carry ODbL-1\.0/);
+    assert.match(await page.locator('#basket li[data-id="sodir/factpages"] .lic').innerText(), /share-alike: not stated/);
+    assert.deepEqual(await page.locator('#basket .sa').allInnerTexts(), ['1 item requires derived work to carry ODbL-1.0.']);
+    await page.waitForFunction(() => [...document.querySelectorAll('#basket .files')].every(e => /sha256/.test(e.textContent)));
+    assert.match(await page.evaluate(() => location.hash), /pick=sodir\/factpages,opm\/norne/);
+    await page.screenshot({ path: join(OUT, `select-${path}.png`) });
+
+    const { file, doc } = await downloadManifest(page, `osd.manifest-${path}.json`);
+    assert.equal(doc.format, 'osd.manifest/1');
+    assert.equal(doc.selection, 'collections');
+    assert.deepEqual(doc.entries.map(e => [e.record_id, e.collection_id, e.coverage, Object.keys(e.assets)]), [
+      ['sodir/factpages', 'sodir--factpages', 'sampled', ['wellbore_exploration_all.csv']],
+      ['opm/norne', 'opm--norne', 'sampled', ['norne/NORNE_ATW2013.DATA']]]);
+    assert.deepEqual(doc.entries.map(e => e.licence), [records['sodir/factpages'].licence, records['opm/norne'].licence]);
+
+    const { entries, dest } = await roundTrip(file, path);
+    assert.deepEqual(entries.map(e => [e.record_id, e.sha256]), [
+      ['sodir/factpages', { 'wellbore_exploration_all.csv': sha('sodir--factpages', 'wellbore_exploration_all.csv') }],
+      ['opm/norne', { 'norne/NORNE_ATW2013.DATA': sha('opm--norne', 'norne/NORNE_ATW2013.DATA') }]]);
+    assert.equal(await readFile(join(dest, 'opm--norne', 'norne', 'NORNE_ATW2013.DATA'), 'utf8'), FIXTURE['opm--norne']['norne/NORNE_ATW2013.DATA']);
+    assert.ok((await readFile(join(dest, 'ATTRIBUTION.md'), 'utf8')).includes('> ' + records['sodir/factpages'].licence.statement));
+    assert.deepEqual(errors, []);
+    assert.deepEqual(unexpected, []);
+    await context.close();
+  });
+}
+
+const SHARED = 'pick=opm/norne,sodir/factpages,terranubis/f3-demo-2020';
+
+test('select: a #pick= link restores the selection in a new context; a registration dataset is a to-do', async () => {
+  const { context, page, errors } = await open(SHARED, { routes: withAssets });
+  assert.equal(await page.locator('#pickmode').innerText(), 'Done');
+  assert.deepEqual(await page.locator('#basket li').evaluateAll(ls => ls.map(l => l.dataset.id)), SHARED.slice(5).split(','));
+  assert.equal(await page.locator('#list li .tick:checked').count(), 3);
+  await page.waitForFunction(() => new Set(window.osdMap.queryRenderedFeatures({ layers: ['picked-line'] }).map(f => f.properties.record_id)).size === 3);
+  await page.screenshot({ path: join(OUT, 'select-desktop.png') });
+  await page.waitForFunction(() => document.querySelector('#basket .files.todo'));
+  assert.match(await page.locator('#basket li[data-id="terranubis/f3-demo-2020"] .files').innerText(), /^to-do: access registration/);
+  assert.deepEqual(await page.locator('#basket .sa').allInnerTexts(),
+    ['1 item requires derived work to carry CC-BY-SA-3.0.', '1 item requires derived work to carry ODbL-1.0.']);
+  const { file, doc } = await downloadManifest(page, 'osd.manifest-shared.json');
+  const f3 = doc.entries[2];
+  assert.deepEqual([f3.record_id, f3.assets, f3.coverage], ['terranubis/f3-demo-2020', {}, undefined]);
+  assert.match(f3.unresolved, /^access registration/);
+  const { entries } = await roundTrip(file, 'shared');
+  assert.deepEqual(entries.map(e => e.record_id), SHARED.slice(5).split(','));
+  // removing an item and leaving select mode rewrite the hash
+  await page.locator('#basket li[data-id="sodir/factpages"] .x').click();
+  assert.match(await page.evaluate(() => location.hash), /pick=opm\/norne,terranubis\/f3-demo-2020/);
+  await page.locator('#pickmode').click();
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /pick=/);
+  assert.equal(await page.locator('#basket').isHidden(), true);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('select: phone width, the basket and the download button are reachable in the sheet', async () => {
+  const { context, page, errors } = await open(SHARED, { viewport: { width: 390, height: 844 }, routes: withAssets });
+  const sheet = await page.locator('#side').boundingBox();
+  const basket = await page.locator('#basket').boundingBox();
+  assert.ok(basket.y >= sheet.y && basket.y < 844 - 100, 'the basket comes first in the sheet');
+  assert.ok(basket.width <= 390, 'no horizontal overflow');
+  await page.waitForFunction(() => document.querySelector('#basket .files.todo'));
+  await page.screenshot({ path: join(OUT, 'select-phone.png') });
+  // the map canvas can render black under swiftshader at phone width (HANDOFF known red): the sheet alone
+  await page.screenshot({ path: join(OUT, 'select-phone-sheet.png'), clip: { x: 0, y: sheet.y, width: 390, height: sheet.height } });
+  await page.locator('#download').scrollIntoViewIfNeeded();
+  assert.ok(await page.locator('#download').isVisible());
+  await page.screenshot({ path: join(OUT, 'select-phone-download.png'), clip: { x: 0, y: sheet.y, width: 390, height: sheet.height } });
+  const { doc } = await downloadManifest(page, 'osd.manifest-phone.json');
+  assert.equal(doc.entries.length, 3);
   assert.deepEqual(errors, []);
   await context.close();
 });
