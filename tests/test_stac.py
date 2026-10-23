@@ -420,23 +420,26 @@ def _osd_doc(tmp_path, url, **item_fields):
 V1_URL = "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"
 
 
-def test_stac_osd_1_documents_validate_under_their_frozen_schema(tmp_path, no_network):
-    """OSD-D19: the map carries the frozen v1 and the current file; a v1 document (no
-    osd:period_source) validates under its own schema and under the current one."""
+def test_stac_osd_1_and_2_documents_validate_under_their_frozen_schemas(tmp_path, no_network):
+    """OSD-D19: documents naming the v1 or v2 identifier (no osd:period_source) validate under their
+    frozen copy, under the current schema and through the schema map, which sends every identifier
+    to the current file as the host does online; the frozen copies refuse osd:period_source."""
+    from jsonschema import Draft7Validator
     m = json.loads(stac.SCHEMA_MAP.read_text())["schemas"]
-    assert (stac.SCHEMA_MAP.parent / m[V1_URL]).resolve() == (ROOT / "tests/fixtures/schema/stac-osd-1.json").resolve()
-    assert (stac.SCHEMA_MAP.parent / m[stac.OSD_EXTENSION]).resolve() == (ROOT / "schema/stac-osd.json").resolve()
     current = json.loads((ROOT / "schema/stac-osd.json").read_text())
-    assert current["$id"] == stac.OSD_EXTENSION and stac.OSD_EXTENSION.startswith(V1_URL + "?v=")
-    cur = Draft202012Validator(current)
-    for url in (V1_URL, stac.OSD_EXTENSION):
+    assert current["$id"] == stac.OSD_EXTENSION == V1_URL + "?v=3"
+    cur = Draft7Validator(current)
+    for n, url in ((1, V1_URL), (2, V1_URL + "?v=2")):
+        frozen = json.loads((ROOT / f"tests/fixtures/schema/stac-osd-{n}.json").read_text())
+        assert frozen["$id"] == url and m[url] == m[stac.OSD_EXTENSION] == "../stac-osd.json"
         col, item = _osd_doc(tmp_path, url)
-        assert _valid(col, tmp_path) and _valid(item, tmp_path), url
-        assert not list(cur.iter_errors(col)) and not list(cur.iter_errors(item)), url
-    col, item = _osd_doc(tmp_path, V1_URL, **{"osd:period_source": "feature"})
-    assert not _valid(item, tmp_path)   # v1 knows no period_source
+        for doc in (col, item):
+            assert not list(Draft7Validator(frozen).iter_errors(doc)), url
+            assert not list(cur.iter_errors(doc)) and _valid(doc, tmp_path), url
+        _, dated = _osd_doc(tmp_path, url, **{"osd:period_source": "feature"})
+        assert list(Draft7Validator(frozen).iter_errors(dated)), url   # v1 and v2 know no period_source
     for good in ("feature", "feature-start,collection-end", "collection"):
         _, item = _osd_doc(tmp_path, stac.OSD_EXTENSION, **{"osd:period_source": good})
-        assert _valid(item, tmp_path), good
+        assert _valid(item, tmp_path) and not list(cur.iter_errors(item)), good
     _, item = _osd_doc(tmp_path, stac.OSD_EXTENSION, **{"osd:period_source": "record"})
     assert not _valid(item, tmp_path)   # closed enum

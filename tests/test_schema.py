@@ -209,7 +209,7 @@ def _collection(tmp_path) -> dict:
 def test_stac_collection_carries_purchase_and_keyword(tmp_path, no_network):
     col = _collection(tmp_path)
     assert col["osd:access"] == "purchase" and "potential-fields" in col["keywords"]
-    assert stac.OSD_EXTENSION in col["stac_extensions"] and stac.OSD_EXTENSION.endswith("?v=2")
+    assert stac.OSD_EXTENSION in col["stac_extensions"] and "?v=" in stac.OSD_EXTENSION
     ok, msg = stac.validate(tmp_path / "catalog" / "stac" / "catalog.json")
     assert ok, msg
     v2 = json.loads((paths.SCHEMA_DIR / "stac-osd.json").read_text())

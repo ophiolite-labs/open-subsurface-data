@@ -28,8 +28,9 @@ under `tests/fixtures/schema/`) and the outline precedent (path `$id`, frozen co
    `inputs[<name>].period_fields`. outline/3 admits the four members and `period_fields`.
 3. `stac.item_period(props, collection_interval) -> (interval, source)`: feature when both
    normalised and start ≤ end; `feature-start,collection-end` when no normalised end and start ≤
-   collection end; otherwise `collection`. The Item gets `osd:period_source`; stac-osd v2 requires
-   it on Items (closed enum) and still accepts documents naming the v1 URL.
+   collection end; otherwise `collection`. The Item gets `osd:period_source`; stac-osd `?v=3` (after E19's
+   `?v=2`) admits it on Items as a closed enum, optional so that documents naming the v1 or v2
+   identifier still validate (every identifier resolves to the current file online).
 4. `stac.containment_problems(root)` lists Items outside their Collection's interval;
    `stac.validate` on a tree fails on any, so `make check-full` carries the guard unchanged.
 5. Collection extents stay `interval(rec)`. Per-register counts and named examples go to
@@ -52,7 +53,7 @@ under `tests/fixtures/schema/`) and the outline precedent (path `$id`, frozen co
 | Containment guard fires | `test_stac.py::test_item_outside_its_collection_fails_validation` |
 | `make check-full` containment on the tree | `test_stac.py::test_makefile_check_full_validates_whole_tree_and_verify_runs_it_on_main_only` (existing: check-full runs `stac.validate`) + the run in the PR |
 | outline/2 files validate under their own schema | `test_outlines.py::test_outline_2_files_validate_under_outline_2_and_3` |
-| STAC files without `osd:period_source` validate under their own schema; map carries both | `test_stac.py::test_stac_osd_1_documents_validate_under_their_frozen_schema` |
+| STAC files without `osd:period_source` validate under their own schema; map carries every version | `test_stac.py::test_stac_osd_1_and_2_documents_validate_under_their_frozen_schemas` |
 | Dates read from the feature, not the record | `…[dated]` (fixture period 1990–2000, feature 1993) |
 
 ## Mutations (each shown red against the unchanged suite, then restored)
@@ -65,4 +66,4 @@ provenance labelled `feature`; containment guard dropped; date fields removed fr
 ## Commits
 
 1. Strategy and lane-open evidence. 2. Tests (red). 3. outline/3, extractor and rules. 4. stac-osd
-v2, Item periods, containment. 5. Regenerated Sodir and NLOG outlines with the register report.
+v3, Item periods, containment. 5. Regenerated Sodir and NLOG outlines with the register report.
