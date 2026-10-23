@@ -2,6 +2,15 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
+
+- E15 tiles merged (PR #10, main 2904db0): the page loads `data/outlines.pmtiles` for the viewport (about 0.6 MB on load instead of 13.5 MB of GeoJSON); tippecanoe runs in `check` and `pages`. The E05 performance test now runs on the GeoJSON path with its synthetic set alone (budget unchanged).
+- E07 charter reworked after its Codex round (REWORK; dispositions in the charter): F3 out, 50 of 68 allowed, eligibility over a complete inventory, alternate assets, custody beside objects with tombstones, takedown approved by a maintainer. Slice 1 (local transport) in lane osd-e07; slice 2 waits for owner action 103 (Hetzner project + bucket + repository secrets).
+- E16 (PR #11) found two gate reds outside its claim: the record/1 test pops only `inputs` (period is also record/2), and full STAC validation of 18,432 Items takes 115 s. OSD-D18: gate validates Collections and an Item sample; `make check-full` runs in the verify workflow on main. E16's claim extended to land both.
+- E06 slice 2 (site select mode: tick datasets, download a manifest) opened as lane osd-e06b after E15 freed `site/app.js`.
+- Owner action 103 added (bucket and keys); items 102 and 103 are not yet on the Mac (ssh to the Mac times out; a retry loop runs every five minutes until it prints mac-ok).
+- Known red: a worker whose branch is deleted by `gh pr merge --delete-branch` sees its worktree path reported as deleted; run `git worktree prune` after closing the pane.
+
 ## Commands
 
 ```
