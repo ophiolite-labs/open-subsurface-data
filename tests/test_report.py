@@ -148,6 +148,7 @@ def closes(after, issue_list=None, verified=VERIFIED):
 def test_previous_L0_now_L1_counts_as_recovered(back):
     # mutation: recovery behind dead_reports' "not reachable last time either" skip -> acme/back lost
     assert closes(back[1]) == ["acme/back", "acme/up"]
+    assert [r["record_id"] for r in report(*back, issues(), VERIFIED)["recovered"]] == ["acme/back", "acme/up"]
 
 
 def test_retained_result_not_verified_this_run_is_not_recovered(back):
