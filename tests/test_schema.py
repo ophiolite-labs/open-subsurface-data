@@ -117,8 +117,8 @@ def test_the_six_records_state_the_new_values():
     assert terms["duration"] == "a maximum period of 10 years"   # the publisher's words (E20)
     assert terms["review_before_publication"] is True and terms["expires"] is None
     assert "maximum period of 10 years" in terms["stated"] and "review prior to publication" in terms["stated"]
-    assert sorted(k for k, r in recs.items() if "terms" in r["licence"]) == [
-        "dgh/national-data-repository", "pasa/national-petroleum-exploration-database"]
+    assert {"dgh/national-data-repository", "pasa/national-petroleum-exploration-database"} <= {
+        k for k, r in recs.items() if "terms" in r["licence"]}   # a subset: later records may state terms (E22)
     assert validate_records() == [] and len(recs) >= 96
 
 
