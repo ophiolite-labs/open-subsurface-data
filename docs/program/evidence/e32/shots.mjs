@@ -11,17 +11,22 @@ const context = await browser.newContext({ viewport: { width: 390, height: 844 }
 await offline(context);
 const page = await context.newPage();
 const errors = errorsOf(page);
-// The bottom sheet covers the lower half: centre south of town. The record is selected in the hash
-// because headless Chromium at phone width leaves the basemap unpainted (body colour through the
-// canvas) until a record is selected; every earlier phone shot (E15, E21, E27) selects one too.
+// The bottom sheet covers the lower half: centre south of town. The page opens with the record
+// selected: headless Chromium at phone width leaves the basemap unpainted (body colour through the
+// canvas) while the sheet shows the dataset list, on load or after the panel is closed; every
+// earlier phone shot (E15, E21, E27) selects a record too. The wells shot hides the sheet so the
+// whole viewport is map.
 await page.goto(server.url + '#sel=nd-dmr/wells&map=12/47.765/-103.28');
 await ready(page);
 await page.waitForFunction(() => {   // basemap and wells drawn, not just the style
   const m = window.osdMap;
   return m.loaded() && m.areTilesLoaded() && m.queryRenderedFeatures({ layers: ['wells-tiles'] }).length > 0;
 }, null, { timeout: 60000, polling: 500 });
+await page.addStyleTag({ content: '#side { visibility: hidden; }' });
 await page.waitForTimeout(3000);
 await page.screenshot({ path: join(out, 'nd-wells-phone.png') });
+await page.addStyleTag({ content: '#side { visibility: visible; }' });
+await page.waitForTimeout(1000);
 const wells = await page.evaluate(() => {
   const m = window.osdMap, c = m.getCanvas(), w = c.clientWidth, h = c.clientHeight;
   const fs = m.queryRenderedFeatures({ layers: ['wells-tiles'] }).filter(f => f.properties.record_id === 'nd-dmr/wells');

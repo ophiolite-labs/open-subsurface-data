@@ -52,11 +52,13 @@ their `item` links, with no OSD code.
 `node docs/program/evidence/e32/shots.mjs docs/program/evidence/e32` after `make build`:
 
 - `nd-wells-phone.png`: Watford City, ND at zoom 12; North Dakota's wells drawn from the tiles at
-  their own positions (80 rendered in the viewport). The record is selected in the hash
-  (`#sel=nd-dmr/wells&map=12/47.765/-103.28`): headless Chromium at phone width leaves the
-  basemap unpainted until a record is selected, the body colour showing through the canvas; desktop
-  width paints it either way, and every earlier phone shot (E15, E21, E27) selects a record too.
-  Site behaviour, not changed here (`site/**` is not this lane's).
+  their own positions (well pads along the section lines; 80 rendered in the viewport). The bottom
+  sheet is hidden for this shot (`visibility: hidden`) so the whole viewport is map. The page opens
+  with the record selected (`#sel=nd-dmr/wells&map=12/47.765/-103.28`): headless Chromium at
+  phone width leaves the basemap unpainted while the sheet shows the dataset list (on load, and
+  again after the panel is closed), the body colour showing through the canvas; desktop width
+  paints it either way, and every earlier phone shot (E15, E21, E27) selects a record. Not checked
+  on a real phone; `site/**` is not this lane's (inbox e32.md note 7).
 - `nd-dataset-panel-phone.png`: after clicking well `nd-dmr/wells#23634` (HEGG 11-29SH), the
   dataset panel as it is today: the record's title, level, description, why this level and
   publisher; hash `#sel=nd-dmr/wells&map=12.00/47.7650/-103.2800`; no console errors. The level
