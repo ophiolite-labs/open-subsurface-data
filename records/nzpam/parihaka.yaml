@@ -5,17 +5,18 @@ summary: >-
   made available by New Zealand Petroleum and Minerals.
 publisher: {name: New Zealand Petroleum and Minerals, url: https://www.nzpam.govt.nz, country: NZ}
 origin:
-  url: https://wiki.seg.org/wiki/Parihaka-3D
+  url: https://geodata.nzpam.govt.nz/survey/927165623
   access: anonymous
 licence:
   name: New Zealand Crown copyright, open data terms
   spdx: null
-  url: https://www.nzpam.govt.nz
+  url: https://www.nzpam.govt.nz/about-us/copyright
   redistribution: unknown
   attribution: required
 kinds: [seismic-3d, wellbore-logs, wellbore-headers]
 region: {country: NZ, basin: Taranaki Basin, bbox: [173.7, -39.4, 174.4, -38.8]}
-listed_by: [seg-wiki]
+listed_by: [seg-wiki, publisher]
 known_issues:
-  - Exact licence instrument not yet captured (L2 pending).
+  - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the NZP&M geodata catalogue entry PARIHAKA-3D : PR3460, opened 23 Oct 2026; downloads there need a RealMe login (not tested)."
+  - "Exact licence instrument not yet captured (L2 pending)."
 added: 2026-10-23

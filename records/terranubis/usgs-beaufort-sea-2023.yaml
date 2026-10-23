@@ -1,0 +1,22 @@
+id: terranubis/usgs-beaufort-sea-2023
+title: USGS Beaufort Sea, Arctic Alaska (2023 version)
+summary: >-
+  OpendTect project with 2D seismic lines in the Beaufort Sea near Prudhoe Bay. Original seismic from the USGS; replaces the earlier version (publisher news, 17 Jan 2024).
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/USGS-Beaufort-Sea-Arctic-Alaska-2023
+  access: anonymous
+licence:
+  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [seismic-2d]
+region: {country: US, basin: Beaufort Sea, bbox: [-156.0, 70.0, -146.0, 72.0]}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+  - "bbox is approximate; the page gives only 'N 70 / W 152 approximately'."
+added: 2026-10-23

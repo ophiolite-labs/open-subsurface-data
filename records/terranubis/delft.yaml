@@ -1,0 +1,22 @@
+id: terranubis/delft
+title: Delft (onshore Netherlands)
+summary: >-
+  OpendTect project with an onshore 3D seismic survey near Delft, with derived attribute volumes.
+  Original seismic from NAM via NLOG, acquired 1985 and reprocessed 2011; project by dGB Earth Sciences, 2021.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/Delft
+  access: anonymous
+licence:
+  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+kinds: [seismic-3d]
+region: {country: NL, basin: West Netherlands Basin, bbox: [4.25, 51.95, 4.45, 52.08]}
+listed_by: [publisher]
+known_issues:
+  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+added: 2026-10-23
