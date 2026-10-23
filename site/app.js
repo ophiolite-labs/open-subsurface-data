@@ -22,7 +22,8 @@
   const pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
 
   const built = await (await fetch('data/records.json')).json();
-  const records = built.records;
+  // Why each record is at its level (E27): `reasons` by id, the sentence `osd status` prints.
+  const records = built.records.map(r => ({ ...r, reason: (built.reasons || {})[r.id] || '' }));
   const outlines = pmtilesMode ? null : await (await fetch('data/outlines.geojson')).json();
   // Clustering stays on the page: on the tile path the clustered source is fed the wellbores of the
   // tiles loaded so far (below CLUSTER_BELOW_ZOOM every tile keeps every point), keyed by feature_id.
@@ -33,7 +34,9 @@
   const byId = Object.fromEntries(records.map(r => [r.id, r]));
   const LEVEL = s => Number((s || 'L0').slice(1));
   const isStale = r => !!r.checked_at && Date.now() - Date.parse(r.checked_at) > STALE_DAYS * 864e5;
-  const levelBadge = r => `<span class="lvl ${r.level}">${r.level}</span>${isStale(r) ? `<span class="stale" title="last checked ${esc(r.checked_at)}, more than ${STALE_DAYS} days ago">stale</span>` : ''}`;
+  // A blocked origin awards no level (OSD-D9): its badge says so instead of showing L0.
+  const levelBadge = r => `${r.blocked_since ? `<span class="blocked" title="${esc(r.reason)}">blocked since ${esc(r.blocked_since.slice(0, 10))}</span>`
+    : `<span class="lvl ${r.level}">${r.level}</span>`}${isStale(r) ? `<span class="stale" title="last checked ${esc(r.checked_at)}, more than ${STALE_DAYS} days ago">stale</span>` : ''}`;
 
   // Dataset extents: one rectangle per record bbox, drawn from the record, not the data.
   const extents = {
@@ -274,6 +277,9 @@
     }
   }
 
+  // "23 Oct 2026": the day the verifier established the level, in UTC as checked_at states it.
+  const day = s => new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+
   function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
   function closeDetail() { $('detail').hidden = true; state.sel = null; renderList(visibleIds()); writeHash(); }
@@ -291,13 +297,14 @@
       <h3><span class="title">${esc(r.title)}</span> ${levelBadge(r)}</h3>
       <div style="color:var(--muted)">${esc(r.summary || '')}</div>
       <dl>
+        <dt>Why this level</dt><dd class="why"><span class="reason">${esc(r.reason || 'never verified')}</span>${r.checked_at
+          ? `<br><span class="checked">checked ${esc(day(r.checked_at))}</span>${isStale(r) ? ` (stale: older than ${STALE_DAYS} days)` : ''}` : ''}</dd>
         <dt>Publisher</dt><dd><a href="${esc(r.publisher.url)}" target="_blank" rel="noopener">${esc(r.publisher.name)}</a></dd>
         <dt>Origin</dt><dd><a href="${esc(r.origin.url)}" target="_blank" rel="noopener">${esc(r.origin.url)}</a> (${esc(r.origin.access)})</dd>
         <dt>Licence</dt><dd>${esc(r.licence.name)}${r.licence.spdx ? ' (' + esc(r.licence.spdx) + ')' : ''}<br>redistribution ${esc(r.licence.redistribution)}, attribution ${esc(r.licence.attribution)}</dd>
         <dt>Holds</dt><dd>${r.kinds.map(esc).join(', ')}</dd>
         <dt>When</dt><dd class="when">${r.period ? esc(`${r.period.start || 'start of record'} to ${r.period.end || 'today'}`) + (r.period.stated ? '<br>' + esc(r.period.stated) : '') : 'not stated by the publisher'}</dd>
         <dt>Region</dt><dd>${esc([r.region && r.region.basin, r.region && r.region.country].filter(Boolean).join(', ') || '—')}</dd>
-        <dt>Checked</dt><dd>${esc(r.checked_at || 'not yet')}${isStale(r) ? ' (stale: older than ' + STALE_DAYS + ' days)' : ''}</dd>
       </dl>
       ${issues ? `<div><b>Known issues</b><ul>${issues}</ul></div>` : ''}
       <div class="cards">
@@ -328,6 +335,9 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   const pick = (o, keys) => Object.fromEntries(keys.filter(k => k in o).map(k => [k, o[k]]));
   const licenceLabel = l => l.spdx || l.name;
 
+  // The manifest's `unresolved` repeats what `osd manifest` writes (src/osd/manifest.py), which goes by
+  // access; what the person reads in the basket is the verifier's reason once the record was checked.
+  const whyNoFiles = r => r.checked_at && LEVEL(r.level) < 2 && r.reason ? r.reason : noAssetsReason(r);
   function noAssetsReason(r) {
     const a = r.origin.access;
     return a === 'registration' || a === 'request'
@@ -414,7 +424,7 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
     loadCollections().then(cols => {
       for (const el of b.querySelectorAll('[data-files]')) {
         const id = el.dataset.files, r = byId[id], n = Object.keys((cols[collectionId(id)] || {}).assets || {}).length;
-        el.textContent = n ? `${n} file${n > 1 ? 's' : ''} with the verifier's sha256 (a sample)` : `to-do: ${noAssetsReason(r)}`;
+        el.textContent = n ? `${n} file${n > 1 ? 's' : ''} with the verifier's sha256 (a sample)` : `to-do: ${whyNoFiles(r)}`;
         el.classList.toggle('todo', !n);
       }
     });

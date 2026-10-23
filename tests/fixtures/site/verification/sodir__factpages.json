@@ -1,0 +1,51 @@
+{
+  "record_id": "sodir/factpages",
+  "checked_at": "2026-10-23T14:08:00+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://factpages.sodir.no"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 3 of 3 selected files hashed (1732088 bytes); 48 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "21106 characters captured from https://data.norge.no/nlod/en/2.0"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "11210 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "derived from bytes that differ from the stored input: rerun --outlines, review the diff"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://factpages.sodir.no",
+    "content_type": "text/html",
+    "elapsed_ms": 300,
+    "reachability": "ok"
+  }
+}
