@@ -6,7 +6,7 @@ publisher: {name: Secretaría de Energía (Argentina), url: https://www.argentin
 origin:
   url: https://datos.gob.ar/dataset/trayectoria-de-pozos
   access: anonymous
-  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=trayectoria-de-pozos
+  manifest_url: https://datos.gob.ar/dataset/trayectoria-de-pozos
 licence:
   name: CC-BY-4.0
   spdx: CC-BY-4.0
@@ -19,7 +19,7 @@ listed_by: [publisher]
 known_issues:
   - "The files are served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026; datos.gob.ar answers."
   - "bbox is the Neuquén Basin, approximate; the catalogue states no extent."
-  - "datos.gob.ar robots.txt says 'Disallow: /api/' (23 Oct 2026); the files' host datos.energia.gob.ar timed out again that day, so the listing is left as it is."
+  - "The listing is the dataset page on datos.gob.ar (robots.txt disallows only /api/ there); its download links point at datos.energia.gob.ar, whose robots.txt and files timed out from this host again on 23 Oct 2026 (15:59 UTC)."
 period:
   start: "2024-12-09"
   end: "2024-12-09"

@@ -6,7 +6,7 @@ publisher: {name: Secretaría de Energía (Argentina), url: https://www.argentin
 origin:
   url: https://datos.gob.ar/dataset/datos-de-fractura-de-pozos-adjunto-iv
   access: anonymous
-  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=datos-de-fractura-de-pozos-adjunto-iv
+  manifest_url: https://datos.gob.ar/dataset/datos-de-fractura-de-pozos-adjunto-iv
 licence:
   name: CC-BY-4.0
   spdx: CC-BY-4.0
@@ -20,7 +20,7 @@ known_issues:
   - "The CSV is served from datos.energia.gob.ar, which timed out from this host on 23 Oct 2026; datos.gob.ar answers."
   - "pressure here is the maximum fracture treatment pressure per well, not reservoir pressure."
   - "bbox is the extent of Argentina, approximate."
-  - "datos.gob.ar robots.txt says 'Disallow: /api/' (23 Oct 2026); the files' host datos.energia.gob.ar timed out again that day, so the listing is left as it is."
+  - "The listing is the dataset page on datos.gob.ar (robots.txt disallows only /api/ there); its download links point at datos.energia.gob.ar, whose robots.txt and files timed out from this host again on 23 Oct 2026 (15:59 UTC)."
 period:
   start: "2019-10-25"
   end: "2019-10-25"

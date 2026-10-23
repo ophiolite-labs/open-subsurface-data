@@ -12,19 +12,19 @@ agl/marmousi2: ["vp_marmousi-ii.segy.gz"]   # directory index; the P-wave veloci
 ak-dggs/tax-credit-well-data: ["*BadamiUnitB1-11A*.zip"]   # directory index of well zips; this one 413 KB
 ancap/bouguer-anomaly-map-of-uruguay: ["*/bouguer_anomaly.rar"]   # page links one archive; size not stated by the server
 anh/produccion-fiscalizada-crudo: ["*"]          # Socrata view: its rows.csv export, a few MB
-ar-energia/fractura-adjunto-iv: ["*.csv"]         # CKAN: the daily fracture CSV (the PDF infographic is not sampled)
-ar-energia/produccion-por-pozo: ["Listado de pozos cargados*"]   # CKAN: the operators' well list, not the yearly production files (hundreds of MB each)
-ar-energia/trayectorias-vaca-muerta: ["*.csv"]    # CKAN: the trajectory CSV
+ar-energia/fractura-adjunto-iv: ["*/datos-de-fractura-de-pozos-de-hidrocarburos-adjunto-iv-*.csv"]   # datos.gob.ar dataset page (47 links): the daily fracture CSV on datos.energia.gob.ar; size not read (host timed out 23 Oct)
+ar-energia/produccion-por-pozo: ["*/listado-de-pozos-cargados-por-empresas-operadoras.csv"]   # datos.gob.ar dataset page (201 links): the operators' well list, not the yearly production files (hundreds of MB each); size not read
+ar-energia/trayectorias-vaca-muerta: ["*/trayectorias-de-pozo-vaca-muerta.csv"]   # datos.gob.ar dataset page (46 links): the trajectory CSV (not the zip); size not read
 bcer/well-surface-holes-permitted: ["*"]          # ArcGIS layer: one geojson export of at most maxRecordCount (2000) features
 cgs/vrtna-prozkoumanost: ["*"]   # ArcGIS layer 1: one geojson export of at most 3000 of 746,789 features (kept as partial), 2,669,877 bytes
 cnloer/data-information-hub: ["*/expdwts.xlsx"]   # page links spreadsheets; the exploration wells table, 146,789 bytes
 cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
-cpc/onshore-well-locations: ["*"]                 # data.gov.tw: the CSV of six onshore wells, under 1 KB
+cpc/onshore-well-locations: {file: true, sample: ["*"]}   # the bare CSV of six onshore wells, under 1 KB (data.gov.tw); content type not read (www3.cpc.com.tw timed out 23 Oct)
 equinor/drogon: ["DROGON_HIST.DATA"]   # GitHub contents API of eclipse/model: the history deck, 6,010 bytes
 force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip?download=1"]   # Zenodo record page: the LAS zip, 169,785,172 bytes
-gsmma/hydrogeological-drilling-database: ["*"]    # data.gov.tw: the distribution files, tabular
-gsmma/sw-offshore-core-stations-2008-2011: ["*"]  # data.gov.tw: the core station table
-gsmma/sw-offshore-seismic-lines-2008-2011: ["*"]  # data.gov.tw: the seismic line table (line ids, dates, lengths)
+gsmma/hydrogeological-drilling-database: {file: true, sample: ["*"]}   # the bare CSV data.gov.tw names; content type and size not read (Cloudflare 403 text/html, 23 Oct)
+gsmma/sw-offshore-core-stations-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the core station table; not read (Cloudflare 403 text/html, 23 Oct)
+gsmma/sw-offshore-seismic-lines-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the seismic line table; not read (Cloudflare 403 text/html, 23 Oct)
 gsq/qped: "the CKAN package lists no resources (23 Oct 2026); QPED files are reached through its own application"
 helsinki-univ/outokumpu-deep-hole-vocs: ["*/files/*.xlsx?download=1"]   # Zenodo record page (the /api path is disallowed): two spreadsheets, 27,237 and 24,059 bytes
 ibm-research/netherlands-f3-interpretation: ["*/files/horizons.tar.gz?download=1"]   # Zenodo record page: the horizons archive, 95,320,034 bytes
