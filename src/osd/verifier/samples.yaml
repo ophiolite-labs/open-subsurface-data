@@ -35,6 +35,7 @@ jamstec/seismic-survey-database: "the listing is a cruise index with no file add
 jardfeingi/well-data: ["*FO_Offshore_Wells.zip"]   # page links the offshore wells zip, 3,204 bytes
 kgs/oil-gas-wells: ["*/Ora_Archive/ks_wells.zip"]   # page links the statewide well zip, 44,028,388 bytes
 kigam/marine-geological-map-korea-strait: "the listing is a search result with no file addresses"
+lgt/geologiniai-tyrimai: ["*/GeologinisTyrimas/csv/download/"]   # data.gov.lt dataset page (66 links): the CSV export of the report catalogue (302 to get.data.gov.lt, text/csv, no length stated)
 manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links the weekly well list, 1,233,013 bytes
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
@@ -47,6 +48,7 @@ nzpam/seismic-surveys-2d: ["*"]   # ArcGIS layer 6: one geojson export, all 990 
 ok-occ/oil-gas-data-files: ["*/esri/files/RBDMS_WELLS.zip"]   # page links many files; the RBDMS wells zip, 45,897,943 bytes
 opm/norne: ["*.DATA"]                             # the simulation deck
 opm/spe9: ["SPE9.DATA"]   # GitHub contents API: the SPE9 deck, 15,927 bytes
+petrocom-gh/fields-production-data: ["*"]   # the bare 2025 workbook (xlsx content type: a file by its headers), 597,225 bytes
 pgi/cbdg-boreholes: ["*"]   # ArcGIS layer: one geojson export of at most 1000 of 334,145 features (kept as partial)
 sgc/banco-informacion-petrolera-pozos: ["*"]      # ArcGIS layer: one geojson export of at most 2000 features
 sgudds/register-geotermalnych-vrtov: ["*"]   # ArcGIS layer 2: one geojson export, all 307 features (maxRecordCount 1000), 392,511 bytes

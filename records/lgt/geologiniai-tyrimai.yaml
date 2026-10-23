@@ -1,0 +1,28 @@
+id: lgt/geologiniai-tyrimai
+title: Geologinių tyrimų ataskaitų katalogas (catalogue of geological survey reports)
+summary: >-
+  "Geologinių tyrimų ataskaitų katalogą sudaro geologinio kartografavimo, giluminių tyrimų,
+  seismologinio monitoringo, ekogeologinių tyrimų, hidrogeologinių tyrimų, požeminės hidrosferos
+  monitoringo ir kitų geologinių tyrimų rezultatai (ataskaitos)." (The catalogue of the reports of
+  geological mapping, deep investigations, seismological monitoring and other surveys, in which
+  boreholes were drilled and geophysical investigations carried out.)
+publisher: {name: Lietuvos geologijos tarnyba prie Aplinkos ministerijos (Lithuanian Geological Survey), url: https://lgt.lrv.lt, country: LT}
+origin:
+  url: https://data.gov.lt/datasets/1325/
+  access: anonymous
+  manifest_url: https://data.gov.lt/datasets/1325/
+  notes: "data.gov.lt lists CSV, JSON, JSONL and RDF exports of the table GeologinisTyrimas, served from get.data.gov.lt/datasets/gov/lgt/geologiniai_tyrimai/; updated weekly ('Kas savaitę')."
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/deed.lt
+  redistribution: allowed
+  attribution: required
+kinds: [reports, source-list]
+region: {country: LT, basin: Lithuania (Baltic Basin), bbox: [20.93, 53.90, 26.84, 56.45]}
+listed_by: [publisher]
+known_issues:
+  - "Report metadata (fund number, type, authors, title, year, restriction date, description); the reports themselves are not downloadable here."
+  - "lgt.lrv.lt answered a Cloudflare 403 challenge to automated requests on 23 Oct 2026; the dataset is published by LGT on data.gov.lt."
+  - "bbox is Lithuania, approximate."
+added: 2026-10-23

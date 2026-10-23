@@ -1,0 +1,28 @@
+id: ppepdr/national-data-repository
+title: "PPEPDR: Pakistan Petroleum Exploration & Production Data Repository"
+summary: >-
+  "PPEPDR is Pakistan's centralized digital database for seismic, well, and physical petroleum data.
+  It brings quality assured exploration and production information online so companies can review,
+  select, and request data with less delay." Run for the Directorate General of Petroleum
+  Concessions (DGPC) on PetroBank; subscribers view, select and download data online.
+publisher: {name: "Pakistan Petroleum Exploration & Production Data Repository (PPEPDR), for the Directorate General of Petroleum Concessions", url: https://ppepdr.net, country: PK}
+origin:
+  url: https://ppepdr.net/subscribe
+  access: purchase
+  notes: "About page: https://ppepdr.net/about. Home page: 'Terabytes of secure petrotechnical data available to subscribed clients online.'"
+licence:
+  name: "No licence published; data sales subject to DGPC approval (site: All rights reserved)"
+  spdx: null
+  url: https://ppepdr.net/subscribe
+  redistribution: restricted
+  attribution: unknown
+  terms:
+    stated: "Full Members US$ 22,050 / annum; Associate Members US$ 13,230 / annum; Non Members US$ 110 / hour; Temporary Members Free (companies with foreign operations registering interest with DGPC). Download fees apply in addition to membership. All data sales are subject to DGPC approval. Seismic data US$ 4 per line kilometer. Well data US$ 56 per well."
+kinds: [seismic-2d, seismic-3d, wellbore-headers]
+region: {country: PK, basin: "Indus, Potwar-Kohat and Balochistan basins, onshore and offshore", bbox: [60.9, 23.6, 77.8, 37.1]}
+size: {stated: "Terabytes of secure petrotechnical data"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is Pakistan, approximate; the site states no extent."
+  - "The site names 'seismic, well, and physical' data without a list; kinds are the ones it names."
+added: 2026-10-23

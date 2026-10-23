@@ -1,0 +1,29 @@
+id: fzzg/hydrocarbon-data-room
+title: Soba sa podacima (Data Room for hydrocarbon exploration geodata)
+summary: >-
+  The Data Room "will be used to for review of provided seismic, geotechnical, geochemical,
+  geophysical or any other data collected from Hydrocarbon Exploration" owned by the Government of
+  the Federation of Bosnia and Herzegovina, represented by the Federalni zavod za geologiju. Authorised
+  users can acquire a data package with the Shell-processed report (Amoco Dinarides, Pannonian Basin,
+  Shell GIS and Petrel input directories).
+publisher: {name: Federalni zavod za geologiju (Geological Survey of the Federation of Bosnia and Herzegovina), url: https://fzzg.gov.ba, country: BA}
+origin:
+  url: https://fzzg.gov.ba/soba-sa-podacima
+  access: purchase
+  notes: "Rules: 'Data Room Rules and Procedures for Access' https://fzzg.gov.ba/file/data-room-rules-and-procedures-for-access/630 (Bosnian: /file/pravila-i-procedure-za-pristup-data-room/631). The Data Room is at Ustanička 11, 71210 Ilidža."
+licence:
+  name: Data Room Rules and Procedures for Access
+  spdx: null
+  url: https://fzzg.gov.ba/file/data-room-rules-and-procedures-for-access/630
+  redistribution: restricted
+  attribution: unknown
+  terms:
+    stated: "Uniform fee for use of the Data Room resources 10.000,00 KM ('Viewing Cost' enables review of all available data, without a possibility to copy and reproduce them). Copying of the processed 2D profiles 30.00 KM/km; field 2D profiles 200.00 KM/km; whole 3D package (981 in-line profiles) 4000.00 KM; Well Completion Package 100.00 KM/well. Shell package: 'The unique price of this package is 41000,00 KM'."
+kinds: [seismic-2d, seismic-3d, wellbore-logs, core, geochemistry, potential-fields, reports]
+region: {country: BA, basin: Dinarides and Pannonian Basin (Federation of Bosnia and Herzegovina), bbox: [15.72, 42.55, 19.62, 45.28]}
+listed_by: [publisher]
+known_issues:
+  - "The data are viewed in the Data Room in Ilidža; copies are on request, after approval and payment. No files are online, so no manifest_url."
+  - "'The Zavod reserves the right to deny or revoke already issued approvals to access the Geodata in the Data Room at any time.'"
+  - "bbox is Bosnia and Herzegovina, approximate."
+added: 2026-10-23
