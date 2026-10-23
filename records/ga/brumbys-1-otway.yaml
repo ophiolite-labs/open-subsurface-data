@@ -17,4 +17,8 @@ kinds: [core, geochemistry, wellbore-logs]
 region: {country: AU, basin: "Otway Basin (CO2CRC Otway International Test Centre, Victoria)", bbox: [142.0, -39.0, 143.0, -38.0]}
 size: {bytes_estimate: 337628, stated: one XLSX workbook}
 listed_by: [publisher]
+period:
+  start: "2018"
+  end: "2019"
+  stated: "GA eCat ISO 19115-3 record: temporal extent 2018-01-01 to 2019-12-31; lineage 'collected during the Phase 2 ... (2018-2019)'; abstract says well drilled 2018"
 added: 2026-10-23

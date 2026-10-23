@@ -19,4 +19,8 @@ region: {country: AU, basin: "Western Australian basins (Perth, Canning, Carnarv
 listed_by: [publisher]
 known_issues:
   - "WAPIMS (wapims.dmp.wa.gov.au), which serves the well reports and logs, answered an Incapsula challenge to automated requests on 23 Oct 2026: blocked, not dead (OSD-D9). This record is the well index only."
+period:
+  start: "1902"
+  end: "2026-10-23"
+  stated: "Earliest spud_date in the publisher's own SLIP ArcGIS layer 13 (DMIRS-025) is 1902-06-15; CKAN package states regular/daily updates; no start stated in prose"
 added: 2026-10-23
