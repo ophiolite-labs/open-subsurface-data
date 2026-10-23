@@ -49,3 +49,49 @@ E13 and E14.
 - AOGCC: 403 (blocked) at <https://www.commerce.alaska.gov/web/aogcc/data>.
 - BRGM InfoTerre: connection refused.
 - CNSOER Data Management Centre (<https://cnsopbdigitaldata.ca/geoviewer/dmc>, account by application, no licence stated): held back to stay within six `unknown` records.
+
+## pasa/national-petroleum-exploration-database
+
+- Page: <https://www.petroleumagencysa.com/introduction/>
+  - "Petroleum Agency SA is responsible for the archive and management of the national hydrocarbon exploration database on behalf of the State. It has digitised, indexed and archived all of the data and reports resulting from the drilling of more than 300 offshore and some 200 onshore boreholes."
+  - "more than 300 000 line km’s of 2D and 40 000 km² of 3D seismic data"
+- Licence: <https://www.petroleumagencysa.com/obtain-our-technical-data/>
+  - "All interested parties, who requires access to data, needs to sign a Confidentiality Agreement (CA) ... Data belongs to the State and ownership of the data is not transferred when purchased. Data purchased from the Agency may not be sold. ... Data is not permitted to be supplied to any third party without written authorization from the Agency."
+- Kinds: <https://www.petroleumagencysa.com/dataset-standard-format/> ("Well completion report ... Cores Samples ... Geophysical well logs-T-Lis, D-Lis, Las ... Seismic 2D/3D data Field/Raw Data-SEGD Processed Data-SEGY ... Geochemical Data Source Rock Information").
+- Extent: South Africa with offshore (approximate). Period: none stated for the database.
+
+## namcor/exploration-production-data
+
+- Page: <https://www.namcor.com.na/technical-data/>
+  - "NAMCOR is the custodian of all the Namibian Exploration and Production data; therefore, it is NAMCOR’s responsibility to provide this data to potential investors."
+  - "a core and drill cuttings storage facility in which the rock samples retrieved during petroleum exploration in this country from 1960 to date are stored for use by those carrying out exploration activities. This data includes all seismic data, well data, engineering well reports, other exploration reports, and aeromagnetic as well as gravity data"
+- Sales: <https://www.namcor.com.na/data-sales/> ("we are offering in-house Exploration & Production data to potential investors and operators in Namibia at discounted prices.")
+- Licence: none published. Recorded `unknown`.
+- Extent: Namibia with offshore (approximate). Period: 1960 to date (the sample archive).
+
+## eug/national-data-repository
+
+- Page: <https://eug.petroleum.gov.eg/> (redirects to the login page; about page <https://eug.petroleum.gov.eg/dp/jsp/new_live/pre_about_us.jsp>)
+  - "Egypt Upstream Gateway (EUG) is the country's first digital platform for the upstream sector, launched by the Egyptian Ministry of Petroleum in collaboration with SLB in February 2021."
+  - Home counters: "National Data Repository - NDR ... 16981 Wells ... 465 Seismic 3D ... 658 Seismic 2D ... 106 Gravity/Magnetic"
+- Tiers: <https://eug.petroleum.gov.eg/dp/jsp/new_live/pre_tiers.jsp> ("BRONZE $ 35K SILVER $ 100K GOLD $ 150K PLATINUM $ 250K ... Discount on data and derivatives licensing")
+- Licence: none published. Recorded `unknown`.
+- Extent: Egypt with offshore (approximate). Period: none stated.
+
+## prime/national-oil-gas-database
+
+- Page: <https://prime.energy.gov.il/en/prime.html> (Angular application; text from its static assets)
+  - "Here you can find data and information on E&P activity for oil and gas onshore and offshore Israel." "Materials related to active petroleum rights are subject to confidentiality restrictions."
+  - GIS: "A map showing various data layers including well, seismic, gravity and magnetic data and active licensese and leases"
+- Licence: <https://prime.energy.gov.il/assets/static/pages/termsofuse/termsofuse_en.html> (browser user agent; a plain one gets an error page)
+  - "copyrights for government offices' publications, including those published on this site, are the property of The State of Israel. ... The user is permitted to make "fair use" of the protected material, according to law. Fair use includes reasonable quotation of the protected material. In making a quotation, the user must state the source of quoted material"
+- www.gov.il Ministry of Energy pages: 403 (blocked).
+- Extent: Israel with offshore (approximate). Period: none stated.
+
+## Not recorded (Africa and Middle East)
+
+- Nigeria NUPRC: names a National Data Repository but has no data page or terms; the NDR Regulations PDF is 404 and ndr.nuprc.gov.ng does not resolve.
+- Ghana Petroleum Commission: 406 to a plain user agent; no data page found with a browser one.
+- Oman MEM: JavaScript-only site, no data page found.
+- Namibia MME / Geological Survey of Namibia, Tanzania TPDC and PURA, Morocco ONHYM: unreachable. Kenya National Oil: "Account Suspended". Senegal PETROSEN: maintenance page. Uganda PAU, Mozambique INP: no data page.
+- Held back: Council for Geoscience coal and core borehole headers (ZA, licence not stated, no new country); Saudi Geological Survey National Geological Database (licence not stated, minerals); Israel Water Authority borehole depths (CC BY, groundwater).

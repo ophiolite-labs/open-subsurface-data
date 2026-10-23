@@ -1,0 +1,26 @@
+id: prime/national-oil-gas-database
+title: "PRIME: The National Oil and Natural Gas Database (Israel)"
+summary: >-
+  Data and information on oil and gas exploration and production activity onshore and offshore
+  Israel. Geological, geophysical, engineering and environmental data handed over by operators
+  and petroleum right owners to the Petroleum Commissioner's office are uploaded and managed in
+  PRIME; a GIS map shows well, seismic, gravity and magnetic data and active licences.
+publisher: {name: Israel Ministry of Energy (Petroleum Commissioner), url: https://prime.energy.gov.il, country: IL}
+origin:
+  url: https://prime.energy.gov.il/en/prime.html
+  access: request
+  notes: "Released documents download without an account; data is requested through a basket with a captcha. GIS map at https://prime.energy.gov.il/en/gis.html. Materials related to active petroleum rights are confidential."
+licence:
+  name: PRIME Terms of Use (State of Israel copyright)
+  spdx: null
+  url: https://prime.energy.gov.il/assets/static/pages/termsofuse/termsofuse_en.html
+  redistribution: forbidden
+  attribution: required
+kinds: [wellbore-headers, seismic-2d, seismic-3d, reports]
+region: {country: IL, basin: Levant Basin (onshore and offshore Israel), bbox: [32.0, 29.4, 35.9, 33.4]}
+listed_by: [publisher]
+known_issues:
+  - "The terms reserve copyright to the State of Israel and allow only fair use, including reasonable quotation with the source stated; recorded as forbidden."
+  - "bbox is Israel with its Mediterranean offshore, approximate."
+  - "www.gov.il Ministry of Energy pages answered 403 (blocked) on 23 Oct 2026; the terms page returns an error page to a plain user agent and the text to a browser user agent."
+added: 2026-10-23

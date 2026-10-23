@@ -1,0 +1,25 @@
+id: eug/national-data-repository
+title: National Data Repository - NDR (Egypt Upstream Gateway)
+summary: >-
+  Egypt Upstream Gateway is the country's digital platform for the upstream sector, launched by
+  the Ministry of Petroleum with SLB in February 2021, for digitizing, storing and making Egypt's
+  national data accessible worldwide. Its National Data Repository counts wells, 2D and 3D
+  seismic and gravity/magnetic surveys.
+publisher: {name: Egypt Upstream Gateway (Ministry of Petroleum and Mineral Resources), url: https://eug.petroleum.gov.eg, country: EG}
+origin:
+  url: https://eug.petroleum.gov.eg/
+  access: request
+  notes: "Paid membership (tiers at https://eug.petroleum.gov.eg/dp/jsp/new_live/pre_tiers.jsp from BRONZE $35K to PLATINUM $250K) plus data licensing; nothing is visible without login."
+licence:
+  name: Not stated (data is licensed to members; no terms are published)
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, seismic-2d, seismic-3d, reports]
+region: {country: EG, basin: Egyptian basins incl. the Mediterranean and Nile Delta, bbox: [24.7, 21.7, 36.9, 33.6]}
+size: {stated: "16,981+ Wells, 465+ Seismic 3D, 658+ Seismic 2D, 106+ Gravity/Magnetic (home page counters)"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is Egypt with its offshore, approximate."
+notes: "Want: the schema cannot say paid membership tiers. Bid rounds are run here for EGPC, EGAS and GANOPE."
+added: 2026-10-23
