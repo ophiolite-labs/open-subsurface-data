@@ -26,4 +26,14 @@ known_issues:
   - "wellbore-headers is the nearest kind for a geothermal well register; geochemistry stands for the mineralisation and chemical water type fields."
   - "bbox is Slovakia, approximate. Layer 2 held 307 features on 23 Oct 2026."
 notes: "Application launched 06/2016; data updated continuously as needed (publisher's page). The other-boreholes register (layer 0) held 95,630 features the same day."
+inputs:
+  - name: boreholes
+    url: "https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2"
+    format: arcgis
+    crs: "EPSG:5514"
+    stated: "Layer description (?f=json): spatialReference wkid 102067, latestWkid 5514 (S-JTSK / Krovak East North); query pages state the same"
+period:
+  start: "1899"
+  end: "2026-10-23"
+  stated: "Earliest rokrealizacie (year drilled) in the publisher's own layer 2 is 1899 (outStatistics, 23 Oct 2026 17:00 UTC); the publisher's page states data are updated continuously, end = date read"
 added: 2026-10-23

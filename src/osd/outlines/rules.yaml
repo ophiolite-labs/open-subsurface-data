@@ -106,3 +106,8 @@ nzpam/kerry-3d:
   min_features: 1
   inputs:
     survey-extent: {extractor: publisher-file, kind: survey-3d}
+
+sgudds/register-geotermalnych-vrtov:
+  min_features: 307   # 23 Oct 2026: 307 boreholes drawn, as the layer counted
+  inputs:
+    boreholes: {extractor: register-arcgis, kind: wellbore, name: technickeoznaceniezdroja}

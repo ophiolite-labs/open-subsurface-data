@@ -106,7 +106,8 @@ def test_record_2_files_validate_under_record_2():
         rec = load_record(p)
         assert not list(RECORD.iter_errors(rec)), p
         if (rec["origin"]["access"] == "purchase" or "potential-fields" in rec["kinds"]
-                or set(NEW_KINDS) & set(rec["kinds"]) or "terms" in rec["licence"]):
+                or set(NEW_KINDS) & set(rec["kinds"]) or "terms" in rec["licence"]
+                or any(i["format"] == "arcgis" for i in rec.get("inputs") or [])):   # record/5 (E29)
             continue
         assert not list(RECORD_2.iter_errors(rec)), p
         old += 1
