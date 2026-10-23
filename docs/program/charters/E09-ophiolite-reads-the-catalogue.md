@@ -49,9 +49,11 @@ statement, no addressable files: not a fixture of this epic (E06 and E07 disposi
    it ("n of m inputs converted to kinds") and never copies a level or any lower check from it.
 5. L4 rule, in `osd verify --fidelity-from <file>`: L4 is computed by `level_from_checks` with the
    catalogue's own L1–L3 checks retained; the fidelity file is rejected (check `failed`, level
-   unchanged) when its record id, its `catalog.records_digest` or any input sha256 does not match
-   the latest verification's files, when an input is `partial` or `failed` without `reason`, or
-   when it is older than the latest verification. Partial coverage (some inputs converted) awards
+   unchanged) when its record id does not match, when any input sha256 is not among the latest
+   verification's files, or when an input is `partial` or `failed` without `reason`. The snapshot
+   (`catalog`) is recorded on the check for identity and is not a rejection criterion: an edit to an
+   unrelated record or a verification run that leaves this record's files unchanged keeps L4
+   (amended 23 Oct on the lane's inbox note 3; a per-record digest is a later slice if needed). Partial coverage (some inputs converted) awards
    L4 only when every input of the inventory has a result and at least one `converted`;
    `osd status` shows the coverage beside L4.
 6. NLOG consistency: the try-it sample's declared kinds and licence text are compared to
@@ -74,9 +76,9 @@ from Norne as the real-record case; the offline fixture is a two-well LAS set un
   is refused.
 - Fidelity: a valid fidelity/1 for the LAS fixture whose hashes match the fixture verification
   yields L4 with coverage "2 of 2"; each of these alone yields no L4 and names the reason: a
-  mismatched input hash, a mismatched record id, a different `records_digest`, an older
-  `built_at`, a `failed` input without reason, L3 absent in the catalogue's own checks, an empty
-  inputs list. Mutations: hash compare dropped, digest compare dropped, level copied from the
+  mismatched input hash, a mismatched record id, a `failed` input without reason, L3 absent in
+  the catalogue's own checks, an empty inputs list; and a fidelity file whose inputs still match
+  after an unrelated record edit keeps L4 (amended 23 Oct). Mutations: hash compare dropped, digest compare dropped, level copied from the
   file, lower checks copied from the file → each red against the unchanged suite.
 - `osd status` shows "L4 (2 of 2 converted)" for the fixture and the plain level for others.
 - Schema negatives for fidelity/1: missing catalog, unknown result, output without kind, input
@@ -97,7 +99,7 @@ schema.json` only if the `canonical-conversion` check needs a field (announce), 
 on E85 (merged) and, for rights, E35.
 
 **Evidence to inspect.** The round-trip test output; the fidelity fixture and its `osd status`
-line; the eight rejection reasons; `records.json` `catalog` on the published site after merge.
+line; the rejection reasons; `records.json` `catalog` on the published site after merge.
 
 **Dispositions of the Codex round (23 Oct).** Accepted: reader exists and reads files only
 (context corrected); Ophiolite facts verified from the Ophiolite program file and the E35 gap
