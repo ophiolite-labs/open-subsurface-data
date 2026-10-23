@@ -1,0 +1,26 @@
+id: nzpam/seismic-surveys-2d
+title: Seismic Surveys 2D (NZP&M Geodata Catalogue layers)
+summary: >-
+  "This feature class represents the location of 2D seismic shot by the Petroleum and Minerals
+  industry in NZ. The lines have been generalised." Each line carries the survey title, year,
+  operator, contractor, permit, environment, start and end dates and open-file status.
+publisher: {name: New Zealand Petroleum and Minerals, url: https://www.nzpam.govt.nz, country: NZ}
+origin:
+  url: https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/6
+  access: api
+  manifest_url: https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/6?f=json
+  notes: "Layer 6 of the GeodataCatalogue_Layers map service (https://www.nzpam.govt.nz/maps-geoscience/using-web-services); 990 features on 23 Oct 2026. Layer 7 holds the 3D survey outlines."
+licence:
+  name: New Zealand Crown copyright (no dataset licence stated on the service)
+  spdx: null
+  url: https://www.nzpam.govt.nz/about/copyright
+  redistribution: unknown
+  attribution: required
+kinds: [seismic-2d]
+region: {country: NZ, basin: New Zealand onshore and offshore basins, bbox: [165.0, -53.0, 180.0, -29.0]}
+listed_by: [publisher]
+known_issues:
+  - "A survey line index (generalised navigation and survey attributes), not seismic traces; the nearest kind is seismic-2d. The traces are in the NZP&M geodata catalogue (RealMe login)."
+  - "bbox is approximate (New Zealand and its offshore basins); some features cross the antimeridian."
+  - "The copyright page does not name the map services; the service's licence field is empty."
+added: 2026-10-23

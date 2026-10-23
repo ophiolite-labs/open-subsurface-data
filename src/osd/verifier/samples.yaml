@@ -25,7 +25,9 @@ force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_tr
 gsmma/hydrogeological-drilling-database: {file: true, sample: ["*"]}   # the bare CSV data.gov.tw names; content type and size not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-core-stations-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the core station table; not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-seismic-lines-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the seismic line table; not read (Cloudflare 403 text/html, 23 Oct)
+gsnsw/drillholes-petroleum: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (Content-Disposition inline), 1,221 features, 1,624,390 bytes
 gsq/qped: "the CKAN package lists no resources (23 Oct 2026); QPED files are reached through its own application"
+gsv/faults-latrobe-group-gippsland: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline), 47 features, 15,043 bytes
 helsinki-univ/outokumpu-deep-hole-vocs: ["*/files/*.xlsx?download=1"]   # Zenodo record page (the /api path is disallowed): two spreadsheets, 27,237 and 24,059 bytes
 ibm-research/netherlands-f3-interpretation: ["*/files/horizons.tar.gz?download=1"]   # Zenodo record page: the horizons archive, 95,320,034 bytes
 ie-pad/offshore-exploration-wells: ["*/Exploration_Wells_Irish_Offshore.csv.zip"]   # data.gov.ie page: the CSV zip, 10,487 bytes
@@ -40,6 +42,8 @@ nock/wells-drilled: ["*/pdf/Wells__Drilled.pdf"]   # page links one PDF table: W
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
 ns-energy/onshore-2d-seismic-navigation: ["*2017-11*Cumberland*region.zip"]   # atlas page: OFR 2017-11 Part 2 Cumberland shapefile zip, 1,954,295 bytes
 ns-energy/onshore-petroleum-well-log-database: ["*2017-09*Cape*Breton*region.zip"]   # atlas page: OFR 2017-09 Part 1 Cape Breton LAS zip, 4,837,104 bytes
+nzpam/petroleum-wells: ["*"]   # ArcGIS layer 4: one geojson export, all 1,302 features (maxRecordCount 2000), 977,308 bytes
+nzpam/seismic-surveys-2d: ["*"]   # ArcGIS layer 6: one geojson export, all 990 features (maxRecordCount 2000), 9,674,966 bytes
 ok-occ/oil-gas-data-files: ["*/esri/files/RBDMS_WELLS.zip"]   # page links many files; the RBDMS wells zip, 45,897,943 bytes
 opm/norne: ["*.DATA"]                             # the simulation deck
 opm/spe9: ["SPE9.DATA"]   # GitHub contents API: the SPE9 deck, 15,927 bytes
@@ -47,6 +51,7 @@ pgi/cbdg-boreholes: ["*"]   # ArcGIS layer: one geojson export of at most 1000 o
 sgc/banco-informacion-petrolera-pozos: ["*"]      # ArcGIS layer: one geojson export of at most 2000 features
 sgudds/register-geotermalnych-vrtov: ["*"]   # ArcGIS layer 2: one geojson export, all 307 features (maxRecordCount 1000), 392,511 bytes
 sintef/johansen: ["*/Sector5.zip"]   # page links eight zips; the 5-layer sector model, 3,943,155 bytes
+sk-mer/drill-core: ["*"]   # ArcGIS layer 2: one geojson export of at most 2000 of 104,754 features (kept as partial), 1,388,053 bytes
 sk-mer/vertical-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 119,595 features (kept as partial), 4,232,645 bytes
 sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the exploration wellbore table
 soton/scanner-pockmark-velocity-models: ["*/1/FAST_Final_Tomo_Vp_GI_geo_SP"]   # ePrints page links six files; the tomographic model, 146,169,210 bytes
