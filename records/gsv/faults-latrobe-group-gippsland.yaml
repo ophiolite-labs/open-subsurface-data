@@ -23,4 +23,8 @@ listed_by: [publisher]
 known_issues:
   - "Fault traces at Top Latrobe Group (map lines), interpreted for a groundwater study; no fault surfaces or throws."
   - "bbox is the extent of the 47 features as served on 23 Oct 2026."
+period:
+  start: "2011-06-30"
+  end: "2012-06-30"
+  stated: "Vicmap metadata (ISO 19115-3, linked as full_metadata_url from the dataset page): temporal extent 2011-06-30 to 2012-06-30; publication date 2018-02-01"
 added: 2026-10-23

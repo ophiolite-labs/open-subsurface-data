@@ -21,4 +21,5 @@ known_issues:
   - "Terms: copyright stays with the rights holders named in the copyright or metadata of each theme; the topographic base maps may be used only together with the NIBIS data."
   - "bbox is Germany with its North Sea and Baltic sectors, approximate."
   - "nibis.lbeg.de root answers 401; the cardomap3 viewer and the terms page answer 200."
+notes: "No period stated: the KW-FIS page gives no coverage, acquisition or release dates."
 added: 2026-10-23
