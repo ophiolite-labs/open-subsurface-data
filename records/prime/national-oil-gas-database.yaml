@@ -16,7 +16,7 @@ licence:
   url: https://prime.energy.gov.il/assets/static/pages/termsofuse/termsofuse_en.html
   redistribution: forbidden
   attribution: required
-kinds: [wellbore-headers, seismic-2d, seismic-3d, reports]
+kinds: [wellbore-headers, seismic-2d, seismic-3d, reports, potential-fields]
 region: {country: IL, basin: Levant Basin (onshore and offshore Israel), bbox: [32.0, 29.4, 35.9, 33.4]}
 listed_by: [publisher]
 known_issues:

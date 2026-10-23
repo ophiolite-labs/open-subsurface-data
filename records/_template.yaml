@@ -8,7 +8,7 @@ summary: >-
 publisher: {name: Publisher name, url: https://publisher.example, country: NL}
 origin:
   url: https://publisher.example/dataset          # the page a person opens; not an expiring link
-  access: anonymous                               # anonymous | registration | api | request
+  access: anonymous                               # anonymous | registration | api | request | purchase (from schema/record.schema.json)
 licence:
   name: Licence as the publisher names it
   spdx: null                                      # CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0 or null

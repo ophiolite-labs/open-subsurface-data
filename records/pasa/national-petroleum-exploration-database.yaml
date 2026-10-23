@@ -8,7 +8,7 @@ summary: >-
 publisher: {name: Petroleum Agency South Africa (PASA), url: https://www.petroleumagencysa.com, country: ZA}
 origin:
   url: https://www.petroleumagencysa.com/introduction/
-  access: request
+  access: purchase
   notes: "Ordering via https://geoportal.petroleumagencysa.com/Storefront/Viewer/index_map.html after registering as a commercial, governmental or academic entity; terms at /obtain-our-technical-data/, prices at /cost-of-data/, formats at /dataset-standard-format/."
 licence:
   name: Petroleum Agency SA Confidentiality Agreement and Data Confidentiality and Data Use Agreement
@@ -16,6 +16,11 @@ licence:
   url: https://www.petroleumagencysa.com/obtain-our-technical-data/
   redistribution: forbidden
   attribution: unknown
+  terms:
+    stated: "a purchase is a licence to use the data for at most 10 years, data must be returned when the agreement ends, and academic publications go to the Agency for review first"
+    duration: "at most 10 years from purchase"
+    review_before_publication: true
+    expires: null
 kinds: [wellbore-headers, wellbore-logs, core, seismic-2d, seismic-3d, geochemistry, reports]
 region: {country: ZA, basin: "South African offshore and the Karoo, Algoa and Zululand onshore basins", bbox: [13.0, -38.0, 33.5, -22.0]}
 size: {stated: "more than 300 000 line km's of 2D and 40 000 km² of 3D seismic data"}

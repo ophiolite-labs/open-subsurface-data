@@ -8,14 +8,14 @@ summary: >-
 publisher: {name: National Petroleum Corporation of Namibia (NAMCOR), url: https://www.namcor.com.na, country: NA}
 origin:
   url: https://www.namcor.com.na/technical-data/
-  access: request
+  access: purchase
   notes: "\"For more information kindly, contact the Asset Manager\"; digital well logs are for purchase at the Windhoek head office; surveys for sale are listed at https://www.namcor.com.na/data-sales/. Speculative seismic is sold by the multi-client companies."
 licence:
   name: Not stated
   spdx: null
   redistribution: unknown
   attribution: unknown
-kinds: [seismic-2d, seismic-3d, wellbore-logs, time-depth, core, geochemistry, reports]
+kinds: [seismic-2d, seismic-3d, wellbore-logs, time-depth, core, geochemistry, reports, potential-fields]
 region: {country: NA, basin: Namibian offshore and onshore, bbox: [8.0, -29.5, 25.3, -16.9]}
 listed_by: [publisher]
 known_issues:

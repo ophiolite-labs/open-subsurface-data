@@ -15,7 +15,7 @@ licence:
   spdx: null
   redistribution: unknown
   attribution: unknown
-kinds: [wellbore-headers, seismic-2d, seismic-3d, reports]
+kinds: [wellbore-headers, seismic-2d, seismic-3d, reports, potential-fields]
 region: {country: EG, basin: Egyptian basins incl. the Mediterranean and Nile Delta, bbox: [24.7, 21.7, 36.9, 33.6]}
 size: {stated: "16,981+ Wells, 465+ Seismic 3D, 658+ Seismic 2D, 106+ Gravity/Magnetic (home page counters)"}
 listed_by: [publisher]
