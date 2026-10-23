@@ -1,0 +1,30 @@
+id: dov/boringen-geothermie
+title: Boringen geothermie (DOV geothermal boreholes, WFS layer geothermie:boringen_geothermie)
+summary: >-
+  The DOV boreholes drilled for geothermal use: "Deze laag toont enkel de boringen met als doel
+  'Geothermie' met aanvangsdatum vanaf 01-01-2017." Each borehole carries its number, depth, start
+  date, driller, method, Lambert 72 coordinates and which descriptions exist, with a link to its
+  record sheet and borehole report.
+publisher: {name: Databank Ondergrond Vlaanderen (DOV), url: https://www.dov.vlaanderen.be, country: BE}
+origin:
+  url: https://www.dov.vlaanderen.be/geonetwork/srv/api/records/95ee5bfe-29cc-415a-bcf0-8cc880ab94a1
+  access: anonymous
+  manifest_url: "https://www.dov.vlaanderen.be/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=geothermie:boringen_geothermie&count=1000&outputFormat=application/json"
+  notes: "The layer is named in the DOV WFS capabilities (https://www.dov.vlaanderen.be/geoserver/wfs) with metadata record 95ee5bfe-29cc-415a-bcf0-8cc880ab94a1 and the keywords 'Herbruikbaar', 'Kosteloos', 'Vlaamse Open data'. The manifest_url is a GetFeature of the first 1,000 of 24,957 boreholes (numberMatched on 23 Oct 2026), 1,075,964 bytes, filename=boringen_geothermie.json."
+licence:
+  name: Modellicentie voor gratis hergebruik (Vlaamse overheid), per the DOV services terms of use
+  spdx: null
+  url: https://www.dov.vlaanderen.be/page/gebruiksvoorwaarden-dov-services
+  redistribution: allowed
+  attribution: required
+  statement: "Databank Ondergrond Vlaanderen - (vermelding van de beheerder en de specifieke geraadpleegde gegevens) - Geraadpleegd op dd/mm/jjjj, op https://www.dov.vlaanderen.be"
+kinds: [wellbore-headers, reports]
+region: {country: BE, basin: Flanders, bbox: [2.4570, 50.6868, 5.8819, 52.0121], crs: "EPSG:31370 (Belgian Lambert 72)"}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'Voor de gebruiksvoorwaarden op de DOV-data wordt verder verwezen naar de modellicentie voor gratis hergebruik. Onder deze licentie doet de instantie geen afstand van haar intellectuele rechten, maar mag de data voor eender welk doel hergebruikt worden, gratis en onder minimale restricties.'"
+  - "Metadata: 'elk commercieel of niet-commercieel hergebruik voor onbepaalde duur is toegelaten, zonder dat daar kosten aan verbonden zijn. Als enige gebruiksvoorwaarde geldt een bronvermeldingsplicht.'"
+  - "bbox is the layer's WGS84BoundingBox in the WFS capabilities."
+  - "The client field is withheld: opdrachtgever reads '[afgeschermd]'."
+notes: "No period: the layer states a start ('aanvangsdatum vanaf 01-01-2017'; metadata beginPosition 2017-01-01) and an end of 'unknown'."
+added: 2026-10-23

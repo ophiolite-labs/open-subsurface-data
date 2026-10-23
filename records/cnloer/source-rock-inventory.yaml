@@ -1,0 +1,26 @@
+id: cnloer/source-rock-inventory
+title: Source Rock Inventory (Canada-Newfoundland and Labrador offshore area)
+summary: >-
+  C-NLOER's source rock inventory for offshore Newfoundland and Labrador wells: well and operator,
+  sampled zone in metres, age, number of samples, TOC mean and range, kerogen type and maturity.
+publisher: {name: Canada-Newfoundland and Labrador Offshore Energy Regulator (C-NLOER), url: https://www.cnloer.ca, country: CA}
+origin:
+  url: https://www.cnloer.ca/geoscience/
+  access: anonymous
+  manifest_url: https://www.cnloer.ca/geoscience/
+  notes: "The Geoscience Information list on the page links foasourcerock.xlsx on the former www.cnlopb.ca host (469,933 bytes, Last-Modified 18 Dec 2025, read on 23 Oct 2026; one sheet, 327 rows)."
+licence:
+  name: C-NLOER website copyright notice
+  spdx: null
+  url: https://www.cnloer.ca/disclaimer/
+  redistribution: forbidden
+  attribution: unknown
+kinds: [geochemistry]
+region: {country: CA, basin: Newfoundland and Labrador offshore}
+listed_by: [publisher]
+known_issues:
+  - "Copyright: 'Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications.' 'Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited.'"
+  - "The page says 'This information can now be found on the Data and Information Hub' (https://home-cnlopb.hub.arcgis.com/); the hub's search API listed no items on 23 Oct 2026."
+  - "No bbox: the inventory lists wells, not an extent."
+  - "No period: the page and file state no dates for the samples."
+added: 2026-10-23

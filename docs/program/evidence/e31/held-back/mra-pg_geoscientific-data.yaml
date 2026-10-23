@@ -1,0 +1,28 @@
+id: mra-pg/geoscientific-data
+title: Geoscience Data (Geological Database System and Explorer 3, MRA Papua New Guinea)
+summary: >-
+  "All minerals data in the custody of the Mineral Resources Authority (MRA) is in the Geological
+  Database System, managed by the Geological Survey Division." Point data from archived exploration
+  reports are held in Explorer 3 ("over 900,000 point data"); maps and Geological Survey reports are
+  sold from a published price list.
+publisher: {name: "Mineral Resources Authority (MRA), Papua New Guinea", url: https://mra.gov.pg, country: PG}
+origin:
+  url: https://mra.gov.pg/investment/geoscientificdata/
+  access: purchase
+  notes: "The page's 'GIS Data Prices PDF' is https://mra.gov.pg/wp-content/uploads/2021/08/Shopping-List.pdf ('PNG MINERAL INFORMATION - MAPS & PUBLICATIONS, Updated January 2020'). The Open Map Portal (https://portal.mra.gov.pg/Map/) needs registration. Enquiries: info@mra.gov.pg."
+licence:
+  name: MRA website terms of use
+  spdx: null
+  url: https://mra.gov.pg/about-mra/termsofuse/
+  redistribution: unknown
+  attribution: unknown
+kinds: [geochemistry, reports]
+region: {country: PG, basin: Papua New Guinea}
+listed_by: [publisher]
+known_issues:
+  - "Terms of use: 'All contents of the Mineral Resources Authority – Papua New Guinea Web Site are: Copyright 2021 by Mineral Resources Authority Papua New Guinea and/or its suppliers. All rights reserved.'"
+  - "Purchase: 'Download our document to see shopping List of the Data being sold from MRA.' The list (January 2020) prices 1:250 000 Geological Series maps with explanatory notes at K60.00, map sheets with GSPNG reports at K30.00 to K110.00, the 1:1 million geological map at K80.00."
+  - "The price list names maps and reports; the page does not price the Explorer 3 point data."
+  - "Remote sensing data 'are scattered in patches over the country'. No bbox: the page states no extent."
+notes: "No period stated."
+added: 2026-10-23

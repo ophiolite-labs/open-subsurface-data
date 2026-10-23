@@ -1,0 +1,30 @@
+id: dov/graviteit-data-punten
+title: Bouguer graviteit-data punten (Brabant Massif gravity points, WFS layer gravimetrie:graviteit_data_punten)
+summary: >-
+  Bouguer gravity points from the 2004 gravity study of the Brabant Massif, carried out by the British
+  Geological Survey with GF Consult and the Belgian Geological Survey for ANRE (VLA04-3.1): "Deze
+  kaartlaag geeft de nieuwe meetpunten weer die verwerkt werden in deze studie, met meetwaarden van de
+  Bouguer graviteit." Each point has its value in mGal and Lambert 72 coordinates and height.
+publisher: {name: Databank Ondergrond Vlaanderen (DOV), url: https://www.dov.vlaanderen.be, country: BE}
+origin:
+  url: https://www.dov.vlaanderen.be/geonetwork/srv/api/records/979b8735-9093-4fb7-a74f-a48d1ff4caf7
+  access: anonymous
+  manifest_url: "https://www.dov.vlaanderen.be/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=gravimetrie:graviteit_data_punten&count=1000&outputFormat=application/json"
+  notes: "The layer is named in the DOV WFS capabilities (https://www.dov.vlaanderen.be/geoserver/wfs) with metadata record 979b8735-9093-4fb7-a74f-a48d1ff4caf7 and the keyword 'geofysica'. The manifest_url is a GetFeature of the first 1,000 of 16,915 points (numberMatched on 23 Oct 2026), 236,439 bytes, filename=graviteit_data_punten.json."
+licence:
+  name: Modellicentie voor gratis hergebruik (Vlaamse overheid), per the DOV services terms of use
+  spdx: null
+  url: https://www.dov.vlaanderen.be/page/gebruiksvoorwaarden-dov-services
+  redistribution: allowed
+  attribution: required
+  statement: "Databank Ondergrond Vlaanderen - (vermelding van de beheerder en de specifieke geraadpleegde gegevens) - Geraadpleegd op dd/mm/jjjj, op https://www.dov.vlaanderen.be"
+kinds: [potential-fields]
+region: {country: BE, basin: Brabant Massif (Flanders), bbox: [2.7596, 50.5419, 5.9427, 51.3558], crs: "EPSG:31370 (Belgian Lambert 72)"}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'Voor de gebruiksvoorwaarden op de DOV-data wordt verder verwezen naar de modellicentie voor gratis hergebruik. Onder deze licentie doet de instantie geen afstand van haar intellectuele rechten, maar mag de data voor eender welk doel hergebruikt worden, gratis en onder minimale restricties.'"
+  - "Metadata: 'elk commercieel of niet-commercieel hergebruik voor onbepaalde duur is toegelaten, zonder dat daar kosten aan verbonden zijn. Als enige gebruiksvoorwaarde geldt een bronvermeldingsplicht.'"
+  - "bbox is the layer's WGS84BoundingBox in the WFS capabilities."
+  - "'Er zijn geen data gegeven voor de Antwerpse Kempen en de Westhoek omdat voor deze gebieden oudere data verwerkt werden (VLA02-7.3).'"
+notes: "No period: the layer names the 2004 study, not the survey dates."
+added: 2026-10-23

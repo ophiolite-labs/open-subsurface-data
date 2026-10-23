@@ -1,0 +1,29 @@
+id: cnloer/geoscience-program-inventories
+title: Geological Program Inventory and Geoscientific Report Inventory (Canada-Newfoundland and Labrador offshore area)
+summary: >-
+  C-NLOER's lists of geological programs and geoscientific reports for the offshore area: program
+  number, title, operator, wells or permits, region (Labrador North and South, Eastern, Southern and
+  Western Newfoundland, Jeanne d'Arc) and data release date, and the regulator's own geoscientific
+  report numbers and titles.
+publisher: {name: Canada-Newfoundland and Labrador Offshore Energy Regulator (C-NLOER), url: https://www.cnloer.ca, country: CA}
+origin:
+  url: https://www.cnloer.ca/geoscience/
+  access: anonymous
+  manifest_url: https://www.cnloer.ca/geoscience/
+  notes: "The Geoscience Information list on the page links foageol.xlsx (486,211 bytes, Last-Modified 18 Dec 2025; 508 rows) and georepinv.xlsx (98,731 bytes; 579 rows) on the former www.cnlopb.ca host, read on 23 Oct 2026, beside Geotechnical and Environmental Program inventories. Requests for the programs go to information@cnlopb.ca."
+licence:
+  name: C-NLOER website copyright notice
+  spdx: null
+  url: https://www.cnloer.ca/disclaimer/
+  redistribution: forbidden
+  attribution: unknown
+kinds: [source-list, reports]
+region: {country: CA, basin: Newfoundland and Labrador offshore}
+listed_by: [publisher]
+known_issues:
+  - "Copyright: 'Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications.' 'Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited.'"
+  - "The page says 'This information can now be found on the Data and Information Hub' (https://home-cnlopb.hub.arcgis.com/); the hub's search API listed no items on 23 Oct 2026."
+  - "The inventories list programs and reports; the page does not link the reports themselves."
+  - "No bbox: the inventories name regions, not an extent."
+  - "No period: the page states none."
+added: 2026-10-23

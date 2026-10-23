@@ -1,0 +1,25 @@
+id: geozs/kataster-raziskovalnih-vrtin
+title: Kataster raziskovalnih vrtin (Cadastre of research boreholes)
+summary: >-
+  The Geological Survey of Slovenia's cadastre of geological boreholes: "Kataster geoloških vrtin obsega
+  pregled vrtin na celotnem območju R Slovenije", entered by hand into an MS Access database, for an
+  overview of borehole locations and an understanding of the 3D geological structure of Slovenia.
+publisher: {name: Geološki zavod Slovenije (Geological Survey of Slovenia), url: https://www.geo-zs.si, country: SI}
+origin:
+  url: https://egeologija.si/geonetwork/srv/metadata/54cebfc7-d04f-4c7b-a37f-e51ea41a7020
+  access: anonymous
+  manifest_url: "https://egeologija.si/geonetwork/srv/eng/resources.get?uuid=54cebfc7-d04f-4c7b-a37f-e51ea41a7020&fname=VRTINE.zip&access=public"
+  notes: "The eGeologija catalogue record names VRTINE.zip as its WWW:DOWNLOAD resource (application/x-zip-compressed, 2,823,170 bytes, Last-Modified 22 Sep 2020, on 23 Oct 2026). Metadata date 2024-03-01."
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: SI, basin: Slovenia, bbox: [13.3835, 45.4258, 16.6079, 46.8763], crs: "MGI / Slovene National Grid (EPSG:3787)"}
+listed_by: [publisher]
+known_issues:
+  - "useLimitation: 'Data is available under a Creative Commons - Attribution 4.0 International (CC BY 4.0) license.'"
+notes: "No period: the record's temporal extent states an end (2008-11-13) and no beginning; its reference dates are 2005-10-31 and 2006-11-10."
+added: 2026-10-23

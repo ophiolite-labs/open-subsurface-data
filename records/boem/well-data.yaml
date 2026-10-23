@@ -1,0 +1,29 @@
+id: boem/well-data
+title: Well Information (Gulf of America OCS borehole, directional survey and velocity survey downloads)
+summary: >-
+  BOEM Data Center well information: "information on borehole activities such as drilling activity,
+  counts on the number of boreholes completed, and number of shut-in's", with lease number, well name,
+  spud date, well class and surface area/block. ASCII downloads: Borehole ("All Releasable Borehole
+  Information"), API number changes, directional survey points and azimuths, and velocity surveys
+  "10 years old or older".
+publisher: {name: Bureau of Ocean Energy Management (BOEM), url: https://www.boem.gov, country: US}
+origin:
+  url: https://www.data.boem.gov/Main/Well.aspx
+  access: anonymous
+  manifest_url: https://www.data.boem.gov/Main/Well.aspx
+  notes: "The page links fixed-width and delimited zips under /Well/Files/ (Borehole 5010delimit.zip, 3,994,558 bytes on 23 Oct 2026, dated 10/18/2026 on the page), PDF reports (borehole by lease and by area/block, well completions, well tests 1975 to present), and online queries. Scanned well documents are in the File Request System. Alaska and Pacific well downloads are on their own pages."
+licence:
+  name: BOEM Data Center disclaimer
+  spdx: null
+  url: https://www.data.boem.gov/Main/HtmlPage.aspx?page=Disclaimer
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, wellbore-paths, time-depth, reports]
+region: {country: US, basin: "Gulf of America Outer Continental Shelf", crs: "NAD 1927 (GOA coordinate values)"}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimer: 'This accessible computer data is from a working database which is derived by entering data from documents submitted to the Federal Government from oil companies, other Government Agencies, and/or the public. Some errors may exist in this data'. The page states no licence or reuse terms."
+  - "No bbox: the page names the Gulf of America OCS but states no extent."
+  - "Directional surveys: 'BSEE transitioned to a PPDM data model for directional survey storage and management on July 25-26, 2020'; bottom hole locations are now 'calculated from the directional survey associated with the well'."
+notes: "No period stated for the borehole file as a whole; the well test PDFs run from 1975 to present."
+added: 2026-10-23

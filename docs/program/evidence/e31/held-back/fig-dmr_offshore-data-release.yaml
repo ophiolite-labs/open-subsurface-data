@@ -1,0 +1,27 @@
+id: fig-dmr/offshore-data-release
+title: Offshore data release (Falkland Islands Government, Department of Mineral Resources)
+summary: >-
+  "Data acquired by the Falkland Islands Government under Exploration Licences or Production Licenses ...
+  from the relevant licensees may be requested to be made available by the Falkland Islands Government to
+  bona-fide exploration companies interested in exploring in the North Falkland Basin, South Falkland Basin
+  and Falkland Plateau Basin and also to academic individuals and organisations for research and teaching
+  purposes only."
+publisher: {name: "Falkland Islands Government, Department of Mineral Resources (DMR)", url: https://www.gov.fk/mineralresources/, country: FK}
+origin:
+  url: https://www.gov.fk/mineralresources/regulatory/data-management/
+  access: request
+  notes: "Requests on the 'DMR Offshore Data Release request' form, https://www.gov.fk/mineralresources/wp-content/uploads/sites/26/2026/03/FIG_DMR_Offshore_Data_Release_Form_-_Final_-_May_2025.pdf. Environmental data are held by the Falkland Islands data centre (SAERI)."
+licence:
+  name: FIG data release decision (no licence stated on the page)
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [seismic-2d, seismic-3d, reports]
+region: {country: FK, basin: "North Falkland Basin, South Falkland Basin, Falkland Plateau Basin"}
+listed_by: [publisher]
+known_issues:
+  - "'The decision to release data is made by FIG/ the Governor and only once the data are greater than 5.5 years old (or greater than 10 years in the case of seismic data acquired under exclusive licence arrangements)'. Academic use is 'for research and teaching purposes only'."
+  - "The page says 'seismic data' without naming 2D or 3D; the kinds are the seismic kinds the licences could hold, not a stated inventory."
+  - "No bbox: the page names the basins but states no extent."
+notes: "No period stated."
+added: 2026-10-23

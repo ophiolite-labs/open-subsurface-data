@@ -1,0 +1,30 @@
+id: sd-danr/oil-gas-production-injection
+title: Oil and Gas Data/Reports (South Dakota production and injection data)
+summary: >-
+  South Dakota DANR's oil and gas data page: "Monthly Production Reports for Oil & Gas Wells" (MS Excel,
+  1950 to present) and "Monthly Injection Reports for Water, Air, and Gas Injection Wells" (1977 to
+  present), with enhanced recovery unit production and injection, yearly field production tables and
+  county maps of wells, test holes and fields.
+publisher: {name: South Dakota Department of Agriculture and Natural Resources (DANR), url: https://danr.sd.gov, country: US}
+origin:
+  url: https://danr.sd.gov/Environment/MineralsMining/OilGas/Data.aspx
+  access: anonymous
+  manifest_url: https://danr.sd.gov/Environment/MineralsMining/OilGas/Data.aspx
+  notes: "The page links Oil_Gas_Production_All_Years.xlsx (14,332,260 bytes on 23 Oct 2026) and UIC_InjectionData_All_Years.xlsx on sddenr.net, a field-name key, 2025 tables and county well maps (PDF, 07.11.2025). Well data are in the SDGS Online Oil and Gas Database and Interactive Data Map; a geodatabase of wells, recovery units and fields is at http://www.sdgs.usd.edu/SDOIL/oilgas_databases.aspx."
+licence:
+  name: State of South Dakota legal disclaimer (on the data page)
+  spdx: null
+  url: https://danr.sd.gov/Environment/MineralsMining/OilGas/Data.aspx
+  redistribution: unknown
+  attribution: unknown
+kinds: [production, reports]
+region: {country: US, basin: "South Dakota (Harding, Fall River, Custer, Meade, Butte and Perkins counties)"}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimer: 'The use of this data is limited to informational and educational purposes only. This data is provided as is'."
+  - "No bbox: the page states no extent."
+period:
+  start: "1950"
+  end: "2026-10-23"
+  stated: "'Monthly Production Reports for Oil & Gas Wells ... 1950 to Present'; injection '1977 to Present' (present read as 23 Oct 2026)"
+added: 2026-10-23
