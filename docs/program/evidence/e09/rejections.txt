@@ -1,0 +1,40 @@
+## accepted: the fixture (exit 0)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L4  acme/two-wells  canonical-conversion: pass (2 of 2 inputs converted to kinds well-log; fidelity/1 for snapshot 0aa23aa46181… built 2026-10-23T12:00:00Z)
+
+## 1 mismatched input hash (exit 1)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L3  acme/two-wells  fidelity rejected: input well-c.las (abababababab…) is not a file of the latest verification
+
+## 2 mismatched record id (exit 1)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L3  acme/two-wells  fidelity rejected: the fidelity record names record acme/other-wells, not acme/two-wells
+
+## accepted: another records_digest and an older built_at are identity, not criteria (exit 0)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L4  acme/two-wells  canonical-conversion: pass (2 of 2 inputs converted to kinds well-log; fidelity/1 for snapshot ffffffffffff… built 2026-10-23T08:59:59Z)
+
+## 3 failed input without reason (exit 1)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L3  acme/two-wells  fidelity rejected: input well-b.las is failed without a reason
+
+## 5 L3 absent in the catalogue's own checks (exit 0)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L2  acme/two-wells  canonical-conversion: pass (2 of 2 inputs converted to kinds well-log; fidelity/1 for snapshot 0aa23aa46181… built 2026-10-23T12:00:00Z)
+  L2  acme/two-wells  L4 not awarded: L4 needs the catalogue's own L1-L3: its own checks reach L2
+
+## 6 empty inputs list (exit 1)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L3  acme/two-wells  fidelity rejected: the fidelity record lists no inputs
+
+## 7 a file of the inventory without a result (exit 1)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L3  acme/two-wells  fidelity rejected: 1 of 2 files of the latest verification have no result: well-b.las
+
+## 4 partial input without reason (exit 1)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L3  acme/two-wells  fidelity rejected: input well-b.las is partial without a reason
+
+## 8 no input converted (exit 1)
+$ osd verify acme/two-wells --fidelity-from fidelity.json
+  L3  acme/two-wells  fidelity rejected: no input converted

@@ -1,0 +1,48 @@
+{
+  "format": "osd.manifest/3",
+  "created": "2026-10-23T12:00:00Z",
+  "catalog_url": "https://opensubsurfacedata.org/data/stac/catalog.json",
+  "selection": "collections",
+  "entries": [
+    {
+      "collection_id": "opm--norne",
+      "record_id": "opm/norne",
+      "title": "Norne field simulation case (OPM data)",
+      "origin_url": "https://github.com/OPM/opm-data",
+      "access": "anonymous",
+      "licence": {
+        "name": "Open Database License 1.0 (decks); Database Contents License 1.0 (data)",
+        "spdx": "ODbL-1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": true
+      },
+      "known_issues": [
+        "README adds: git history contains proprietary decks (now removed) where usage restrictions may apply.",
+        "NTNU's own Norne hosting is no longer the source; OPM is the live home (search result, not opened on the NTNU side).",
+        "share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+      ],
+      "assets": {
+        "norne/NORNE_ATW2013.DATA": {
+          "href": "https://raw.githubusercontent.com/OPM/opm-data/master/norne/NORNE_ATW2013.DATA",
+          "title": "norne/NORNE_ATW2013.DATA",
+          "roles": [
+            "data"
+          ],
+          "file:size": 12129,
+          "file:checksum": "1220f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080"
+        }
+      },
+      "coverage": "sampled"
+    }
+  ],
+  "metadata": {
+    "catalog": {
+      "source_commit": "b900d6da09bff659b29d229acf950e96ec348356",
+      "verification_commit": null,
+      "built_at": "2026-10-23T12:00:00Z",
+      "records_digest": "ab90fa63fd9125323171061b87e63cc183d64dbc28fab1c0111062a989dc23fe"
+    }
+  }
+}
