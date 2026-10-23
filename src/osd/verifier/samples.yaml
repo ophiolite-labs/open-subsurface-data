@@ -36,6 +36,7 @@ dov/boringen: {file: true, sample: ["*"]}   # WFS GetFeature answers application
 dov/boringen-geothermie: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=boringen_geothermie.json), first 1,000 of 24,957 features, 1,075,964 bytes
 dov/formele-stratigrafie: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=formele_stratigrafie.json), first 1,000 of 107,753 features, 635,336 bytes
 dov/graviteit-data-punten: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=graviteit_data_punten.json), first 1,000 of 16,915 features, 236,439 bytes
+drieat-idf/puits-de-geothermie: ["https://atom.geo-ide.developpement-durable.gouv.fr/atomArchive/GetResource?id=e0d88ccf-*"]   # data.gouv.fr dataset API (json walk, robots 200, /api/1/datasets/r/ disallowed): the internet Atom shapefile zip, 23,897 bytes (atom host robots 404)
 equinor/drogon: ["DROGON_HIST.DATA"]   # GitHub contents API of eclipse/model: the history deck, 6,010 bytes
 fl-dep/oil-gas-permit-database: ["*.xlsx"]   # page links one spreadsheet: OG_WELLS_WEBSITE_4.xlsx, 703,015 bytes
 force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip?download=1"]   # Zenodo record page: the LAS zip, 169,785,172 bytes

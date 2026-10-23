@@ -1,0 +1,24 @@
+id: lpra/well-database
+title: Well Database (Liberia Petroleum Regulatory Authority)
+summary: >-
+  LPRA's table of the offshore wells drilled in Liberia, from Chevron's llB-1 to ExxonMobil's
+  Mesurado-1: date, operator, well name, depth in metres, block number and result (dry, hydrocarbon
+  shows with net pay, discovery).
+publisher: {name: Liberia Petroleum Regulatory Authority (LPRA), url: https://lpra.gov.lr, country: LR}
+origin:
+  url: https://lpra.gov.lr/well-database/
+  access: anonymous
+  notes: "Twelve wells in an HTML table on 23 Oct 2026, e.g. 'Feb-12 African Petroleum Narina-1 4,850 9 Discovery;32 m net'. No manifest_url: the page lists no files."
+licence:
+  name: Not stated ("Copyright 2024")
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: LR, basin: "Liberia offshore (blocks 9 to 17)"}
+listed_by: [publisher]
+known_issues:
+  - "The page carries only 'Copyright 2024'; no licence or terms page found."
+  - "No bbox: the table names blocks but states no extent."
+notes: "No period set: the table dates wells from '1970' to 'Dec-16' with two-digit years."
+added: 2026-10-23

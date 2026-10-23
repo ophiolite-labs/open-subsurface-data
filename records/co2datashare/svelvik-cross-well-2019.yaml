@@ -1,0 +1,32 @@
+id: co2datashare/svelvik-cross-well-2019
+title: Svelvik CO2 Field Lab cross-well data 2019
+summary: >-
+  "This data set was acquired during the Pre-ACT project at the Svelvik CO2 Field Laboratory to develop
+  and test methods for CO2 monitoring. It includes cross-well seismic measurements taken before, during,
+  and after the CO2 injection", as seismic data in sg2 format with survey records, acquisition
+  geometries and documentation.
+publisher: {name: SINTEF (Svelvik CO2 Field Lab) via CO2 DataShare, url: https://co2datashare.org, country: "NO"}
+origin:
+  url: https://co2datashare.org/dataset/svelvik-co2-field-lab-cross-well-data-2019
+  access: anonymous
+  notes: "Download parts after ticking the licence-acceptance box; no login. The download is a POST behind that box, so there is no listing the verifier reads and no manifest_url. DOI 10.11582/2025.00062."
+licence:
+  name: Svelvik 2019 Dataset License
+  spdx: null
+  url: https://co2datashare.org/view/license/157f3e35-e59f-4baa-aa12-5543c9f0c264
+  redistribution: allowed
+  attribution: required
+  statement: "We acknowledge SINTEF, the ECCSEL Svelvik CO2 Field Lab, and the Pre-ACT project (RCN project number 271496) for giving access to the data."
+kinds: [seismic-2d]
+region: {country: "NO", basin: "ECCSEL Svelvik CO2 Field Lab"}
+size: {bytes_estimate: 1073741824, stated: "Svelvik CO2 Field Lab cross-well data 2019 ZIP 1 GiB"}
+listed_by: [publisher]
+notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. A link to the terms and the DOI must be given."
+known_issues:
+  - "Cross-well seismic between wells, repeated before, during and after injection; the schema has no cross-well kind, so it is recorded as seismic-2d."
+  - "No bbox: the portal states one point (Longitude 10.4258501, Latitude 59.6148044), not an extent."
+period:
+  start: "2019-08-08"
+  end: "2019-11-06"
+  stated: "CO2 DataShare dataset page 'Period covered by the dataset' Start: August 8, 2019 End: November 6, 2019; release date 2025-04-25"
+added: 2026-10-23
