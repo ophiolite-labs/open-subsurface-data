@@ -1,0 +1,22 @@
+id: wa-demirs/petroleum-wells
+title: WA Petroleum Wells (DMIRS-025)
+summary: >-
+  A reference system for petroleum exploration and development wells drilled in Western Australia, onshore and offshore (offshore prior to 1 January 2012, when NOPTA took over offshore wells). Onshore wells are updated on a regular basis.
+publisher: {name: "Department of Energy, Mines, Industry Regulation and Safety (Western Australia)", url: https://www.wa.gov.au, country: AU}
+origin:
+  url: https://catalogue.data.wa.gov.au/dataset/wa-onshore-petroleum-wells-dmirs-025
+  access: anonymous
+  manifest_url: https://catalogue.data.wa.gov.au/api/3/action/package_show?id=wa-onshore-petroleum-wells-dmirs-025
+  notes: Files (GDB, SHP, TAB, KML) via https://dasc.dmirs.wa.gov.au/home?productAlias=WAPetroleumWells; WFS/WMS and ArcGIS REST on public-services.slip.wa.gov.au. Projection GDA2020.
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: AU, basin: "Western Australian basins (Perth, Canning, Carnarvon, Browse, Bonaparte)", bbox: [111.59, -34.75, 128.98, -10.63], crs: "EPSG:7844"}
+listed_by: [publisher]
+known_issues:
+  - "WAPIMS (wapims.dmp.wa.gov.au), which serves the well reports and logs, answered an Incapsula challenge to automated requests on 23 Oct 2026: blocked, not dead (OSD-D9). This record is the well index only."
+added: 2026-10-23

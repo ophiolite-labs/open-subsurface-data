@@ -1,0 +1,22 @@
+id: gsv/petroleum-wells
+title: Petroleum Wells that are available to the public (from Geological Survey of Victoria's DbMap database)
+summary: >-
+  Petroleum wells in Victoria populated from original well completion reports; actively maintained, distinct from the GEDIS boreholes dataset though the wells overlap in most cases.
+publisher: {name: "Geological Survey of Victoria (Department of Energy, Environment and Climate Action)", url: https://www.deeca.vic.gov.au, country: AU}
+origin:
+  url: https://discover.data.vic.gov.au/dataset/petroleum-wells-that-are-available-to-the-public-from-geological-survey-of-victorias-dbmap-data
+  access: anonymous
+  notes: Downloads (SHP, GDB, TAB, DXF, DWG, MIF) through Vicmap DataShare, https://datashare.maps.vic.gov.au/search?md=da162569-99b5-5e2e-b85e-7f97d87e56c6
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: AU, basin: "Otway, Gippsland and Murray basins", bbox: [140.9, -40.5, 150.0, -33.9]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is Victoria with its offshore, approximate; the catalogue entry states no extent."
+  - "earthresources.vic.gov.au answered HTTP 403 to automated requests on 23 Oct 2026; the data.vic catalogue answers."
+added: 2026-10-23
