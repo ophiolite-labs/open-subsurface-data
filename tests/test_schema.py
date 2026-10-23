@@ -173,6 +173,14 @@ def test_new_scaffold_comments_list_the_schema_values():
     assert lines["listed_by"] == " | ".join(props["listed_by"]["items"]["enum"])
 
 
+def test_new_scaffold_kinds_comment_lists_the_schema_kinds():
+    text = new.scaffold("https://acme.example/demo", "Demo", "acme/demo", date(2026, 10, 23))
+    (line,) = [x for x in text.splitlines() if x.startswith("kinds:")]
+    assert line.split("#", 1)[1].strip() == "fill: " + " | ".join(RECORD.schema["properties"]["kinds"]["items"]["enum"])
+    listed = line.split("fill: ", 1)[1].split(" | ")
+    for kind in NEW_KINDS + RECORD_3_KINDS:
+        assert kind in listed, kind
+
 
 # --- osd status: a stated absolute expiry beside the level ------------------------------------------
 
