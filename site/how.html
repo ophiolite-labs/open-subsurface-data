@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to read the map · Open Subsurface Data</title>
+<meta name="description" content="What the levels on the Open Subsurface Data map mean, and how to open a layer in QGIS or Python.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page">
+<main>
+<p><a href="./">← Back to the map</a></p>
+<h1>How to read the map</h1>
+<p class="muted">The map lists open subsurface datasets: wells, seismic, horizons, production. Each one
+is described by a record that repeats what its publisher says. This page explains the level next
+to each dataset, how to take a layer into your own tools, and how to add a dataset.</p>
+
+<h2>The levels</h2>
+<p>Every dataset carries a level. A tool sets it by checking the dataset; nobody types it by hand.
+The levels are a ladder: a dataset reaches a level only after it has passed every level below.</p>
+<table>
+  <tr><th>Level</th><th>What it means</th><th>Who checks it</th></tr>
+  <tr><td><span class="lvl L0">L0</span> listed</td><td>A record exists with the publisher, the place to get the data and the licence, as the publisher states them.</td><td>a contributor, by pull request</td></tr>
+  <tr><td><span class="lvl L1">L1</span> reachable</td><td>The publisher's page for the dataset answers.</td><td>the verifier, over the network</td></tr>
+  <tr><td><span class="lvl L2">L2</span> checksummed</td><td>The files have been fetched and hashed, and the licence text has been saved.</td><td>the verifier</td></tr>
+  <tr><td><span class="lvl L3">L3</span> outlined</td><td>The wellbores and survey outlines on the map were read from the data itself.</td><td>the outline extractor</td></tr>
+  <tr><td><span class="lvl L4">L4</span> converted</td><td>The data has been read into a standard form, with a record of what was kept and what was lost.</td><td>the Ophiolite readers</td></tr>
+</table>
+<p><span class="stale">stale</span> next to a level means the last check is more than 30 days old. The
+level was true then; it may not be now.</p>
+<p>A <b>dashed</b> outline is a placeholder drawn by hand to show roughly where the data lies. It is
+not taken from the data, and it keeps the dataset at L1 or below. A <b>blue dashed rectangle</b> is
+the area the record states, not the data's real footprint. Green circles are wellbores; where they
+are dense they are grouped into one circle with a count until you zoom in.</p>
+
+<h2>Taking a layer into your own tools</h2>
+<p>Every outline on the map is in one GeoJSON file, in longitude and latitude (EPSG:4326). Each
+feature has a <code>record_id</code> that names the dataset it belongs to. The detail panel on the map
+shows these three cards for the dataset you selected; here they are for Volve.</p>
+
+<div class="card" id="card-qgis"><b>Open in QGIS</b>
+Layer → Add Layer → Add Vector Layer. Source type: Protocol: HTTP(S). URI: the address below.
+Then filter the layer on <code>record_id</code>.
+<pre data-snippet="url">https://opensubsurfacedata.org/data/outlines.geojson</pre></div>
+
+<div class="card" id="card-python"><b>Read in Python</b>
+Standard library only. This keeps the features of one dataset.
+<pre data-snippet="python">import json, urllib.request
+fc = json.load(urllib.request.urlopen("https://opensubsurfacedata.org/data/outlines.geojson"))
+mine = [f for f in fc["features"] if f["properties"]["record_id"] == "equinor/volve"]
+print(len(mine), "features")</pre></div>
+
+<div class="card" id="card-get"><b>Get the data</b>
+The data itself stays with its publisher. The record names where to get it and under which
+licence; this prints both.
+<pre data-snippet="python">import json, urllib.request
+recs = json.load(urllib.request.urlopen("https://opensubsurfacedata.org/data/records.json"))["records"]
+volve = next(r for r in recs if r["id"] == "equinor/volve")
+print(volve["origin"]["url"], "|", volve["licence"]["name"])</pre>
+<p class="muted">Fetching the files by a manifest, and reading them straight into Ophiolite, are
+planned but not built yet.</p></div>
+
+<h2>The licence rule</h2>
+<p>The publisher's page is the authority. A record repeats what the publisher says about the
+licence, including <code>unknown</code> when the publisher does not say. Nothing on this site is legal
+advice. Before you use or share a dataset, read the licence on the publisher's own page.</p>
+
+<h2>Adding a dataset</h2>
+<ol>
+  <li>Copy <code>records/_template.yaml</code> to <code>records/&lt;publisher&gt;/&lt;dataset&gt;.yaml</code> in the
+    <a href="https://github.com/ophiolite-labs/open-subsurface-data">repository</a>.</li>
+  <li>Fill in only what the publisher states. <code>unknown</code> is a fine answer for a licence field.</li>
+  <li>Open a pull request. The check validates the record and tries the publisher's page, and a
+    reviewer compares the licence fields with that page.</li>
+</ol>
+<p>An outline can be added the same way, under <code>outlines/</code>. See
+<a href="https://github.com/ophiolite-labs/open-subsurface-data/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+</main>
+</body>
+</html>
