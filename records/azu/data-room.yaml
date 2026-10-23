@@ -1,0 +1,31 @@
+id: azu/data-room
+title: Data Room of the Croatian Hydrocarbon Agency
+summary: >-
+  A centralized reference database for the assessment of hydrocarbon resources, geothermal water for
+  energy purposes and geological structures for natural gas storage and permanent CO2 disposal. All
+  seismic (2D and 3D) and basic well data are loaded into three Kingdom projects (Adriatic Sea,
+  Pannonian Basin, Dinarides); other well data (reports, well logs, velocity measurements) are in a
+  web browser as .pdf and .tif. Used physically or virtually after an access form.
+publisher: {name: "Croatian Hydrocarbon Agency (Agencija za ugljikovodike, AZU)", url: https://www.azu.hr, country: HR}
+origin:
+  url: https://www.azu.hr/en-us/data-room
+  access: purchase
+  notes: "Access form and Data Confidentiality Agreement before a visit. Fees and conditions: Pravilnik o pristupu sobi s podacima i korištenju podataka, Narodne novine 52/2023 (linked from the Data Room page). Academic, educational and state institutions enter and view free and sign a statement instead of the confidentiality agreement."
+licence:
+  name: Pravilnik o pristupu sobi s podacima i korištenju podataka (NN 52/2023); Data Confidentiality Agreement; data use agreement
+  spdx: null
+  url: https://narodne-novine.nn.hr/clanci/sluzbeni/full/2023_05_52_872.html
+  redistribution: forbidden
+  attribution: unknown
+  terms:
+    stated: "Naknada za pristup sobi s podacima i pregled podataka [...] ugljikovodika iznosi 2.000,00 eura. [...] 2D seizmički izvorni podaci – naknada iznosi 10,00 eura po km [...] 3D seizmički obrađeni podaci – naknada iznosi 1.000,00 eura po km2 [...] Podaci o bušotinama – naknada iznosi 500,00 eura po bušotini. [...] Primatelj odobrenja za korištenje podataka se slaže da će podatke i njihove kopije koristiti za internu upotrebu i da ih ne smije prodavati, trgovati njima, otkriti bilo kojoj trećoj strani ili na bilo koji način učiniti dostupnima."
+    duration: null
+kinds: [seismic-2d, seismic-3d, wellbore-headers, wellbore-logs, time-depth, reports]
+region: {country: HR, basin: "Adriatic Sea, Pannonian Basin and Dinarides", bbox: [13.0, 42.0, 19.5, 46.6]}
+listed_by: [publisher]
+known_issues:
+  - "The Data Room page says: \"All data contained in the data room are the property of the Republic of Croatia and may not be used without permission.\""
+  - "Geothermal, gas storage and CO2 storage uses pay lower data fees (Article 8: 2D raw 5,00 EUR/km, well data 50,00 EUR per well) and no entry fee."
+  - "time-depth stands for the \"velocity measurements\" the page names. bbox is Croatia with its Adriatic offshore, approximate."
+notes: "licence.terms.stated quotes Articles 4(1), 7 and 5(6) of the Pravilnik (NN 52/2023, in force eight days after publication, signed 2 May 2023) as read on 23 Oct 2026; fees exclude VAT (Article 9(2))."
+added: 2026-10-23

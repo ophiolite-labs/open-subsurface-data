@@ -1,0 +1,31 @@
+id: sztfh/seismic-and-well-log-databases
+title: Seismic and borehole geophysics databases of the Hungarian State Geological, Geophysical and Mining Data Repository
+summary: >-
+  The seismic database holds field and processed data of 2D and 3D seismic surveys carried out in
+  Hungary, regardless of contractor or purpose, in SEGY and SEGD; the borehole geophysics database
+  holds well logs as LAS files, about 7200 objects informative for hydrocarbon exploration, 1700 of
+  them digital. Copies are released by the Repository (Adattár) for a fee.
+publisher: {name: Szabályozott Tevékenységek Felügyeleti Hatósága (SZTFH), url: https://sztfh.hu, country: HU}
+origin:
+  url: https://hugeo.hu/hu/adatbank/geofizikai-adatbazisok/geofizikai-adatbazisok
+  access: purchase
+  notes: "Access rules: https://hugeo.hu/hu/adatbank/adattar/adattari-adatok-hozzaferhetosege/adattari-adatok-hozzaferhetosege. A free Digital Data Room (Kingdom projects, booked by e-mail to adatszoba@sztfh.hu) shows data for selected areas; data are ordered through the Adattár. Coverage maps: https://map.hugeo.hu/szeizmika/."
+licence:
+  name: SZTFH közleménye (2. melléklet a 11/2025. (VII. 17.) elnöki utasításhoz)
+  spdx: null
+  url: https://hugeo.hu/sites/default/files/2025-07/11_2025%20%28VII.17.%29%20eln%C3%B6ki%20utas%C3%ADt%C3%A1s%20a%20Magyar%20%C3%81llami%20F%C3%B6ldtani%2C%20Geofizikai%20%C3%A9.._2%20mell.pdf
+  redistribution: restricted
+  attribution: unknown
+  terms:
+    stated: "Az ügyfél – térítési díj ellenében – másolatot kérhet a betekintésre kiadott adattári anyagról. [...] Nem üzleti célú adatigénylés esetén – pl. egyetemi hallgatók, doktoranduszok számára – [...] 50% díjkedvezményt vagy díjmentességet engedélyezhet. [...] Az adattári szolgáltatások igénybevétele során szolgáltatott adattári anyagokat az ügyfél csak az SZTFH-val történt előzetes egyeztetés, és az SZTFH hozzájárulása esetén az adattári anyagok továbbadásáról a felek között kötött megállapodás alapján adhatja tovább harmadik személynek."
+    duration: null
+kinds: [seismic-2d, seismic-3d, wellbore-logs]
+region: {country: HU, basin: Pannonian Basin, bbox: [16.1, 45.7, 22.9, 48.6]}
+size: {stated: "3D tömb, feldolgozott: 103 db; 3D tömb, terepi mérés: 109 db; 2D vonal: 6757 db; 2D feldolgozott vonal, SEGY formátumban: 4810 db"}
+listed_by: [publisher]
+known_issues:
+  - "Fee schedule (1. függelék): processed 2D line in SEGY 14 000 to 47 000 Ft by CDP count; processed 3D survey 254 000 to 977 000 Ft by volume; LAS logs 31 000 Ft base fee per well plus 4 900 to 98 000 Ft by curve length."
+  - "Data obtained during exploration are business secrets until the exploration right ends (Mining Act s. 25); such data need the data owner's permission."
+  - "map.hugeo.hu robots.txt disallows /arcgis/, so no service listing is named. bbox is Hungary, approximate."
+notes: "Predecessor bodies named by the publisher: MBFSZ, MFGI, ELGI, MÁFI. The terms quote points 7.3 and 9 of the SZTFH notice as read on 23 Oct 2026; the free reading room and Digital Data Room view data without copies."
+added: 2026-10-23

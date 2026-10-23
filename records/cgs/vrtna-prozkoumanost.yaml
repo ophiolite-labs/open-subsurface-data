@@ -1,0 +1,28 @@
+id: cgs/vrtna-prozkoumanost
+title: Vrtná prozkoumanost (boreholes and other documented objects of the Czech Republic)
+summary: >-
+  The Czech Geological Survey keeps databases of objects (boreholes, wells, dug pits, springs) taken
+  from reports deposited by law in the Geofond archive. Basic data on boreholes and other works in the
+  database of geologically documented objects (GDO) can be viewed free in the map application and its
+  ArcGIS map service; complete GDO extracts (profiles, hydrogeology, logging) are paid data outputs.
+publisher: {name: Česká geologická služba (ČGS), url: https://cgs.gov.cz, country: CZ}
+origin:
+  url: https://cgs.gov.cz/statni-geologicka-sluzba/vrtna-prozkoumanost
+  access: anonymous
+  manifest_url: https://mapy.geology.cz/arcgis/rest/services/Prozkoumanost/Vrtna_prozkoumanost/MapServer/1?f=json
+  notes: "Map application https://mapy.geology.cz/vrtna_prozkoumanost; service listed in the ČGS data directory https://cgs.gov.cz/mapy-a-data/data. Full extracts via the GDO application (credit) and https://cgs.gov.cz/mapy-a-data/poskytovani-dat."
+licence:
+  name: Copyright Česká geologická služba (use or reproduction only with written consent; map services cited in the ČGS form)
+  spdx: null
+  url: https://cgs.gov.cz/copyright
+  redistribution: restricted
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: CZ, bbox: [12.09, 48.55, 18.86, 51.06]}
+listed_by: [publisher]
+known_issues:
+  - "cgs.gov.cz/copyright: \"Jejich využívání nebo reprodukce je možná pouze s písemným souhlasem České geologické služby.\" The CC BY 4.0 there covers INSPIRE download datasets only, not this service."
+  - "The layer gives basic data per object (depth, coordinates, rock, stratigraphy, purpose, year, flags for logging and hydrogeology); profiles and logs are in the paid GDO database."
+  - "The GDO database lags the archive by about four years (publisher's notice). www.geology.cz timed out on 23 Oct 2026; cgs.gov.cz and mapy.geology.cz answer. bbox is the Czech Republic, approximate."
+notes: "Layer 1 (Vrty) of the Vrtna_prozkoumanost map service, copyright text \"© ČGS\", 746,789 features and maxRecordCount 3000 on 23 Oct 2026. The GDO database covers about 720 thousand objects including about 620 thousand geological borehole profiles."
+added: 2026-10-23
