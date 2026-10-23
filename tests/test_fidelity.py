@@ -6,10 +6,12 @@ leaves the machine."""
 import copy
 import hashlib
 import json
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+import yaml
 
 from osd import cli, verify
 from osd.build import build
@@ -41,7 +43,7 @@ def verification() -> dict:
 
 
 def apply(tmp_path, doc, v=None, rid=RID):
-    return verify.apply_fidelity(rid, doc, verification() if v is None else v, catalog_of(snapshot(tmp_path)))
+    return verify.apply_fidelity(rid, doc, verification() if v is None else v)
 
 
 def conversion(v: dict) -> dict:
@@ -106,16 +108,13 @@ def test_rejects_mismatched_record_id(tmp_path):
     assert_rejected(tmp_path, doc, "names record acme/other-wells")
 
 
-def test_rejects_different_records_digest(tmp_path):
+def test_snapshot_is_identity_not_a_criterion(tmp_path):
+    """Amended 23 Oct: another records_digest or an older built_at is recorded, never refused."""
     doc = fixture()
-    doc["catalog"]["records_digest"] = "f" * 64
-    assert_rejected(tmp_path, doc, "records_digest")
-
-
-def test_rejects_older_built_at(tmp_path):
-    doc = fixture()
-    doc["catalog"]["built_at"] = "2026-10-23T08:59:59Z"   # the verification is 09:00
-    assert_rejected(tmp_path, doc, "older than the latest verification")
+    doc["catalog"].update(records_digest="f" * 64, built_at="2026-10-23T08:59:59Z")   # verification: 09:00
+    out, reasons = apply(tmp_path, doc)
+    assert reasons == [] and out["level"] == "L4"
+    assert "snapshot ffffffffffff… built 2026-10-23T08:59:59Z" in conversion(out)["detail"]
 
 
 def test_rejects_failed_input_without_reason(tmp_path):
@@ -151,7 +150,7 @@ def test_rejects_no_input_converted(tmp_path):
 
 
 def test_rejects_without_a_verification(tmp_path):
-    out, reasons = verify.apply_fidelity(RID, fixture(), None, catalog_of(snapshot(tmp_path)))
+    out, reasons = verify.apply_fidelity(RID, fixture(), None)
     assert out is None and reasons == [f"no verification for {RID}: run osd verify {RID} first"]
 
 
@@ -222,9 +221,7 @@ def _vdir(tmp_path) -> Path:
 
 def test_status_shows_coverage_beside_l4(tmp_path):
     vdir = _vdir(tmp_path)
-    cat = snapshot(tmp_path, vdir)
-    assert cli.main(["verify", RID, "--fidelity-from", str(FIDELITY / "fidelity.json"),
-                     "--vdir", str(vdir), "--catalog", str(cat)]) == 0
+    assert cli.main(["verify", RID, "--fidelity-from", str(FIDELITY / "fidelity.json"), "--vdir", str(vdir)]) == 0
     lines = cli.status_lines(vdir, now=NOW, records_dir=FIDELITY / "records")
     rows = {next(t for t in line.split() if "/" in t): line for line in lines[1:]}
     assert rows[RID].startswith("L4 (2 of 2 converted) ")
@@ -234,21 +231,66 @@ def test_status_shows_coverage_beside_l4(tmp_path):
 
 def test_cli_fidelity_from_prints_reasons(tmp_path, capsys):
     vdir = _vdir(tmp_path)
-    cat = snapshot(tmp_path, vdir)
-    assert cli.main(["verify", RID, "--fidelity-from", str(FIDELITY / "fidelity.json"),
-                     "--vdir", str(vdir), "--catalog", str(cat)]) == 0
+    assert cli.main(["verify", RID, "--fidelity-from", str(FIDELITY / "fidelity.json"), "--vdir", str(vdir)]) == 0
     out = capsys.readouterr().out
     assert f"L4  {RID}  canonical-conversion: pass (2 of 2 inputs converted" in out
     assert json.loads((vdir / "acme__two-wells.json").read_text())["level"] == "L4"
     bad = copy.deepcopy(fixture())
-    bad["catalog"]["records_digest"] = "f" * 64
+    bad["record"] = "acme/other-wells"
     (tmp_path / "bad.json").write_text(json.dumps(bad))
-    assert cli.main(["verify", RID, "--fidelity-from", str(tmp_path / "bad.json"),
-                     "--vdir", str(vdir), "--catalog", str(cat)]) == 1
+    assert cli.main(["verify", RID, "--fidelity-from", str(tmp_path / "bad.json"), "--vdir", str(vdir)]) == 1
     out = capsys.readouterr().out
-    assert f"L3  {RID}  fidelity rejected: " in out and "records_digest" in out
+    assert f"L3  {RID}  fidelity rejected: the fidelity record names record acme/other-wells" in out
     assert json.loads((vdir / "acme__two-wells.json").read_text())["level"] == "L3"
     assert cli.main(["verify", "--fidelity-from", str(FIDELITY / "fidelity.json")]) == 2
+
+
+def test_unrelated_record_edit_keeps_l4(tmp_path):
+    """Amended 23 Oct: the fidelity names a snapshot; an edit to another record moves the digest
+    and the same file still awards L4, and the rebuilt catalogue publishes it."""
+    recs = tmp_path / "records"
+    shutil.copytree(FIDELITY / "records", recs)
+    other = recs / "acme" / "no-statement.yaml"
+    other.write_text(other.read_text().replace("Licence without a statement", "Licence without a statement, edited"))
+    vdir = _vdir(tmp_path)
+    kw = {"now": NOW, "mirror_dir": tmp_path / "no-mirror", "records_dir": recs,
+          "source_commit": "1" * 40, "verification_commit": "2" * 40}
+    build(tmp_path / "before", vdir, **kw)
+    assert catalog_of(tmp_path / "before")["records_digest"] != fixture()["catalog"]["records_digest"]
+    assert cli.main(["verify", RID, "--fidelity-from", str(FIDELITY / "fidelity.json"), "--vdir", str(vdir)]) == 0
+    build(tmp_path / "after", vdir, **kw)
+    published = {r["id"]: r["level"] for r in json.loads((tmp_path / "after" / "records.json").read_text())["records"]}
+    assert published[RID] == "L4"
+
+
+def _network_run(previous: dict, bodies: dict[str, bytes]) -> dict:
+    """A verify_record run against fakes: the listing names the two wells, bodies serves them."""
+    rec = yaml.safe_load((FIDELITY / "records" / "acme" / "two-wells.yaml").read_text())
+    rec["added"] = str(rec["added"])
+    base = "https://acme.example/two-wells/"
+
+    def opener(url):
+        if url.endswith("/robots.txt"):
+            raise verify.FetchError(url, 404)
+        if url == rec["origin"]["manifest_url"]:
+            return iter([json.dumps(sorted(bodies)).encode()])
+        if url == rec["licence"]["url"]:
+            return iter([b"Acme Two Wells Licence 1.0: share alike, attribute Acme."])
+        return iter([bodies[url.removeprefix(base)]])
+
+    fetch = lambda u: verify.Fetched(200, u, "text/html", 1)
+    return verify.verify_record(rec, fetch, None, opener=opener, previous=previous, sample=["*.las"])
+
+
+def test_verification_run_with_unchanged_files_keeps_the_conversion(tmp_path):
+    accepted, _ = apply(tmp_path, fixture())
+    las = {p.name: p.read_bytes() for p in FIDELITY.glob("*.las")}
+    again = _network_run(accepted, las)
+    assert conversion(again) == conversion(accepted)
+    changed = _network_run(accepted, dict(las, **{"well-b.las": las["well-b.las"] + b" 1502.0 70.00 2.450\n"}))
+    assert conversion(changed)["outcome"] == "skip" and "changed since the fidelity" in conversion(changed)["detail"]
+    fresh = _network_run(verification(), las)
+    assert conversion(fresh)["detail"] == verify.NO_FIDELITY
 
 
 def test_plain_verify_declares_conversion_skip():

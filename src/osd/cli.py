@@ -35,14 +35,13 @@ def cmd_fidelity(a: argparse.Namespace) -> int:
         print("refused: --fidelity-from takes exactly one record id, the record the fidelity is for")
         return 2
     (rid,) = a.ids
-    vdir, records = Path(a.vdir), Path(a.catalog) / "records.json"
-    catalog = json.loads(records.read_text()).get("catalog") if records.exists() else None
+    vdir = Path(a.vdir)
     try:
         doc = json.loads(Path(a.fidelity_from).read_text())
     except (OSError, ValueError) as e:
         print(f"refused: {a.fidelity_from}: {e}")
         return 1
-    v, reasons = apply_fidelity(rid, doc if isinstance(doc, dict) else {}, build_mod.latest_verification(rid, vdir), catalog)
+    v, reasons = apply_fidelity(rid, doc if isinstance(doc, dict) else {}, build_mod.latest_verification(rid, vdir))
     if v is None:
         print(f"refused: {reasons[0]}")
         return 1
@@ -216,7 +215,6 @@ def main(argv: list[str] | None = None) -> int:
     pv.add_argument("--fidelity-from", metavar="FILE",
                     help="offline: derive L4 for the one record id from a fidelity/1 record (E09)")
     pv.add_argument("--vdir", default=str(paths.VERIFICATION_DIR), help="with --fidelity-from: verifications")
-    pv.add_argument("--catalog", default=str(paths.CATALOG_DIR), help="with --fidelity-from: the built catalogue")
     pv.set_defaults(fn=cmd_verify)
     sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)

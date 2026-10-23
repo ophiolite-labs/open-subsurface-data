@@ -14,7 +14,7 @@ records/*.yaml + build/verification/*.json
    └─▶ osd manifest ─▶ osd.manifest/3 {metadata: {catalog}} (copied whole; /1 and /2 when records.json has none)
          └─▶ Ophiolite lands the files (Ophiolite's provenance record, E127), exports fidelity/1
                {format, catalog, record, inputs[]}
-               └─▶ osd verify <id> --fidelity-from F [--vdir V --catalog C]   (offline)
+               └─▶ osd verify <id> --fidelity-from F [--vdir V]   (offline)
                      own L1–L3 checks kept verbatim; canonical-conversion derived from F, or `fail` + reason
                      level = level_from_checks(checks)  ─▶ verification/3 written back (schema unchanged)
                      osd status ─▶ "L4 (2 of 2 converted)"
@@ -22,8 +22,11 @@ records/*.yaml + build/verification/*.json
 
 - **Snapshot identity.** `build()` takes `records_dir`, `source_commit` and `verification_commit`
   (tests inject them). From the CLI: `source_commit` is `git rev-parse HEAD` of the checkout (null
-  outside git); `verification_commit` is `OSD_VERIFICATION_COMMIT` (null when unset). The workflow
-  line that sets it is outside this claim: inbox note. `built_at` is the build's `now`, outside the digest.
+  outside git); `verification_commit` is `OSD_VERIFICATION_COMMIT` (null when unset), which
+  `pages.yml` sets from `origin/verification-results` (ruling 1). `verify.yml` is left alone: its build
+  is never published and holds results not yet committed, so the old commit would misname them.
+  `built_at` is the build's `now`, outside the digest. `osd get` writes a null attribution as "not
+  stated by the source" (ruling 2).
 - **Rights travel whole.** `_entry` copies the record's licence keys as stated; the manifest/3 licence
   admits `attribution: null` (the /1 and /2 branches still demand a string). `read()` returns
   `Licence.stated`, the keys the manifest states, so absence and null stay distinguishable.
@@ -34,17 +37,19 @@ records/*.yaml + build/verification/*.json
   one) of `{sha256, name, result, output: {kind, id, converter, version}, representative[], reason}`;
   `output` required for converted and partial, `reason` for partial and failed; no other key, so a file
   cannot carry a level or a check.
-- **The L4 rule** (`verify.apply_fidelity(doc, verification, catalog)`), rejecting with a named reason:
-  record id is not the one named on the command line; `records_digest` is not the current catalogue's;
-  `built_at` is older than the latest verification's `checked_at`; an input hash is not in the
-  verification's `files[]`; a file of `files[]` has no result; a partial or failed input has no reason;
+- **The L4 rule** (`verify.apply_fidelity(rid, doc, verification)`), rejecting with a named reason:
+  record id is not the one named on the command line; an input hash is not in the verification's
+  `files[]`; a file of `files[]` has no result; a partial or failed input has no reason;
   no inputs; no input converted. Named reasons come first, schema problems after them, so each named
   guard is tested by its own message. When it is accepted and the catalogue's own checks stop below
   L3, the check passes, the level stays where `level_from_checks` puts it, and the command says why.
   Coverage is "n of m" (n converted, m files of the latest verification), the first words of the
   check detail; `osd status` reads it from there. verification/3 needs no new field and is unchanged.
-- **L4 lasts one verification.** The next `osd verify` writes `canonical-conversion: skip`, and the
-  fidelity, now older than the verification, is refused: Ophiolite exports again against the new snapshot.
+- **The snapshot is identity, not a criterion** (charter amended 23 Oct, ruling 3). The check detail
+  names the fidelity's `records_digest` and `built_at`; neither refuses. An edit to another record
+  keeps L4. A network run carries a passed check forward while it hashed the same sha256 set as the
+  verification the fidelity was applied to (`verify.carried_conversion`), and declares it `skip` with
+  "files changed" otherwise; Ophiolite then exports again.
 
 ## Acceptance to test
 
@@ -63,8 +68,9 @@ records/*.yaml + build/verification/*.json
 | valid fidelity, L4 "2 of 2" | `test_fidelity.py::test_fixture_fidelity_awards_l4_two_of_two` |
 | mismatched input hash | `test_fidelity.py::test_rejects_mismatched_input_hash` |
 | mismatched record id | `test_fidelity.py::test_rejects_mismatched_record_id` |
-| different `records_digest` | `test_fidelity.py::test_rejects_different_records_digest` |
-| older `built_at` | `test_fidelity.py::test_rejects_older_built_at` |
+| snapshot is identity (digest, `built_at` recorded, not refused) | `test_fidelity.py::test_snapshot_is_identity_not_a_criterion` |
+| an unrelated record edit keeps L4 | `test_fidelity.py::test_unrelated_record_edit_keeps_l4` |
+| a verification run with unchanged files keeps it, changed files drop it | `test_fidelity.py::test_verification_run_with_unchanged_files_keeps_the_conversion` |
 | failed input without reason | `test_fidelity.py::test_rejects_failed_input_without_reason` |
 | L3 absent in own checks | `test_fidelity.py::test_no_l4_when_own_l3_absent` |
 | empty inputs list | `test_fidelity.py::test_rejects_empty_inputs` |
@@ -75,8 +81,9 @@ records/*.yaml + build/verification/*.json
 
 ## Mutations (each against the unchanged suite, shown red, restored)
 
-hash compare dropped; digest compare dropped; level copied (`"L4"` on acceptance); lower checks copied
-(own L1–L3 set to pass); record-id compare dropped; `built_at` compare dropped; reason guard dropped;
+hash compare dropped; the snapshot made a criterion again (digest compare added, the amended
+charter's form of "digest compare"); level copied (`"L4"` on acceptance); lower checks copied
+(own L1–L3 set to pass); record-id compare dropped; carry-forward drops the file comparison; reason guard dropped;
 empty-inputs guard dropped; coverage guard dropped; one-converted guard dropped; mapper drops a stated
 `statement`; `catalog` allowed on /2; digest over ids only; `built_at` inside the digest. The PR body
 lists each with the test that failed.

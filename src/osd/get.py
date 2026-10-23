@@ -152,7 +152,7 @@ def entry_attribution(e: Entry) -> list[str]:
              f"- Origin: {e.origin_url}",
              f"- Licence: {lic.name}" + (f" ({lic.spdx})" if lic.spdx else " (no SPDX identifier)")
              + (f", {lic.url}" if lic.url else ""),
-             f"- Attribution: {lic.attribution}",
+             f"- Attribution: {lic.attribution if lic.attribution is not None else 'not stated by the source'}",
              f"- Redistribution: {lic.redistribution}"]
     if lic.share_alike is True:
         lines.append(f"- Share-alike: derived work must carry {_licence_label(e)}")

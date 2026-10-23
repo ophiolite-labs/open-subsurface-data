@@ -3,9 +3,10 @@
 L1 (origin reachable), L2 (sample files checksummed, licence text captured) and L3 (outlines
 derived from the data, E03: see osd.outlines) are established by the network run. L4 (canonical
 conversion, E09) comes from a fidelity/1 record a workspace wrote: `apply_fidelity` derives the
-`canonical-conversion` check from it against the latest verification and the catalogue snapshot,
-keeps the record's own L1-L3 checks verbatim and recomputes the level with `level_from_checks`.
-A network run writes the check as "skip"; the fidelity, now older than it, must be exported again.
+`canonical-conversion` check from it against the latest verification's files, keeps the record's
+own L1-L3 checks verbatim and recomputes the level with `level_from_checks`. The snapshot the
+fidelity names is identity on the check, not a criterion. A network run carries a passed check
+forward while the record's hashed files are the same bytes, and declares it "skip" otherwise.
 
 Reachability is one of four closed, exclusive classes, decided on the final response:
   blocked  HTTP 403 or 429, or a challenge page at any status: a separate observation that awards
@@ -496,7 +497,7 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
                        "detail": f"{len(outline.get('features', []))} features"})
         o, d = outlines.check(rec, outline, outline_rule, stored or {}, refused)
         checks.append({"name": "outline-derived", "level": "L3", "outcome": o, "detail": d[:500]})
-    checks.append({"name": "canonical-conversion", "level": "L4", "outcome": "skip", "detail": NO_FIDELITY})
+    checks.append(carried_conversion(previous, extra.get("files", [])))
 
     return {
         "record_id": rec["id"],
@@ -527,32 +528,16 @@ def fidelity_problems(doc: dict) -> list[str]:
             for e in sorted(_fidelity_validator().iter_errors(doc), key=lambda e: list(map(str, e.absolute_path)))]
 
 
-def _when(stamp: str) -> datetime:
-    return datetime.fromisoformat(stamp)
-
-
-def _rejections(rid: str, doc: dict, v: dict, catalog: dict | None) -> list[str]:
+def _rejections(rid: str, doc: dict, v: dict) -> list[str]:
     """Why this fidelity record is no evidence for `rid` today, named one by one; schema problems
     only when nothing named applies (a named guard is never hidden behind the schema)."""
     inputs = doc.get("inputs")
     if inputs == []:
         return ["the fidelity record lists no inputs"]
     inputs = [i for i in inputs if isinstance(i, dict)] if isinstance(inputs, list) else []
-    snap = doc.get("catalog") if isinstance(doc.get("catalog"), dict) else {}
     out = []
     if doc.get("record") != rid:
         out.append(f"the fidelity record names record {doc.get('record')}, not {rid}")
-    if catalog is None:
-        out.append("the catalogue has no snapshot identity (records.json without `catalog`): run osd build")
-    elif snap.get("records_digest") != catalog["records_digest"]:
-        out.append(f"records_digest {str(snap.get('records_digest'))[:12]}… is not the current catalogue's "
-                   f"{catalog['records_digest'][:12]}…: the fidelity is for another snapshot")
-    try:
-        if _when(snap["built_at"]) < _when(v["checked_at"]):
-            out.append(f"its snapshot (built {snap['built_at']}) is older than the latest verification "
-                       f"(checked {v['checked_at']})")
-    except (KeyError, TypeError, ValueError):
-        pass   # the schema names a missing or malformed built_at
     files = {f["sha256"]: f["path"] for f in v.get("files", [])}
     for i in inputs:
         if i.get("sha256") not in files:
@@ -569,7 +554,7 @@ def _rejections(rid: str, doc: dict, v: dict, catalog: dict | None) -> list[str]
     return out or [f"not an osd.fidelity/1 record: {p}" for p in fidelity_problems(doc)]
 
 
-def apply_fidelity(rid: str, doc: dict, verification: dict | None, catalog: dict | None) -> tuple[dict | None, list[str]]:
+def apply_fidelity(rid: str, doc: dict, verification: dict | None) -> tuple[dict | None, list[str]]:
     """The latest verification with its `canonical-conversion` check derived from a fidelity/1 record,
     and why it gives no L4 (empty when it does). A rejected record makes the check `fail` with the
     reasons; an accepted one makes it `pass` with "n of m inputs converted", n the inputs converted
@@ -577,7 +562,7 @@ def apply_fidelity(rid: str, doc: dict, verification: dict | None, catalog: dict
     as the catalogue's tools wrote them and the level is level_from_checks over them."""
     if verification is None:
         return None, [f"no verification for {rid}: run osd verify {rid} first"]
-    reasons = _rejections(rid, doc, verification, catalog)
+    reasons = _rejections(rid, doc, verification)
     if reasons:
         check = {"name": "canonical-conversion", "level": "L4", "outcome": "fail",
                  "detail": ("fidelity rejected: " + "; ".join(reasons))[:500]}
@@ -595,6 +580,19 @@ def apply_fidelity(rid: str, doc: dict, verification: dict | None, catalog: dict
     if not reasons and out["level"] != "L4":
         reasons = [f"L4 needs the catalogue's own L1-L3: its own checks reach {out['level']}"]
     return out, reasons
+
+
+def carried_conversion(previous: dict | None, files: list[dict]) -> dict:
+    """The canonical-conversion check of a network run: the previous run's passed check while this
+    run hashed the same files (same sha256 set, so the fidelity still names exactly them), else skip."""
+    before = next((c for c in (previous or {}).get("checks", []) if c["name"] == "canonical-conversion"), None)
+    same = files and {f["sha256"] for f in files} == {f["sha256"] for f in (previous or {}).get("files", [])}
+    if before and before["outcome"] == "pass":
+        if same:
+            return before
+        return {"name": "canonical-conversion", "level": "L4", "outcome": "skip",
+                "detail": "the record's hashed files changed since the fidelity record; export it again"}
+    return {"name": "canonical-conversion", "level": "L4", "outcome": "skip", "detail": NO_FIDELITY}
 
 
 def conversion_coverage(v: dict | None) -> str | None:

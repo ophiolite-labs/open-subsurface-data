@@ -485,6 +485,8 @@ def test_licence_round_trip_attribution_null(tmp_path):
     assert lic.attribution is None and "attribution" in lic.stated
     assert {"spdx", "share_alike", "url"}.isdisjoint(lic.stated)
     assert lic.statement == "Courtesy of Acme"
+    (e,) = [e for e in mf.read(tmp_path / "manifest.json").entries if e.record_id == "acme/null-attribution"]
+    assert "- Attribution: not stated by the source" in get_mod.entry_attribution(e)
 
 
 def test_v3_carries_catalog_and_reads(tmp_path):
