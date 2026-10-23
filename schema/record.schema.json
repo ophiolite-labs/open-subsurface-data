@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/record/3",
-  "title": "Open Subsurface Data record, version 3",
-  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record. Version 3 (E19, additive) adds the kind `potential-fields`, the access `purchase` and the optional `licence.terms`; every version-2 record is a valid version-3 record.",
+  "$id": "https://open-subsurface-data.org/schema/record/4",
+  "title": "Open Subsurface Data record, version 4",
+  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record. Version 3 (E19, additive) adds the kind `potential-fields`, the access `purchase` and the optional `licence.terms`; every version-2 record is a valid version-3 record. Version 4 (E26, additive) adds the kinds `velocity-model`, `geological-model`, `airborne-em`, `radiometrics` and `stress`; every version-3 record is a valid version-4 record.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
@@ -62,9 +62,9 @@
         "wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth",
         "seismic-3d", "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults",
         "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list",
-        "potential-fields"
+        "potential-fields", "velocity-model", "geological-model", "airborne-em", "radiometrics", "stress"
       ]},
-      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets; potential-fields: gravity or magnetic data (record/3)."
+      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets; potential-fields: gravity or magnetic data (record/3); velocity-model: a seismic velocity field or cube, interval or migration velocities as a model, not time-depth pairs (record/4); geological-model: a 3D structural or property model, such as layers, volumes, salt bodies or an inverted density model (record/4); airborne-em: airborne electromagnetic soundings (record/4); radiometrics: gamma-ray spectrometry surveys, airborne or ground (record/4); stress: in-situ stress measurements and stress inversions (record/4)."
     },
     "region": {
       "type": "object", "additionalProperties": false,
