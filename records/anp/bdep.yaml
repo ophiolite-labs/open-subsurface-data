@@ -20,4 +20,5 @@ known_issues:
   - "The Termo de Adesão obliges the data user 'não disponibilizar a terceiros os dados' except where ANP resolutions allow; Resolução 889/2022 (atosoficiais.com.br) answered 403 to an automated request on 23 Oct 2026, so its exceptions were not read."
   - "The free REATE portal states no licence of its own."
   - "bbox is approximate (Brazil including offshore basins)."
+notes: "No period stated: the ANP access page gives only page and resolution dates, no period for the BDEP holdings."
 added: 2026-10-23

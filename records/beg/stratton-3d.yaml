@@ -15,13 +15,13 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [seismic-3d, wellbore-logs]
-region: {country: US, basin: "Stratton Field (South Texas)"}
+region: {country: US, basin: "Stratton Field (South Texas)", bbox: [-97.9547, 27.7167, -97.8644, 27.95]}
 listed_by: [community]
 known_issues:
-  - "No extent stated; no bbox."
   - "Old addresses https://www.beg.utexas.edu/research/programs/stratton and https://store.beg.utexas.edu/cd-rom-sets/2120-sw0003.html answer 404."
 period:
   start: "1994"
   end: "1994"
   stated: "Store page: \"Publication Year 1994 ... Publication Code SW0003 Series Seminars and Workshops Publisher Bureau of Economic Geology\" (release)"
+notes: "bbox from BEG's own geolocation polygon for its Stratton field report RI0221 (Jim Wells, Nueces and Kleberg counties); the SW0003 page gives no location."
 added: 2026-10-23

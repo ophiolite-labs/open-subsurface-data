@@ -17,7 +17,7 @@ licence:
 kinds: [seismic-2d, reservoir-model, horizons, reports]
 region: {country: US, basin: "Synthetic (Marmousi geology, Cuanza Basin, Angola)"}
 listed_by: [publisher]
-notes: "synthetic"
+notes: "synthetic. No period stated: the AGL downloads page gives no release date for the model; the only date is that of the accompanying thesis (2004)."
 known_issues:
   - "Synthetic data; region.country is the publisher's country because the schema requires one."
   - "The SEG wiki page 'AGL Elastic Marmousi' reportedly states a CC BY 4.0 release by the authors; it answers 403 to automated requests from this host (blocked for automated requests since 23 Oct 2026, OSD-D9), so the licence is left unknown."

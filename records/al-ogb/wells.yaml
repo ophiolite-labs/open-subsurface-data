@@ -23,4 +23,8 @@ known_issues:
   - "Use Constraints: 'Reproduction or redistribution of digital data sets or products derived therefrom to a third party organization or entity is expressly forbidden.' 'The OGB should be acknowledged as the originator of the data.'"
   - "The GIS page template starts with a UTF-8 byte-order mark; read as a listing it names no files, so the manifest_url is the wells shapefile zip itself."
   - "bbox is Alabama with state waters, approximate."
+period:
+  start: "1910"
+  end: "2026-10-23"
+  stated: "OGB MapService (linked from the OGB GIS Data page) layer 0 Wells: earliest SpudDate 1910-04-08; files re-dated 'lastUpdated (10/22/2026)' (continuously updated), so 1910 to today"
 added: 2026-10-23
