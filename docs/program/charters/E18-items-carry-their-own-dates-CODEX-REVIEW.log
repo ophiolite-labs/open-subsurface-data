@@ -1,0 +1,2491 @@
+Reading additional input from stdin...
+OpenAI Codex v0.159.0
+--------
+workdir: /home/epic/src/open-subsurface-data
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: concise
+session id: 01a168a8-a9a4-7a72-a3fb-a04475299cfd
+--------
+user
+You are a fresh, independent senior reviewer of one epic charter in the Open Subsurface Data project (a verified catalogue of open subsurface datasets: YAML records -> verifier levels L0-L4 -> outlines -> STAC/GeoJSON catalogue -> static MapLibre map; Python package src/osd, tests in tests/, schemas in schema/). Read docs/ARCHITECTURE.md, docs/ENGINEERING.md, docs/program/PROGRAM.md, then the charter at /home/epic/src/open-subsurface-data/docs/program/charters/E18-items-carry-their-own-dates.md. VERIFY every 'exists' claim in its Context section against the code at HEAD (open the files; do not trust the document) and state the commit you verified against (git rev-parse HEAD). Report in Markdown: (1) Verdict: APPROVE / APPROVE WITH CHANGES / REWORK, one sentence why. (2) Factual errors about current code, with file:line evidence. (3) Design objections: an owner, boundary, format or contract choice that is unsafe or misplaced, each with a concrete alternative that stays within docs/ENGINEERING.md (no new CI stations, no server, standards over bespoke). (4) Acceptance lines that can pass vacuously or whose proposed test would stay green under the mutation it should catch. (5) Scope creep into another charter in docs/program/charters/. Be specific and terse; no praise; at most 60 lines. Do not modify any files.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll read the project rules and charter, verify its Context claims against HEAD, and check for overlap with other charters. I won’t modify any files.
+exec
+/bin/bash -lc 'git rev-parse HEAD && cat docs/ARCHITECTURE.md docs/ENGINEERING.md docs/program/PROGRAM.md docs/program/charters/E18-items-carry-their-own-dates.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+b0c9f6e75f7adeb3ae1b42b52db8f5fd36433610
+# Architecture
+
+One sentence: contributors write facts about open datasets, tools turn those facts into verified
+levels, outlines and a catalogue, and a static map plus a manifest let anyone find and fetch the
+data; Ophiolite reads the same catalogue as a source.
+
+## The chain
+
+```
+  SEG wiki, national        contributor            verifier            outline extractor
+  registers, publishers ──► records/*.yaml ──────► build/verification ─► outlines/*.geojson
+        (lists)             (facts, CC0)            (levels L1–L2)        (L3, derived)
+                                 │                        │                    │
+                                 └──────────┬─────────────┴────────────────────┘
+                                            ▼
+                                     osd build  ─────►  build/catalog/
+                                                        records.json · outlines.geojson · collections.json (STAC)
+                                            │
+                 ┌──────────────────────────┼──────────────────────────────┐
+                 ▼                          ▼                              ▼
+           site/ (MapLibre)           QGIS / any GIS                 manifest (E06)
+           toggles, search,           GeoJSON / STAC by address      osd get · Python reader
+           panel, cards                                                   │
+                                                                          ▼
+                                                              Ophiolite source (E09, L4)
+                                                              E85 intake · E35 rights-basis
+```
+
+## Components and their boundaries
+
+| Component | Owns | Never does |
+|---|---|---|
+| **Records** (`records/`, `schema/record.schema.json`) | Facts as the publisher states them: origin, licence, kinds, region | Carry a level, a checksum or anything a tool produced |
+| **Verifier** (`src/osd/verify.py`, `schema/verification.schema.json`) | Network checks, checksums, licence text capture, the level ladder | Change a record; run inside the required CI check |
+| **Outlines** (`outlines/`, `schema/outline.schema.json`, extractor in E03) | Geometry per wellbore or survey in WGS84, with its derivation named | Invent geometry without saying `approximate: true` |
+| **Build** (`src/osd/build.py`) | Joins records, outlines and levels into the published files | Fetch anything |
+| **Catalogue** (`build/catalog/`) | The one published artefact; STAC-shaped collections, GeoJSON outlines, records JSON | Hold dataset bytes |
+| **Site** (`site/`) | Reading the catalogue and showing it; copyable addresses and snippets | Hold its own data store; need a server |
+| **Retrieval** (E06) | A manifest from a selection; a fetcher that verifies checksums | Decode proprietary project files (Ophiolite connector doctrine) |
+| **Mirror store** (E07) | Checksummed copies of small or orphaned datasets whose licence allows it | Copy anything with `redistribution: unknown` |
+| **Ophiolite bridge** (E09) | The catalogue as an Ophiolite source; rights-basis from the record; fidelity records | Live outside the Ophiolite monorepo's own conventions |
+
+## Formats, all standard
+
+- Records: YAML validated by JSON Schema 2020-12. Outlines: GeoJSON, EPSG:4326.
+- Catalogue: STAC 1.0 collections and items (full validity is E04), plus one GeoJSON for map and GIS.
+- Tiles: PMTiles once outlines exceed what one GeoJSON serves comfortably (E05).
+- Manifest: `osd.manifest/1` JSON (E06). Seismic store, if ever: Zarr-based (E10).
+
+## The level ladder
+
+L0 listed → L1 reachable → L2 checksummed and licence captured → L3 outlined from the data →
+L4 converted to a canonical type with a fidelity record. No rung is skipped, and a level is
+computed from check outcomes, never typed. The ladder is the product's honesty: a dashed outline
+on the map is a placeholder and says so.
+
+## What the map is and is not
+
+The map is a view of the catalogue, nothing more. It has no account, no state beyond the URL, no
+server. Everything it shows can be opened in QGIS by one address. That is also why the website
+and "a GIS layer" are one deliverable rather than two.
+
+## Where Ophiolite comes in
+
+Ophiolite is a consumer of the catalogue, and the catalogue borrows Ophiolite's vocabulary
+(kinds from the E55 registry, rights-basis from E35). The two repositories meet at one interface:
+a manifest or STAC collection Ophiolite's intake (E85) can read. No Ophiolite code runs here;
+no catalogue code runs there.
+# Engineering setup
+
+Fit for purpose: a Python package, YAML records and a static page. The Ophiolite program
+(docs/program-2026-09-25 in the Ophiolite monorepo) taught what to keep and what to drop; the
+evidence for each line is in the Ophiolite program records of 8–22 October 2026.
+
+## Keep (copied from Ophiolite)
+
+| Practice | Why it earned its place |
+|---|---|
+| Claims board: a lane names its paths before it starts, two lanes never share a path | Overlap was the cause of merge pain; the 21 Oct simplification cut kept the board deliberately |
+| Contract first: slice 0 is schema, fixtures and stubs; later slices vertical | Layer-cut slices made serial chains (18 Oct rule) |
+| Kernel vs surface proof bar | Surface strategies capped at one review round after revisions ran to 8 and 18 rounds on E60 and E42c |
+| Outcome-named slices: the brief says what a user can do after merge, or no lane | Success metric is slices merged per day, not green CI |
+| Revert first: a red main gets one revert within the hour, the fix follows | Owner accepted a briefly red main on about one merge in five |
+| No artificial schedule: act when the precondition holds, never on a timer | Nightly timers and self-set dates cost days (night 2026.10.95) |
+| Small fixes batched, one push per merge, no wait on the repeat run | Loop steps 7 and 8 |
+| Brief by reference, one drafting and one execution agent, small contexts | 83 % of usage was sessions over 150k tokens, 78 % subagent-heavy |
+| A different model reviews kernel charters, read-only, one round | Reviews caught contract mistakes; multiple rounds did not pay |
+
+## Drop (what cost Ophiolite more than it returned)
+
+| Station | Evidence | Here instead |
+|---|---|---|
+| Self-hosted runners, pool builders, runner crews | needrestart killed runner units after any apt run; two crews and "chair out, station out" existed only to manage them | GitHub-hosted `ubuntu-24.04`, one job, under two minutes |
+| Merge trains, then a merge queue | 8 workers gave 10× activity for 2–3× merges; merges per worker-day fell from 5.6 to 0.3 at 18 workers | Squash merge on a green check; at most 2 coding lanes plus 1 records lane |
+| Nightly releases, release pinning, qualification | A night took 1 h 50 min at best, ARM64 70 min on the critical path; per-lane qualification 45 min serial | Every merge to main publishes the site; no version numbers |
+| Hardening lanes and a growing item list | 87 hardening merges against about 10 epic slices in a week; the list grew 150 → 217 | Defects under 50 lines ride on the next lane; a red main is reverted, not hardened |
+| Committed conformance results, locks, worker-check cron | Three lanes lost 30–45 min each on a dead lock; a queue stopped for an hour on a docs-only deadline | Nothing is committed that a job can regenerate; no locks; no cron |
+| Multiple Codex rounds, 4-revision caps | 2–4 h of a worker per round | One round for a kernel charter; none for surface or records |
+| Dispatch per commit group | Worth it for a 27-minute C++ build | A 2-minute check runs on every push; nothing to batch |
+| ccache, proven-tree skip, CI spend caps | Needed for a 27-minute C++ build | Irrelevant at Python-and-static scale; revisit above 10 min per check |
+
+## The gate
+
+`make check` = ruff + pytest + schema validation + build, offline. It is the only required
+status. Network verification (`verify` workflow) comments on pull requests and never blocks: a
+publisher's outage is a finding, not a red gate. The site publishes from main on every merge.
+
+## Proof bar by class
+
+- **Kernel** (schemas, verifier, build, manifest, bridge): tests for every acceptance line, a
+  mutation shown to fail for every guard, one Codex round on the charter. Strategy at lane open,
+  at most two pages.
+- **Surface** (site, docs, records): `make check` green and a screenshot or the verify comment.
+  No strategy document; the charter's acceptance list is the brief.
+- **Records**: the verify comment shows the level; a human checks the licence fields against
+  the publisher's page. Same-day merge.
+
+## Roles
+
+- **Supervisor** (one): keeps `docs/program/PROGRAM.md` true, writes lane briefs by reference,
+  merges on green, reverts on red, records decisions in `DECISIONS.md`. Does not write product
+  code except a revert.
+- **Worker** (at most three concurrent: two coding lanes, one records lane): takes a charter,
+  claims paths, opens a branch `e<nn>-<slug>`, pushes when the diff is inside the claim, opens
+  the pull request with the outcome sentence and the proof. Waits for nothing but its own check.
+- **Reviewer** (Codex, read-only): one round per kernel charter, dispositions recorded in the
+  charter.
+
+## What is deliberately absent
+
+No merge queue, no release branches, no version tags, no nightly, no self-hosted compute, no
+lock files committed by hand, no conformance ledger, no item list. If one of these starts to look
+necessary, the measured reason goes into `DECISIONS.md` first.
+# Program: Open Subsurface Data
+
+Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two coding lanes and
+one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
+Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
+
+## Queue (23 Oct 2026)
+
+| # | Epic | Class | Status | Depends on | Outcome a user can observe |
+|---|---|---|---|---|---|
+| 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
+| 2 | E02 Verifier to L2 | Kernel | MERGED 23 Oct (PR #3, 37c010c; 18 mutations; three records at L2, SEG wiki blocked) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
+| 3 | E03 Outlines from the data | Kernel | MERGED 23 Oct (PR #7, 7ddecf0; record/2 inputs, outline/2; Sodir, NLOG, Poseidon at L3; F3 and Teapot behind logins) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
+| 4 | E05 Map that scales | Surface | MERGED 23 Oct (PR #2, 6c232cf; shareable hash, 10k clustered wells, how.html, Playwright site test in CI) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
+| 5 | E04 STAC catalogue | Kernel | MERGED 23 Oct (PR #8, aced173; 68 Collections validate offline, Items need periods; QGIS screenshot is owner action 102) | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
+| 6 | E06 Retrieval by manifest | Kernel | DONE (slice 1 PR #9, slice 2 PR #12, 23 Oct; main cc7c470) | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
+| 7 | E08 Curation that runs itself | Surface | MERGED 23 Oct (PR #5, e408adb; status page, dead-link issues, osd new, CODEOWNERS, labels). DONE when two outside PRs have merged (owner action 101) | E02 | An outside contributor's record merges the same day; dead links become issues |
+| 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
+| 9 | E07 Mirror store and custody | Kernel | slice 1 MERGED (PR #13, 23 Oct; main 58e895f; manifest/2, custody/1, verification/3, local transport; Norne eligible); slice 2 QUEUED after owner action 103 | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
+| 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | OSD slice 1 MERGED (PR #14, 23 Oct; main c370a87: manifest/3 catalog snapshot, fidelity/1, L4 rule); PARTIAL until Ophiolite E127 lands (after E121 there; rights part after E35) | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
+| 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
+| 13 | E13 Twenty records from the national registers | Records | MERGED 23 Oct (PR #4, 6429445; 42 records, 10 countries with a government publisher, 0 new TerraNubis) | E01 | Forty datasets listed; a government source for at least eight countries |
+| 14 | E14 Twenty records: research drilling, CO2 sites, state archives | Records | MERGED 23 Oct (PR #6, 61f9527; 68 records, 26 new, six new countries, all 26 at L1) | E13 | Sixty datasets listed, wider kinds and regions |
+| 15 | E15 Tiles for the registers | Surface | MERGED (PR #10, 23 Oct; main 2904db0) | E03 | The map on a phone connection loads tiles for the viewport, not 7 MB of outlines |
+| 16 | E16 Periods from the publishers | Records | MERGED (PR #11, 23 Oct; main fa13d75; 53 of 68 records with a period, 18,432 Items; OSD-D18 gate sample) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
+| 17 | E17 Records, fourth twenty (Africa, Middle East, Asia, Canada, open seismic and model sets) | Records | IN LANE (osd-e17, 23 Oct; records slot) | E16 | The map lists at least 85 datasets on six continents |
+| 18 | E18 Items carry their own dates | Kernel | QUEUED (charter 23 Oct, Codex round running) | E03, E04, E16 | Time filters in a STAC client return the wellbores and surveys of that window, not a whole register |
+| 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
+
+Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
+map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
+(three of them the SEG wiki blocking this host with HTTP 403, one NOPIMS 403; see OSD-D9).
+Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
+`verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
+with real levels through the `verification-results` branch. `main` requires `check`.
+DNS entered and the domain verified for ophiolite-labs by the owner 23 Oct; HTTPS enforced (certificate issued after re-setting the custom domain).
+E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
+opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
+
+## The loop
+
+1. The supervisor takes the first QUEUED epic whose dependencies are MERGED and whose paths are
+   free on `CLAIMS.md`. Surfaces are disjoint: `records/`, `site/`, `src/osd/`, `.github/`.
+2. Kernel: the worker writes a strategy of at most two pages at lane open (acceptance line → test
+   name), one Codex round on the charter if not yet reviewed, dispositions recorded in the charter.
+   Surface and records: no strategy, the charter's acceptance list is the brief.
+3. The worker claims paths, branches `e<nn>-<slug>`, commits in outcome-named slices.
+4. The worker pushes unasked when the diff is inside the claim; asks for `schema/` version bumps
+   and `.github/` edits.
+5. Pull request: outcome sentence, proof (check green, screenshot or verify comment). The
+   required status is `check` only.
+6. Supervisor merges on green with squash. Main publishes the site. Nobody waits for the
+   repeat run on main.
+7. Red main: revert within the hour, then a fix lane. No hardening lanes, no item list.
+8. Defects under 50 lines ride on the next lane that owns the path. Larger ones get a charter.
+9. During any wait the worker starts the next slice on a stacked branch; it is merged after.
+10. After a merge the supervisor updates this table, moves the claim rows to MERGED, and
+    `/compact`s.
+
+## Rules
+
+- R1 WIP: two coding lanes plus one records lane. A third coding lane waits.
+- R2 Gate: `make check` only. Nothing network-bound is ever required.
+- R3 Records say what the publisher says; tools say what they established. Never cross.
+- R4 Every slice names what a user can do after it merges.
+- R5 Surface gets a screenshot, kernel gets tests and one mutation per guard, records get the
+  verify comment and a licence read.
+- R6 No timers, no nightly, no self-set dates. Act when the precondition holds.
+- R7 Nothing a job can regenerate is committed (`build/`, `site/data/`).
+## E18 Items carry their own dates — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: OSD-D14 (Items need a period), OSD-D11 (record versus tool boundary), OSD-D16 (outline
+rules name their inputs); E16 finding in `docs/program/HANDOFF.md` (23 Oct: register Items carry the
+collection's period, Sodir survey/10003 shows 1966 to today).
+
+**Outcome.** A STAC client filtering the catalogue by time gets the wellbores drilled and the
+surveys shot in that window, not every feature of a register: each Item of a register collection
+carries the feature's own start and end dates as the publisher's service states them, and falls
+back to the collection's period only when the feature states none.
+
+**Context today (verified 23 Oct, main after PR #14).** `src/osd/stac.py` writes `start_datetime`
+and `end_datetime` on every Item from the record's `period` (lines 63–108); outline features carry
+the publisher's properties selected by `src/osd/outlines/rules.yaml`, which today names geometry
+sources and drop rules, not date fields; Sodir's WFS exposes `wlbEntryDate`/`wlbCompletionDate`
+on wellbores and `seaStartDate`/`seaCompletionDate` (names to verify at lane open) on surveys, NLOG
+exposes `START_DATE_DRILLING`/`END_DATE_DRILLING` (E16 evidence shows five 1800-01-01 placeholders).
+18,432 Items exist; the gate validates a sample (OSD-D18) and `make check-full` the tree.
+
+**The design the lane must map to.**
+1. Rules, not records: `rules.yaml` gains per-source `period_fields: {start: <prop>, end: <prop>}`;
+   the outline writer copies those two values into each feature's properties as ISO dates
+   (`osd:period_start`, `osd:period_end`), verbatim from the service, and names the fields in the
+   outline's `inputs` (OSD-D16). Records stay untouched (OSD-D11).
+2. Items: `start_datetime`/`end_datetime` come from the feature's two properties when both parse
+   as dates and start ≤ end; an open end (no completion date) uses the collection period's end;
+   otherwise the collection's period is used and the Item carries `osd:period_source:
+   collection`. A placeholder rule per source (`period_placeholders: ["1800-01-01"]`) treats listed
+   values as absent.
+3. The Collection's temporal extent stays the record's `period` (publisher-stated, E16); the lane
+   reports in the PR how many Items took their own dates, how many fell back, and the min and max
+   feature dates per register against the collection period.
+4. No new network: the dates come from the same WFS reads the outline run already does
+   (`osd verify --outline-inputs`).
+
+**Acceptance.**
+- Fixture WFS responses for Sodir and NLOG (offline) with dated, undated, placeholder and
+  reversed-date features: Items take their own dates, fall back, drop the placeholder, and refuse
+  the reversed pair with the collection period and `osd:period_source: collection` (each a test).
+- Every Item still validates offline; the sample gate and `make check-full` stay green; the gate
+  stays under two minutes.
+- Mutations against the unchanged suite: placeholder rule dropped → red; fallback dropped → red;
+  reversed dates accepted → red; period fields copied from the record instead of the feature → red.
+- On main after merge: the published Sodir collection has Items whose `start_datetime` differ from
+  1966-01-01 (count in the PR from a local full build), and the collection extent is unchanged.
+
+**Out of scope.** Collection periods (E16, records); Items for records without outlines; any
+record edit.
+
+**Stop rules.** If a register's service does not expose per-feature dates, that register keeps the
+collection period and the lane says so; it does not scrape pages.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/outlines/rules.yaml`, `src/osd/outlines/
+*.py` (date copy and inputs), `src/osd/stac.py` (Item dates), `tests/test_outlines.py`,
+`tests/test_stac.py`, `tests/fixtures/outlines/**`, `docs/program/evidence/e18/**`. Depends on E03,
+E04, E16 (merged). Touches no file of E07 slice 2 or E17.
+
+**Evidence to inspect.** The per-register counts and date ranges in the PR; one Sodir wellbore Item
+before and after; the mutation list.
+
+exec
+/bin/bash -lc "rg --files src/osd/outlines tests/fixtures/outlines docs/program/charters; nl -ba src/osd/stac.py; cat src/osd/outlines/rules.yaml; rg -n 'check-full|sample|18432|18,432|1800|START_DATE|seaStart|wlbEntry' Makefile src tests docs/program/HANDOFF.md" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+docs/program/charters/E17-records-fourth-twenty.md
+docs/program/charters/E02-verifier-to-L2.md
+docs/program/charters/E10-seismic-slices.md
+docs/program/charters/E04-stac-catalogue.md
+docs/program/charters/E05-map-that-scales.md
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.log
+docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.log
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.md
+docs/program/charters/E02-verifier-to-L2-STRATEGY.md
+docs/program/charters/E03-outlines-from-the-data.md
+docs/program/charters/E04-stac-catalogue-STRATEGY.md
+docs/program/charters/E09-ophiolite-half.md
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.log
+docs/program/charters/E09-ophiolite-reads-the-catalogue.md
+docs/program/charters/E06-retrieval-by-manifest-STRATEGY.md
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.log
+docs/program/charters/E07-mirror-store-and-custody.md
+docs/program/charters/E07-mirror-store-and-custody-STRATEGY.md
+docs/program/charters/E11-hosting-and-domain.md
+docs/program/charters/E14-records-third-twenty.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-STRATEGY.md
+docs/program/charters/E06-retrieval-by-manifest.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.md
+docs/program/charters/E16-periods-from-the-publishers.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.log
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.md
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.md
+docs/program/charters/E08-curation-that-runs-itself.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.log
+docs/program/charters/E03-outlines-from-the-data-STRATEGY.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.md
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.md
+docs/program/charters/E12-catalogue-into-a-workspace.md
+docs/program/charters/E15-tiles-for-the-registers.md
+docs/program/charters/E13-registers-second-twenty.md
+docs/program/charters/E18-items-carry-their-own-dates.md
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.log
+docs/program/charters/E01-twenty-records.md
+src/osd/outlines/extractors.py
+tests/fixtures/outlines/nzpam__parihaka/survey-extent/body
+src/osd/outlines/__init__.py
+src/osd/outlines/geometry.py
+src/osd/outlines/codecs.py
+src/osd/outlines/rules.yaml
+tests/fixtures/outlines/README.md
+tests/fixtures/outlines/nzpam__kerry-3d/survey-extent/body
+tests/fixtures/outlines/segy/make_segy.py
+tests/fixtures/outlines/segy/irregular.sgy
+tests/fixtures/outlines/nlog__nlog/surveys-3d/page-000000
+tests/fixtures/outlines/nlog__nlog/surveys-3d/hits
+tests/fixtures/outlines/nlog__nlog/surveys-3d/page-000002
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000006
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000000
+tests/fixtures/outlines/sodir__factpages/wellbores/hits
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000003
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000002
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000000
+tests/fixtures/outlines/sodir__factpages/seismic-finished/hits
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000004
+tests/fixtures/outlines/sodir__factpages/seismic-unplaced/page-000547
+tests/fixtures/outlines/sodir__factpages/wellbores-unplaced/page-000136
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000006
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000000
+tests/fixtures/outlines/nlog__nlog/boreholes/hits
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000003
+tests/fixtures/outlines/schema/outline-1.schema.json
+tests/fixtures/outlines/schema/record-1.schema.json
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/1/1
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/1/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/0/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/0/39
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/0/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/0/1
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/26/39
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/26/0
+     1	"""Write and check the static STAC 1.0 catalogue (E04).
+     2	
+     3	Output (build/catalog/stac/), all links relative so the tree serves from any address:
+     4	  catalog.json                    the root Catalog, one `child` link per record
+     5	  <cid>/collection.json           one Collection per record: licence, level, access, the files E02
+     6	                                   checksummed as assets, temporal extent from the record's `period`
+     7	  <cid>/items/<name>.json         one Item per outline feature with a feature_id, only when the record
+     8	                                   declares a `period` (OSD-D14); id = the outline's feature_id
+     9	
+    10	`<cid>` is the record id with '/' replaced by '--'. Collection fields carry record-level assurance
+    11	from the verification record; Item fields carry the outline's provenance. Both are the `osd`
+    12	extension (schema/stac-osd.json). Validation runs offline against the schemas bundled in
+    13	schema/stac/ (schema/stac/schema-map.json).
+    14	"""
+    15	
+    16	from __future__ import annotations
+    17	
+    18	import calendar
+    19	import hashlib
+    20	import json
+    21	import re
+    22	import shutil
+    23	from pathlib import Path
+    24	
+    25	from . import paths
+    26	from .records import load_outline
+    27	
+    28	STAC_VERSION = "1.0.0"
+    29	OSD_EXTENSION = ("https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/"
+    30	                 "schema/stac-osd.json")
+    31	FILE_EXTENSION = "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+    32	ALTERNATE_EXTENSION = "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"
+    33	MIRROR_TITLE = "Open Subsurface Data mirror"
+    34	SCHEMA_MAP = paths.SCHEMA_DIR / "stac" / "schema-map.json"
+    35	WORLD = [-180.0, -90.0, 180.0, 90.0]
+    36	
+    37	
+    38	def collection_id(record_id: str) -> str:
+    39	    return record_id.replace("/", "--")
+    40	
+    41	
+    42	def item_file_name(feature_id: str) -> str:
+    43	    """The part after '#', path-safe; a lossy name gets a short hash so two ids never collide."""
+    44	    local = feature_id.split("#", 1)[1]
+    45	    safe = re.sub(r"[^A-Za-z0-9._-]", "_", local).lstrip(".") or "_"
+    46	    if safe != local:
+    47	        safe += "-" + hashlib.sha256(feature_id.encode()).hexdigest()[:8]
+    48	    return safe + ".json"
+    49	
+    50	
+    51	def _instant(date: str, end: bool) -> str:
+    52	    """'1993' / '1993-06' / '1993-06-30' to the first (or last) second of it, UTC."""
+    53	    parts = [int(x) for x in date.split("-")]
+    54	    y, m, d = (parts + [None, None])[:3]
+    55	    if end:
+    56	        m = m or 12
+    57	        d = d or calendar.monthrange(y, m)[1]
+    58	        return f"{y:04d}-{m:02d}-{d:02d}T23:59:59Z"
+    59	    return f"{y:04d}-{m or 1:02d}-{d or 1:02d}T00:00:00Z"
+    60	
+    61	
+    62	def interval(rec: dict) -> list:
+    63	    p = rec.get("period")
+    64	    if not p:
+    65	        return [None, None]
+    66	    start, end = _instant(p["start"], False), _instant(p["end"], True)
+    67	    if end < start:
+    68	        raise ValueError(f"{rec['id']}: period ends before it starts ({p['start']} > {p['end']})")
+    69	    return [start, end]
+    70	
+    71	
+    72	def _positions(c):
+    73	    if c and isinstance(c[0], (int, float)):
+    74	        yield c
+    75	    else:
+    76	        for x in c:
+    77	            yield from _positions(x)
+    78	
+    79	
+    80	def bbox(geometry: dict) -> list[float]:
+    81	    xs, ys = zip(*((p[0], p[1]) for p in _positions(geometry["coordinates"])))
+    82	    return [min(xs), min(ys), max(xs), max(ys)]
+    83	
+    84	
+    85	def _union(boxes: list[list[float]]) -> list[float] | None:
+    86	    if not boxes:
+    87	        return None
+    88	    return [min(b[0] for b in boxes), min(b[1] for b in boxes),
+    89	            max(b[2] for b in boxes), max(b[3] for b in boxes)]
+    90	
+    91	
+    92	def _assets(verification: dict | None, mirrored: dict[str, str] | None = None) -> dict:
+    93	    """E02's checksummed files that carry a fetch address; collection-level, since which Item a
+    94	    file belongs to is not established. A file the mirror holds (E07, by sha256) keeps one logical
+    95	    asset and one checksum and gains the mirror as an alternate location."""
+    96	    out = {}
+    97	    for f in (verification or {}).get("files", []):
+    98	        if f.get("url"):
+    99	            out[f["path"]] = {"href": f["url"], "title": f["path"], "roles": ["data"],
+   100	                              "file:size": f["bytes"], "file:checksum": "1220" + f["sha256"]}
+   101	            if f["sha256"] in (mirrored or {}):
+   102	                out[f["path"]]["alternate"] = {"mirror": {"href": mirrored[f["sha256"]], "title": MIRROR_TITLE}}
+   103	    return out
+   104	
+   105	
+   106	def _item(rec: dict, cid: str, feature: dict, inputs: dict, when: list) -> dict:
+   107	    p = feature["properties"]
+   108	    props = {"title": p["name"], "datetime": None, "start_datetime": when[0], "end_datetime": when[1],
+   109	             "osd:approximate": p["approximate"], "osd:derivation": p["source"]}
+   110	    sha = inputs.get(p.get("input"), {}).get("sha256")
+   111	    if sha:
+   112	        props["osd:input_sha256"] = sha
+   113	    return {
+   114	        "type": "Feature", "stac_version": STAC_VERSION, "stac_extensions": [OSD_EXTENSION],
+   115	        "id": p["feature_id"], "collection": cid, "geometry": feature["geometry"],
+   116	        "bbox": bbox(feature["geometry"]), "properties": props,
+   117	        "links": [{"rel": "root", "href": "../../catalog.json", "type": "application/json"},
+   118	                  {"rel": "parent", "href": "../collection.json", "type": "application/json"},
+   119	                  {"rel": "collection", "href": "../collection.json", "type": "application/json"}],
+   120	        "assets": {},
+   121	    }
+   122	
+   123	
+   124	def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFICATION_DIR,
+   125	                  outlines_dir: Path = paths.OUTLINES_DIR, mirror_index: list[dict] | None = None) -> list[dict]:
+   126	    """Write out_dir/stac/ from the joined records (record fields plus level, checked_at,
+   127	    blocked_since as build() joins them) and return the Collections. `mirror_index` is the public
+   128	    index of copies the mirror holds (osd.mirror.public_index). A duplicate feature_id
+   129	    anywhere in the outlines fails the build: it is the key Items and the map share."""
+   130	    root = out_dir / "stac"
+   131	    shutil.rmtree(root, ignore_errors=True)
+   132	    root.mkdir(parents=True, exist_ok=True)
+   133	    seen: set[str] = set()
+   134	    collections, children = [], []
+   135	    for rec in records:
+   136	        rid, cid = rec["id"], collection_id(rec["id"])
+   137	        op = outlines_dir / (rid.replace("/", "__") + ".geojson")
+   138	        fc = load_outline(op) if op.exists() else {"features": []}
+   139	        for f in fc["features"]:
+   140	            fid = f["properties"].get("feature_id")
+   141	            if fid in seen:
+   142	                raise ValueError(f"duplicate feature_id '{fid}'")
+   143	            if fid:
+   144	                seen.add(fid)
+   145	        when = interval(rec)
+   146	        items = []
+   147	        if rec.get("period"):
+   148	            items = [_item(rec, cid, f, fc.get("inputs", {}), when)
+   149	                     for f in fc["features"] if f["properties"].get("feature_id")]
+   150	        names: dict[str, str] = {}
+   151	        for it in items:
+   152	            n = item_file_name(it["id"])
+   153	            if n in names:
+   154	                raise ValueError(f"{rid}: item file {n} for both '{names[n]}' and '{it['id']}'")
+   155	            names[n] = it["id"]
+   156	        vp = vdir / (rid.replace("/", "__") + ".json")
+   157	        mirrored = {c["sha256"]: c["href"] for c in mirror_index or [] if c["record_id"] == rid}
+   158	        assets = _assets(json.loads(vp.read_text()) if vp.exists() else None, mirrored)
+   159	        alternate = any("alternate" in a for a in assets.values())
+   160	        lic = rec["licence"]
+   161	        spatial = (rec.get("region", {}).get("bbox")
+   162	                   or _union([bbox(f["geometry"]) for f in fc["features"] if f.get("geometry")])
+   163	                   or WORLD)
+   164	        col = {
+   165	            "type": "Collection", "stac_version": STAC_VERSION,
+   166	            "stac_extensions": [OSD_EXTENSION] + ([FILE_EXTENSION] if assets else [])
+   167	                               + ([ALTERNATE_EXTENSION] if alternate else []),
+   168	            "id": cid, "title": rec["title"], "description": rec.get("summary") or rec["title"],
+   169	            "license": lic.get("spdx") or "other",
+   170	            "keywords": rec["kinds"],
+   171	            "providers": [{"name": rec["publisher"]["name"], "roles": ["producer", "licensor"],
+   172	                           "url": rec["publisher"]["url"]}],
+   173	            "extent": {"spatial": {"bbox": [spatial]}, "temporal": {"interval": [when]}},
+   174	            "links": [{"rel": "root", "href": "../catalog.json", "type": "application/json"},
+   175	                      {"rel": "parent", "href": "../catalog.json", "type": "application/json"},
+   176	                      {"rel": "about", "href": rec["origin"]["url"], "title": "Publisher's page"},
+   177	                      {"rel": "license", "href": lic.get("url", rec["origin"]["url"]),
+   178	                       "title": lic["name"]}]
+   179	                     + [{"rel": "item", "href": f"./items/{n}", "type": "application/geo+json"}
+   180	                        for n in names],
+   181	            "osd:level": rec["level"], "osd:checked_at": rec["checked_at"],
+   182	            "osd:access": rec["origin"]["access"], "osd:redistribution": lic["redistribution"],
+   183	        }
+   184	        if rec.get("blocked_since"):
+   185	            col["osd:blocked_since"] = rec["blocked_since"]
+   186	        if assets:
+   187	            col["assets"] = assets
+   188	        d = root / cid
+   189	        (d / "items" if items else d).mkdir(parents=True, exist_ok=True)
+   190	        (d / "collection.json").write_text(json.dumps(col, indent=2) + "\n")
+   191	        for n, it in zip(names, items):
+   192	            (d / "items" / n).write_text(json.dumps(it) + "\n")
+   193	        collections.append(col)
+   194	        children.append({"rel": "child", "href": f"./{cid}/collection.json",
+   195	                         "type": "application/json", "title": rec["title"]})
+   196	    catalog = {
+   197	        "type": "Catalog", "stac_version": STAC_VERSION, "id": "open-subsurface-data",
+   198	        "title": "Open Subsurface Data",
+   199	        "description": "Open subsurface datasets as their publishers state them, one Collection per "
+   200	                       "record, with the level our tools verified.",
+   201	        "links": [{"rel": "root", "href": "./catalog.json", "type": "application/json"}] + children,
+   202	    }
+   203	    (root / "catalog.json").write_text(json.dumps(catalog, indent=2) + "\n")
+   204	    return collections
+   205	
+   206	
+   207	def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MAP) -> tuple[bool, list]:
+   208	    """stac-validator over a local file or tree, against the bundled schemas only."""
+   209	    from stac_validator.utilities import fetch_and_parse_schema
+   210	    from stac_validator.validate import StacValidate
+   211	
+   212	    fetch_and_parse_schema.cache_clear()   # a schema map change must not reuse a cached schema
+   213	    v = StacValidate(str(path), recursive=recursive, schema_config=str(schema_config))
+   214	    ok = v.run()
+   215	    return ok and all(m.get("valid_stac") for m in v.message), v.message
+   216	
+   217	
+   218	def _links(path: Path) -> list[dict]:
+   219	    return json.loads(path.read_text()).get("links", [])
+   220	
+   221	
+   222	def link_problems(root: Path) -> list[str]:
+   223	    """Every relative link in the tree points at a file that exists."""
+   224	    out = []
+   225	    for p in sorted(root.rglob("*.json")):
+   226	        for link in _links(p):
+   227	            href = link["href"]
+   228	            if "://" not in href and not (p.parent / href).resolve().is_file():
+   229	                out.append(f"{p.relative_to(root)}: {link['rel']} -> {href} does not exist")
+   230	    return out
+   231	
+   232	
+   233	def reachable(catalog: Path) -> dict[str, set[str]]:
+   234	    """Collection and Item ids a client reaches from the root by child and item links."""
+   235	    out: dict[str, set[str]] = {"collections": set(), "items": set()}
+   236	    todo, seen = [catalog.resolve()], set()
+   237	    while todo:
+   238	        p = todo.pop()
+   239	        if p in seen:
+   240	            continue
+   241	        seen.add(p)
+   242	        doc = json.loads(p.read_text())
+   243	        if doc["type"] == "Collection":
+   244	            out["collections"].add(doc["id"])
+   245	        elif doc["type"] == "Feature":
+   246	            out["items"].add(doc["id"])
+   247	        todo += [(p.parent / x["href"]).resolve() for x in doc.get("links", [])
+   248	                 if x["rel"] in ("child", "item")]
+   249	    return out
+# Outline extraction rules (OSD-D11): tool configuration, never a record field.
+# Keyed by record id, then by the name of an input the record declares. min_features is the
+# count the last reviewed run produced; outline-derived fails below it (a shrinking register is
+# a finding). Record ids absent here keep their placeholder outline and are reported in E03.
+#
+# register-wfs: id/uwi/name are property names; kind is a literal or {field, map, default};
+#   keep filters features by property; params are added to every page request; hits: true
+#   compares the service's numberMatched with the features served; id_scope prefixes the
+#   feature_id (<record-id>#<scope>/<id>) where one record holds registers with overlapping ids.
+# segy-hull: x_byte/y_byte/scalar_byte (SEG-Y, 1-based) or x_field/y_field/scalar_field (MDIO).
+# publisher-file: GeoJSON, or the locn:geometry extent of a publisher's page.
+# simplify_m (default 50): Douglas-Peucker tolerance for derived polygons, recorded as
+#   simplified_m on each; rings below simplify_m² are dropped; polygon_decimals (default 5) rounds
+#   polygon positions; exteriors_only lists kinds written without holes; rings dropped are counted
+#   in rings_dropped, and the rules applied are named in the feature's source (OSD-D16 amended,
+#   answers E03-2, E03-3). Per record, over `defaults`. Points are never moved. unplaced: report lists features
+#   the register serves without a position in the file's "unplaced" member instead of refusing.
+
+defaults:
+  simplify_m: 50
+  polygon_decimals: 5
+
+sodir/factpages:
+  exteriors_only: [survey-2d]   # a 2D survey's holes are artefacts of buffering its line network
+  min_features: 11210   # 23 Oct 2026: 9805 wellbores + 1405 surveys drawn; 2589 listed unplaced
+  inputs:
+    wellbores:
+      extractor: register-wfs
+      kind: wellbore
+      id: NPDID_wellbore
+      id_scope: wellbore   # NPDIDs of wellbores and surveys overlap (wellbore 2000, survey 2000)
+      name: Wellbore_name
+      unplaced: report   # FactMaps serves [nan,nan] for wellbores without a position
+      page_size: 1000
+      params: {outputFormat: GEOJSON, propertyName: "Wellbore_name,NPDID_wellbore,SHAPE"}
+    seismic-finished: &sodir-seismic
+      extractor: register-wfs
+      kind: {field: Sub_type, map: {"2D": survey-2d}, default: survey-3d}
+      id: NPDID_for_survey
+      id_scope: survey
+      name: Survey_name
+      keep: {Net_or_gross: net}   # every survey has one net area; 634 also have a gross area incl. turns
+      unplaced: report            # FactMaps serves {"type":"MultiPolygon",} for old surveys without an area
+      page_size: 1000
+      params: {outputFormat: GEOJSON, propertyName: "Survey_name,NPDID_for_survey,Sub_type,Net_or_gross,SHAPE"}
+    seismic-ongoing: *sodir-seismic
+    seismic-paused: *sodir-seismic
+    # planned, pending and cancelled surveys hold no data and are not outlined
+
+nlog/nlog:
+  min_features: 7220    # 23 Oct 2026: 6738 boreholes + 482 3D surveys
+  inputs:
+    boreholes:
+      extractor: register-wfs
+      kind: wellbore
+      id: BOREHOLE_CODE
+      uwi: UWI
+      name: BOREHOLE_NAME
+      page_size: 1000
+      params: {outputFormat: application/json, propertyName: "BOREHOLE_CODE,BOREHOLE_NAME,UWI,GEOMETRY",
+               sortBy: BOREHOLE_CODE}
+    surveys-3d:
+      extractor: register-wfs
+      kind: survey-3d
+      id: SIGNAL_COLLECTION_ID
+      name: SURVEY_ID
+      page_size: 1000
+      params: {outputFormat: application/json, propertyName: "SIGNAL_COLLECTION_ID,SURVEY_ID,GEOMETRY",
+               sortBy: SIGNAL_COLLECTION_ID}
+
+nopims/poseidon:
+  min_features: 1
+  inputs:
+    full-stack-agc:
+      extractor: segy-hull
+      kind: survey-3d
+      x_field: cdp-x
+      y_field: cdp-y
+      scalar_field: scalar_apply_coords
+
+nzpam/parihaka:
+  min_features: 1
+  inputs:
+    survey-extent: {extractor: publisher-file, kind: survey-3d}
+
+nzpam/kerry-3d:
+  min_features: 1
+  inputs:
+    survey-extent: {extractor: publisher-file, kind: survey-3d}
+docs/program/HANDOFF.md:15:- E16 merged (PR #11, main fa13d75): 53 of 68 records carry a publisher-stated `period`; 18,432 STAC Items (every Sodir and NLOG feature, Parihaka, Kerry 3D); gate 56 s with the OSD-D18 Item sample; `make check-full` (118 s) runs in the dispatched verify workflow. Verify dispatched. E17 (records, fourth twenty) opened in the records slot.
+docs/program/HANDOFF.md:16:- E16 had found two gate reds outside its claim: the record/1 test pops only `inputs` (period is also record/2), and full STAC validation of 18,432 Items takes 115 s. OSD-D18: gate validates Collections and an Item sample; `make check-full` runs in the verify workflow on main. E16's claim extended to land both.
+Makefile:2:.PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
+Makefile:20:check-full: build                        ## the whole STAC tree, every Item (OSD-D18; verify workflow on main, not the gate)
+src/osd/verify.py:3:L1 (origin reachable), L2 (sample files checksummed, licence text captured) and L3 (outlines
+src/osd/verify.py:18:Sampling policy (which listed files L2 hashes) is tool configuration in verifier/samples.yaml,
+src/osd/verify.py:51:SAMPLES_PATH = Path(__file__).parent / "verifier" / "samples.yaml"
+src/osd/verify.py:324:def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str]]:
+src/osd/verify.py:329:def check_files(rec: dict, sample: list[str] | None, opener: Opener, budget: ByteBudget) -> tuple[dict, list[dict]]:
+src/osd/verify.py:336:    if not sample:
+src/osd/verify.py:337:        return check("skip", "no sample for this record in verifier/samples.yaml"), []
+src/osd/verify.py:349:        if e.url not in seen and any(fnmatchcase(e.name, p) or fnmatchcase(e.url, p) for p in sample):
+src/osd/verify.py:353:        return check("fail", f"no entry of the listing ({len(entries)} entries) matches the sample"), []
+src/osd/verify.py:361:            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
+src/osd/verify.py:366:            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
+src/osd/verify.py:374:    coverage = f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed ({total} bytes); {len(entries)} entries listed"
+src/osd/verify.py:451:                  budget: ByteBudget | None = None, sample: list[str] | None = None,
+src/osd/verify.py:475:        budget = budget or ByteBudget()   # the sample and the inventory share one run budget
+src/osd/verify.py:476:        c, files = check_files(rec, sample, opener, budget)
+src/osd/verify.py:633:    samples = load_samples()
+src/osd/verify.py:651:                          sample=samples.get(rid), outline_rule=rules.get(rid),
+tests/test_fidelity.py:282:    return verify.verify_record(rec, fetch, None, opener=opener, previous=previous, sample=["*.las"])
+tests/site/site.test.mjs:310:      ['sodir/factpages', 'sodir--factpages', 'sampled', ['wellbore_exploration_all.csv']],
+tests/site/site.test.mjs:311:      ['opm/norne', 'opm--norne', 'sampled', ['norne/NORNE_ATW2013.DATA']]]);
+src/osd/outlines/extractors.py:182:    samples, fmt = struct.unpack_from(">H", data, 3220)[0], struct.unpack_from(">H", data, 3224)[0]
+src/osd/outlines/extractors.py:184:        raise Refused(f"SEG-Y sample format code {fmt} not known")
+src/osd/outlines/extractors.py:188:    size = 240 + samples * SEGY_SAMPLE_BYTES[fmt]
+tests/test_stac.py:112:ITEM_SAMPLE, ITEM_SEED = 20, 18   # OSD-D18: the gate samples Items; `make check-full` validates them all
+tests/test_stac.py:115:def item_sample(collection_dir: Path) -> list[Path]:
+tests/test_stac.py:121:    picked = random.Random(ITEM_SEED).sample(middle, min(ITEM_SAMPLE, len(middle)))
+tests/test_stac.py:125:def test_item_sample_is_bounded_and_fixed(tmp_path):
+tests/test_stac.py:130:    s = item_sample(tmp_path / "c")
+tests/test_stac.py:132:    assert s == item_sample(tmp_path / "c") and len(set(s)) == len(s)
+tests/test_stac.py:135:    assert len(item_sample(tmp_path / "c")) == 3
+tests/test_stac.py:138:def test_staged_catalog_collections_and_item_sample_validate_offline(staged, no_network):
+tests/test_stac.py:139:    """OSD-D18: the catalog, every Collection, and per Collection first, last and a seeded sample of Items."""
+tests/test_stac.py:143:    targets = [stac_dir / "catalog.json", *cols, *(i for c in cols for i in item_sample(c.parent))]
+tests/test_stac.py:144:    assert any("/items/" in str(t) for t in targets)   # records with a period put Items in the sample
+tests/test_stac.py:152:    recipe = re.search(r"^check-full:.*?\n((?:\t.*\n)+)", mk, re.MULTILINE).group(1)
+tests/test_stac.py:154:    assert not re.search(r"^check:.*check-full", mk, re.MULTILINE)   # never part of the gate
+tests/test_stac.py:157:    assert "make check-full" in step
+tests/test_manifest.py:138:    assert all(e["coverage"] == "sampled" for e in doc["entries"])
+tests/test_manifest.py:142:    """The committed osd.manifest/1 sample: a later schema version must keep it valid."""
+tests/test_manifest.py:430:    assert "the files the verifier sampled, not the whole dataset" in out
+src/osd/get.py:201:    sampled = sum(1 for e in m.entries if e.coverage == "sampled")
+src/osd/get.py:202:    if sampled:
+src/osd/get.py:203:        lines.append(f"{sampled} item{'s' if sampled > 1 else ''}: the files the verifier sampled, "
+src/osd/manifest.py:6:them from the verifier's files[]: a sample (`coverage: sampled`). Items carry no assets, so an Item
+src/osd/manifest.py:202:                e["coverage"] = "sampled"
+tests/fixtures/mirror/verification-2-norne.json:17:      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (12129 bytes); 5 entries listed"
+tests/fixtures/fidelity/verification/acme__two-wells.json:8:    {"name": "files-checksummed", "level": "L2", "outcome": "pass", "detail": "sample, not the whole dataset: 2 of 2 selected files hashed (1518 bytes); 2 entries listed"},
+tests/test_mirror.py:20:from osd.verify import ByteBudget, Fetched, FetchError, load_samples, verify_record
+tests/test_mirror.py:116:                      sample=["*.sgy"], mirror_rule=RULE)
+tests/test_mirror.py:119:    assert net.requests[ORIGIN + "survey/a.sgy"] == 1   # the sampled file is not hashed twice
+tests/test_mirror.py:125:                      sample=["*.csv"], mirror_rule=RULE, budget=ByteBudget(len(FILES["survey/c.csv"]) + 6000))
+tests/test_mirror.py:132:                      sample=["*.sgy"])
+tests/test_mirror.py:142:    assert "mirror" not in load_samples()                   # the verifier's sample policy is untouched
+tests/test_mirror.py:217:    assert mirror.eligibility(record(), v, None).reasons == ("no mirror: rule in verifier/samples.yaml",)
+tests/test_outlines.py:476:    rec, opener, sample = l2_passing(tmp_path, rec)
+tests/test_outlines.py:477:    v = verify_record(rec, fetch_ok, fc, now=NOW, opener=opener, sample=sample,
+tests/test_verify.py:22:    load_samples,
+tests/test_verify.py:77:    (tmp_path / "data" / "README.txt").write_text("not in the sample")
+tests/test_verify.py:178:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
+tests/test_verify.py:193:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=["*.las"])
+tests/test_verify.py:197:def test_no_sample_stays_L1(tmp_path):
+tests/test_verify.py:199:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=None)
+tests/test_verify.py:202:    assert "samples.yaml" in c["detail"]
+tests/test_verify.py:205:def test_sample_cut_at_byte_budget(tmp_path):
+tests/test_verify.py:208:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE,
+tests/test_verify.py:211:    assert "sample cut" in outcome(v, "files-checksummed")["detail"]
+tests/test_verify.py:219:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path, calls), sample=SAMPLE)
+tests/test_verify.py:226:    v = verify_record(l2_fixture(tmp_path), fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=["*.zip"])
+tests/test_verify.py:234:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
+tests/test_verify.py:243:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
+tests/test_verify.py:246:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
+tests/test_verify.py:250:    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
+tests/test_verify.py:256:    first = verify_record(rec, fetch_ok, None, now=NOW - timedelta(days=3), opener=dir_opener(tmp_path), sample=SAMPLE)
+tests/test_verify.py:260:    same = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE, previous=first)
+tests/test_verify.py:263:    second = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE, previous=first)
+tests/test_verify.py:273:    monkeypatch.setattr("osd.verify.load_samples", lambda: {rec["id"]: SAMPLE})
+tests/test_verify.py:306:    v = verify_record(l2_fixture(tmp_path), fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
+tests/test_verify.py:312:                        sample=SAMPLE, budget=ByteBudget(600))
+tests/test_verify.py:324:def test_samples_name_records_with_a_listing():
+tests/test_verify.py:326:    samples = load_samples()
+tests/test_verify.py:327:    assert len(samples) >= 3
+tests/test_verify.py:328:    for rid, globs in samples.items():
+tests/fixtures/outlines/segy/make_segy.py:15:samples = 4
+tests/fixtures/outlines/segy/make_segy.py:18:struct.pack_into(">H", binary, 3220 - 3200, samples)   # samples per trace
+tests/test_report.py:39:    monkeypatch.setattr("osd.verify.load_samples", dict)
+tests/test_report.py:84:    monkeypatch.setattr("osd.verify.load_samples", dict)
+src/osd/mirror.py:4:in verifier/samples.yaml. The verifier writes the inventory (`inventory()`, called from
+src/osd/mirror.py:138:        reasons.append("no mirror: rule in verifier/samples.yaml")
+tests/fixtures/manifest/two-records.json:42:      "coverage": "sampled"
+tests/fixtures/manifest/two-records.json:71:      "coverage": "sampled"
+
+exec
+/bin/bash -lc "nl -ba src/osd/outlines/extractors.py | head -175; nl -ba src/osd/outlines/__init__.py | head -260; cat schema/outline.schema.json schema/stac-osd.json; cat Makefile; cat docs/program/charters/E16-periods-from-the-publishers.md docs/program/charters/E03-outlines-from-the-data.md docs/program/charters/E04-stac-catalogue.md; rg --files docs/program/evidence | rg 'e16'; git status --short" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	"""Extractors: pure functions from an input's stored parts to WGS84 features.
+     2	
+     3	Each takes (record input, input rule, parts) where parts is the ordered list of (name, bytes)
+     4	the fetch stored, and returns features carrying geometry plus kind, name and the publisher's
+     5	identifiers. derive() adds the identity every derived feature carries.
+     6	"""
+     7	
+     8	from __future__ import annotations
+     9	
+    10	import csv
+    11	import html
+    12	import io
+    13	import json
+    14	import re
+    15	import struct
+    16	from html.parser import HTMLParser
+    17	from urllib.parse import urlsplit
+    18	
+    19	from .codecs import blosc_decode
+    20	from .geometry import Refused, closed_ring, convex_hull, map_positions, to_wgs84
+    21	
+    22	GEOMETRY_TYPES = {"Point", "LineString", "Polygon", "MultiPolygon"}
+    23	
+    24	
+    25	def _kind(rule: dict, props: dict) -> str:
+    26	    k = rule["kind"]
+    27	    if isinstance(k, str):
+    28	        return k
+    29	    return k.get("map", {}).get(str(props.get(k["field"])), k["default"])
+    30	
+    31	
+    32	def _ident(rule: dict, props: dict) -> dict:
+    33	    out = {}
+    34	    for key in ("publisher_id", "uwi"):
+    35	        field = rule.get("id" if key == "publisher_id" else "uwi")
+    36	        if field and props.get(field) not in (None, ""):
+    37	            out[key] = str(props[field])
+    38	    if "publisher_id" not in out and "uwi" not in out:
+    39	        raise Refused(f"a feature has no {rule.get('id')!r} and no {rule.get('uwi')!r}: no identity")
+    40	    name = props.get(rule.get("name", ""))
+    41	    out["name"] = str(name if name not in (None, "") else out.get("publisher_id") or out["uwi"])
+    42	    return out
+    43	
+    44	
+    45	def _epsg(name: str) -> str | None:
+    46	    m = re.search(r"EPSG:+(\d+)$", name or "")
+    47	    return f"EPSG:{m.group(1)}" if m else None
+    48	
+    49	
+    50	def _keep(rule: dict, props: dict) -> bool:
+    51	    return all(str(props.get(k)) == str(v) for k, v in (rule.get("keep") or {}).items())
+    52	
+    53	
+    54	def _features(rec_input: dict, rule: dict, collections: list[dict]) -> list[dict]:
+    55	    f = to_wgs84(rec_input.get("crs"), rec_input.get("units"))
+    56	    out = []
+    57	    for fc in collections:
+    58	        served = _epsg(((fc.get("crs") or {}).get("properties") or {}).get("name", ""))
+    59	        if served and served != rec_input.get("crs"):
+    60	            raise Refused(f"{rec_input['name']}: the response declares {served}, the record {rec_input.get('crs')}")
+    61	        for feat in fc.get("features") or []:
+    62	            props = feat.get("properties") or {}
+    63	            if not _keep(rule, props):
+    64	                continue
+    65	            g = feat.get("geometry") or {}
+    66	            if not g.get("coordinates") and rule.get("unplaced") == "report":
+    67	                out.append({"kind": _kind(rule, props), **_ident(rule, props), "geometry": None})
+    68	                continue
+    69	            if g.get("type") not in GEOMETRY_TYPES or not g.get("coordinates"):
+    70	                raise Refused(f"{rec_input['name']}: a feature has geometry {g.get('type')!r}")
+    71	            out.append({"kind": _kind(rule, props), **_ident(rule, props),
+    72	                        "geometry": {"type": g["type"], "coordinates": map_positions(g["coordinates"], f)}})
+    73	    return out
+    74	
+    75	
+    76	NAN_POSITION = re.compile(rb"\[\s*nan\s*,\s*nan\s*\]")
+    77	EMPTY_GEOMETRY = re.compile(rb'\{"type":"(\w+)",\}')
+    78	
+    79	
+    80	def geojson_page(b: bytes) -> dict:
+    81	    """A GeoJSON page. FactMaps writes two things that are not JSON: `[nan,nan]` for a wellbore
+    82	    without a position and `{"type":"MultiPolygon",}` for a survey without an area; both read as
+    83	    a geometry without coordinates (the rule decides: unplaced: report, or refuse)."""
+    84	    return json.loads(EMPTY_GEOMETRY.sub(rb'{"type":"\1","coordinates":null}', NAN_POSITION.sub(b"null", b)))
+    85	
+    86	
+    87	def register_wfs(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+    88	    """GeoJSON pages of a WFS GetFeature; a stored hit count must equal the features served."""
+    89	    pages = [geojson_page(b) for n, b in parts if n.startswith("page-")]
+    90	    served = sum(len(p.get("features") or []) for p in pages)
+    91	    hits = dict(parts).get("hits")
+    92	    if hits is not None:
+    93	        m = re.search(rb'numberMatched="(\d+)"', hits)
+    94	        if m and int(m.group(1)) != served:
+    95	            raise Refused(f"{rec_input['name']}: the service counts {int(m.group(1))} features, the pages "
+    96	                          f"served {served}")
+    97	    if not served:
+    98	        raise Refused(f"{rec_input['name']}: empty response")
+    99	    return _features(rec_input, rule, pages)
+   100	
+   101	
+   102	def register_csv(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+   103	    """A register table with one row per wellbore and its coordinate columns named in the rule."""
+   104	    text = parts[0][1].decode(rule.get("encoding", "utf-8-sig"))
+   105	    rows = list(csv.DictReader(io.StringIO(text), delimiter=rule.get("delimiter", ",")))
+   106	    if not rows:
+   107	        raise Refused(f"{rec_input['name']}: empty response")
+   108	    feats = []
+   109	    for i, row in enumerate(rows):
+   110	        try:
+   111	            x, y = float(row[rule["x"]]), float(row[rule["y"]])
+   112	        except (KeyError, TypeError, ValueError):
+   113	            raise Refused(f"{rec_input['name']}: row {i + 1} has no {rule['x']}/{rule['y']} coordinate") from None
+   114	        feats.append({"type": "Feature", "properties": row, "geometry": {"type": "Point", "coordinates": [x, y]}})
+   115	    return _features(rec_input, rule, [{"features": feats}])
+   116	
+   117	
+   118	class _Extent(HTMLParser):
+   119	    """The data-extent of the element inside the one marked property="locn:geometry"."""
+   120	
+   121	    def __init__(self):
+   122	        super().__init__()
+   123	        self.depth, self.extent, self.title, self._in_title = 0, None, "", False
+   124	
+   125	    def handle_starttag(self, tag, attrs):
+   126	        a = dict(attrs)
+   127	        if tag == "title":
+   128	            self._in_title = True
+   129	        if self.depth:
+   130	            self.depth += 1
+   131	            if self.extent is None and a.get("data-extent"):
+   132	                self.extent = a["data-extent"]
+   133	        elif a.get("property") == "locn:geometry":
+   134	            self.depth = 1
+   135	
+   136	    def handle_endtag(self, tag):
+   137	        self._in_title = self._in_title and tag != "title"
+   138	        if self.depth:
+   139	            self.depth -= 1
+   140	
+   141	    def handle_data(self, data):
+   142	        if self._in_title:
+   143	            self.title += data
+   144	
+   145	
+   146	def publisher_file(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+   147	    """A GeoJSON file, or the GeoJSON extent a publisher's page labels as the dataset's geometry."""
+   148	    body = parts[0][1]
+   149	    if rec_input["format"] == "geojson":
+   150	        fc = json.loads(body)
+   151	        if not fc.get("features"):
+   152	            raise Refused(f"{rec_input['name']}: empty response")
+   153	        return _features(rec_input, rule, [fc])
+   154	    p = _Extent()
+   155	    p.feed(body.decode("utf-8", "replace"))
+   156	    if not p.extent:
+   157	        raise Refused(f"{rec_input['name']}: the page carries no locn:geometry extent")
+   158	    g = json.loads(html.unescape(p.extent))
+   159	    props = {"id": urlsplit(rec_input["url"]).path.rstrip("/").rsplit("/", 1)[-1],
+   160	             "name": " ".join(p.title.split(" - ")[0].split())}
+   161	    rule = {**rule, "id": "id", "name": "name"}
+   162	    return _features(rec_input, rule, [{"features": [{"properties": props, "geometry": g}]}])
+   163	
+   164	
+   165	# --- trace headers: SEG-Y files and MDIO stores -------------------------------------------------
+   166	
+   167	def _scaled(v: int, scalar: int) -> float:
+   168	    """SEG-Y coordinate scalar: negative divides, positive multiplies, zero is one."""
+   169	    return v / -scalar if scalar < 0 else v * scalar if scalar > 0 else float(v)
+   170	
+   171	
+   172	SEGY_UNITS = {1: "m", 2: "ft"}
+   173	STRUCT = {"i1": "b", "u1": "B", "i2": "h", "u2": "H", "i4": "i", "u4": "I", "i8": "q", "u8": "Q",
+   174	          "f4": "f", "f8": "d"}
+   175	SEGY_SAMPLE_BYTES = {1: 4, 2: 4, 3: 2, 5: 4, 6: 8, 8: 1, 9: 8, 10: 4, 11: 2, 12: 8, 16: 1}
+     1	"""Outlines from the data (E03): fetch a record's inputs, derive WGS84 features, check them.
+     2	
+     3	  fetch_inputs  the verifier's Opener (paced, robots.txt obeyed) stores each record input as
+     4	                parts under build/inputs/<id>/<input>/ with a SHA256SUMS; the input's identity
+     5	                is the sha256 of that SHA256SUMS. The only network in this package.
+     6	  derive        pure over the stored parts: one extractor per input (rules.yaml, OSD-D11), every
+     7	                feature names its input and carries a feature_id; the collection carries each
+     8	                input's identity {url, sha256} and the record's licence once (OSD-D13, D16).
+     9	                Refused names the reason; nothing is guessed.
+    10	  check         the L3 `outline-derived` outcome for a committed outline file (OSD-D12).
+    11	"""
+    12	
+    13	from __future__ import annotations
+    14	
+    15	import hashlib
+    16	import json
+    17	from collections import Counter
+    18	from pathlib import Path
+    19	from urllib.parse import urlencode
+    20	
+    21	import yaml
+    22	
+    23	from .. import paths
+    24	from ..records import geometry_problems
+    25	from .extractors import EXTRACTORS, geojson_page, mdio_header_chunks
+    26	from .geometry import Refused, simplify
+    27	
+    28	RULES_PATH = Path(__file__).parent / "rules.yaml"
+    29	INPUTS_DIR = paths.BUILD_DIR / "inputs"
+    30	PART_BYTES = 64 * 1024**2
+    31	SIMPLIFY_M = 50  # OSD-D16 default: below the bin size a survey's staircase outline encodes;
+    32	POLYGON_DECIMALS = 5  # about 1.1 m, below SIMPLIFY_M; rules.yaml `defaults` may restate both
+    33	MAX_PAGES = 200
+    34	
+    35	__all__ = ["Refused", "check", "derive", "fetch_inputs", "load_rules", "stored_inputs", "write_outline"]
+    36	
+    37	
+    38	def load_rules(path: Path = RULES_PATH) -> dict:
+    39	    return yaml.safe_load(path.read_text()) or {}
+    40	
+    41	
+    42	def _dir(inputs_dir: Path, rid: str, name: str = "") -> Path:
+    43	    d = inputs_dir / rid.replace("/", "__")
+    44	    return d / name if name else d
+    45	
+    46	
+    47	# --- stored inputs -----------------------------------------------------------------------------
+    48	
+    49	def _sums(parts: list[tuple[str, bytes]]) -> bytes:
+    50	    return "".join(f"{hashlib.sha256(b).hexdigest()}  {n}\n" for n, b in parts).encode()
+    51	
+    52	
+    53	def input_sha256(parts: list[tuple[str, bytes]]) -> str:
+    54	    return hashlib.sha256(_sums(parts)).hexdigest()
+    55	
+    56	
+    57	def store(d: Path, parts: list[tuple[str, bytes]]) -> str:
+    58	    d.mkdir(parents=True, exist_ok=True)
+    59	    for n, b in parts:
+    60	        (d / n).parent.mkdir(parents=True, exist_ok=True)
+    61	        (d / n).write_bytes(b)
+    62	    (d / "SHA256SUMS").write_bytes(_sums(parts))
+    63	    return input_sha256(parts)
+    64	
+    65	
+    66	def read_parts(d: Path) -> list[tuple[str, bytes]]:
+    67	    """The parts in fetch order; a part whose bytes no longer match SHA256SUMS is refused."""
+    68	    sums = d / "SHA256SUMS"
+    69	    if not sums.exists():
+    70	        raise Refused(f"input not fetched: no {sums}")
+    71	    parts = []
+    72	    for line in sums.read_text().splitlines():
+    73	        sha, name = line.split("  ", 1)
+    74	        b = (d / name).read_bytes()
+    75	        if hashlib.sha256(b).hexdigest() != sha:
+    76	            raise Refused(f"stored part {d / name} changed since it was fetched")
+    77	        parts.append((name, b))
+    78	    return parts
+    79	
+    80	
+    81	def stored_inputs(rid: str, inputs_dir: Path = INPUTS_DIR) -> dict[str, str]:
+    82	    """{input url: input sha256} for every input stored for this record and still intact."""
+    83	    index = _dir(inputs_dir, rid) / "inputs.json"
+    84	    if not index.exists():
+    85	        return {}
+    86	    out = {}
+    87	    for i in json.loads(index.read_text()):
+    88	        try:
+    89	            out[i["url"]] = input_sha256(read_parts(_dir(inputs_dir, rid, i["name"])))
+    90	        except (Refused, OSError):
+    91	            continue
+    92	    return out
+    93	
+    94	
+    95	# --- fetching (network through the injected Opener) ------------------------------------------
+    96	
+    97	def _with(url: str, params: dict) -> str:
+    98	    return url + ("&" if "?" in url else "?") + urlencode(params)
+    99	
+   100	
+   101	def _get(url: str, opener, robots) -> bytes:
+   102	    from ..verify import FetchError, _read  # verify imports this package
+   103	
+   104	    if not robots.allowed(url):
+   105	        raise Refused(f"robots.txt disallows {url}")
+   106	    try:
+   107	        b = _read(opener(url), PART_BYTES)
+   108	    except FetchError as e:
+   109	        raise Refused(f"fetch failed: {e}") from None
+   110	    if len(b) >= PART_BYTES:
+   111	        raise Refused(f"{url} is larger than {PART_BYTES} bytes: not read in part")
+   112	    return b
+   113	
+   114	
+   115	def fetch_parts(rec_input: dict, rule: dict, opener, robots) -> list[tuple[str, bytes]]:
+   116	    url, fmt = rec_input["url"], rec_input["format"]
+   117	    if fmt == "wfs":
+   118	        parts = []
+   119	        if rule.get("hits", True):
+   120	            parts.append(("hits", _get(_with(url, {"resultType": "hits"}), opener, robots)))
+   121	        size = int(rule["page_size"])
+   122	        for page in range(MAX_PAGES):
+   123	            start = page * size
+   124	            b = _get(_with(url, {**(rule.get("params") or {}), "count": size, "startIndex": start}), opener, robots)
+   125	            parts.append((f"page-{start:06d}", b))
+   126	            try:
+   127	                served = len(geojson_page(b).get("features") or [])
+   128	            except ValueError:
+   129	                raise Refused(f"{rec_input['name']}: page at {start} is not GeoJSON: {b[:120]!r}") from None
+   130	            if served < size:
+   131	                return parts
+   132	        raise Refused(f"{rec_input['name']}: more than {MAX_PAGES} pages")
+   133	    if fmt == "mdio":
+   134	        base = url.rstrip("/") + "/"
+   135	        parts = [(".zmetadata", _get(base + ".zmetadata", opener, robots))]
+   136	        meta = json.loads(parts[0][1])["metadata"]
+   137	        a = meta.get("trace_mask/.zarray") or {}
+   138	        if not a:
+   139	            raise Refused(f"{rec_input['name']}: MDIO store has no trace_mask")
+   140	        (ni, nx), (ci, cx) = a["shape"], a["chunks"]
+   141	        for bi in range(-(-ni // ci)):
+   142	            for bx in range(-(-nx // cx)):
+   143	                parts.append((f"trace_mask/{bi}/{bx}", _get(f"{base}trace_mask/{bi}/{bx}", opener, robots)))
+   144	        for name in mdio_header_chunks(dict(parts)):
+   145	            parts.append((name, _get(base + name, opener, robots)))
+   146	        return parts
+   147	    return [("body", _get(url, opener, robots))]
+   148	
+   149	
+   150	def fetch_inputs(rec: dict, rules: dict, opener, inputs_dir: Path = INPUTS_DIR) -> dict[str, str]:
+   151	    """Fetch and store every input of the record that has a rule; {input name: input sha256}."""
+   152	    from ..verify import _Robots
+   153	
+   154	    rid, robots = rec["id"], _Robots(opener)
+   155	    todo = _inputs_with_rules(rec, rules)
+   156	    out, index = {}, []
+   157	    for i in todo:
+   158	        parts = fetch_parts(i, rules[rid]["inputs"][i["name"]], opener, robots)
+   159	        d = _dir(inputs_dir, rid, i["name"])
+   160	        if d.exists():
+   161	            for old in sorted(d.rglob("*"), reverse=True):
+   162	                old.unlink() if old.is_file() else old.rmdir()
+   163	        out[i["name"]] = store(d, parts)
+   164	        index.append({"name": i["name"], "url": i["url"], "sha256": out[i["name"]]})
+   165	    (_dir(inputs_dir, rid) / "inputs.json").write_text(json.dumps(index, indent=2) + "\n")
+   166	    return out
+   167	
+   168	
+   169	def _inputs_with_rules(rec: dict, rules: dict) -> list[dict]:
+   170	    rid, inputs = rec["id"], rec.get("inputs") or []
+   171	    if not inputs:
+   172	        raise Refused("the record declares no inputs")
+   173	    names = [i["name"] for i in inputs]
+   174	    if len(set(names)) != len(names):
+   175	        raise Refused(f"input names repeat: {names}")
+   176	    rule = (rules.get(rid) or {}).get("inputs") or {}
+   177	    todo = [i for i in inputs if i["name"] in rule]
+   178	    if not todo:
+   179	        raise Refused(f"no rule in outlines/rules.yaml for any input of {rid}")
+   180	    return todo
+   181	
+   182	
+   183	# --- deriving (pure) -------------------------------------------------------------------------
+   184	
+   185	def derive(rec: dict, rules: dict, inputs_dir: Path = INPUTS_DIR) -> dict:
+   186	    """The FeatureCollection for outlines/<id>.geojson, from the stored inputs only."""
+   187	    rid = rec["id"]
+   188	    feats, unplaced, used = [], [], {}
+   189	    defaults = rules.get("defaults") or {}
+   190	    tolerance = rules[rid].get("simplify_m", defaults.get("simplify_m", SIMPLIFY_M))
+   191	    decimals = rules[rid].get("polygon_decimals", defaults.get("polygon_decimals", POLYGON_DECIMALS))
+   192	    exteriors = set(rules[rid].get("exteriors_only") or [])
+   193	    for i in _inputs_with_rules(rec, rules):
+   194	        rule = rules[rid]["inputs"][i["name"]]
+   195	        parts = read_parts(_dir(inputs_dir, rid, i["name"]))
+   196	        used[i["name"]] = {"url": i["url"], "sha256": input_sha256(parts)}
+   197	        for f in EXTRACTORS[rule["extractor"]](i, rule, parts):
+   198	            g = f.pop("geometry")
+   199	            key = f.get("publisher_id") or f.get("uwi") or i["name"]
+   200	            if rule.get("id_scope"):  # a publisher numbering several registers from one sequence
+   201	                key = f"{rule['id_scope']}/{key}"
+   202	            if g is None:  # the register lists it without a position (rule unplaced: report)
+   203	                unplaced.append(f"{rid}#{key}")
+   204	                continue
+   205	            how = ""
+   206	            if g["type"] in ("Polygon", "MultiPolygon"):  # OSD-D16; points stay exact
+   207	                ext = f["kind"] in exteriors
+   208	                g, f["rings_dropped"] = simplify(g, tolerance, ext, decimals)
+   209	                f["simplified_m"] = tolerance
+   210	                how = f", simplified {tolerance} m{', exterior only' if ext else ''}, {decimals} decimals"
+   211	            bad = geometry_problems(g)
+   212	            if bad:
+   213	                raise Refused(f"{i['name']}: {f.get('publisher_id') or f['name']}: {bad[0]}")
+   214	            props = {"record_id": rid, "kind": f.pop("kind"), "name": f.pop("name"), "approximate": False,
+   215	                     "source": f"{rule['extractor']} ({i['name']}){how}", **f, "feature_id": f"{rid}#{key}",
+   216	                     "input": i["name"]}
+   217	            feats.append({"type": "Feature", "properties": props, "geometry": g})
+   218	    dup = [k for k, n in Counter([f["properties"]["feature_id"] for f in feats] + unplaced).items() if n > 1]
+   219	    if dup:
+   220	        raise Refused(f"{len(dup)} feature_id collisions, e.g. {dup[0]}")
+   221	    feats.sort(key=lambda f: f["properties"]["feature_id"])
+   222	    fc = {"type": "FeatureCollection", "licence": rec["licence"]["name"], "inputs": used, "features": feats}
+   223	    if unplaced:
+   224	        fc["unplaced"] = sorted(unplaced)  # GeoJSON foreign member: listed, no position to draw
+   225	    return fc
+   226	
+   227	
+   228	def write_outline(fc: dict, path: Path) -> None:
+   229	    """One feature per line: a rerun is a reviewable diff (OSD-D12)."""
+   230	    lines = [json.dumps(f, ensure_ascii=False, separators=(",", ":")) for f in fc["features"]]
+   231	    head = '{"type":"FeatureCollection",'
+   232	    for k in ("licence", "inputs"):
+   233	        if k in fc:
+   234	            head += json.dumps(k) + ":" + json.dumps(fc[k], ensure_ascii=False, separators=(",", ":")) + ",\n"
+   235	    if fc.get("unplaced"):
+   236	        head += '"unplaced":' + json.dumps(fc["unplaced"], ensure_ascii=False) + ",\n"
+   237	    path.write_text(head + '"features":[\n' + ",\n".join(lines) + "\n]}\n")
+   238	
+   239	
+   240	# --- the L3 check ------------------------------------------------------------------------------
+   241	
+   242	def check(rec: dict, outline: dict, rule: dict | None, stored: dict[str, str],
+   243	          refused: str | None = None) -> tuple[str, str]:
+   244	    """(outcome, detail) of `outline-derived`: pass only when every feature is derived and names
+   245	    an input of the collection whose (url, sha256) is a stored input of the record, ids are unique
+   246	    and the count reaches the rules' min_features."""
+   247	    feats = outline.get("features") or []
+   248	    if refused:
+   249	        return "fail", f"derivation refused this run: {refused}"
+   250	    if not feats:
+   251	        return "fail", "no features"
+   252	    props = [f.get("properties") or {} for f in feats]
+   253	    approx = sum(1 for p in props if p.get("approximate") is not False)
+   254	    if approx:
+   255	        return "fail", f"{approx} approximate features"
+   256	    named = outline.get("inputs") or {}
+   257	    lacking = sum(1 for p in props if not (p.get("feature_id") and (named.get(p.get("input")) or {}).get("sha256")))
+   258	    if lacking:
+   259	        return "fail", f"{lacking} features without feature_id or an input the collection carries"
+   260	    dup = [k for k, n in Counter(p["feature_id"] for p in props).items() if n > 1]
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/outline/2",
+  "title": "Outline feature properties, version 2",
+  "description": "Properties every feature in outlines/<record-id>.geojson carries; $defs.collection is the file's own members. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey or field (Polygon or MultiPolygon) or one line (LineString). Version 2: a derived feature (approximate: false) carries feature_id and the name of its input; the collection carries each input's identity once and the licence once (per feature only where it differs within a file). Every version-1 placeholder still validates.",
+  "type": "object",
+  "required": [
+    "record_id",
+    "kind",
+    "name",
+    "approximate",
+    "source"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "wellbore",
+        "survey-3d",
+        "survey-2d",
+        "field",
+        "block",
+        "dataset-extent"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "approximate": {
+      "type": "boolean",
+      "description": "true when the geometry is a placeholder (centroid, hand-drawn box) and not derived from the data; the map draws it differently and L3 requires false"
+    },
+    "source": {
+      "type": "string",
+      "description": "How the geometry was derived: the extractor and the input name of its rule in src/osd/outlines/rules.yaml, or 'hand placed from publisher map' for a placeholder"
+    },
+    "uwi": {
+      "type": "string"
+    },
+    "publisher_id": {
+      "type": "string",
+      "description": "The publisher's own identifier for the wellbore or survey"
+    },
+    "feature_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*#.+$",
+      "description": "<record-id>#[<id_scope>/]<publisher_id|uwi>, unique within the collection"
+    },
+    "licence": {
+      "type": "string",
+      "description": "The record's licence when it differs within a file; otherwise the collection's licence applies (OSD-D13)"
+    },
+    "simplified_m": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Douglas-Peucker tolerance in metres applied to a derived polygon's rings (OSD-D16); absent on points and placeholders"
+    },
+    "input": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "The name of the record input the geometry was derived from: a key of the collection's inputs"
+    },
+    "rings_dropped": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rings of a derived polygon dropped because their area was below simplified_m squared (OSD-D16)"
+    }
+  },
+  "if": {
+    "properties": {
+      "approximate": {
+        "const": false
+      }
+    },
+    "required": [
+      "approximate"
+    ]
+  },
+  "then": {
+    "required": [
+      "feature_id",
+      "input"
+    ]
+  },
+  "$defs": {
+    "collection": {
+      "description": "Members of the FeatureCollection beside type and features",
+      "type": "object",
+      "properties": {
+        "licence": {
+          "type": "string",
+          "description": "The licence of the record the features were derived from (OSD-D13)"
+        },
+        "inputs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "url",
+              "sha256"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "The record input's url"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "description": "sha256 of the input's SHA256SUMS (one sha256sum line per fetched part, in fetch order)"
+              }
+            }
+          }
+        },
+        "unplaced": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "feature_ids the publisher lists without a position: not drawn"
+        }
+      }
+    }
+  }
+}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json",
+  "title": "Open Subsurface Data (osd) STAC extension, v1.0.0",
+  "description": "Collection fields state what our tools established about the whole record (record-level assurance, not per file or per feature). Item fields state how one feature's geometry was obtained. Enums are closed and no other osd: field is allowed. Offline validation maps this URL to schema/stac-osd.json (schema/stac/schema-map.json).",
+  "type": "object",
+  "oneOf": [
+    {
+      "$comment": "Item",
+      "allOf": [
+        {
+          "type": "object",
+          "required": ["type", "properties"],
+          "properties": {
+            "type": {"const": "Feature"},
+            "properties": {"$ref": "#/definitions/item_fields"}
+          }
+        },
+        {"$ref": "#/definitions/stac_extensions"}
+      ]
+    },
+    {
+      "$comment": "Collection",
+      "allOf": [
+        {"type": "object", "required": ["type"], "properties": {"type": {"const": "Collection"}}},
+        {"$ref": "#/definitions/collection_fields"},
+        {"$ref": "#/definitions/stac_extensions"}
+      ]
+    }
+  ],
+  "definitions": {
+    "stac_extensions": {
+      "type": "object",
+      "required": ["stac_extensions"],
+      "properties": {
+        "stac_extensions": {
+          "type": "array",
+          "contains": {"const": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"}
+        }
+      }
+    },
+    "collection_fields": {
+      "type": "object",
+      "required": ["osd:level", "osd:checked_at", "osd:access", "osd:redistribution"],
+      "properties": {
+        "osd:level": {
+          "type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+          "description": "The record's latest verification level: L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted with a fidelity record"
+        },
+        "osd:checked_at": {
+          "type": ["string", "null"], "format": "date-time",
+          "description": "When that level was established; null when the record was never verified"
+        },
+        "osd:access": {
+          "type": "string", "enum": ["anonymous", "registration", "api", "request"],
+          "description": "As the record states it: anonymous, a free account, a documented service, or a human approves"
+        },
+        "osd:redistribution": {
+          "type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+          "description": "May a third party host a copy, as the record states it"
+        },
+        "osd:blocked_since": {
+          "type": "string", "format": "date-time",
+          "description": "Present while the origin refuses our runner: the first check of the current blocked run (OSD-D9)"
+        }
+      },
+      "patternProperties": {"^(?!osd:)": {}},
+      "additionalProperties": false
+    },
+    "item_fields": {
+      "type": "object",
+      "required": ["osd:approximate", "osd:derivation"],
+      "properties": {
+        "osd:approximate": {
+          "type": "boolean",
+          "description": "true when the geometry is a placeholder, not derived from the data"
+        },
+        "osd:derivation": {
+          "type": "string", "minLength": 1,
+          "description": "How the geometry was derived: the outline feature's source"
+        },
+        "osd:input_sha256": {
+          "type": "string", "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256 of the input the geometry was derived from, as the outline collection's inputs state it"
+        }
+      },
+      "patternProperties": {"^(?!osd:)": {}},
+      "additionalProperties": false
+    }
+  }
+}
+# One target per station. CI runs exactly `make check`.
+.PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
+
+check: lint test validate build          ## the required CI check (offline, < 2 min)
+
+lint:
+	uv run ruff check src tests
+
+test:
+	uv run pytest -q
+
+validate:                                ## every record and outline against its schema
+	uv run osd validate
+
+build:                                   ## build/catalog/*.json, outlines.pmtiles (tippecanoe) + site/data/
+	uv run osd build
+	mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
+	ls site/data | grep -vx files.txt > site/data/files.txt   # the map reads optional files from this list
+
+check-full: build                        ## the whole STAC tree, every Item (OSD-D18; verify workflow on main, not the gate)
+	uv run python -c "import sys; from pathlib import Path; from osd import stac; ok, m = stac.validate(Path('site/data/stac/catalog.json')); print(len(m), 'STAC objects', 'valid' if ok else 'INVALID'); sys.exit(not ok)"
+
+verify:                                  ## network: reach origins, record levels (not part of `check`)
+	uv run osd verify
+
+site: build                              ## serve the map locally
+	python3 -m http.server --directory site 8765
+
+site-deps:                               ## Playwright and Chromium for the site test (not part of `check`)
+	npm install --no-audit --no-fund
+	npx playwright install chromium
+
+site-test: build                         ## Playwright against the local site (not part of `check` yet)
+	npm run --silent site-test
+
+shot: build                              ## desktop and phone screenshots into build/shots/
+	mkdir -p build/shots
+	node tools/shot.mjs build/shots
+
+clean:
+	rm -rf build site/data
+## E16 Periods from the publishers — QUEUED · Records · no strategy, no Codex round
+
+Authority: OSD-D14 (STAC Items need a datetime or a bounded interval; Items only where a record
+declares a `period`); E04 as merged (record/2 optional `period`).
+
+**Outcome.** A STAC client lists Items, not only Collections: every record whose publisher states
+an acquisition, drilling or release period carries it, quoted as the publisher states it, and the
+published catalogue has Items for every outlined feature of those records.
+
+**Context today (after E04 merges).** 68 records, none with `period`; the STAC tree has 68
+Collections and 0 Items. `period` is `{start, end}` strings (ISO dates or years as the publisher
+states them; `records.py` coerces unquoted YAML dates and ints). Outlined records: Sodir, NLOG,
+Poseidon, Parihaka, Kerry 3D (derived); F3, Teapot Dome (placeholders).
+
+**The design the lane must map to.**
+1. One `period` per record, from the publisher's own page or register (survey year, drilling
+   years, release date), with `stated` text in `notes` or the record's existing field where short;
+   never inferred from a file name or from another aggregator.
+2. Registers (Sodir, NLOG) get the register's own coverage period as the publisher states it
+   (first wellbore year to today, or the register's stated range); per-feature dates are E03's
+   business, not this lane's.
+3. Target: every record whose publisher states a period, expected at least forty of 68; the PR
+   lists the records without a stated period and why.
+
+**Acceptance.**
+- `uv run osd validate`: 68 records, 0 problems; every `period` has `start <= end` (existing test).
+- `make build` then a count: Items emitted for every outlined record with a period; the PR shows
+  the Item count per collection for the five derived-outline records.
+- The verify comment on the PR shows no level change (periods do not touch levels).
+- Hand count in the PR: records with a period, records without, by reason.
+
+**Out of scope.** Schema changes, outlines, levels.
+
+**Ownership and dependencies.** Records lane; paths `records/**`, `docs/program/evidence/e16/**`.
+Depends on E04 (merged).
+
+**Evidence to inspect.** The Item counts; the verify comment; a QGIS Item screenshot (owner, with
+action 102).
+## E03 Outlines from the data — QUEUED · Kernel · strategy at lane open · Codex round done 23 Oct (REWORK, dispositions below; no second round)
+
+Authority: `docs/ARCHITECTURE.md`; owner direction 23 Oct ("display the outlines of known
+available wellbores, seismic outlines on a map"); OSD-D11, OSD-D12, OSD-D13.
+
+**Outcome.** Outlines on the map are derived from the publisher's own register or from the data,
+with the input identity and derivation named on every feature. Target set, by record id:
+`sodir/factpages` (every wellbore and every seismic survey Sodir publishes), `nlog/nlog` (every
+borehole and 3D survey NLOG publishes), `terranubis/f3-demo-2020`, `rmotc/teapot-dome`,
+`nopims/poseidon`, `nzpam/parihaka`, `nzpam/kerry-3d` (one survey polygon each). A target the
+lane cannot reach (login, blocked, undeclared units) is reported by id with the reason and stays
+dashed; the epic is DONE when every target is either solid or reported.
+
+**Context today (verified 23 Oct, main e58e2f5).** Five outline files exist, all hand placed with
+`approximate: true` (`outlines/*.geojson`). `schema/outline.schema.json` fixes the properties;
+`uwi` and `publisher_id` are optional. `src/osd/verify.py` marks `outline-derived` fail when any
+feature is approximate and `skip` otherwise (no pass path yet). Outline validation accepts
+MultiPolygon without checking coordinates (`src/osd/records.py`). External prerequisites, not
+verified in code: Sodir FactMaps serves WFS (asserted in the record), NLOG serves WFS and CSV,
+the four SEG-Y surveys carry coordinates in trace headers.
+
+**The design the lane must map to.**
+1. Records hold only publisher facts for inputs: an `inputs:` list, each `{name, url, crs,
+   format}` as the publisher states them (schema bump to record/2 with a test that every version-1
+   file still validates; claimed here, coordinated after E02 merges). Rules live in
+   `src/osd/outlines/rules.yaml` keyed by record id (OSD-D11).
+2. Fetching happens only through the verifier's injected fetcher (`osd verify --outlines` fetches
+   the inputs, stores bytes under `build/inputs/<id>/`, records their sha256); extractors are pure
+   functions over local bytes: `register-wfs`, `register-csv`, `segy-hull`, `publisher-file`.
+3. Each input is bound to its own CRS, coordinate fields, units and scalar; an input whose CRS or
+   units are not declared is refused with a reason (no guessing). Transform with `pyproj`; test
+   known coordinates and axis order.
+4. A derived feature carries `approximate: false`, `source` (rule), `input_url`,
+   `input_sha256`, `feature_id` (collection-scoped: `<record-id>#<publisher_id|uwi>`, required for
+   derived features, collisions refused), `licence` (from the record, OSD-D13). Point for
+   wellbores, Polygon or MultiPolygon for surveys and fields, LineString for 2D lines; every ring
+   validated closed and non-empty.
+5. The verifier's `outline-derived` check passes only when every feature of the file is derived,
+   the file's `input_sha256` values match the stored inputs, and the feature count is at least the
+   count recorded in the rules file for that id (nonempty target). L3 still requires L2.
+6. Committed outlines are the contract (OSD-D12); the extractor is rerun on demand and the diff
+   reviewed. PMTiles is not produced here (E05 decides its own tiling).
+
+**Acceptance.**
+- Sodir: the set of wellbore `publisher_id`s equals the id set of a frozen, paginated fixture of
+  the WFS response (exact set equality, unique ids); the live count on the Sodir table page on the
+  day of the run is recorded by hand as supplementary evidence.
+- NLOG: same shape for boreholes and 3D surveys.
+- F3: the hull from an irregular trace-header fixture with a known exact hull (corner coordinates
+  listed in the test) matches to 1 m; a mutation that replaces the hull with a bounding box fails
+  it; a mutation that swaps the x/y header bytes fails the known-coordinate test.
+- Negative cases, each its own test: missing `inputs`, empty response, undeclared CRS, undeclared
+  units, a feature with `approximate: true`, a duplicate `feature_id`: none reaches
+  `outline-derived pass`.
+- After the run, `osd status` shows L3 for every reached target and the PR lists each unreached
+  target with its reason.
+- Every version-1 record still validates under record/2 (test).
+
+**Out of scope.** Rendering and tiling (E05), STAC items (E04), any dataset not in the target set.
+
+**Stop rules.** A publisher's WFS carries no licence statement for the outlines: stop that
+target, add a D item, continue with the rest. A survey's SEG-Y headers do not declare units: report
+it, keep it dashed.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/outlines/**`, `src/osd/verify.py`
+(outline checks only, after E02 merges), `src/osd/records.py` (outline validation),
+`schema/record.schema.json` (record/2: `inputs`), `schema/outline.schema.json` (new required
+properties for derived features), `outlines/**`, `records/<targets>.yaml` (`inputs` only),
+`pyproject.toml` (pyproj, segyio), `tests/test_outlines.py`. Depends on E02 (merged).
+
+**Evidence to inspect.** The fixture id sets; the hull test; `osd status`; a screenshot of Norway
+with solid outlines.
+
+**Dispositions of the Codex round (23 Oct).** Accepted: record/tool boundary (design 1), fetch
+through the verifier (2), per-input CRS binding (3), identifier and geometry contract (4), L3
+evidence beyond a rule name (5), committed-output exception made explicit (OSD-D12), licence of
+derived geometry (OSD-D13), id-set equality instead of counts, exact-hull fixture and real
+mutations, negative cases, named target set, ownership of verify.py/records.py/pyproject, PMTiles
+removed. Refuted: "L3 prerequisite L2 undefined": L2 is E02's contract and the ladder stands;
+targets that cannot reach L2 are reported, not exempted. Noted: the `outline_path` literal in the
+old text was a wording error, fixed.
+## E04 STAC catalogue — QUEUED · Kernel · strategy at lane open · Codex round done 23 Oct (REWORK, dispositions below; no second round)
+
+Authority: `docs/ARCHITECTURE.md` ("formats, all standard"); Ophiolite connector doctrine
+(SDK or standard, never bespoke); OSD-D14.
+
+**Outcome.** Any STAC client, including the QGIS STAC browser, opens the catalogue by one address
+and lists every dataset as a Collection with licence, level, access mode and verification date,
+and lists Items for the features whose record declares a period. The catalogue is the
+interoperable contract that E06 and E09 read; consuming it in Ophiolite is E09.
+
+**Context today (verified 23 Oct, main e58e2f5).** `build/catalog/collections.json` is a bespoke
+wrapper `{"collections": [...]}` whose entries carry `type`, `stac_version`, `id`, `license`,
+`extent`, `providers`, `links` and bare `osd:level`/`osd:access` fields (`src/osd/build.py`); no
+root catalog, no items, no extension schema, no validation (`osd validate` covers records and
+outlines only; `tests/test_build.py` checks one licence string). The builder emits no GeoJSON
+`id`; feature identity arrives with E03's `feature_id`. `Makefile` copies `build/catalog/*` flat
+into `site/data/`, which Pages publishes.
+
+**The design the lane must map to.**
+1. Static STAC 1.0 under `build/catalog/stac/`: `catalog.json` root, one `Collection` per record,
+   Items only where OSD-D14 allows (record `period` or a feature date), each Item carrying the
+   feature geometry, bbox, `id` = E03's `feature_id`, and `datetime: null` with
+   `start_datetime`/`end_datetime` from the period. Collections carry the temporal extent from
+   `period` or `[null, null]`.
+2. The `osd` extension: schema at `schema/stac-osd.json`, versioned URL mapped to the local file
+   for offline validation. Collection-level fields `osd:level`, `osd:checked_at`, `osd:access`,
+   `osd:redistribution`, `osd:blocked_since` (record-level assurance, stated as such); Item-level
+   `osd:approximate`, `osd:derivation`, `osd:input_sha256`. Enums closed.
+3. `license`: the SPDX id when the record has one, else `other` plus a `license` link; `proprietary`
+   never appears. A test asserts the mapping for every record.
+4. Assets: Collection `links` carry the landing page (`rel: about`) and licence; Collection
+   `assets` carry E02's checksummed files (`href`, `file:size`, `file:checksum`), since their
+   relation to an individual Item is not established; Items carry no data assets until E06 or E07
+   establishes one. Mirror preference stays in E07.
+5. Validation offline inside `make check`: `stac-validator` pinned, core and extension schemas
+   bundled under `schema/stac/`, schema-map to local files, and a test that runs with network
+   access denied (a fetcher that raises).
+6. Publication: `Makefile` copies `build/catalog/` recursively; link validation runs over the
+   staged `site/data/stac/` tree, the one Pages serves.
+7. Identity: `feature_id` is the shared key between `outlines.geojson` features (emitted as
+   GeoJSON `id` too) and STAC Items; duplicates fail the build.
+
+**Acceptance.**
+- `stac-validator site/data/stac/catalog.json --recursive` passes with the local schema map and
+  no network; a mutation that removes one `child` link makes the reachable-set test fail (the test
+  asserts the exact reachable collection ids against the record ids).
+- Item ids equal the exact set of `feature_id`s of features with a period (fixture with three such
+  features and two without); a mutation that drops one Item fails.
+- A record with outlines but at L0 yields a collection with its Items and `osd:level: L0`; a record
+  with no outlines yields an empty Item list; both asserted in one parametrised test.
+- Removing `osd:level` fails validation; setting it to `L9` fails validation; hard-coding every
+  level to L0 fails the test that compares collection levels to `records.json`.
+- QGIS 3.34 STAC browser opens the staged tree from a local `http.server`, lists collections and
+  opens one Item showing licence, level and access (screenshot in the PR).
+
+**Out of scope.** A STAC API, mirrors (E07), manifests (E06), Ophiolite intake (E09), map UI (E05).
+
+**Stop rules.** The STAC extension process requires a registered schema URL: use the repository's
+versioned raw URL mapped locally; do not block on registration.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/stac.py`, `src/osd/build.py`,
+`schema/stac-osd.json`, `schema/stac/**` (bundled schemas), `schema/record.schema.json` (optional
+`period` only, coordinated with E03's record/2), `pyproject.toml` (stac-validator pinned),
+`Makefile` (recursive copy), `tests/test_stac.py`. Depends on E03 (feature ids) and E02 (files).
+
+**Evidence to inspect.** The validator output in CI; the reachable-set and id-set tests; the QGIS
+screenshot.
+
+**Dispositions of the Codex round (23 Oct).** Accepted: offline validation with bundled schemas
+and a schema map (5), the time contract (OSD-D14, design 1), item eligibility independent of
+level (acceptance 3), identity ownership (E03 assigns `feature_id`, E04 emits it in both outputs),
+assets at collection level from E02 with no mirror logic, extension semantics by level (2),
+recursive publication and staged-tree validation (6), exact-set acceptance tests with named
+mutations, licence mapping test, outcome narrowed to publishing the contract (E09 consumes).
+Refuted: none.
+docs/program/evidence/e16/periods.jsonl
+docs/program/evidence/e16/periods.md
+?? docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.log
+
+**Focusing on local evidence service**
+codex
+The proposed fields conflict with the current closed schemas, and the lane’s claimed paths omit those schemas and the committed outlines needed for publication. I’m also checking whether the cited date fields are present in the WFS inputs the code actually uses.
+exec
+/bin/bash -lc "nl -ba schema/outline.schema.json; nl -ba schema/stac-osd.json | tail -35; nl -ba src/osd/outlines/__init__.py | sed -n '193,245p'; nl -ba tests/test_stac.py | sed -n '110,165p'; cat docs/program/evidence/e16/periods.md; rg -n '1800|wlbEntry|seaStart|START_DATE|sodir|nlog' docs/program/evidence/e16/periods.jsonl; rg -n 'outline|derive|write_outline' src/osd/verify.py .github/workflows/verify.yml; nl -ba src/osd/outlines/rules.yaml | head -78; cat records/sodir/factpages.yaml 2>/dev/null; rg --files records | rg 'sodir|nlog'" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	{
+     2	  "$schema": "https://json-schema.org/draft/2020-12/schema",
+     3	  "$id": "https://open-subsurface-data.org/schema/outline/2",
+     4	  "title": "Outline feature properties, version 2",
+     5	  "description": "Properties every feature in outlines/<record-id>.geojson carries; $defs.collection is the file's own members. Geometry is WGS84 (EPSG:4326). A feature is one wellbore (Point), one survey or field (Polygon or MultiPolygon) or one line (LineString). Version 2: a derived feature (approximate: false) carries feature_id and the name of its input; the collection carries each input's identity once and the licence once (per feature only where it differs within a file). Every version-1 placeholder still validates.",
+     6	  "type": "object",
+     7	  "required": [
+     8	    "record_id",
+     9	    "kind",
+    10	    "name",
+    11	    "approximate",
+    12	    "source"
+    13	  ],
+    14	  "properties": {
+    15	    "record_id": {
+    16	      "type": "string"
+    17	    },
+    18	    "kind": {
+    19	      "type": "string",
+    20	      "enum": [
+    21	        "wellbore",
+    22	        "survey-3d",
+    23	        "survey-2d",
+    24	        "field",
+    25	        "block",
+    26	        "dataset-extent"
+    27	      ]
+    28	    },
+    29	    "name": {
+    30	      "type": "string"
+    31	    },
+    32	    "approximate": {
+    33	      "type": "boolean",
+    34	      "description": "true when the geometry is a placeholder (centroid, hand-drawn box) and not derived from the data; the map draws it differently and L3 requires false"
+    35	    },
+    36	    "source": {
+    37	      "type": "string",
+    38	      "description": "How the geometry was derived: the extractor and the input name of its rule in src/osd/outlines/rules.yaml, or 'hand placed from publisher map' for a placeholder"
+    39	    },
+    40	    "uwi": {
+    41	      "type": "string"
+    42	    },
+    43	    "publisher_id": {
+    44	      "type": "string",
+    45	      "description": "The publisher's own identifier for the wellbore or survey"
+    46	    },
+    47	    "feature_id": {
+    48	      "type": "string",
+    49	      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*#.+$",
+    50	      "description": "<record-id>#[<id_scope>/]<publisher_id|uwi>, unique within the collection"
+    51	    },
+    52	    "licence": {
+    53	      "type": "string",
+    54	      "description": "The record's licence when it differs within a file; otherwise the collection's licence applies (OSD-D13)"
+    55	    },
+    56	    "simplified_m": {
+    57	      "type": "number",
+    58	      "minimum": 0,
+    59	      "description": "Douglas-Peucker tolerance in metres applied to a derived polygon's rings (OSD-D16); absent on points and placeholders"
+    60	    },
+    61	    "input": {
+    62	      "type": "string",
+    63	      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+    64	      "description": "The name of the record input the geometry was derived from: a key of the collection's inputs"
+    65	    },
+    66	    "rings_dropped": {
+    67	      "type": "integer",
+    68	      "minimum": 0,
+    69	      "description": "Rings of a derived polygon dropped because their area was below simplified_m squared (OSD-D16)"
+    70	    }
+    71	  },
+    72	  "if": {
+    73	    "properties": {
+    74	      "approximate": {
+    75	        "const": false
+    76	      }
+    77	    },
+    78	    "required": [
+    79	      "approximate"
+    80	    ]
+    81	  },
+    82	  "then": {
+    83	    "required": [
+    84	      "feature_id",
+    85	      "input"
+    86	    ]
+    87	  },
+    88	  "$defs": {
+    89	    "collection": {
+    90	      "description": "Members of the FeatureCollection beside type and features",
+    91	      "type": "object",
+    92	      "properties": {
+    93	        "licence": {
+    94	          "type": "string",
+    95	          "description": "The licence of the record the features were derived from (OSD-D13)"
+    96	        },
+    97	        "inputs": {
+    98	          "type": "object",
+    99	          "minProperties": 1,
+   100	          "propertyNames": {
+   101	            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+   102	          },
+   103	          "additionalProperties": {
+   104	            "type": "object",
+   105	            "required": [
+   106	              "url",
+   107	              "sha256"
+   108	            ],
+   109	            "additionalProperties": false,
+   110	            "properties": {
+   111	              "url": {
+   112	                "type": "string",
+   113	                "format": "uri",
+   114	                "description": "The record input's url"
+   115	              },
+   116	              "sha256": {
+   117	                "type": "string",
+   118	                "pattern": "^[0-9a-f]{64}$",
+   119	                "description": "sha256 of the input's SHA256SUMS (one sha256sum line per fetched part, in fetch order)"
+   120	              }
+   121	            }
+   122	          }
+   123	        },
+   124	        "unplaced": {
+   125	          "type": "array",
+   126	          "items": {
+   127	            "type": "string"
+   128	          },
+   129	          "uniqueItems": true,
+   130	          "description": "feature_ids the publisher lists without a position: not drawn"
+   131	        }
+   132	      }
+   133	    }
+   134	  }
+   135	}
+    57	        },
+    58	        "osd:redistribution": {
+    59	          "type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+    60	          "description": "May a third party host a copy, as the record states it"
+    61	        },
+    62	        "osd:blocked_since": {
+    63	          "type": "string", "format": "date-time",
+    64	          "description": "Present while the origin refuses our runner: the first check of the current blocked run (OSD-D9)"
+    65	        }
+    66	      },
+    67	      "patternProperties": {"^(?!osd:)": {}},
+    68	      "additionalProperties": false
+    69	    },
+    70	    "item_fields": {
+    71	      "type": "object",
+    72	      "required": ["osd:approximate", "osd:derivation"],
+    73	      "properties": {
+    74	        "osd:approximate": {
+    75	          "type": "boolean",
+    76	          "description": "true when the geometry is a placeholder, not derived from the data"
+    77	        },
+    78	        "osd:derivation": {
+    79	          "type": "string", "minLength": 1,
+    80	          "description": "How the geometry was derived: the outline feature's source"
+    81	        },
+    82	        "osd:input_sha256": {
+    83	          "type": "string", "pattern": "^[0-9a-f]{64}$",
+    84	          "description": "sha256 of the input the geometry was derived from, as the outline collection's inputs state it"
+    85	        }
+    86	      },
+    87	      "patternProperties": {"^(?!osd:)": {}},
+    88	      "additionalProperties": false
+    89	    }
+    90	  }
+    91	}
+   193	    for i in _inputs_with_rules(rec, rules):
+   194	        rule = rules[rid]["inputs"][i["name"]]
+   195	        parts = read_parts(_dir(inputs_dir, rid, i["name"]))
+   196	        used[i["name"]] = {"url": i["url"], "sha256": input_sha256(parts)}
+   197	        for f in EXTRACTORS[rule["extractor"]](i, rule, parts):
+   198	            g = f.pop("geometry")
+   199	            key = f.get("publisher_id") or f.get("uwi") or i["name"]
+   200	            if rule.get("id_scope"):  # a publisher numbering several registers from one sequence
+   201	                key = f"{rule['id_scope']}/{key}"
+   202	            if g is None:  # the register lists it without a position (rule unplaced: report)
+   203	                unplaced.append(f"{rid}#{key}")
+   204	                continue
+   205	            how = ""
+   206	            if g["type"] in ("Polygon", "MultiPolygon"):  # OSD-D16; points stay exact
+   207	                ext = f["kind"] in exteriors
+   208	                g, f["rings_dropped"] = simplify(g, tolerance, ext, decimals)
+   209	                f["simplified_m"] = tolerance
+   210	                how = f", simplified {tolerance} m{', exterior only' if ext else ''}, {decimals} decimals"
+   211	            bad = geometry_problems(g)
+   212	            if bad:
+   213	                raise Refused(f"{i['name']}: {f.get('publisher_id') or f['name']}: {bad[0]}")
+   214	            props = {"record_id": rid, "kind": f.pop("kind"), "name": f.pop("name"), "approximate": False,
+   215	                     "source": f"{rule['extractor']} ({i['name']}){how}", **f, "feature_id": f"{rid}#{key}",
+   216	                     "input": i["name"]}
+   217	            feats.append({"type": "Feature", "properties": props, "geometry": g})
+   218	    dup = [k for k, n in Counter([f["properties"]["feature_id"] for f in feats] + unplaced).items() if n > 1]
+   219	    if dup:
+   220	        raise Refused(f"{len(dup)} feature_id collisions, e.g. {dup[0]}")
+   221	    feats.sort(key=lambda f: f["properties"]["feature_id"])
+   222	    fc = {"type": "FeatureCollection", "licence": rec["licence"]["name"], "inputs": used, "features": feats}
+   223	    if unplaced:
+   224	        fc["unplaced"] = sorted(unplaced)  # GeoJSON foreign member: listed, no position to draw
+   225	    return fc
+   226	
+   227	
+   228	def write_outline(fc: dict, path: Path) -> None:
+   229	    """One feature per line: a rerun is a reviewable diff (OSD-D12)."""
+   230	    lines = [json.dumps(f, ensure_ascii=False, separators=(",", ":")) for f in fc["features"]]
+   231	    head = '{"type":"FeatureCollection",'
+   232	    for k in ("licence", "inputs"):
+   233	        if k in fc:
+   234	            head += json.dumps(k) + ":" + json.dumps(fc[k], ensure_ascii=False, separators=(",", ":")) + ",\n"
+   235	    if fc.get("unplaced"):
+   236	        head += '"unplaced":' + json.dumps(fc["unplaced"], ensure_ascii=False) + ",\n"
+   237	    path.write_text(head + '"features":[\n' + ",\n".join(lines) + "\n]}\n")
+   238	
+   239	
+   240	# --- the L3 check ------------------------------------------------------------------------------
+   241	
+   242	def check(rec: dict, outline: dict, rule: dict | None, stored: dict[str, str],
+   243	          refused: str | None = None) -> tuple[str, str]:
+   244	    """(outcome, detail) of `outline-derived`: pass only when every feature is derived and names
+   245	    an input of the collection whose (url, sha256) is a stored input of the record, ids are unique
+   110	
+   111	
+   112	ITEM_SAMPLE, ITEM_SEED = 20, 18   # OSD-D18: the gate samples Items; `make check-full` validates them all
+   113	
+   114	
+   115	def item_sample(collection_dir: Path) -> list[Path]:
+   116	    """First and last Item by file name, plus up to ITEM_SAMPLE between them chosen by a fixed seed."""
+   117	    items = sorted((collection_dir / "items").glob("*.json"))
+   118	    if len(items) <= 2:
+   119	        return items
+   120	    middle = items[1:-1]
+   121	    picked = random.Random(ITEM_SEED).sample(middle, min(ITEM_SAMPLE, len(middle)))
+   122	    return [items[0], *sorted(picked), items[-1]]
+   123	
+   124	
+   125	def test_item_sample_is_bounded_and_fixed(tmp_path):
+   126	    d = tmp_path / "c" / "items"
+   127	    d.mkdir(parents=True)
+   128	    for i in range(100):
+   129	        (d / f"{i:03}.json").write_text("{}")
+   130	    s = item_sample(tmp_path / "c")
+   131	    assert len(s) == ITEM_SAMPLE + 2 and s[0].name == "000.json" and s[-1].name == "099.json"
+   132	    assert s == item_sample(tmp_path / "c") and len(set(s)) == len(s)
+   133	    for p in list(d.glob("*.json"))[:97]:
+   134	        p.unlink()
+   135	    assert len(item_sample(tmp_path / "c")) == 3
+   136	
+   137	
+   138	def test_staged_catalog_collections_and_item_sample_validate_offline(staged, no_network):
+   139	    """OSD-D18: the catalog, every Collection, and per Collection first, last and a seeded sample of Items."""
+   140	    stac_dir = staged / "stac"
+   141	    cols = sorted(stac_dir.glob("*/collection.json"))
+   142	    assert len(cols) == len(load_records())
+   143	    targets = [stac_dir / "catalog.json", *cols, *(i for c in cols for i in item_sample(c.parent))]
+   144	    assert any("/items/" in str(t) for t in targets)   # records with a period put Items in the sample
+   145	    for t in targets:
+   146	        ok, messages = stac.validate(t, recursive=False)
+   147	        assert ok and len(messages) == 1, (t, messages)
+   148	
+   149	
+   150	def test_makefile_check_full_validates_whole_tree_and_verify_runs_it_on_main_only():
+   151	    mk = (ROOT / "Makefile").read_text()
+   152	    recipe = re.search(r"^check-full:.*?\n((?:\t.*\n)+)", mk, re.MULTILINE).group(1)
+   153	    assert "stac.validate" in recipe and "site/data/stac/catalog.json" in recipe
+   154	    assert not re.search(r"^check:.*check-full", mk, re.MULTILINE)   # never part of the gate
+   155	    wf = (ROOT / ".github" / "workflows" / "verify.yml").read_text()
+   156	    step = re.search(r"- name: full STAC tree.*?\n((?:        .*\n)+)", wf).group(0)
+   157	    assert "make check-full" in step
+   158	    assert "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'" in step
+   159	
+   160	
+   161	def test_validator_needs_the_bundled_schemas(staged, no_network, tmp_path):
+   162	    """The schema map is what keeps the validator offline: without it, validation cannot pass."""
+   163	    broken = tmp_path / "map.json"
+   164	    m = json.loads(stac.SCHEMA_MAP.read_text())["schemas"]
+   165	    m = {k: str(stac.SCHEMA_MAP.parent / v) for k, v in m.items() if "collection.json" not in k}
+# E16 periods: what each publisher states (read 2026-10-23)
+
+One row per record. `period` in the record carries start, end and the short `stated` text; this table adds the page and the verbatim excerpt. Machine-readable copy: `periods.jsonl`.
+
+Rules applied: publisher pages, registers and the publisher's own metadata or data services only; never a file name in a URL or another aggregator; precision as stated; a live register or a continuously updated dataset ends on the read date.
+
+| record | period | kind | source | publisher states |
+|---|---|---|---|---|
+| ak-dggs/tax-credit-seismic-data | 2004 – 2015 | acquisition | <https://services1.arcgis.com/7HDiw78fcUiM2BWn/ArcGIS/rest/services/GMCTaxCreditData/FeatureServer/1/query?where=1%3D1&outFields=YearAcquired&f=json> | Seismic Data table column 'Year' fed by field YearAcquired (popup label 'Year Acquired'); 2D layer values 2004-2015, 3D layer values 2004-2015 |
+| ak-dggs/tax-credit-well-data | 2004-02-11 – 2018-07-14 | drilling | <https://services1.arcgis.com/7HDiw78fcUiM2BWn/ArcGIS/rest/services/GMCTaxCreditData/FeatureServer/0/query?where=1%3D1&outFields=CommonName,CompletedDate,ReleaseYear&f=json> | 'CommonName': 'Intrepid 2', 'CompletedDate': '04/23/2007', 'ReleaseYear': '2018' ... CompletedDate across 102 wells: earliest 02/11/2004, latest 07/14/2018 |
+| anh/produccion-fiscalizada-crudo | 2014-01 – 2026-03 | coverage | <https://www.datos.gov.co/resource/fdvb-hsrf.json?$select=vigencia,mes,count(*)&$group=vigencia,mes&$order=vigencia,mes> | [{'vigencia': '2014', 'mes': '1', ...}, ... {'vigencia': '2026', 'mes': '3', 'count': '331'}]; column vigencia smallest 2014, largest 2026 |
+| ar-energia/fractura-adjunto-iv | 2019-10-25 – 2019-10-25 | release | <https://datos.gob.ar/dataset/datos-de-fractura-de-pozos-adjunto-iv> | Fecha de publicación 2019-10-25 Fecha de última modificación 2024-09-05 Estado del dataset actualizado ... Frecuencia de actualización R/P1D (diariamente) |
+| ar-energia/produccion-por-pozo | 2006 – 2026-10-23 | coverage | <https://datos.gob.ar/api/3/action/package_show?id=produccion-de-petroleo-y-gas-por-pozo> | Producción de Pozos de Gas y Petróleo 2006 \| Detalle mensual de producción por Año ... Producción de Pozos de Gas y Petróleo – 2026; dataset_accrualPeriodicity: R/P1M |
+| ar-energia/trayectorias-vaca-muerta | 2024-12-09 – 2024-12-09 | release | <https://datos.gob.ar/dataset/trayectoria-de-pozos> | Fecha de publicación 2024-12-09 Fecha de última modificación 2026-09-25 Estado del dataset actualizado ... R/P1M (mensualmente) |
+| bgs/single-onshore-borehole-index | 1790 – 2026-10-23 | coverage | <https://www.bgs.ac.uk/datasets/boreholes-index/> | The collection covers onshore and near-shore boreholes from Great Britain dating back to at least 1790 and ranging from one to several thousand metres deep. Each year thousands of new records are added. |
+| co2datashare/eos-31-5-7-rock-mechanics | 2020-06-12 – 2023-05-01 | coverage | <https://co2datashare.org/dataset/rock-mechanics-data-for-31-5-7-eos-well-core> | Release date September 11, 2023 Period covered by the dataset Start: June 12, 2020 End: May 1, 2023 |
+| co2datashare/illinois-basin-decatur | 2007-01-01 – 2020-12-01 | coverage | <https://co2datashare.org/dataset/illinois-basin-decatur-project-dataset> | Release date March 1, 2022 Period covered by the dataset Start: January 1, 2007 End: December 1, 2020 |
+| co2datashare/sleipner-2019-benchmark-model | 1994-01-10 – 2010-12-10 | coverage | <https://co2datashare.org/dataset/sleipner-2019-benchmark-model> | Release date January 17, 2020 Period covered by the dataset Start: January 10, 1994 End: December 10, 2010 |
+| co2datashare/sleipner-4d-seismic | 1994-01-10 – 2010-12-10 | coverage | <https://co2datashare.org/dataset/sleipner-4d-seismic-dataset> | Release date January 17, 2020 Period covered by the dataset Start: January 10, 1994 End: December 10, 2010 |
+| co2datashare/smeaheia | 2009-01-01 – 2018-12-31 | coverage | <https://co2datashare.org/dataset/smeaheia-dataset> | Release date February 23, 2021 Period covered by the dataset Start: January 1, 2009 End: December 31, 2018 |
+| equinor/volve | 2008 – 2016 | coverage | <https://www.equinor.com/energy/volve-data-sharing> | The dataset comprises approximately 40,000 files from the Volve field, which was in production from 2008 to 2016. |
+| ga/brumbys-1-otway | 2018 – 2019 | acquisition | <https://ecat.ga.gov.au/geonetwork/srv/api/records/eb786367-42ed-4667-8a85-d79b84ec5d82/formatters/xml> | The data included in this workbook was collected during the Phase 2, an appraisal stage of the project (2018-2019). ... <gml:beginPosition>2018-01-01</gml:beginPosition> <gml:endPosition>2019-12-31</gml:endPosition> |
+| ga/l200-southern-carnarvon-seismic | 2011 – 2011 | acquisition | <https://ecat.ga.gov.au/geonetwork/srv/api/records/ad69d167-f467-3401-e044-00144fdd4fa6/formatters/xml> | L200 Southern Carnarvon Deep Crustal Seismic Survey, WA, 2011 Stacked and Migrated seismic data, uninterpreted and interpreted images for line 11GA-SC1 |
+| geus/formation-tops-denmark | 2023-09-22 – 2023-09-22 | release | <https://dataverse.geus.dk/dataset.xhtml?persistentId=doi:10.22008/FK2/RJ35BW> | Publication Date 2023-09-22 |
+| geus/havnso-reservoir-model | 2023-09-22 – 2023-09-22 | release | <https://dataverse.geus.dk/dataset.xhtml?persistentId=doi:10.22008/FK2/44TKZR> | Publication Date 2023-09-22 |
+| gfz/cosc-1-zero-offset-vsp | 2014 – 2014 | acquisition | <https://dataservices.gfz.de/10.5880/gfz.4.2.2020.010/zero-offset-vertical-seismic-profiling-vsp> | As support for the COSC drilling project, an extensive seismic survey took place in 2014 in and around the newly drilled borehole COSC-1. |
+| gfz/dekorp-9n-reprocessed | 1988 – 1988 | acquisition | <https://dataservices.gfz.de/10.5880/gfz.dekorp-9n.002/reprocessed-deep-seismic-reflection-profile> | The profile 9N was recorded in 1988 as part of the DEKORP project, the German deep seismic reflection program. |
+| gfz/ketzin-brine-injection | 2016 – 2016 | release | <https://dataservices.gfz.de/10.5880/gfz.6.3.2016.001/dataset-of-the-brine-injection-at-the-co2/metadata/datacite.json> | "dateType": "Issued", "date": "2016" |
+| gfz/ktb-data | 1987 – 1994 | drilling | <https://dataservices.gfz.de/10.5880/gfz.ktb.top/data-from-the-german-continental-deep-drilling> | From 1987 to 1990 a pilot borehole of 4000 m depth was drilled and fluid tests and borehole studies were conducted. In 1990 started drilling of a so-called superdeep main borehole of 9101 m depth that was reached in 1994. |
+| gsv/petroleum-wells | 1920-01-01 – 2026-10-23 | coverage | <https://metashare.maps.vic.gov.au/geonetwork/srv/api/records/da162569-99b5-5e2e-b85e-7f97d87e56c6/formatters/xml> | <gml:TimePeriod gml:id="temporalExtent"> <gml:beginPosition>1920-01-01</gml:beginPosition> <gml:endPosition indeterminatePosition="now" /> |
+| helsinki-univ/outokumpu-deep-hole-vocs | 2024-12-20 – 2024-12-20 | release | <https://zenodo.org/api/records/14534965> | "publication_date": "2024-12-20" |
+| ie-pad/offshore-exploration-wells | 1970 – 2019 | coverage | <https://data.gov.ie/api/3/action/package_show?id=exploration-wells-in-the-irish-offshore> | Offshore wells recorded between 1970 and 2019 available with this dataset. |
+| iodp-jrso/lims-expedition-data | 2009 – 2024 | acquisition | <https://iodp.tamu.edu/database/index.html> | IODP Expeditions 317–403 (LIMS; 2009–2024) |
+| kgs/oil-gas-wells | 1901 – 2026-10-23 | coverage | <https://www.kgs.ku.edu/Magellan/Qualified/ogwell_fgdc.html> | Source_Time_Period_of_Content: Time_Period_Information: Range_of_Dates/Times: Beginning_Date: 1901 Ending_Date: Present |
+| ldeo-brg/logdb | 1968 – 2024 | acquisition | <https://mlp.ldeo.columbia.edu/logdb/> | Access all the logging data recorded over more than 50 years by the Deep Sea Drilling Project (DSDP, 1968-1983), the Ocean Drilling Program (ODP, 1985-2003), the Integrated Ocean Drilling Program (IODP-1, 2004-2013), and the International Ocean Discovery Program (2014-2024) |
+| mase-unmig/videpi-seismic | 1957 – 2021-12-31 | coverage | <https://www.videpi.com/videpi/videpi.asp> | Si tratta di documentazione riguardante titoli minerari cessati, e pertanto pubblica, depositata a partire dal 1957 presso l’UNMIG |
+| mase-unmig/videpi-wells | 1957 – 2021-12-31 | coverage | <https://www.videpi.com/videpi/videpi.asp> | Si tratta di documentazione riguardante titoli minerari cessati, e pertanto pubblica, depositata a partire dal 1957 presso l’UNMIG |
+| nlog/nlog | 1800 – 2026-10-23 | coverage | <https://www.gdngeoservices.nl/geoserver/nlog/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=nlog:gdw_ng_wll_all_utm&propertyName=BOREHOLE_CODE,START_DATE_DRILLING&outputFormat=application/json> | START_DATE_DRILLING earliest 1800-01-01 (5 boreholes, e.g. DB-092), next 1828-01-01; latest 2026-10-13 (GSB-02) |
+| nzpam/kerry-3d | 1996-02-28 – 1996-04-14 | acquisition | <https://geodata.nzpam.govt.nz/survey/8223848313> | Survey Subtype Acquisition ... Year 1996 ... Start Date 28 February 1996 End Date 14 April 1996 |
+| nzpam/parihaka | 2005-01-13 – 2005-02-24 | acquisition | <https://geodata.nzpam.govt.nz/survey/927165623> | Survey Subtype Acquisition ... Year 2005 ... Start Date 13 January 2005 End Date 24 February 2005 |
+| ok-occ/oil-gas-data-files | 2006 – 2026-10-23 | coverage | <https://oklahoma.gov/occ/divisions/oil-gas/oil-gas-data.html> | All 2006-2010 UIC 1012A Reports 4/9/2014 xlsx ... 2025 updated weekly xlsx |
+| sa-dem/moorari-3d-2005-reprocessing | 2005 – 2006 | acquisition | <https://catalog.sarig.sa.gov.au/api/3/action/package_show?id=mesac35918> | Santos Ltd contracted WesternGeco to re-process approximately 66 square kilometres from the 1994 Moorari 3D Seismic Survey. The processing took place during 2005/2006. |
+| sgc/banco-informacion-petrolera-pozos | 2022-09-13 – 2022-09-13 | release | <https://datos-sgcolombiano.opendata.arcgis.com/api/feed/dcat-us/1.1.json> | "issued": "2022-09-13T15:54:22.000Z", "modified": "2022-10-20T15:36:57.499Z", "publisher": {"name": "Servicio Geológico Colombiano"} |
+| sintef/johansen | 2009-03-31 – 2009-03-31 | release | <https://www.sintef.no/projectweb/matmora/downloads/johansen/> | Published March 31, 2009 |
+| sodir/factpages | 1966 – 2026-10-23 | coverage | <https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Wellbores__all&propertyName=Entry_year,Entered_date,Wellbore_name> | Earliest Entry_year 1966 (Entered_date 1966-07-19T00:00:00); FactPages front page: synchronised daily |
+| terranubis/blake-ridge-hydrates-3d | 2000 – 2000 | acquisition | <https://terranubis.com/datainfo/Blake-Ridge-Hydrates-3D> | Acquisition: 2000 (Re)processing: 2000 Value added Products: 2015 |
+| terranubis/delft | 1985 – 1985 | acquisition | <https://terranubis.com/datainfo/Delft> | Acquisition: 1985 (Re)processing: 2011 Value added Products: 2021 ... The data was acquired in 1985 by NAM and re-processed in 2011. |
+| terranubis/f3-demo-2020 | 1987 – 1987 | acquisition | <https://terranubis.com/datainfo/F3-Demo-2020> | Project F3 Demo 2023 ... Acquisition: 1987 (Re)processing: 1987 Value added Products: 2023 |
+| terranubis/force-ml-2020-ichthys-3d | 2020-08-10 – 2020-08-10 | release | <https://terranubis.com/news> | 10 August 2020: We have added new projects: FORCE ML Competition 2020 FORCE ML Competition 2020 Synthetic Models and Wells |
+| terranubis/force-ml-2020-synthetic | 2020-08-10 – 2020-08-10 | release | <https://terranubis.com/news> | 10 August 2020: We have added new projects: FORCE ML Competition 2020 FORCE ML Competition 2020 Synthetic Models and Wells |
+| terranubis/laurentian-basin | 1984 – 1984 | acquisition | <https://terranubis.com/datainfo/Laurentian-Basin-Complete> | Acquisition: 1984 (Re)processing: 2006 Value added Products: 2018 |
+| terranubis/oga-mnsh | 2015 – 2015 | acquisition | <https://terranubis.com/datainfo/OGA-MNSH> | Acquisition: 2015 (Re)processing: 2015 Value added Products: 2017 |
+| terranubis/oga-rockall-trough | 2015 – 2015 | acquisition | <https://terranubis.com/datainfo/OGA-Rockall-Trough> | Acquisition: 2015 (Re)processing: 2015 Value added Products: 2017 |
+| terranubis/penobscot | 1992 – 1992 | acquisition | <https://terranubis.com/datainfo/Penobscot> | Acquisition: 1992 (Re)processing: 1992 Value added Products: 2017 |
+| terranubis/usgs-beaufort-sea-2023 | 1977 – 1978 | acquisition | <https://terranubis.com/datainfo/USGS-Beaufort-Sea-Arctic-Alaska-2023> | Acquisition: 1978 ... This OpendTect survey contains two 2D seismic vintages (1977 and 1978). |
+| terranubis/usgs-central-alaska-2023 | 1981 – 1981 | acquisition | <https://terranubis.com/datainfo/USGS-Central-Alaska-2023> | Acquisition: 1981 (Re)processing: 1981 Value added Products: 2023 |
+| tno/bro-geological-boreholes | 2023-09-05 – 2023-09-05 | release | <https://www.nationaalgeoregister.nl/geonetwork/srv/api/records/2bae2c5e-02a3-4979-ac74-5f3f37b16bc1/formatters/xml> | BRO - Geologisch booronderzoek (BHR-G) as-is ... <gco:Date>2023-09-05</gco:Date> ... codeListValue="publication">publicatie ... codeListValue="daily">dagelijks |
+| tx-rrc/production-data-query-dump | 1993 – 2026-10-23 | coverage | <https://www.rrc.texas.gov/resource-center/research/data-sets-available-for-download/> | Production Data Query Dump This data set contains production from 1993 to current. |
+| usgs/namss | 1975 – 2026-10-23 | acquisition | <https://api.datacite.org/dois/10.5066/F7930R7P> | The archived data were collected from 1975 to the present. ... dates: [{'date': '1975/present', 'dateType': 'Collected'}] |
+| ut-dogm/oil-gas-wells | 1891 – 2026-10-23 | coverage | <https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0/query?where=1%3D1&outStatistics=%5B%7B%22statisticType%22%3A%22min%22%2C%22onStatisticField%22%3A%22OrigComplDate%22%2C%22outStatisticFieldName%22%3A%22mn%22%7D%5D&f=json> | OrigComplDate min = 1891-12-26 (API 4301911519, Bamberger & Millis 1); gis.utah.gov page: 'Last update · Nightly' |
+| wa-demirs/petroleum-wells | 1902 – 2026-10-23 | coverage | <https://public-services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/Industry_and_Mining/MapServer/13/query?where=spud_date+IS+NOT+NULL&outStatistics=%5B%7B%22statisticType%22%3A%22min%22%2C%22onStatisticField%22%3A%22spud_date%22%2C%22outStatisticFieldName%22%3A%22mn%22%7D%5D&f=json> | spud_date min = 1902-06-15 (Warren River 1, 2, 3; UWI W001574-W001576); CKAN: 'Onshore wells are updated on a regular basis.' update_frequency: daily |
+
+## Without a period
+
+| record | reason | why |
+|---|---|---|
+| agl/marmousi2 | synthetic, no date stated | synthetic, no date stated: the AGL downloads page states no release date for the model; the only date is 'Gary Martin Thesis (2004)' for the accompanying report |
+| anp/bdep | not stated | ANP access page and the BDEP acervo page state no period for the BDEP holdings; only page dates ('Publicado em 10/11/2020') and dates of free-release resolutions (2021-2023) |
+| cnloer/data-information-hub | not stated | C-NLOER geoscience page states no period for the hub or its inventories; only 'Exploration and Delineation Well Test Summaries (May 2016)' for one component |
+| geus/deep-subsurface-data | not stated | Portal page states no acquisition, coverage or release range for the holdings; only that 3D/2D seismic downloads began October 2023 (prepared during 2023-2024). data.geus.dk/ugdata2d3d answers 403. |
+| lbeg/kw-fis | not stated | KW-FIS page states no coverage, acquisition or release dates (only 'since oil & gas activities began' and 3D seismic 'used in Germany since the mid-1980s'). |
+| nopims/poseidon | not stated | AWS Open Data registry page and its registry YAML state no acquisition or release date ('Dataset is static'); nopims.dmp.wa.gov.au/Nopims redirects to a GA NOPIMS landing page (HTTP 200) whose survey search is a JS app with no stated dates; GA eCat search for 'Poseidon 3D' returned no survey record |
+| nsta/ndr | not stated | NDR front page states only the Terms of Sale version date (2021-07-01), no coverage or release period; NSTA NDR info page answers 404 |
+| ntgs/core-library | not stated | CKAN record and NTLIS ANZLIC metadata leave Data Currency Start/End Date empty; only a citation creation date 2001-03-31 (merge of two datasets in March 2001), not a coverage or release statement |
+| opm/norne | not stated | opm-data README and norne/README state no release or acquisition date; the deck header says only 'Copyright (C) 2015 Statoil' and 'Norne full field model for SPE ATW 2013' (event name), simulation START 06 NOV 1997 is a model setting, not a stated period |
+| pgi/cbdg-boreholes | not stated | dane.gov.pl record states coverage only as 'od końca XIX wieku do chwili obecnej' (from the end of the 19th century to the present), no year; PGI hosts behind Incapsula |
+| rmotc/teapot-dome | blocked | EDX dataset page redirects to the EDX login (HTTP 200 login page); CKAN package_show for the slug answers 404 (not public), package_search for teapot/rmotc does not list it |
+| seg/open-data-wiki | blocked | HTTP 403 Cloudflare challenge ('Just a moment...') from wiki.seg.org on both the page and api.php, two tries |
+| spe/csp10-model-2 | synthetic, no date stated | synthetic, no date stated (CSP pages name the '2001 SPE Comparative Solution Project' and a Feb 2001 symposium but state no release date for the dataset) |
+| tx-rrc/full-wellbore | not stated | data sets page states 'Information on most of the wells ever drilled in Texas' and weekly updates, but no start year or date range; the dump itself is an EBCDIC/ASCII file not read |
+| ukogl/uk-onshore-geophysical-library | not stated | archives and about pages state volumes (87,000 km 2D, 2,900 sq km 3D) and that UKOGL was established in 1994, but no acquisition or coverage range for the data |
+35:{"id": "nlog/nlog", "status": "period", "reason": null, "read": "2026-10-23", "source_url": "https://www.gdngeoservices.nl/geoserver/nlog/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=nlog:gdw_ng_wll_all_utm&propertyName=BOREHOLE_CODE,START_DATE_DRILLING&outputFormat=application/json", "start": "1800", "end": "2026-10-23", "kind": "coverage", "quote": "START_DATE_DRILLING earliest 1800-01-01 (5 boreholes, e.g. DB-092), next 1828-01-01; latest 2026-10-13 (GSB-02)", "stated": "NLOG WFS All boreholes (6738): earliest START_DATE_DRILLING 1800-01-01 (5 boreholes, likely a placeholder; next 1828-01-01), latest 2026-10-13; register live, end = date read 2026-10-23"}
+49:{"id": "sodir/factpages", "status": "period", "reason": null, "read": "2026-10-23", "source_url": "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Wellbores__all&propertyName=Entry_year,Entered_date,Wellbore_name", "start": "1966", "end": "2026-10-23", "kind": "coverage", "quote": "Earliest Entry_year 1966 (Entered_date 1966-07-19T00:00:00); FactPages front page: synchronised daily", "stated": "FactMaps Wellbores__all (the register's own WFS): earliest Entry_year 1966 (Entered_date 1966-07-19); register updated daily, end = date read 2026-10-23"}
+src/osd/verify.py:3:L1 (origin reachable), L2 (sample files checksummed, licence text captured) and L3 (outlines
+src/osd/verify.py:4:derived from the data, E03: see osd.outlines) are established by the network run. L4 (canonical
+src/osd/verify.py:5:conversion, E09) comes from a fidelity/1 record a workspace wrote: `apply_fidelity` derives the
+src/osd/verify.py:48:from . import __version__, outlines, paths
+src/osd/verify.py:49:from .records import load_outline, load_records
+src/osd/verify.py:449:def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime | None = None,
+src/osd/verify.py:452:                  outline_rule: dict | None = None, stored: dict[str, str] | None = None,
+src/osd/verify.py:492:    if outline is None:
+src/osd/verify.py:493:        checks.append({"name": "outline-present", "level": "L3", "outcome": "fail",
+src/osd/verify.py:494:                       "detail": ("no outlines file" + (f"; derivation refused: {refused}" if refused else ""))[:500]})
+src/osd/verify.py:496:        checks.append({"name": "outline-present", "level": "L3", "outcome": "pass",
+src/osd/verify.py:497:                       "detail": f"{len(outline.get('features', []))} features"})
+src/osd/verify.py:498:        o, d = outlines.check(rec, outline, outline_rule, stored or {}, refused)
+src/osd/verify.py:499:        checks.append({"name": "outline-derived", "level": "L3", "outcome": o, "detail": d[:500]})
+src/osd/verify.py:558:    """The latest verification with its `canonical-conversion` check derived from a fidelity/1 record,
+src/osd/verify.py:608:def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, outline_path: Path,
+src/osd/verify.py:610:    """Fetch the record's inputs and derive from them; `rewrite` (--outlines) replaces the committed
+src/osd/verify.py:611:    file, otherwise (--outline-inputs, the verify workflow) the committed file is checked against
+src/osd/verify.py:614:        outlines.fetch_inputs(rec, rules, opener, inputs_dir)
+src/osd/verify.py:615:        fc = outlines.derive(rec, rules, inputs_dir)
+src/osd/verify.py:617:            outlines.write_outline(fc, outline_path)
+src/osd/verify.py:618:    except outlines.Refused as e:
+src/osd/verify.py:625:               derive: bool = False, fetch_inputs: bool = False, inputs_dir: Path = outlines.INPUTS_DIR,
+src/osd/verify.py:626:               outlines_dir: Path = paths.OUTLINES_DIR) -> list[dict]:
+src/osd/verify.py:627:    """Defaults are the network, paced; tests inject both and are not paced. `derive` (osd verify
+src/osd/verify.py:628:    --outlines) refetches the inputs of records that have outline rules and rewrites their outlines;
+src/osd/verify.py:629:    `fetch_inputs` (--outline-inputs) refetches them and checks the committed outlines against them."""
+src/osd/verify.py:636:    rules = outlines.load_rules()
+src/osd/verify.py:643:        op = outlines_dir / (rid.replace("/", "__") + ".geojson")
+src/osd/verify.py:645:        if (derive or fetch_inputs) and opener is not None and rid in rules:
+src/osd/verify.py:646:            refused = derive_outline(rec, rules, opener, inputs_dir, op, rewrite=derive)
+src/osd/verify.py:647:        outline = load_outline(op) if op.exists() else None
+src/osd/verify.py:650:        v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
+src/osd/verify.py:651:                          sample=samples.get(rid), outline_rule=rules.get(rid),
+src/osd/verify.py:652:                          stored=outlines.stored_inputs(rid, inputs_dir), refused=refused,
+.github/workflows/verify.yml:11:    paths: ["records/**", "outlines/**"]
+.github/workflows/verify.yml:40:      - run: uv run osd verify --outline-inputs ${{ steps.ids.outputs.ids }} | tee verify.txt   # L3 compares committed outlines with today's inputs (E03)
+     1	# Outline extraction rules (OSD-D11): tool configuration, never a record field.
+     2	# Keyed by record id, then by the name of an input the record declares. min_features is the
+     3	# count the last reviewed run produced; outline-derived fails below it (a shrinking register is
+     4	# a finding). Record ids absent here keep their placeholder outline and are reported in E03.
+     5	#
+     6	# register-wfs: id/uwi/name are property names; kind is a literal or {field, map, default};
+     7	#   keep filters features by property; params are added to every page request; hits: true
+     8	#   compares the service's numberMatched with the features served; id_scope prefixes the
+     9	#   feature_id (<record-id>#<scope>/<id>) where one record holds registers with overlapping ids.
+    10	# segy-hull: x_byte/y_byte/scalar_byte (SEG-Y, 1-based) or x_field/y_field/scalar_field (MDIO).
+    11	# publisher-file: GeoJSON, or the locn:geometry extent of a publisher's page.
+    12	# simplify_m (default 50): Douglas-Peucker tolerance for derived polygons, recorded as
+    13	#   simplified_m on each; rings below simplify_m² are dropped; polygon_decimals (default 5) rounds
+    14	#   polygon positions; exteriors_only lists kinds written without holes; rings dropped are counted
+    15	#   in rings_dropped, and the rules applied are named in the feature's source (OSD-D16 amended,
+    16	#   answers E03-2, E03-3). Per record, over `defaults`. Points are never moved. unplaced: report lists features
+    17	#   the register serves without a position in the file's "unplaced" member instead of refusing.
+    18	
+    19	defaults:
+    20	  simplify_m: 50
+    21	  polygon_decimals: 5
+    22	
+    23	sodir/factpages:
+    24	  exteriors_only: [survey-2d]   # a 2D survey's holes are artefacts of buffering its line network
+    25	  min_features: 11210   # 23 Oct 2026: 9805 wellbores + 1405 surveys drawn; 2589 listed unplaced
+    26	  inputs:
+    27	    wellbores:
+    28	      extractor: register-wfs
+    29	      kind: wellbore
+    30	      id: NPDID_wellbore
+    31	      id_scope: wellbore   # NPDIDs of wellbores and surveys overlap (wellbore 2000, survey 2000)
+    32	      name: Wellbore_name
+    33	      unplaced: report   # FactMaps serves [nan,nan] for wellbores without a position
+    34	      page_size: 1000
+    35	      params: {outputFormat: GEOJSON, propertyName: "Wellbore_name,NPDID_wellbore,SHAPE"}
+    36	    seismic-finished: &sodir-seismic
+    37	      extractor: register-wfs
+    38	      kind: {field: Sub_type, map: {"2D": survey-2d}, default: survey-3d}
+    39	      id: NPDID_for_survey
+    40	      id_scope: survey
+    41	      name: Survey_name
+    42	      keep: {Net_or_gross: net}   # every survey has one net area; 634 also have a gross area incl. turns
+    43	      unplaced: report            # FactMaps serves {"type":"MultiPolygon",} for old surveys without an area
+    44	      page_size: 1000
+    45	      params: {outputFormat: GEOJSON, propertyName: "Survey_name,NPDID_for_survey,Sub_type,Net_or_gross,SHAPE"}
+    46	    seismic-ongoing: *sodir-seismic
+    47	    seismic-paused: *sodir-seismic
+    48	    # planned, pending and cancelled surveys hold no data and are not outlined
+    49	
+    50	nlog/nlog:
+    51	  min_features: 7220    # 23 Oct 2026: 6738 boreholes + 482 3D surveys
+    52	  inputs:
+    53	    boreholes:
+    54	      extractor: register-wfs
+    55	      kind: wellbore
+    56	      id: BOREHOLE_CODE
+    57	      uwi: UWI
+    58	      name: BOREHOLE_NAME
+    59	      page_size: 1000
+    60	      params: {outputFormat: application/json, propertyName: "BOREHOLE_CODE,BOREHOLE_NAME,UWI,GEOMETRY",
+    61	               sortBy: BOREHOLE_CODE}
+    62	    surveys-3d:
+    63	      extractor: register-wfs
+    64	      kind: survey-3d
+    65	      id: SIGNAL_COLLECTION_ID
+    66	      name: SURVEY_ID
+    67	      page_size: 1000
+    68	      params: {outputFormat: application/json, propertyName: "SIGNAL_COLLECTION_ID,SURVEY_ID,GEOMETRY",
+    69	               sortBy: SIGNAL_COLLECTION_ID}
+    70	
+    71	nopims/poseidon:
+    72	  min_features: 1
+    73	  inputs:
+    74	    full-stack-agc:
+    75	      extractor: segy-hull
+    76	      kind: survey-3d
+    77	      x_field: cdp-x
+    78	      y_field: cdp-y
+id: sodir/factpages
+title: Sodir FactPages and FactMaps (Norwegian continental shelf)
+summary: >-
+  The Norwegian Offshore Directorate's register of every wellbore, field, discovery,
+  licence and seismic survey on the Norwegian continental shelf, with coordinates and
+  map layers. Metadata and outlines, not the underlying logs or seismic.
+publisher: {name: Norwegian Offshore Directorate (Sodir), url: https://www.sodir.no, country: "NO"}
+origin:
+  url: https://factpages.sodir.no
+  access: api
+  manifest_url: https://factpages.sodir.no/en/wellbore/TableView/Exploration/All
+  notes: Tables download as CSV; FactMaps serves WMS/WFS layers.
+licence:
+  name: Norwegian Licence for Open Government Data 2.0
+  spdx: NLOD-2.0
+  url: https://data.norge.no/nlod/en/2.0
+  redistribution: allowed
+  attribution: required
+  statement: "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by the Norwegian Offshore Directorate"
+kinds: [wellbore-headers, wellbore-paths, tops, production, source-list]
+region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0]}
+listed_by: [publisher]
+known_issues:
+  - "Geonorge catalogue links NLOD 1.0, the FactPages terms page NLOD 2.0 (23 Oct)"
+inputs:
+  - name: wellbores
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Wellbores__all"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+  - name: seismic-finished
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Seismic_surveys__finished"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+  - name: seismic-ongoing
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Seismic_surveys__ongoing"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+  - name: seismic-paused
+    url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Seismic_surveys__paused"
+    format: wfs
+    crs: "EPSG:4326"
+    stated: "FactMaps WGS84 service description: data transformed from ED50 with ESRI ED_1950_To_WGS_1984_18, \"WGS version is EPSG 4326\"; responses declare EPSG:4326"
+period:
+  start: "1966"
+  end: "2026-10-23"
+  stated: "FactMaps Wellbores__all (the register's own WFS): earliest Entry_year 1966 (Entered_date 1966-07-19); register updated daily, end = date read 2026-10-23"
+added: 2026-10-23
+records/nlog/nlog.yaml
+records/sodir/factpages.yaml
+
+**Checking token count**
+exec
+/bin/bash -lc "python3 -B - <<'PY'
+import json, pathlib, subprocess
+counts={}
+for p in pathlib.Path('outlines').glob('*.geojson'):
+ d=json.loads(p.read_text()); n=sum(bool(f['properties'].get('feature_id')) for f in d['features']); counts[p.name]=n
+print('outline feature counts', counts)
+for root in ['build/catalog/stac','site/data/stac']:
+ print(root, sum(1 for p in pathlib.Path(root).glob('*/items/*.json')))
+for p in pathlib.Path('tests/fixtures/outlines').glob('*/*/page-000000'):
+ try: d=json.loads(p.read_text()); print(str(p),list(d['features'][0]['properties']))
+ except Exception as e: print(str(p),type(e).__name__)
+print('tracked date evidence matches:')
+files=subprocess.check_output(['git','grep','-l','-E','wlbEntryDate|wlbCompletionDate|seaStartDate|seaCompletionDate|END_DATE_DRILLING','HEAD','--','src','tests','docs/program/evidence'],text=True) if False else ''
+PY
+nl -ba src/osd/verify.py | sed -n '608,621p'; cat records/nlog/nlog.yaml | tail -9; nl -ba .github/workflows/verify.yml | sed -n '35,66p'; rg -n 'period|datetime|temporal|date' docs/program/charters/E07-mirror-store-and-custody.md docs/program/charters/E17-records-fourth-twenty.md; git diff --quiet HEAD -- src tests schema Makefile outlines records; git grep -n -E 'wlbEntryDate|wlbCompletionDate|seaStartDate|seaCompletionDate|END_DATE_DRILLING' HEAD -- src tests docs/program/evidence" in /home/epic/src/open-subsurface-data
+ exited 1 in 44ms:
+outline feature counts {'nopims__poseidon.geojson': 1, 'rmotc__teapot-dome.geojson': 0, 'nlog__nlog.geojson': 7220, 'terranubis__f3-demo-2020.geojson': 0, 'nzpam__kerry-3d.geojson': 1, 'equinor__volve.geojson': 0, 'nzpam__parihaka.geojson': 1, 'sodir__factpages.geojson': 11210}
+build/catalog/stac 0
+site/data/stac 0
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000000 ['BOREHOLE_CODE', 'BOREHOLE_NAME', 'UWI', 'NITG_NUMBER']
+tests/fixtures/outlines/nlog__nlog/surveys-3d/page-000000 ['SIGNAL_COLLECTION_ID', 'SURVEY_ID']
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000000 ['GmlID', 'OBJECTID', 'Wellbore_name', 'NPDID_wellbore']
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000000 ['GmlID', 'OBJECTID', 'Survey_name', 'NPDID_for_survey', 'Sub_type', 'Net_or_gross']
+tracked date evidence matches:
+   608	def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, outline_path: Path,
+   609	                   rewrite: bool) -> str | None:
+   610	    """Fetch the record's inputs and derive from them; `rewrite` (--outlines) replaces the committed
+   611	    file, otherwise (--outline-inputs, the verify workflow) the committed file is checked against
+   612	    today's bytes. Returns the reason when refused."""
+   613	    try:
+   614	        outlines.fetch_inputs(rec, rules, opener, inputs_dir)
+   615	        fc = outlines.derive(rec, rules, inputs_dir)
+   616	        if rewrite:
+   617	            outlines.write_outline(fc, outline_path)
+   618	    except outlines.Refused as e:
+   619	        return str(e)
+   620	    return None
+   621	
+    url: "https://www.gdngeoservices.nl/geoserver/nlog/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=nlog:gdw_ng_smc_grid_utm"
+    format: wfs
+    crs: "EPSG:4230"
+    stated: "WFS capabilities DefaultCRS urn:ogc:def:crs:EPSG::4230 for 3D Seismic; responses declare it"
+period:
+  start: "1800"
+  end: "2026-10-23"
+  stated: "NLOG WFS All boreholes (6738): earliest START_DATE_DRILLING 1800-01-01 (5 boreholes, likely a placeholder; next 1828-01-01), latest 2026-10-13; register live, end = date read 2026-10-23"
+added: 2026-10-23
+    35	            ids=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- records | sed -n 's|^records/\(.*\)\.yaml$|\1|p' | grep -v '^_' | tr '\n' ' ')
+    36	          else
+    37	            ids="${{ inputs.ids }}"
+    38	          fi
+    39	          echo "ids=$ids" >> "$GITHUB_OUTPUT"
+    40	      - run: uv run osd verify --outline-inputs ${{ steps.ids.outputs.ids }} | tee verify.txt   # L3 compares committed outlines with today's inputs (E03)
+    41	      - name: levels as published (the same levels records.json carries after the republish)
+    42	        run: |
+    43	          uv run osd status | tee status.txt
+    44	          { echo '### osd status'; echo '```'; cat status.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+    45	      - name: dead-link report (issues on a dispatch on main, a dry run otherwise)
+    46	        continue-on-error: true
+    47	        env: { GH_TOKEN: "${{ github.token }}", GH_REPO: "${{ github.repository }}" }
+    48	        run: |
+    49	          gh issue list --state open --limit 1000 --json title --jq '.[].title' > open-titles.txt || : > open-titles.txt
+    50	          dry=--dry-run
+    51	          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then dry=; fi
+    52	          uv run osd report --before build/verification-before --after build/verification \
+    53	            --open-titles open-titles.txt --out dead.json $dry | tee dead.txt
+    54	          { echo '### dead-link report'; echo '```'; cat dead.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+    55	          if [ -z "$dry" ] && [ "$(jq length dead.json)" -gt 0 ]; then
+    56	            gh label create origin-dead --color d93f0b --description "Opened by the dead-link report: an origin fell from L1+ to dead" --force
+    57	            jq -c '.[]' dead.json | while read -r issue; do
+    58	              gh issue create --title "$(jq -r .title <<<"$issue")" --body "$(jq -r .body <<<"$issue")" --label origin-dead
+    59	            done
+    60	          fi
+    61	      - uses: actions/upload-artifact@v4
+    62	        with: { name: verification, path: build/verification }
+    63	      - name: comment on the pull request
+    64	        if: github.event_name == 'pull_request'
+    65	        env: { GH_TOKEN: "${{ github.token }}" }
+    66	        run: |
+docs/program/charters/E17-records-fourth-twenty.md:13:this host (blocked, OSD-D9). Periods (E16) are part of record/2: a new record states `period` when
+docs/program/charters/E17-records-fourth-twenty.md:20:   an extent; `period` when stated; no schema change; wants go to `notes` and the PR).
+docs/program/charters/E17-records-fourth-twenty.md:21:2. Candidates, in this order until twenty, each opened on the day: Canada (NRCan GDR retry, Alberta
+docs/program/charters/E17-records-fourth-twenty.md:35:- `uv run osd validate` reports `>= 86 records, 0 problems`.
+docs/program/charters/E17-records-fourth-twenty.md:39:- At least twelve new records carry `region.bbox`; at least twelve carry `period`.
+docs/program/charters/E17-records-fourth-twenty.md:50:`docs/program/evidence/e17/**`. Depends on E16 (merged first so `period` is in the record schema in
+
+exec
+/bin/bash -lc "rg -n '"'^period:|''^  start:|''^  end:'"' records/nopims/poseidon.yaml records/nzpam/kerry-3d.yaml records/nzpam/parihaka.yaml; nl -ba docs/program/charters/E18-items-carry-their-own-dates.md | tail -45; nl -ba docs/program/charters/E16-periods-from-the-publishers.md | sed -n '16,31p'; nl -ba Makefile | head -23" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+records/nzpam/parihaka.yaml:28:period:
+records/nzpam/parihaka.yaml:29:  start: "2005-01-13"
+records/nzpam/parihaka.yaml:30:  end: "2005-02-24"
+records/nzpam/kerry-3d.yaml:27:period:
+records/nzpam/kerry-3d.yaml:28:  start: "1996-02-28"
+records/nzpam/kerry-3d.yaml:29:  end: "1996-04-14"
+    15	sources and drop rules, not date fields; Sodir's WFS exposes `wlbEntryDate`/`wlbCompletionDate`
+    16	on wellbores and `seaStartDate`/`seaCompletionDate` (names to verify at lane open) on surveys, NLOG
+    17	exposes `START_DATE_DRILLING`/`END_DATE_DRILLING` (E16 evidence shows five 1800-01-01 placeholders).
+    18	18,432 Items exist; the gate validates a sample (OSD-D18) and `make check-full` the tree.
+    19	
+    20	**The design the lane must map to.**
+    21	1. Rules, not records: `rules.yaml` gains per-source `period_fields: {start: <prop>, end: <prop>}`;
+    22	   the outline writer copies those two values into each feature's properties as ISO dates
+    23	   (`osd:period_start`, `osd:period_end`), verbatim from the service, and names the fields in the
+    24	   outline's `inputs` (OSD-D16). Records stay untouched (OSD-D11).
+    25	2. Items: `start_datetime`/`end_datetime` come from the feature's two properties when both parse
+    26	   as dates and start ≤ end; an open end (no completion date) uses the collection period's end;
+    27	   otherwise the collection's period is used and the Item carries `osd:period_source:
+    28	   collection`. A placeholder rule per source (`period_placeholders: ["1800-01-01"]`) treats listed
+    29	   values as absent.
+    30	3. The Collection's temporal extent stays the record's `period` (publisher-stated, E16); the lane
+    31	   reports in the PR how many Items took their own dates, how many fell back, and the min and max
+    32	   feature dates per register against the collection period.
+    33	4. No new network: the dates come from the same WFS reads the outline run already does
+    34	   (`osd verify --outline-inputs`).
+    35	
+    36	**Acceptance.**
+    37	- Fixture WFS responses for Sodir and NLOG (offline) with dated, undated, placeholder and
+    38	  reversed-date features: Items take their own dates, fall back, drop the placeholder, and refuse
+    39	  the reversed pair with the collection period and `osd:period_source: collection` (each a test).
+    40	- Every Item still validates offline; the sample gate and `make check-full` stay green; the gate
+    41	  stays under two minutes.
+    42	- Mutations against the unchanged suite: placeholder rule dropped → red; fallback dropped → red;
+    43	  reversed dates accepted → red; period fields copied from the record instead of the feature → red.
+    44	- On main after merge: the published Sodir collection has Items whose `start_datetime` differ from
+    45	  1966-01-01 (count in the PR from a local full build), and the collection extent is unchanged.
+    46	
+    47	**Out of scope.** Collection periods (E16, records); Items for records without outlines; any
+    48	record edit.
+    49	
+    50	**Stop rules.** If a register's service does not expose per-feature dates, that register keeps the
+    51	collection period and the lane says so; it does not scrape pages.
+    52	
+    53	**Ownership and dependencies.** Coding lane; paths `src/osd/outlines/rules.yaml`, `src/osd/outlines/
+    54	*.py` (date copy and inputs), `src/osd/stac.py` (Item dates), `tests/test_outlines.py`,
+    55	`tests/test_stac.py`, `tests/fixtures/outlines/**`, `docs/program/evidence/e18/**`. Depends on E03,
+    56	E04, E16 (merged). Touches no file of E07 slice 2 or E17.
+    57	
+    58	**Evidence to inspect.** The per-register counts and date ranges in the PR; one Sodir wellbore Item
+    59	before and after; the mutation list.
+    16	1. One `period` per record, from the publisher's own page or register (survey year, drilling
+    17	   years, release date), with `stated` text in `notes` or the record's existing field where short;
+    18	   never inferred from a file name or from another aggregator.
+    19	2. Registers (Sodir, NLOG) get the register's own coverage period as the publisher states it
+    20	   (first wellbore year to today, or the register's stated range); per-feature dates are E03's
+    21	   business, not this lane's.
+    22	3. Target: every record whose publisher states a period, expected at least forty of 68; the PR
+    23	   lists the records without a stated period and why.
+    24	
+    25	**Acceptance.**
+    26	- `uv run osd validate`: 68 records, 0 problems; every `period` has `start <= end` (existing test).
+    27	- `make build` then a count: Items emitted for every outlined record with a period; the PR shows
+    28	  the Item count per collection for the five derived-outline records.
+    29	- The verify comment on the PR shows no level change (periods do not touch levels).
+    30	- Hand count in the PR: records with a period, records without, by reason.
+    31	
+     1	# One target per station. CI runs exactly `make check`.
+     2	.PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
+     3	
+     4	check: lint test validate build          ## the required CI check (offline, < 2 min)
+     5	
+     6	lint:
+     7		uv run ruff check src tests
+     8	
+     9	test:
+    10		uv run pytest -q
+    11	
+    12	validate:                                ## every record and outline against its schema
+    13		uv run osd validate
+    14	
+    15	build:                                   ## build/catalog/*.json, outlines.pmtiles (tippecanoe) + site/data/
+    16		uv run osd build
+    17		mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
+    18		ls site/data | grep -vx files.txt > site/data/files.txt   # the map reads optional files from this list
+    19	
+    20	check-full: build                        ## the whole STAC tree, every Item (OSD-D18; verify workflow on main, not the gate)
+    21		uv run python -c "import sys; from pathlib import Path; from osd import stac; ok, m = stac.validate(Path('site/data/stac/catalog.json')); print(len(m), 'STAC objects', 'valid' if ok else 'INVALID'); sys.exit(not ok)"
+    22	
+    23	verify:                                  ## network: reach origins, record levels (not part of `check`)
+
+codex
+Verified against HEAD **`b0c9f6e75f7adeb3ae1b42b52db8f5fd36433610`**. Read-only review; no files modified.
+
+**1. Verdict: REWORK.** The proposed provenance fields require unclaimed schema changes, and the proposed execution path cannot publish updated dates without rewriting committed outlines.
+
+**2. Current-code facts and errors**
+
+- **Confirmed:** Items inherit the record interval: `src/osd/stac.py:145` passes it to `_item`, which assigns both timestamps at line 108. The charter’s “lines 63–108” citation misses the connecting call.
+- **Misleading:** outlines do not retain arbitrary publisher properties selected by WFS. The extractor explicitly emits identifiers, name, kind and geometry (`src/osd/outlines/extractors.py:32`, `:71`). Rules currently contain no date mappings.
+- **Unsupported field names:** the committed Sodir evidence names `Entry_year` and `Entered_date`, not `wlbEntryDate` (`docs/program/evidence/e16/periods.jsonl:49`). Neither the asserted Sodir completion/survey fields nor NLOG’s `END_DATE_DRILLING` appears in tracked code, fixtures or E16 evidence. Label these external prerequisites, not verified Context facts.
+- **Overstated placeholder evidence:** E16 reports five `1800-01-01` values as **“likely a placeholder”**, not established placeholders (`docs/program/evidence/e16/periods.jsonl:35`). It supports `START_DATE_DRILLING` only.
+- **Count corroborated as build eligibility:** committed outlines yield 11,210 Sodir + 7,220 NLOG + Parihaka + Kerry = **18,432** eligible Items under `src/osd/stac.py:147`. No generated STAC tree exists in this checkout; published existence was not independently verified.
+- **Confirmed:** the gate samples first/last plus up to 20 Items per Collection (`tests/test_stac.py:112`); `Makefile:20` validates the whole tree separately.
+
+**3. Design objections and concrete alternatives**
+
+- **Missing contract ownership:** `osd:period_source` is forbidden by `schema/stac-osd.json:87`; extra provenance members inside outline `inputs` are forbidden by `schema/outline.schema.json:109`. Claim both schemas and the offline schema map; version their `$id`s, retain old-file compatibility tests, and name the contract change in the PR title.
+- **Missing publication ownership:** `--outline-inputs` derives but does not write outlines (`src/osd/verify.py:608`); build reads committed outlines (`src/osd/stac.py:137`). Claim the two register outline files, regenerate through `--outlines`, review their diffs, then build from those committed outputs.
+- **Dates are excluded from requests:** `propertyName` explicitly selects geometry/identity fields (`src/osd/outlines/rules.yaml:35`, `:45`, `:60`, `:68`). Require verified date fields in those existing requests; adding `period_fields` alone cannot retrieve them.
+- **“ISO dates, verbatim” is ambiguous:** E16’s Sodir example is a timestamp without a timezone (`periods.jsonl:49`). Define accepted source representations, date normalization and invalid-value handling; preserve raw evidence in stored inputs and test exact emitted RFC 3339 bounds.
+- **Open-end semantics are incomplete:** a collection end can precede a feature start, and a mixed feature/collection interval is not wholly publisher-stated. Validate the resulting pair, explicitly mark mixed provenance, and specify fallback for invalid bounds.
+- **Unchanged Collection extent needs a guard:** reporting outlying Item dates does not resolve their exclusion from collection-level time discovery. Add an offline containment assertion; if it fails, defer that register pending an E16-owned coverage correction.
+
+**4. Acceptance weaknesses**
+
+- “Start differs from `1966-01-01`” can pass unchanged: existing output is `1966-01-01T00:00:00Z` (`src/osd/stac.py:51`). Compare normalized instants and assert exact dates for named feature IDs.
+- A local count does not prove “published on main.” Require matching named Items in the staged artifact and a post-publication check.
+- Synthetic WFS fixtures can bypass the real `propertyName` projection. Add an injected-transport test that checks requested fields and carries responses through extraction, outline serialization and STAC output; removing date fields from requests must fail it.
+- Placeholder tests can remain green if fallback reproduces the same `1800` start. Use a distinct fixture collection period and assert both timestamps, provenance and preservation of the Item.
+- No acceptance covers open ends, malformed dates, mixed provenance, or start after fallback end. Add explicit cases and mutations for these guards.
+- Schema validity cannot prove correct feature dates or collection containment. Assert exact Item IDs and intervals; a valid but wrong timestamp must fail.
+
+**5. Scope overlap**
+
+- E16 explicitly assigns per-feature dates to E03 (`docs/program/charters/E16-periods-from-the-publishers.md:19`): E18 is an E03/E04 follow-on and should say so.
+- Correcting Collection periods would cross E18’s exclusion into E16; coordinate separately if containment fails.
+- No identified product-scope creep into E07 or E17. The necessary schema and committed-outline paths are missing ownership, not optional expansion.
+tokens used
+46,281
+Verified against HEAD **`b0c9f6e75f7adeb3ae1b42b52db8f5fd36433610`**. Read-only review; no files modified.
+
+**1. Verdict: REWORK.** The proposed provenance fields require unclaimed schema changes, and the proposed execution path cannot publish updated dates without rewriting committed outlines.
+
+**2. Current-code facts and errors**
+
+- **Confirmed:** Items inherit the record interval: `src/osd/stac.py:145` passes it to `_item`, which assigns both timestamps at line 108. The charter’s “lines 63–108” citation misses the connecting call.
+- **Misleading:** outlines do not retain arbitrary publisher properties selected by WFS. The extractor explicitly emits identifiers, name, kind and geometry (`src/osd/outlines/extractors.py:32`, `:71`). Rules currently contain no date mappings.
+- **Unsupported field names:** the committed Sodir evidence names `Entry_year` and `Entered_date`, not `wlbEntryDate` (`docs/program/evidence/e16/periods.jsonl:49`). Neither the asserted Sodir completion/survey fields nor NLOG’s `END_DATE_DRILLING` appears in tracked code, fixtures or E16 evidence. Label these external prerequisites, not verified Context facts.
+- **Overstated placeholder evidence:** E16 reports five `1800-01-01` values as **“likely a placeholder”**, not established placeholders (`docs/program/evidence/e16/periods.jsonl:35`). It supports `START_DATE_DRILLING` only.
+- **Count corroborated as build eligibility:** committed outlines yield 11,210 Sodir + 7,220 NLOG + Parihaka + Kerry = **18,432** eligible Items under `src/osd/stac.py:147`. No generated STAC tree exists in this checkout; published existence was not independently verified.
+- **Confirmed:** the gate samples first/last plus up to 20 Items per Collection (`tests/test_stac.py:112`); `Makefile:20` validates the whole tree separately.
+
+**3. Design objections and concrete alternatives**
+
+- **Missing contract ownership:** `osd:period_source` is forbidden by `schema/stac-osd.json:87`; extra provenance members inside outline `inputs` are forbidden by `schema/outline.schema.json:109`. Claim both schemas and the offline schema map; version their `$id`s, retain old-file compatibility tests, and name the contract change in the PR title.
+- **Missing publication ownership:** `--outline-inputs` derives but does not write outlines (`src/osd/verify.py:608`); build reads committed outlines (`src/osd/stac.py:137`). Claim the two register outline files, regenerate through `--outlines`, review their diffs, then build from those committed outputs.
+- **Dates are excluded from requests:** `propertyName` explicitly selects geometry/identity fields (`src/osd/outlines/rules.yaml:35`, `:45`, `:60`, `:68`). Require verified date fields in those existing requests; adding `period_fields` alone cannot retrieve them.
+- **“ISO dates, verbatim” is ambiguous:** E16’s Sodir example is a timestamp without a timezone (`periods.jsonl:49`). Define accepted source representations, date normalization and invalid-value handling; preserve raw evidence in stored inputs and test exact emitted RFC 3339 bounds.
+- **Open-end semantics are incomplete:** a collection end can precede a feature start, and a mixed feature/collection interval is not wholly publisher-stated. Validate the resulting pair, explicitly mark mixed provenance, and specify fallback for invalid bounds.
+- **Unchanged Collection extent needs a guard:** reporting outlying Item dates does not resolve their exclusion from collection-level time discovery. Add an offline containment assertion; if it fails, defer that register pending an E16-owned coverage correction.
+
+**4. Acceptance weaknesses**
+
+- “Start differs from `1966-01-01`” can pass unchanged: existing output is `1966-01-01T00:00:00Z` (`src/osd/stac.py:51`). Compare normalized instants and assert exact dates for named feature IDs.
+- A local count does not prove “published on main.” Require matching named Items in the staged artifact and a post-publication check.
+- Synthetic WFS fixtures can bypass the real `propertyName` projection. Add an injected-transport test that checks requested fields and carries responses through extraction, outline serialization and STAC output; removing date fields from requests must fail it.
+- Placeholder tests can remain green if fallback reproduces the same `1800` start. Use a distinct fixture collection period and assert both timestamps, provenance and preservation of the Item.
+- No acceptance covers open ends, malformed dates, mixed provenance, or start after fallback end. Add explicit cases and mutations for these guards.
+- Schema validity cannot prove correct feature dates or collection containment. Assert exact Item IDs and intervals; a valid but wrong timestamp must fail.
+
+**5. Scope overlap**
+
+- E16 explicitly assigns per-feature dates to E03 (`docs/program/charters/E16-periods-from-the-publishers.md:19`): E18 is an E03/E04 follow-on and should say so.
+- Correcting Collection periods would cross E18’s exclusion into E16; coordinate separately if containment fails.
+- No identified product-scope creep into E07 or E17. The necessary schema and committed-outline paths are missing ownership, not optional expansion.
