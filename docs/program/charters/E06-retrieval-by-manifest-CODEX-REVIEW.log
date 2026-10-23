@@ -1,0 +1,1582 @@
+Reading additional input from stdin...
+OpenAI Codex v0.159.0
+--------
+workdir: /home/epic/src/open-subsurface-data
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: concise
+session id: 01a16863-8bb5-7581-a823-ae5e6e4d728c
+--------
+user
+You are a fresh, independent senior reviewer of one epic charter in the Open Subsurface Data project (a verified catalogue of open subsurface datasets: YAML records -> verifier levels L0-L4 -> outlines -> STAC/GeoJSON catalogue -> static MapLibre map; Python package src/osd, tests in tests/, schemas in schema/). Read docs/ARCHITECTURE.md, docs/ENGINEERING.md, docs/program/PROGRAM.md, then the charter at /home/epic/src/open-subsurface-data/docs/program/charters/E06-retrieval-by-manifest.md. VERIFY every 'exists' claim in its Context section against the code at HEAD (open the files; do not trust the document) and state the commit you verified against (git rev-parse HEAD). Report in Markdown: (1) Verdict: APPROVE / APPROVE WITH CHANGES / REWORK, one sentence why. (2) Factual errors about current code, with file:line evidence. (3) Design objections: an owner, boundary, format or contract choice that is unsafe or misplaced, each with a concrete alternative that stays within docs/ENGINEERING.md (no new CI stations, no server, standards over bespoke). (4) Acceptance lines that can pass vacuously or whose proposed test would stay green under the mutation it should catch. (5) Scope creep into another charter in docs/program/charters/. Be specific and terse; no praise; at most 60 lines. Do not modify any files.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll read the project constraints and charter, verify its Context claims against HEAD, and check for gaps and scope overlap. I won’t modify files.
+exec
+/bin/bash -lc 'git rev-parse HEAD; cat docs/ARCHITECTURE.md docs/ENGINEERING.md docs/program/PROGRAM.md docs/program/charters/E06-retrieval-by-manifest.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+381902ed825eae1bc0f716e5a593ed8d7cfa4f0d
+# Architecture
+
+One sentence: contributors write facts about open datasets, tools turn those facts into verified
+levels, outlines and a catalogue, and a static map plus a manifest let anyone find and fetch the
+data; Ophiolite reads the same catalogue as a source.
+
+## The chain
+
+```
+  SEG wiki, national        contributor            verifier            outline extractor
+  registers, publishers ──► records/*.yaml ──────► build/verification ─► outlines/*.geojson
+        (lists)             (facts, CC0)            (levels L1–L2)        (L3, derived)
+                                 │                        │                    │
+                                 └──────────┬─────────────┴────────────────────┘
+                                            ▼
+                                     osd build  ─────►  build/catalog/
+                                                        records.json · outlines.geojson · collections.json (STAC)
+                                            │
+                 ┌──────────────────────────┼──────────────────────────────┐
+                 ▼                          ▼                              ▼
+           site/ (MapLibre)           QGIS / any GIS                 manifest (E06)
+           toggles, search,           GeoJSON / STAC by address      osd get · Python reader
+           panel, cards                                                   │
+                                                                          ▼
+                                                              Ophiolite source (E09, L4)
+                                                              E85 intake · E35 rights-basis
+```
+
+## Components and their boundaries
+
+| Component | Owns | Never does |
+|---|---|---|
+| **Records** (`records/`, `schema/record.schema.json`) | Facts as the publisher states them: origin, licence, kinds, region | Carry a level, a checksum or anything a tool produced |
+| **Verifier** (`src/osd/verify.py`, `schema/verification.schema.json`) | Network checks, checksums, licence text capture, the level ladder | Change a record; run inside the required CI check |
+| **Outlines** (`outlines/`, `schema/outline.schema.json`, extractor in E03) | Geometry per wellbore or survey in WGS84, with its derivation named | Invent geometry without saying `approximate: true` |
+| **Build** (`src/osd/build.py`) | Joins records, outlines and levels into the published files | Fetch anything |
+| **Catalogue** (`build/catalog/`) | The one published artefact; STAC-shaped collections, GeoJSON outlines, records JSON | Hold dataset bytes |
+| **Site** (`site/`) | Reading the catalogue and showing it; copyable addresses and snippets | Hold its own data store; need a server |
+| **Retrieval** (E06) | A manifest from a selection; a fetcher that verifies checksums | Decode proprietary project files (Ophiolite connector doctrine) |
+| **Mirror store** (E07) | Checksummed copies of small or orphaned datasets whose licence allows it | Copy anything with `redistribution: unknown` |
+| **Ophiolite bridge** (E09) | The catalogue as an Ophiolite source; rights-basis from the record; fidelity records | Live outside the Ophiolite monorepo's own conventions |
+
+## Formats, all standard
+
+- Records: YAML validated by JSON Schema 2020-12. Outlines: GeoJSON, EPSG:4326.
+- Catalogue: STAC 1.0 collections and items (full validity is E04), plus one GeoJSON for map and GIS.
+- Tiles: PMTiles once outlines exceed what one GeoJSON serves comfortably (E05).
+- Manifest: `osd.manifest/1` JSON (E06). Seismic store, if ever: Zarr-based (E10).
+
+## The level ladder
+
+L0 listed → L1 reachable → L2 checksummed and licence captured → L3 outlined from the data →
+L4 converted to a canonical type with a fidelity record. No rung is skipped, and a level is
+computed from check outcomes, never typed. The ladder is the product's honesty: a dashed outline
+on the map is a placeholder and says so.
+
+## What the map is and is not
+
+The map is a view of the catalogue, nothing more. It has no account, no state beyond the URL, no
+server. Everything it shows can be opened in QGIS by one address. That is also why the website
+and "a GIS layer" are one deliverable rather than two.
+
+## Where Ophiolite comes in
+
+Ophiolite is a consumer of the catalogue, and the catalogue borrows Ophiolite's vocabulary
+(kinds from the E55 registry, rights-basis from E35). The two repositories meet at one interface:
+a manifest or STAC collection Ophiolite's intake (E85) can read. No Ophiolite code runs here;
+no catalogue code runs there.
+# Engineering setup
+
+Fit for purpose: a Python package, YAML records and a static page. The Ophiolite program
+(docs/program-2026-09-25 in the Ophiolite monorepo) taught what to keep and what to drop; the
+evidence for each line is in the Ophiolite program records of 8–22 October 2026.
+
+## Keep (copied from Ophiolite)
+
+| Practice | Why it earned its place |
+|---|---|
+| Claims board: a lane names its paths before it starts, two lanes never share a path | Overlap was the cause of merge pain; the 21 Oct simplification cut kept the board deliberately |
+| Contract first: slice 0 is schema, fixtures and stubs; later slices vertical | Layer-cut slices made serial chains (18 Oct rule) |
+| Kernel vs surface proof bar | Surface strategies capped at one review round after revisions ran to 8 and 18 rounds on E60 and E42c |
+| Outcome-named slices: the brief says what a user can do after merge, or no lane | Success metric is slices merged per day, not green CI |
+| Revert first: a red main gets one revert within the hour, the fix follows | Owner accepted a briefly red main on about one merge in five |
+| No artificial schedule: act when the precondition holds, never on a timer | Nightly timers and self-set dates cost days (night 2026.10.95) |
+| Small fixes batched, one push per merge, no wait on the repeat run | Loop steps 7 and 8 |
+| Brief by reference, one drafting and one execution agent, small contexts | 83 % of usage was sessions over 150k tokens, 78 % subagent-heavy |
+| A different model reviews kernel charters, read-only, one round | Reviews caught contract mistakes; multiple rounds did not pay |
+
+## Drop (what cost Ophiolite more than it returned)
+
+| Station | Evidence | Here instead |
+|---|---|---|
+| Self-hosted runners, pool builders, runner crews | needrestart killed runner units after any apt run; two crews and "chair out, station out" existed only to manage them | GitHub-hosted `ubuntu-24.04`, one job, under two minutes |
+| Merge trains, then a merge queue | 8 workers gave 10× activity for 2–3× merges; merges per worker-day fell from 5.6 to 0.3 at 18 workers | Squash merge on a green check; at most 2 coding lanes plus 1 records lane |
+| Nightly releases, release pinning, qualification | A night took 1 h 50 min at best, ARM64 70 min on the critical path; per-lane qualification 45 min serial | Every merge to main publishes the site; no version numbers |
+| Hardening lanes and a growing item list | 87 hardening merges against about 10 epic slices in a week; the list grew 150 → 217 | Defects under 50 lines ride on the next lane; a red main is reverted, not hardened |
+| Committed conformance results, locks, worker-check cron | Three lanes lost 30–45 min each on a dead lock; a queue stopped for an hour on a docs-only deadline | Nothing is committed that a job can regenerate; no locks; no cron |
+| Multiple Codex rounds, 4-revision caps | 2–4 h of a worker per round | One round for a kernel charter; none for surface or records |
+| Dispatch per commit group | Worth it for a 27-minute C++ build | A 2-minute check runs on every push; nothing to batch |
+| ccache, proven-tree skip, CI spend caps | Needed for a 27-minute C++ build | Irrelevant at Python-and-static scale; revisit above 10 min per check |
+
+## The gate
+
+`make check` = ruff + pytest + schema validation + build, offline. It is the only required
+status. Network verification (`verify` workflow) comments on pull requests and never blocks: a
+publisher's outage is a finding, not a red gate. The site publishes from main on every merge.
+
+## Proof bar by class
+
+- **Kernel** (schemas, verifier, build, manifest, bridge): tests for every acceptance line, a
+  mutation shown to fail for every guard, one Codex round on the charter. Strategy at lane open,
+  at most two pages.
+- **Surface** (site, docs, records): `make check` green and a screenshot or the verify comment.
+  No strategy document; the charter's acceptance list is the brief.
+- **Records**: the verify comment shows the level; a human checks the licence fields against
+  the publisher's page. Same-day merge.
+
+## Roles
+
+- **Supervisor** (one): keeps `docs/program/PROGRAM.md` true, writes lane briefs by reference,
+  merges on green, reverts on red, records decisions in `DECISIONS.md`. Does not write product
+  code except a revert.
+- **Worker** (at most three concurrent: two coding lanes, one records lane): takes a charter,
+  claims paths, opens a branch `e<nn>-<slug>`, pushes when the diff is inside the claim, opens
+  the pull request with the outcome sentence and the proof. Waits for nothing but its own check.
+- **Reviewer** (Codex, read-only): one round per kernel charter, dispositions recorded in the
+  charter.
+
+## What is deliberately absent
+
+No merge queue, no release branches, no version tags, no nightly, no self-hosted compute, no
+lock files committed by hand, no conformance ledger, no item list. If one of these starts to look
+necessary, the measured reason goes into `DECISIONS.md` first.
+# Program: Open Subsurface Data
+
+Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two coding lanes and
+one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
+Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
+
+## Queue (23 Oct 2026)
+
+| # | Epic | Class | Status | Depends on | Outcome a user can observe |
+|---|---|---|---|---|---|
+| 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
+| 2 | E02 Verifier to L2 | Kernel | MERGED 23 Oct (PR #3, 37c010c; 18 mutations; three records at L2, SEG wiki blocked) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
+| 3 | E03 Outlines from the data | Kernel | MERGED 23 Oct (PR #7, 7ddecf0; record/2 inputs, outline/2; Sodir, NLOG, Poseidon at L3; F3 and Teapot behind logins) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
+| 4 | E05 Map that scales | Surface | MERGED 23 Oct (PR #2, 6c232cf; shareable hash, 10k clustered wells, how.html, Playwright site test in CI) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
+| 5 | E04 STAC catalogue | Kernel | MERGED 23 Oct (PR #8, aced173; 68 Collections validate offline, Items need periods; QGIS screenshot is owner action 102) | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
+| 6 | E06 Retrieval by manifest | Kernel | QUEUED | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
+| 7 | E08 Curation that runs itself | Surface | MERGED 23 Oct (PR #5, e408adb; status page, dead-link issues, osd new, CODEOWNERS, labels). DONE when two outside PRs have merged (owner action 101) | E02 | An outside contributor's record merges the same day; dead links become issues |
+| 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
+| 9 | E07 Mirror store and custody | Kernel | QUEUED | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
+| 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | QUEUED | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
+| 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
+| 13 | E13 Twenty records from the national registers | Records | MERGED 23 Oct (PR #4, 6429445; 42 records, 10 countries with a government publisher, 0 new TerraNubis) | E01 | Forty datasets listed; a government source for at least eight countries |
+| 14 | E14 Twenty records: research drilling, CO2 sites, state archives | Records | MERGED 23 Oct (PR #6, 61f9527; 68 records, 26 new, six new countries, all 26 at L1) | E13 | Sixty datasets listed, wider kinds and regions |
+| 15 | E15 Tiles for the registers | Surface | IN LANE (osd-e15, 23 Oct; parallel with E04) | E03 | The map on a phone connection loads tiles for the viewport, not 7 MB of outlines |
+| 16 | E16 Periods from the publishers | Records | IN LANE (osd-e16, 23 Oct; records slot) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
+| 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
+
+Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
+map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
+(three of them the SEG wiki blocking this host with HTTP 403, one NOPIMS 403; see OSD-D9).
+Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
+`verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
+with real levels through the `verification-results` branch. `main` requires `check`.
+DNS entered and the domain verified for ophiolite-labs by the owner 23 Oct; HTTPS enforced (certificate issued after re-setting the custom domain).
+E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
+opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
+
+## The loop
+
+1. The supervisor takes the first QUEUED epic whose dependencies are MERGED and whose paths are
+   free on `CLAIMS.md`. Surfaces are disjoint: `records/`, `site/`, `src/osd/`, `.github/`.
+2. Kernel: the worker writes a strategy of at most two pages at lane open (acceptance line → test
+   name), one Codex round on the charter if not yet reviewed, dispositions recorded in the charter.
+   Surface and records: no strategy, the charter's acceptance list is the brief.
+3. The worker claims paths, branches `e<nn>-<slug>`, commits in outcome-named slices.
+4. The worker pushes unasked when the diff is inside the claim; asks for `schema/` version bumps
+   and `.github/` edits.
+5. Pull request: outcome sentence, proof (check green, screenshot or verify comment). The
+   required status is `check` only.
+6. Supervisor merges on green with squash. Main publishes the site. Nobody waits for the
+   repeat run on main.
+7. Red main: revert within the hour, then a fix lane. No hardening lanes, no item list.
+8. Defects under 50 lines ride on the next lane that owns the path. Larger ones get a charter.
+9. During any wait the worker starts the next slice on a stacked branch; it is merged after.
+10. After a merge the supervisor updates this table, moves the claim rows to MERGED, and
+    `/compact`s.
+
+## Rules
+
+- R1 WIP: two coding lanes plus one records lane. A third coding lane waits.
+- R2 Gate: `make check` only. Nothing network-bound is ever required.
+- R3 Records say what the publisher says; tools say what they established. Never cross.
+- R4 Every slice names what a user can do after it merges.
+- R5 Surface gets a screenshot, kernel gets tests and one mutation per guard, records get the
+  verify comment and a licence read.
+- R6 No timers, no nightly, no self-set dates. Act when the precondition holds.
+- R7 Nothing a job can regenerate is committed (`build/`, `site/data/`).
+## E06 Retrieval by manifest — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("the bridge to transfer/select assets from a map to a
+retrieval"); Ophiolite exchange doctrine (intentional get, nothing applies itself).
+
+**Outcome.** A person selects datasets or wellbores on the map, downloads one manifest, and
+`osd get manifest.json` fetches the files from their origins (or mirrors, E07), verifies the
+checksums the catalogue knows, and writes the attribution lines the licences require next to
+the files. A Python reader opens the manifest without the CLI.
+
+**Context today (verified 23 Oct).** No manifest format, no fetcher. The detail panel's third
+card says retrieval is chartered. Records carry `origin.url` only; file-level addresses arrive
+with E02's `files[]` and E04's item assets.
+
+**The design the lane must map to.**
+1. `osd.manifest/1`: JSON with `created`, `catalog_url`, `items[]` each `{item_id, record_id,
+   assets[]: {href, bytes?, sha256?}, licence: {name, spdx, statement, share_alike}}`. Schema at
+   `schema/manifest.schema.json`. No credentials, ever.
+2. Site: a "Select" mode adds items to a basket; "Download manifest" writes the file client
+   side. Items without resolvable assets (access `registration`/`request`) are included with
+   `assets: []` and the origin page, so the manifest is also the to-do list.
+3. `osd get <manifest> --dest <dir>`: streams each asset, verifies `sha256` when present, writes
+   `ATTRIBUTION.md` from the licence statements, refuses to continue on a mismatch, resumes on
+   rerun. Honest outcome per asset: fetched, verified, mismatch, needs-sign-in, origin-dead.
+4. `osd.manifest.read(path)` in `src/osd/manifest.py` returns typed items; this is the interface
+   Ophiolite's intake reads (E09).
+5. Rights carried: every item's `licence.statement` is copied verbatim; `share_alike` is
+   surfaced in the CLI summary ("2 items require derived work to carry CC BY-SA 4.0").
+
+**Acceptance.**
+- A manifest for two records validates against the schema; a mutated one (missing `licence`) fails.
+- `osd get` on a fixture served locally with 3 assets: 3 fetched, 3 verified; corrupt one byte of
+  one asset: exit non-zero, outcome `mismatch` for that asset, the other two untouched.
+- `ATTRIBUTION.md` contains the F3 statement verbatim and names CC-BY-SA-4.0 as share-alike.
+- Site: select two datasets, download, the file has two items (Playwright).
+- Rerun after a partial failure fetches only the missing asset (test counts requests).
+
+**Out of scope.** Mirrors (E07), seismic slices (E10), authentication to publisher portals,
+decoding any file format.
+
+**Stop rules.** A publisher's terms forbid automated download: that record's items get
+`assets: []` and a note; continue.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/manifest.py`, `src/osd/get.py`,
+`src/osd/cli.py`, `schema/manifest.schema.json`, `site/app.js` (select mode only, claimed after
+E05 merges), `tests/test_manifest.py`. Depends on E04 (item ids and assets).
+
+**Evidence to inspect.** The strategy's test map; a terminal transcript of `osd get` on F3 with a
+real origin, in the PR.
+
+exec
+/bin/bash -lc "rg --files src/osd schema tests site docs/program/charters; rg -n 'files|assets|retriev|checksum|sha256|origin|manifest|licence' src/osd/build.py src/osd/cli.py site/app.js schema/record.schema.json schema/verification.schema.json" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+docs/program/charters/E01-twenty-records.md
+docs/program/charters/E13-registers-second-twenty.md
+docs/program/charters/E12-catalogue-into-a-workspace.md
+docs/program/charters/E15-tiles-for-the-registers.md
+docs/program/charters/E08-curation-that-runs-itself.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.log
+docs/program/charters/E03-outlines-from-the-data-STRATEGY.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.md
+docs/program/charters/E06-retrieval-by-manifest.md
+docs/program/charters/E16-periods-from-the-publishers.md
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.md
+docs/program/charters/E02-verifier-to-L2-STRATEGY.md
+docs/program/charters/E03-outlines-from-the-data.md
+docs/program/charters/E04-stac-catalogue-STRATEGY.md
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.log
+docs/program/charters/E09-ophiolite-reads-the-catalogue.md
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.log
+docs/program/charters/E07-mirror-store-and-custody.md
+docs/program/charters/E11-hosting-and-domain.md
+docs/program/charters/E14-records-third-twenty.md
+docs/program/charters/E02-verifier-to-L2.md
+docs/program/charters/E10-seismic-slices.md
+docs/program/charters/E04-stac-catalogue.md
+docs/program/charters/E05-map-that-scales.md
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.log
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.md
+site/index.html
+site/status.html
+site/style.css
+site/robots.txt
+site/app.js
+schema/record.schema.json
+schema/stac-osd.json
+site/how.html
+schema/outline.schema.json
+schema/verification.schema.json
+tests/test_outlines.py
+src/osd/build.py
+tests/conftest.py
+src/osd/verify.py
+src/osd/__init__.py
+schema/stac/README.md
+tests/site/site.test.mjs
+tests/site/status.test.mjs
+tests/site/harness.mjs
+tests/site/test_how_snippets.py
+tests/test_records.py
+tests/test_report.py
+tests/test_build.py
+tests/test_stac.py
+src/osd/cli.py
+src/osd/paths.py
+src/osd/stac.py
+src/osd/verifier/samples.yaml
+src/osd/report.py
+src/osd/records.py
+src/osd/new.py
+schema/stac/schema-map.json
+src/osd/outlines/geometry.py
+src/osd/outlines/extractors.py
+src/osd/outlines/codecs.py
+src/osd/outlines/__init__.py
+src/osd/outlines/rules.yaml
+schema/stac/json-schema.org/draft-07/schema.json
+schema/stac/stac-extensions.github.io/file/v2.1.0/schema.json
+schema/stac/geojson.org/schema/Geometry.json
+schema/stac/geojson.org/schema/Feature.json
+tests/fixtures/outlines/segy/make_segy.py
+tests/fixtures/outlines/segy/irregular.sgy
+tests/fixtures/outlines/nzpam__kerry-3d/survey-extent/body
+tests/fixtures/outlines/README.md
+tests/test_verify.py
+tests/fixtures/outlines/schema/record-1.schema.json
+tests/fixtures/outlines/schema/outline-1.schema.json
+tests/fixtures/outlines/nzpam__parihaka/survey-extent/body
+tests/fixtures/outlines/sodir__factpages/seismic-unplaced/page-000547
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000006
+schema/stac/schemas.stacspec.org/v1.0.0/catalog-spec/json-schema/catalog.json
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000000
+tests/fixtures/outlines/sodir__factpages/wellbores/hits
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000003
+tests/fixtures/outlines/sodir__factpages/wellbores-unplaced/page-000136
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000002
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000000
+tests/fixtures/outlines/sodir__factpages/seismic-finished/hits
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000004
+schema/stac/schemas.stacspec.org/v1.0.0/collection-spec/json-schema/collection.json
+tests/fixtures/outlines/nlog__nlog/surveys-3d/page-000000
+tests/fixtures/outlines/nlog__nlog/surveys-3d/hits
+tests/fixtures/outlines/nlog__nlog/surveys-3d/page-000002
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/26/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/26/39
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000003
+tests/fixtures/outlines/nlog__nlog/boreholes/hits
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000000
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000006
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/item.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/instrument.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/licensing.json
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/1/1
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/basics.json
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/1/0
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/datetime.json
+schema/stac/schemas.stacspec.org/v1.0.0/item-spec/json-schema/provider.json
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/0/39
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/0/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/0/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/0/1
+schema/record.schema.json:5:  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record.",
+schema/record.schema.json:8:  "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
+schema/record.schema.json:25:    "origin": {
+schema/record.schema.json:31:        "manifest_url": {"type": "string", "format": "uri", "description": "Optional machine-readable listing of files (index, API, bucket listing) the verifier can checksum against."},
+schema/record.schema.json:35:    "licence": {
+schema/record.schema.json:38:        "name": {"type": "string", "description": "The licence as the publisher names it."},
+schema/record.schema.json:39:        "spdx": {"type": ["string", "null"], "description": "SPDX identifier when one exists (CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0); null for bespoke licences."},
+schema/record.schema.json:44:        "share_alike": {"type": "boolean", "description": "Derived products must carry the same licence (CC BY-SA and kin)."},
+schema/record.schema.json:86:      "description": "The publisher's own addresses for the geometry of this dataset (register services, files, stores), each with the CRS and units as the publisher states them. Extraction rules are tool configuration (src/osd/outlines/rules.yaml, OSD-D11), never fields here.",
+src/osd/cli.py:31:        o = v["origin"]
+src/osd/cli.py:34:        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}; {l2}; {l3})")
+src/osd/cli.py:52:        blocked = (v or {}).get("origin", {}).get("blocked_since")
+src/osd/cli.py:54:        lines.append(f"{lv:5} {rid:36} {when:36} {r['origin']['access']:12} "
+src/osd/cli.py:55:                     f"{r['licence']['redistribution']:14} {','.join(r['kinds'])}")
+src/osd/cli.py:95:    pv = sub.add_parser("verify", help="network: reach each origin, write verification records")
+src/osd/cli.py:109:    pr = sub.add_parser("report", help="dead-link report: records that fell from L1+ to a dead origin")
+src/osd/build.py:6:                   `blocked_since` while the origin refuses this runner (OSD-D9)
+src/osd/build.py:8:                   licence and level so the map needs no second lookup
+src/osd/build.py:39:        blocked = (v or {}).get("origin", {}).get("blocked_since")
+src/osd/build.py:48:                    "kinds": rec["kinds"], "licence": rec["licence"]["name"],
+src/osd/build.py:49:                    "redistribution": rec["licence"]["redistribution"], "level": level,
+schema/verification.schema.json:14:              "description": "L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted to a canonical type with a fidelity record"},
+schema/verification.schema.json:28:    "origin": {
+schema/verification.schema.json:36:                         "description": "v2. blocked: 403/429 or a challenge page, awards no level (OSD-D9); ok: 2xx/3xx on the origin host; moved: 2xx/3xx on another host; dead: anything else (timeouts, refused connections and 5xx after one retry)"},
+schema/verification.schema.json:40:    "files": {
+schema/verification.schema.json:43:        "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+schema/verification.schema.json:44:        "properties": {"path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+schema/verification.schema.json:47:    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+schema/verification.schema.json:48:    "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"}
+site/app.js:10:  // data/files.txt lists what the build wrote, so optional files are known without a 404 probe.
+site/app.js:11:  const files = (await fetch('data/files.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split('\n');
+site/app.js:12:  const has = f => files.includes(f);
+site/app.js:226:        <dt>Origin</dt><dd><a href="${esc(r.origin.url)}" target="_blank" rel="noopener">${esc(r.origin.url)}</a> (${esc(r.origin.access)})</dd>
+site/app.js:227:        <dt>Licence</dt><dd>${esc(r.licence.name)}${r.licence.spdx ? ' (' + esc(r.licence.spdx) + ')' : ''}<br>redistribution ${esc(r.licence.redistribution)}, attribution ${esc(r.licence.attribution)}</dd>
+site/app.js:238:        <div class="card"><b>Get the data</b>Follow the origin link above. Retrieval by manifest and the Ophiolite source are chartered (E06, E09).</div>
+
+exec
+/bin/bash -lc 'nl -ba src/osd/stac.py; nl -ba src/osd/build.py; nl -ba schema/record.schema.json; nl -ba src/osd/cli.py; cat docs/program/charters/E07-mirror-store-and-custody.md docs/program/charters/E09-ophiolite-reads-the-catalogue.md docs/program/charters/E04-stac-catalogue.md docs/program/charters/E15-tiles-for-the-registers.md docs/program/charters/E16-periods-from-the-publishers.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	"""Write and check the static STAC 1.0 catalogue (E04).
+     2	
+     3	Output (build/catalog/stac/), all links relative so the tree serves from any address:
+     4	  catalog.json                    the root Catalog, one `child` link per record
+     5	  <cid>/collection.json           one Collection per record: licence, level, access, the files E02
+     6	                                   checksummed as assets, temporal extent from the record's `period`
+     7	  <cid>/items/<name>.json         one Item per outline feature with a feature_id, only when the record
+     8	                                   declares a `period` (OSD-D14); id = the outline's feature_id
+     9	
+    10	`<cid>` is the record id with '/' replaced by '--'. Collection fields carry record-level assurance
+    11	from the verification record; Item fields carry the outline's provenance. Both are the `osd`
+    12	extension (schema/stac-osd.json). Validation runs offline against the schemas bundled in
+    13	schema/stac/ (schema/stac/schema-map.json).
+    14	"""
+    15	
+    16	from __future__ import annotations
+    17	
+    18	import calendar
+    19	import hashlib
+    20	import json
+    21	import re
+    22	import shutil
+    23	from pathlib import Path
+    24	
+    25	from . import paths
+    26	from .records import load_outline
+    27	
+    28	STAC_VERSION = "1.0.0"
+    29	OSD_EXTENSION = ("https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/"
+    30	                 "schema/stac-osd.json")
+    31	FILE_EXTENSION = "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+    32	SCHEMA_MAP = paths.SCHEMA_DIR / "stac" / "schema-map.json"
+    33	WORLD = [-180.0, -90.0, 180.0, 90.0]
+    34	
+    35	
+    36	def collection_id(record_id: str) -> str:
+    37	    return record_id.replace("/", "--")
+    38	
+    39	
+    40	def item_file_name(feature_id: str) -> str:
+    41	    """The part after '#', path-safe; a lossy name gets a short hash so two ids never collide."""
+    42	    local = feature_id.split("#", 1)[1]
+    43	    safe = re.sub(r"[^A-Za-z0-9._-]", "_", local).lstrip(".") or "_"
+    44	    if safe != local:
+    45	        safe += "-" + hashlib.sha256(feature_id.encode()).hexdigest()[:8]
+    46	    return safe + ".json"
+    47	
+    48	
+    49	def _instant(date: str, end: bool) -> str:
+    50	    """'1993' / '1993-06' / '1993-06-30' to the first (or last) second of it, UTC."""
+    51	    parts = [int(x) for x in date.split("-")]
+    52	    y, m, d = (parts + [None, None])[:3]
+    53	    if end:
+    54	        m = m or 12
+    55	        d = d or calendar.monthrange(y, m)[1]
+    56	        return f"{y:04d}-{m:02d}-{d:02d}T23:59:59Z"
+    57	    return f"{y:04d}-{m or 1:02d}-{d or 1:02d}T00:00:00Z"
+    58	
+    59	
+    60	def interval(rec: dict) -> list:
+    61	    p = rec.get("period")
+    62	    if not p:
+    63	        return [None, None]
+    64	    start, end = _instant(p["start"], False), _instant(p["end"], True)
+    65	    if end < start:
+    66	        raise ValueError(f"{rec['id']}: period ends before it starts ({p['start']} > {p['end']})")
+    67	    return [start, end]
+    68	
+    69	
+    70	def _positions(c):
+    71	    if c and isinstance(c[0], (int, float)):
+    72	        yield c
+    73	    else:
+    74	        for x in c:
+    75	            yield from _positions(x)
+    76	
+    77	
+    78	def bbox(geometry: dict) -> list[float]:
+    79	    xs, ys = zip(*((p[0], p[1]) for p in _positions(geometry["coordinates"])))
+    80	    return [min(xs), min(ys), max(xs), max(ys)]
+    81	
+    82	
+    83	def _union(boxes: list[list[float]]) -> list[float] | None:
+    84	    if not boxes:
+    85	        return None
+    86	    return [min(b[0] for b in boxes), min(b[1] for b in boxes),
+    87	            max(b[2] for b in boxes), max(b[3] for b in boxes)]
+    88	
+    89	
+    90	def _assets(verification: dict | None) -> dict:
+    91	    """E02's checksummed files that carry a fetch address; collection-level, since which Item a
+    92	    file belongs to is not established."""
+    93	    out = {}
+    94	    for f in (verification or {}).get("files", []):
+    95	        if f.get("url"):
+    96	            out[f["path"]] = {"href": f["url"], "title": f["path"], "roles": ["data"],
+    97	                              "file:size": f["bytes"], "file:checksum": "1220" + f["sha256"]}
+    98	    return out
+    99	
+   100	
+   101	def _item(rec: dict, cid: str, feature: dict, inputs: dict, when: list) -> dict:
+   102	    p = feature["properties"]
+   103	    props = {"title": p["name"], "datetime": None, "start_datetime": when[0], "end_datetime": when[1],
+   104	             "osd:approximate": p["approximate"], "osd:derivation": p["source"]}
+   105	    sha = inputs.get(p.get("input"), {}).get("sha256")
+   106	    if sha:
+   107	        props["osd:input_sha256"] = sha
+   108	    return {
+   109	        "type": "Feature", "stac_version": STAC_VERSION, "stac_extensions": [OSD_EXTENSION],
+   110	        "id": p["feature_id"], "collection": cid, "geometry": feature["geometry"],
+   111	        "bbox": bbox(feature["geometry"]), "properties": props,
+   112	        "links": [{"rel": "root", "href": "../../catalog.json", "type": "application/json"},
+   113	                  {"rel": "parent", "href": "../collection.json", "type": "application/json"},
+   114	                  {"rel": "collection", "href": "../collection.json", "type": "application/json"}],
+   115	        "assets": {},
+   116	    }
+   117	
+   118	
+   119	def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFICATION_DIR,
+   120	                  outlines_dir: Path = paths.OUTLINES_DIR) -> list[dict]:
+   121	    """Write out_dir/stac/ from the joined records (record fields plus level, checked_at,
+   122	    blocked_since as build() joins them) and return the Collections. A duplicate feature_id
+   123	    anywhere in the outlines fails the build: it is the key Items and the map share."""
+   124	    root = out_dir / "stac"
+   125	    shutil.rmtree(root, ignore_errors=True)
+   126	    root.mkdir(parents=True, exist_ok=True)
+   127	    seen: set[str] = set()
+   128	    collections, children = [], []
+   129	    for rec in records:
+   130	        rid, cid = rec["id"], collection_id(rec["id"])
+   131	        op = outlines_dir / (rid.replace("/", "__") + ".geojson")
+   132	        fc = load_outline(op) if op.exists() else {"features": []}
+   133	        for f in fc["features"]:
+   134	            fid = f["properties"].get("feature_id")
+   135	            if fid in seen:
+   136	                raise ValueError(f"duplicate feature_id '{fid}'")
+   137	            if fid:
+   138	                seen.add(fid)
+   139	        when = interval(rec)
+   140	        items = []
+   141	        if rec.get("period"):
+   142	            items = [_item(rec, cid, f, fc.get("inputs", {}), when)
+   143	                     for f in fc["features"] if f["properties"].get("feature_id")]
+   144	        names: dict[str, str] = {}
+   145	        for it in items:
+   146	            n = item_file_name(it["id"])
+   147	            if n in names:
+   148	                raise ValueError(f"{rid}: item file {n} for both '{names[n]}' and '{it['id']}'")
+   149	            names[n] = it["id"]
+   150	        vp = vdir / (rid.replace("/", "__") + ".json")
+   151	        assets = _assets(json.loads(vp.read_text()) if vp.exists() else None)
+   152	        lic = rec["licence"]
+   153	        spatial = (rec.get("region", {}).get("bbox")
+   154	                   or _union([bbox(f["geometry"]) for f in fc["features"] if f.get("geometry")])
+   155	                   or WORLD)
+   156	        col = {
+   157	            "type": "Collection", "stac_version": STAC_VERSION,
+   158	            "stac_extensions": [OSD_EXTENSION] + ([FILE_EXTENSION] if assets else []),
+   159	            "id": cid, "title": rec["title"], "description": rec.get("summary") or rec["title"],
+   160	            "license": lic.get("spdx") or "other",
+   161	            "keywords": rec["kinds"],
+   162	            "providers": [{"name": rec["publisher"]["name"], "roles": ["producer", "licensor"],
+   163	                           "url": rec["publisher"]["url"]}],
+   164	            "extent": {"spatial": {"bbox": [spatial]}, "temporal": {"interval": [when]}},
+   165	            "links": [{"rel": "root", "href": "../catalog.json", "type": "application/json"},
+   166	                      {"rel": "parent", "href": "../catalog.json", "type": "application/json"},
+   167	                      {"rel": "about", "href": rec["origin"]["url"], "title": "Publisher's page"},
+   168	                      {"rel": "license", "href": lic.get("url", rec["origin"]["url"]),
+   169	                       "title": lic["name"]}]
+   170	                     + [{"rel": "item", "href": f"./items/{n}", "type": "application/geo+json"}
+   171	                        for n in names],
+   172	            "osd:level": rec["level"], "osd:checked_at": rec["checked_at"],
+   173	            "osd:access": rec["origin"]["access"], "osd:redistribution": lic["redistribution"],
+   174	        }
+   175	        if rec.get("blocked_since"):
+   176	            col["osd:blocked_since"] = rec["blocked_since"]
+   177	        if assets:
+   178	            col["assets"] = assets
+   179	        d = root / cid
+   180	        (d / "items" if items else d).mkdir(parents=True, exist_ok=True)
+   181	        (d / "collection.json").write_text(json.dumps(col, indent=2) + "\n")
+   182	        for n, it in zip(names, items):
+   183	            (d / "items" / n).write_text(json.dumps(it) + "\n")
+   184	        collections.append(col)
+   185	        children.append({"rel": "child", "href": f"./{cid}/collection.json",
+   186	                         "type": "application/json", "title": rec["title"]})
+   187	    catalog = {
+   188	        "type": "Catalog", "stac_version": STAC_VERSION, "id": "open-subsurface-data",
+   189	        "title": "Open Subsurface Data",
+   190	        "description": "Open subsurface datasets as their publishers state them, one Collection per "
+   191	                       "record, with the level our tools verified.",
+   192	        "links": [{"rel": "root", "href": "./catalog.json", "type": "application/json"}] + children,
+   193	    }
+   194	    (root / "catalog.json").write_text(json.dumps(catalog, indent=2) + "\n")
+   195	    return collections
+   196	
+   197	
+   198	def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MAP) -> tuple[bool, list]:
+   199	    """stac-validator over a local file or tree, against the bundled schemas only."""
+   200	    from stac_validator.utilities import fetch_and_parse_schema
+   201	    from stac_validator.validate import StacValidate
+   202	
+   203	    fetch_and_parse_schema.cache_clear()   # a schema map change must not reuse a cached schema
+   204	    v = StacValidate(str(path), recursive=recursive, schema_config=str(schema_config))
+   205	    ok = v.run()
+   206	    return ok and all(m.get("valid_stac") for m in v.message), v.message
+   207	
+   208	
+   209	def _links(path: Path) -> list[dict]:
+   210	    return json.loads(path.read_text()).get("links", [])
+   211	
+   212	
+   213	def link_problems(root: Path) -> list[str]:
+   214	    """Every relative link in the tree points at a file that exists."""
+   215	    out = []
+   216	    for p in sorted(root.rglob("*.json")):
+   217	        for link in _links(p):
+   218	            href = link["href"]
+   219	            if "://" not in href and not (p.parent / href).resolve().is_file():
+   220	                out.append(f"{p.relative_to(root)}: {link['rel']} -> {href} does not exist")
+   221	    return out
+   222	
+   223	
+   224	def reachable(catalog: Path) -> dict[str, set[str]]:
+   225	    """Collection and Item ids a client reaches from the root by child and item links."""
+   226	    out: dict[str, set[str]] = {"collections": set(), "items": set()}
+   227	    todo, seen = [catalog.resolve()], set()
+   228	    while todo:
+   229	        p = todo.pop()
+   230	        if p in seen:
+   231	            continue
+   232	        seen.add(p)
+   233	        doc = json.loads(p.read_text())
+   234	        if doc["type"] == "Collection":
+   235	            out["collections"].add(doc["id"])
+   236	        elif doc["type"] == "Feature":
+   237	            out["items"].add(doc["id"])
+   238	        todo += [(p.parent / x["href"]).resolve() for x in doc.get("links", [])
+   239	                 if x["rel"] in ("child", "item")]
+   240	    return out
+     1	"""Build the published catalogue from records, outlines and verification records.
+     2	
+     3	Outputs (build/catalog/):
+     4	  records.json    every record, joined with its latest verification level, the date it was
+     5	                   established, `stale` when that date is over 30 days old (or absent) and
+     6	                   `blocked_since` while the origin refuses this runner (OSD-D9)
+     7	  outlines.geojson one FeatureCollection, every feature joined with record title, kinds,
+     8	                   licence and level so the map needs no second lookup
+     9	  stac/            the static STAC catalogue (src/osd/stac.py)
+    10	  collections.json {"collections": [...]}, the same STAC Collections in one file
+    11	"""
+    12	
+    13	from __future__ import annotations
+    14	
+    15	import json
+    16	from datetime import datetime
+    17	from pathlib import Path
+    18	
+    19	from . import __version__, paths, stac
+    20	from .records import load_outline, load_records
+    21	from .verify import is_stale
+    22	
+    23	
+    24	def latest_verification(rid: str, vdir: Path = paths.VERIFICATION_DIR) -> dict | None:
+    25	    p = vdir / (rid.replace("/", "__") + ".json")
+    26	    return json.loads(p.read_text()) if p.exists() else None
+    27	
+    28	
+    29	def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
+    30	          now: datetime | None = None) -> dict:
+    31	    out_dir.mkdir(parents=True, exist_ok=True)
+    32	    recs = load_records()
+    33	    records_out = []
+    34	    features = []
+    35	    for rid, rec in recs.items():
+    36	        v = latest_verification(rid, vdir)
+    37	        level = v["level"] if v else "L0"
+    38	        checked = v["checked_at"] if v else None
+    39	        blocked = (v or {}).get("origin", {}).get("blocked_since")
+    40	        joined = dict(rec, level=level, checked_at=checked, stale=is_stale(checked, now), blocked_since=blocked)
+    41	        records_out.append(joined)
+    42	        op = paths.outline_path(rid)
+    43	        if op.exists():
+    44	            for f in load_outline(op)["features"]:
+    45	                props = dict(f["properties"])
+    46	                props.update({
+    47	                    "title": rec["title"], "publisher": rec["publisher"]["name"],
+    48	                    "kinds": rec["kinds"], "licence": rec["licence"]["name"],
+    49	                    "redistribution": rec["licence"]["redistribution"], "level": level,
+    50	                })
+    51	                fid = {"id": props["feature_id"]} if "feature_id" in props else {}
+    52	                features.append({"type": "Feature", **fid, "properties": props, "geometry": f["geometry"]})
+    53	    (out_dir / "records.json").write_text(json.dumps(
+    54	        {"tool_version": __version__, "count": len(records_out), "records": records_out}, indent=2) + "\n")
+    55	    (out_dir / "outlines.geojson").write_text(json.dumps(
+    56	        {"type": "FeatureCollection", "features": features}) + "\n")
+    57	    collections = stac.write_catalog(out_dir, records_out, vdir)
+    58	    (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
+    59	    return {"records": len(records_out), "features": len(features), "collections": len(collections)}
+     1	{
+     2	  "$schema": "https://json-schema.org/draft/2020-12/schema",
+     3	  "$id": "https://open-subsurface-data.org/schema/record/2",
+     4	  "title": "Open Subsurface Data record, version 2",
+     5	  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record.",
+     6	  "type": "object",
+     7	  "additionalProperties": false,
+     8	  "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
+     9	  "properties": {
+    10	    "id": {
+    11	      "type": "string",
+    12	      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$",
+    13	      "description": "publisher-slug/dataset-slug; stable forever, also the file path records/<id>.yaml"
+    14	    },
+    15	    "title": {"type": "string", "minLength": 3, "maxLength": 120},
+    16	    "summary": {"type": "string", "maxLength": 600, "description": "Two or three sentences in the publisher's own terms."},
+    17	    "publisher": {
+    18	      "type": "object", "additionalProperties": false, "required": ["name", "url"],
+    19	      "properties": {
+    20	        "name": {"type": "string"},
+    21	        "url": {"type": "string", "format": "uri"},
+    22	        "country": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2"}
+    23	      }
+    24	    },
+    25	    "origin": {
+    26	      "type": "object", "additionalProperties": false, "required": ["url", "access"],
+    27	      "properties": {
+    28	        "url": {"type": "string", "format": "uri", "description": "The page a person opens to get the data. Never a deep link that expires."},
+    29	        "access": {"type": "string", "enum": ["anonymous", "registration", "api", "request"],
+    30	                   "description": "anonymous: a download needs no account; registration: a free account; api: a documented service; request: a human approves"},
+    31	        "manifest_url": {"type": "string", "format": "uri", "description": "Optional machine-readable listing of files (index, API, bucket listing) the verifier can checksum against."},
+    32	        "notes": {"type": "string", "maxLength": 400}
+    33	      }
+    34	    },
+    35	    "licence": {
+    36	      "type": "object", "additionalProperties": false, "required": ["name", "redistribution", "attribution"],
+    37	      "properties": {
+    38	        "name": {"type": "string", "description": "The licence as the publisher names it."},
+    39	        "spdx": {"type": ["string", "null"], "description": "SPDX identifier when one exists (CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0); null for bespoke licences."},
+    40	        "url": {"type": "string", "format": "uri"},
+    41	        "redistribution": {"type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+    42	                           "description": "May a third party host a copy? Decides whether the mirror store may hold this dataset."},
+    43	        "attribution": {"type": "string", "enum": ["required", "not-required", "unknown"]},
+    44	        "share_alike": {"type": "boolean", "description": "Derived products must carry the same licence (CC BY-SA and kin)."},
+    45	        "statement": {"type": "string", "maxLength": 300, "description": "The attribution line a derived product must carry, verbatim when the publisher prescribes one."}
+    46	      }
+    47	    },
+    48	    "kinds": {
+    49	      "type": "array", "minItems": 1, "uniqueItems": true,
+    50	      "items": {"type": "string", "enum": [
+    51	        "wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth",
+    52	        "seismic-3d", "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults",
+    53	        "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list"
+    54	      ]},
+    55	      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets."
+    56	    },
+    57	    "region": {
+    58	      "type": "object", "additionalProperties": false,
+    59	      "properties": {
+    60	        "country": {"type": "string", "pattern": "^[A-Z]{2}$"},
+    61	        "basin": {"type": "string"},
+    62	        "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"},
+    63	                 "description": "[west, south, east, north] in WGS84 decimal degrees, approximate, for the map's first zoom only."},
+    64	        "crs": {"type": "string", "description": "The dataset's own CRS as the publisher states it, e.g. EPSG:23031."}
+    65	      }
+    66	    },
+    67	    "size": {
+    68	      "type": "object", "additionalProperties": false,
+    69	      "properties": {
+    70	        "bytes_estimate": {"type": "integer", "minimum": 0},
+    71	        "stated": {"type": "string", "description": "As the publisher states it, e.g. '~5 TB including seismic'."}
+    72	      }
+    73	    },
+    74	    "listed_by": {
+    75	      "type": "array", "minItems": 1, "uniqueItems": true,
+    76	      "items": {"type": "string", "enum": ["seg-wiki", "publisher", "osdu", "community"]},
+    77	      "description": "Where we found it; seg-wiki means https://wiki.seg.org/wiki/Open_data"
+    78	    },
+    79	    "osdu": {
+    80	      "type": "object", "additionalProperties": false,
+    81	      "properties": {"reference_id": {"type": "string"}, "notes": {"type": "string"}},
+    82	      "description": "Identifiers in the OSDU reference data where the same dataset is carried."
+    83	    },
+    84	    "inputs": {
+    85	      "type": "array", "minItems": 1,
+    86	      "description": "The publisher's own addresses for the geometry of this dataset (register services, files, stores), each with the CRS and units as the publisher states them. Extraction rules are tool configuration (src/osd/outlines/rules.yaml, OSD-D11), never fields here.",
+    87	      "items": {
+    88	        "type": "object", "additionalProperties": false, "required": ["name", "url", "format"],
+    89	        "properties": {
+    90	          "name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Unique within the record; the key of its rule in rules.yaml."},
+    91	          "url": {"type": "string", "format": "uri", "description": "As the publisher serves it, e.g. a WFS GetFeature request for one layer, a file, or a store prefix."},
+    92	          "format": {"type": "string", "enum": ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson"],
+    93	                     "description": "html-geojson: a page that carries a GeoJSON geometry the publisher labels as the extent."},
+    94	          "crs": {"type": "string", "pattern": "^EPSG:[0-9]+$", "description": "The CRS the publisher declares for the coordinates. Absent means not declared: the input is refused, never guessed."},
+    95	          "units": {"type": "string", "enum": ["m", "ft", "ftUS", "degree"], "description": "Coordinate units when the publisher states them outside the data."},
+    96	          "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states the CRS and units, verbatim where short."}
+    97	        }
+    98	      }
+    99	    },
+   100	    "period": {
+   101	      "type": "object", "additionalProperties": false, "required": ["start", "end"],
+   102	      "description": "The acquisition or release interval the publisher states for the dataset, inclusive (OSD-D14: STAC Items exist only for records with a period). Unquoted YAML dates and years are read as these strings.",
+   103	      "properties": {
+   104	        "start": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval starts at the beginning of it (UTC)."},
+   105	        "end": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval ends at the end of it (UTC)."},
+   106	        "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states it, verbatim where short."}
+   107	      }
+   108	    },
+   109	    "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}},
+   110	    "notes": {"type": "string", "maxLength": 1200},
+   111	    "added": {"type": "string", "format": "date"},
+   112	    "contacts": {"type": "array", "items": {"type": "string", "format": "uri"}}
+   113	  }
+   114	}
+     1	"""osd: validate | verify | build | status | new | report"""
+     2	
+     3	from __future__ import annotations
+     4	
+     5	import argparse
+     6	import json
+     7	import sys
+     8	from datetime import datetime
+     9	from pathlib import Path
+    10	
+    11	from . import build as build_mod
+    12	from . import new as new_mod
+    13	from . import paths
+    14	from . import report as report_mod
+    15	from .records import load_records, validate_outlines, validate_records
+    16	from .verify import is_stale, verify_all
+    17	
+    18	
+    19	def cmd_validate(_: argparse.Namespace) -> int:
+    20	    problems = validate_records() + validate_outlines()
+    21	    for p in problems:
+    22	        print(f"  {p}")
+    23	    n = len(load_records())
+    24	    print(f"{n} records, {len(problems)} problems")
+    25	    return 1 if problems else 0
+    26	
+    27	
+    28	def cmd_verify(a: argparse.Namespace) -> int:
+    29	    results = verify_all(ids=a.ids or None, derive=a.outlines, fetch_inputs=a.outline_inputs)
+    30	    for v in results:
+    31	        o = v["origin"]
+    32	        l2 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L2")
+    33	        l3 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L3")
+    34	        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}; {l2}; {l3})")
+    35	    print(f"{len(results)} verified -> {paths.VERIFICATION_DIR}")
+    36	    return 0
+    37	
+    38	
+    39	def cmd_build(_: argparse.Namespace) -> int:
+    40	    n = build_mod.build()
+    41	    print(f"built {n} -> {paths.CATALOG_DIR}")
+    42	    return 0
+    43	
+    44	
+    45	def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = None) -> list[str]:
+    46	    """The levels `osd build` publishes, read from the same verification directory."""
+    47	    lines = [f"{'level':5} {'id':36} {'checked':36} {'access':12} {'redistribution':14} kinds"]
+    48	    for rid, r in load_records().items():
+    49	        v = build_mod.latest_verification(rid, vdir)
+    50	        lv, checked = (v["level"], v["checked_at"]) if v else ("L0", None)
+    51	        when = (checked or "never")[:10] + (" stale" if is_stale(checked, now) else "")
+    52	        blocked = (v or {}).get("origin", {}).get("blocked_since")
+    53	        when += f" blocked since {blocked[:10]}" if blocked else ""
+    54	        lines.append(f"{lv:5} {rid:36} {when:36} {r['origin']['access']:12} "
+    55	                     f"{r['licence']['redistribution']:14} {','.join(r['kinds'])}")
+    56	    return lines
+    57	
+    58	
+    59	def cmd_status(_: argparse.Namespace) -> int:
+    60	    print("\n".join(status_lines()))
+    61	    return 0
+    62	
+    63	
+    64	def cmd_new(a: argparse.Namespace) -> int:
+    65	    try:
+    66	        out = new_mod.new_record(a.url, title=a.title, rid=a.id, records_dir=paths.RECORDS_DIR)
+    67	    except FileExistsError as e:
+    68	        print(f"refused: {e}")
+    69	        return 1
+    70	    rel = str(out.relative_to(paths.RECORDS_DIR))
+    71	    todo: dict[str, str] = {}  # field -> its last problem (an enum's choices beat "not a string")
+    72	    for p in validate_records(paths.RECORDS_DIR):
+    73	        if p.path == rel:
+    74	            field, _, why = p.message.partition(": ")
+    75	            todo[field] = why
+    76	    print(f"wrote {out}; {len(todo)} fields for a human to fill from the publisher's page:")
+    77	    for field, why in todo.items():
+    78	        print(f"  {field}: {why}")
+    79	    return 0
+    80	
+    81	
+    82	def cmd_report(a: argparse.Namespace) -> int:
+    83	    titles = set(Path(a.open_titles).read_text().splitlines()) if a.open_titles else set()
+    84	    r = report_mod.dead_reports(Path(a.before), Path(a.after), titles)
+    85	    print("\n".join(report_mod.report_lines(r, a.dry_run)))
+    86	    if a.out:
+    87	        Path(a.out).write_text(json.dumps(r["open"], indent=2) + "\n")
+    88	    return 0
+    89	
+    90	
+    91	def main(argv: list[str] | None = None) -> int:
+    92	    ap = argparse.ArgumentParser(prog="osd", description=__doc__)
+    93	    sub = ap.add_subparsers(dest="cmd", required=True)
+    94	    sub.add_parser("validate", help="records and outlines against their schemas").set_defaults(fn=cmd_validate)
+    95	    pv = sub.add_parser("verify", help="network: reach each origin, write verification records")
+    96	    pv.add_argument("ids", nargs="*")
+    97	    pv.add_argument("--outlines", action="store_true",
+    98	                    help="also fetch outline inputs and rewrite outlines/ (osd.outlines, E03)")
+    99	    pv.add_argument("--outline-inputs", action="store_true",
+   100	                    help="also fetch outline inputs and check the committed outlines against them (CI)")
+   101	    pv.set_defaults(fn=cmd_verify)
+   102	    sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
+   103	    sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)
+   104	    pn = sub.add_parser("new", help="scaffold records/<id>.yaml from a dataset page (reads its title)")
+   105	    pn.add_argument("url")
+   106	    pn.add_argument("--id", help="publisher/dataset (default: from the address)")
+   107	    pn.add_argument("--title", help="skip reading the page")
+   108	    pn.set_defaults(fn=cmd_new)
+   109	    pr = sub.add_parser("report", help="dead-link report: records that fell from L1+ to a dead origin")
+   110	    pr.add_argument("--before", required=True, help="verification results stored before the run")
+   111	    pr.add_argument("--after", default=str(paths.VERIFICATION_DIR), help="results after the run")
+   112	    pr.add_argument("--open-titles", help="file with the titles of open issues, one per line")
+   113	    pr.add_argument("--out", help="write the issues to open as JSON")
+   114	    pr.add_argument("--dry-run", action="store_true", help="say 'would open'; the workflow opens nothing")
+   115	    pr.set_defaults(fn=cmd_report)
+   116	    a = ap.parse_args(argv)
+   117	    return a.fn(a)
+   118	
+   119	
+   120	if __name__ == "__main__":
+   121	    sys.exit(main())
+## E07 Mirror store and custody — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: `DECISIONS.md` OSD-D6 (mirror policy); Ophiolite E35 (custody registry of every copy).
+
+**Outcome.** Small datasets whose licence allows redistribution download from the catalogue at
+full speed with a checksum, and every copy we hold has a custody record saying what it is, where
+it came from, under which licence, and how to ask for its removal.
+
+**Context today (verified 23 Oct).** Nothing is mirrored. Two Hetzner S3 buckets exist for the
+Ophiolite program; none for this project, and its keys must never reach this one. Records carry
+`licence.redistribution`; four of nine are `allowed`.
+
+**The design the lane must map to.**
+1. Eligibility is a function, tested: `redistribution == allowed` and estimated size under 20 GB
+   (OSD-D6) and `origin` reachable at L2 with checksums. Nothing else is ever copied.
+2. Layout: `s3://<bucket>/mirror/<record-id>/<sha256-prefix>/<filename>`, public read, no listing.
+3. Custody record `build/custody/<record-id>.json`: files, sha256, bytes, copied_at, origin href,
+   licence snapshot (name, url, text sha from E02), takedown contact (a repository issue template).
+4. STAC assets (E04) gain a second href with `roles: ["mirror"]`; `osd get` prefers the mirror
+   when its checksum matches the origin's.
+5. Takedown: an issue with the template removes the files and marks the custody record
+   `removed_at`; the catalogue keeps the record at its level with `assets` pointing at origin.
+6. Cost line in the PR: bytes mirrored and the monthly storage and egress estimate at Hetzner
+   prices, by hand.
+
+**Acceptance.**
+- Eligibility test: F3 (allowed, 1.3 GB) eligible; Volve (unknown) not; NDR (unknown, TB) not;
+  a fixture with `allowed` and 25 GB not.
+- Mutation: flipping the size cap to 30 GB makes the 25 GB fixture eligible (shown, restored).
+- After mirroring F3: `osd get` for F3 reports every asset `verified` from the mirror href.
+- The custody record validates against `schema/custody.schema.json`.
+- Takedown dry run on the fixture removes the mirror href and writes `removed_at`.
+
+**Out of scope.** Seismic chunking (E10), anything with `redistribution: unknown` even if the
+licence looks permissive.
+
+**Stop rules.** The bucket needs a key in CI: ask the owner for the repository secret (owner
+action), continue with a local directory backend meanwhile.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/mirror.py`, `schema/custody.schema.json`,
+`.github/ISSUE_TEMPLATE/takedown.yml`, `tests/test_mirror.py`. Depends on E06 and OSD-D6; the bucket
+and its key on E11.
+
+**Evidence to inspect.** The cost line; the custody record for F3; the `osd get` transcript.
+## E09 Ophiolite reads the catalogue — QUEUED · Kernel, cross-repo · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("verified bits … pull into their workspace"); Ophiolite E85
+(one intake), E35 (rights-basis), E55 (kind registry), E122 (provenance).
+
+**Outcome.** In an Ophiolite project a person pastes a manifest or STAC collection address into
+the intake, the files land through the normal upload run, every landed item carries a
+rights-basis filled from the record's licence, and the fidelity record says which files converted
+to which canonical type and which did not. That is level L4.
+
+**Context today (verified 23 Oct for this repository; Ophiolite side from program memory, to be
+re-verified at lane open).** Ophiolite's E85 intake accepts "an address" as a drop; E35
+rights-basis/1 exists on uploads; E57 reads LAS 1.2/3.0 and DLIS; E123 reads ZGY. The Ophiolite
+monorepo is private; this repository's reader interface is `osd.manifest.read` (E06). Ophiolite
+ships an NLOG sample in its try-it image (E79).
+
+**The design the lane must map to.**
+1. Two halves, two repositories, one interface: here, the manifest and STAC are the contract and
+   gain nothing Ophiolite-specific; there, an intake address handler recognises `osd.manifest/1`
+   and STAC collections.
+2. Rights: `licence.{name, spdx, url, statement, share_alike}` map to Ophiolite's rights-basis
+   fields; `redistribution: unknown` becomes the rights-basis state that refuses publication
+   (E35's refusal state) while allowing private use.
+3. Fidelity record: written by the Ophiolite run, exported back as `verification` check
+   `canonical-conversion` with detail "<n> of <m> files to <kinds>", so this repository's
+   verifier can read it from a file the Ophiolite run publishes (no live coupling).
+4. Provenance: each landed item's E122 record names the catalogue item id and the catalogue
+   version (git commit of this repository at build time, written into `records.json`).
+5. The NLOG sample in E79 and the `nlog/nlog` record agree on kinds and licence text.
+
+**Acceptance.**
+- Here: `records.json` carries `catalog_version` (commit); a manifest fixture round-trips through
+  `osd.manifest.read` with every licence field intact (test).
+- There (Ophiolite journey test): intake of the F3 manifest lands 4 LAS files as wellbore-logs,
+  rights-basis shows CC-BY-SA-4.0 with the statement, and a publish attempt of an item from a
+  `redistribution: unknown` record is refused with E35's plain-words reason.
+- Fidelity: the exported check file validates against `schema/verification.schema.json` and
+  `osd status` shows L4 for F3 after `osd verify --fidelity-from <file>`.
+- Mutation: removing `statement` from the manifest makes the rights-basis test fail.
+
+**Out of scope.** Workspace references without copying (E12), seismic (E10), any change to
+Ophiolite's canonical types.
+
+**Stop rules.** Ophiolite's E85 is not merged at lane open: build the half here, leave the
+Ophiolite half as a charter in the Ophiolite queue, mark this epic PARTIAL.
+
+**Ownership and dependencies.** Coding lane here (paths `src/osd/manifest.py`, `src/osd/build.py`,
+`src/osd/verify.py`, tests) plus one Ophiolite lane chartered in the Ophiolite program by its
+planner. Depends on E06 and Ophiolite E85.
+
+**Evidence to inspect.** The Ophiolite journey test run; the fidelity file; `osd status`.
+## E04 STAC catalogue — QUEUED · Kernel · strategy at lane open · Codex round done 23 Oct (REWORK, dispositions below; no second round)
+
+Authority: `docs/ARCHITECTURE.md` ("formats, all standard"); Ophiolite connector doctrine
+(SDK or standard, never bespoke); OSD-D14.
+
+**Outcome.** Any STAC client, including the QGIS STAC browser, opens the catalogue by one address
+and lists every dataset as a Collection with licence, level, access mode and verification date,
+and lists Items for the features whose record declares a period. The catalogue is the
+interoperable contract that E06 and E09 read; consuming it in Ophiolite is E09.
+
+**Context today (verified 23 Oct, main e58e2f5).** `build/catalog/collections.json` is a bespoke
+wrapper `{"collections": [...]}` whose entries carry `type`, `stac_version`, `id`, `license`,
+`extent`, `providers`, `links` and bare `osd:level`/`osd:access` fields (`src/osd/build.py`); no
+root catalog, no items, no extension schema, no validation (`osd validate` covers records and
+outlines only; `tests/test_build.py` checks one licence string). The builder emits no GeoJSON
+`id`; feature identity arrives with E03's `feature_id`. `Makefile` copies `build/catalog/*` flat
+into `site/data/`, which Pages publishes.
+
+**The design the lane must map to.**
+1. Static STAC 1.0 under `build/catalog/stac/`: `catalog.json` root, one `Collection` per record,
+   Items only where OSD-D14 allows (record `period` or a feature date), each Item carrying the
+   feature geometry, bbox, `id` = E03's `feature_id`, and `datetime: null` with
+   `start_datetime`/`end_datetime` from the period. Collections carry the temporal extent from
+   `period` or `[null, null]`.
+2. The `osd` extension: schema at `schema/stac-osd.json`, versioned URL mapped to the local file
+   for offline validation. Collection-level fields `osd:level`, `osd:checked_at`, `osd:access`,
+   `osd:redistribution`, `osd:blocked_since` (record-level assurance, stated as such); Item-level
+   `osd:approximate`, `osd:derivation`, `osd:input_sha256`. Enums closed.
+3. `license`: the SPDX id when the record has one, else `other` plus a `license` link; `proprietary`
+   never appears. A test asserts the mapping for every record.
+4. Assets: Collection `links` carry the landing page (`rel: about`) and licence; Collection
+   `assets` carry E02's checksummed files (`href`, `file:size`, `file:checksum`), since their
+   relation to an individual Item is not established; Items carry no data assets until E06 or E07
+   establishes one. Mirror preference stays in E07.
+5. Validation offline inside `make check`: `stac-validator` pinned, core and extension schemas
+   bundled under `schema/stac/`, schema-map to local files, and a test that runs with network
+   access denied (a fetcher that raises).
+6. Publication: `Makefile` copies `build/catalog/` recursively; link validation runs over the
+   staged `site/data/stac/` tree, the one Pages serves.
+7. Identity: `feature_id` is the shared key between `outlines.geojson` features (emitted as
+   GeoJSON `id` too) and STAC Items; duplicates fail the build.
+
+**Acceptance.**
+- `stac-validator site/data/stac/catalog.json --recursive` passes with the local schema map and
+  no network; a mutation that removes one `child` link makes the reachable-set test fail (the test
+  asserts the exact reachable collection ids against the record ids).
+- Item ids equal the exact set of `feature_id`s of features with a period (fixture with three such
+  features and two without); a mutation that drops one Item fails.
+- A record with outlines but at L0 yields a collection with its Items and `osd:level: L0`; a record
+  with no outlines yields an empty Item list; both asserted in one parametrised test.
+- Removing `osd:level` fails validation; setting it to `L9` fails validation; hard-coding every
+  level to L0 fails the test that compares collection levels to `records.json`.
+- QGIS 3.34 STAC browser opens the staged tree from a local `http.server`, lists collections and
+  opens one Item showing licence, level and access (screenshot in the PR).
+
+**Out of scope.** A STAC API, mirrors (E07), manifests (E06), Ophiolite intake (E09), map UI (E05).
+
+**Stop rules.** The STAC extension process requires a registered schema URL: use the repository's
+versioned raw URL mapped locally; do not block on registration.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/stac.py`, `src/osd/build.py`,
+`schema/stac-osd.json`, `schema/stac/**` (bundled schemas), `schema/record.schema.json` (optional
+`period` only, coordinated with E03's record/2), `pyproject.toml` (stac-validator pinned),
+`Makefile` (recursive copy), `tests/test_stac.py`. Depends on E03 (feature ids) and E02 (files).
+
+**Evidence to inspect.** The validator output in CI; the reachable-set and id-set tests; the QGIS
+screenshot.
+
+**Dispositions of the Codex round (23 Oct).** Accepted: offline validation with bundled schemas
+and a schema map (5), the time contract (OSD-D14, design 1), item eligibility independent of
+level (acceptance 3), identity ownership (E03 assigns `feature_id`, E04 emits it in both outputs),
+assets at collection level from E02 with no mirror logic, extension semantics by level (2),
+recursive publication and staged-tree validation (6), exact-set acceptance tests with named
+mutations, licence mapping test, outcome narrowed to publishing the contract (E09 consumes).
+Refuted: none.
+## E15 Tiles for the registers — QUEUED · Surface · no strategy, no Codex round
+
+Authority: OSD-D16 (register outlines up to 8 MB until a tiling lane); E05 as merged (the page
+prefers `data/outlines.pmtiles` when `files.txt` lists it); `docs/ARCHITECTURE.md` (PMTiles).
+
+**Outcome.** Opening the map on a phone connection no longer downloads the register outlines whole:
+the page loads tiles for the viewport, and every feature still carries the same properties and
+`feature_id` as `outlines.geojson`.
+
+**Context today (verified 23 Oct, main after PR #7).** `outlines/sodir__factpages.geojson` is
+4.3 MB and `outlines/nlog__nlog.geojson` 2.6 MB; `make build` concatenates all outlines into
+`build/catalog/outlines.geojson`, which the page fetches whole. E05 added the `pmtiles` protocol
+and the `files.txt` probe but nothing writes a PMTiles file. `tippecanoe` is not installed in CI.
+
+**The design the lane must map to.**
+1. `make build` writes `build/catalog/outlines.pmtiles` from `outlines.geojson` with `tippecanoe`
+   (pinned version, installed in the `check` workflow from the official release or a pinned apt
+   package; the build skips tiling with a visible notice when the binary is absent, so `make check`
+   stays offline-capable locally). Zoom range 0 to 12, point features kept at every zoom with
+   clustering left to the page, polygons simplified by tippecanoe only below zoom 8.
+2. The page uses the tiles for the extents, surveys and wells layers when present and falls back to
+   the GeoJSON otherwise; the list, search and detail panel keep reading `records.json` and
+   `outlines.geojson` metadata (ids and names), not the tiles.
+3. `feature_id` is the tile feature id; a Playwright test opens `#q=sodir`, clicks a wellbore and
+   gets the same detail title as the GeoJSON path.
+
+**Acceptance.**
+- With tiles present, the page's network log on load shows no request for `outlines.geojson`
+  larger than the metadata fetch (Playwright, offline, asserts the transferred bytes under 1 MB
+  before any pan).
+- The 10,000-wellbore performance test from E05 passes unchanged on the tile path.
+- Tile feature count per layer equals the GeoJSON feature count at the maximum zoom (test using
+  the `pmtiles` CLI or a Python reader).
+- `make check` without `tippecanoe` prints the notice and passes.
+
+**Out of scope.** Changes to outline files or schemas; STAC (E04).
+
+**Ownership and dependencies.** Coding lane; paths `Makefile` (build target), `src/osd/build.py`
+(tiling call only), `.github/workflows/ci.yml` and `pages.yml` (tippecanoe install step, announced),
+`site/app.js`, `tests/site/**`, `tests/test_build.py` (tile count test). Depends on E03 (merged).
+Runs in parallel with E04 (disjoint paths except `src/osd/build.py`: E15 adds one call at the end of
+`build()`; E04 adds `stac.py` and one call; the second to merge rebases).
+
+**Evidence to inspect.** The network-log assertion; the count test; a phone screenshot.
+## E16 Periods from the publishers — QUEUED · Records · no strategy, no Codex round
+
+Authority: OSD-D14 (STAC Items need a datetime or a bounded interval; Items only where a record
+declares a `period`); E04 as merged (record/2 optional `period`).
+
+**Outcome.** A STAC client lists Items, not only Collections: every record whose publisher states
+an acquisition, drilling or release period carries it, quoted as the publisher states it, and the
+published catalogue has Items for every outlined feature of those records.
+
+**Context today (after E04 merges).** 68 records, none with `period`; the STAC tree has 68
+Collections and 0 Items. `period` is `{start, end}` strings (ISO dates or years as the publisher
+states them; `records.py` coerces unquoted YAML dates and ints). Outlined records: Sodir, NLOG,
+Poseidon, Parihaka, Kerry 3D (derived); F3, Teapot Dome (placeholders).
+
+**The design the lane must map to.**
+1. One `period` per record, from the publisher's own page or register (survey year, drilling
+   years, release date), with `stated` text in `notes` or the record's existing field where short;
+   never inferred from a file name or from another aggregator.
+2. Registers (Sodir, NLOG) get the register's own coverage period as the publisher states it
+   (first wellbore year to today, or the register's stated range); per-feature dates are E03's
+   business, not this lane's.
+3. Target: every record whose publisher states a period, expected at least forty of 68; the PR
+   lists the records without a stated period and why.
+
+**Acceptance.**
+- `uv run osd validate`: 68 records, 0 problems; every `period` has `start <= end` (existing test).
+- `make build` then a count: Items emitted for every outlined record with a period; the PR shows
+  the Item count per collection for the five derived-outline records.
+- The verify comment on the PR shows no level change (periods do not touch levels).
+- Hand count in the PR: records with a period, records without, by reason.
+
+**Out of scope.** Schema changes, outlines, levels.
+
+**Ownership and dependencies.** Records lane; paths `records/**`, `docs/program/evidence/e16/**`.
+Depends on E04 (merged).
+
+**Evidence to inspect.** The Item counts; the verify comment; a QGIS Item screenshot (owner, with
+action 102).
+
+**Verifying claim presence**
+exec
+/bin/bash -lc "git status --short; rg -n 'def .*fetch|files|sha256|manifest_url' src/osd/verify.py; nl -ba schema/record.schema.json | sed -n '35,48p;83,116p'; nl -ba site/app.js | sed -n '214,245p'; nl -ba records/seg/f3.yaml; nl -ba docs/program/charters/E06-retrieval-by-manifest.md; cat docs/program/CLAIMS.md; rg -n '"'^period:|manifest_url:'"' records; nl -ba src/osd/verify.py | sed -n '35,125p;350,435p'" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+?? docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.log
+3:L1 (origin reachable), L2 (sample files checksummed, licence text captured) and L3 (outlines
+14:Sampling policy (which listed files L2 hashes) is tool configuration in verifier/samples.yaml,
+95:def http_fetch(url: str, timeout: float = 20.0) -> Fetched:
+144:def paced(fetch: Fetcher, opener: Opener, pacer: Pacer) -> tuple[Fetcher, Opener]:
+172:def probe(url: str, fetch: Fetcher) -> Fetched:
+285:    h, n = hashlib.sha256(), 0
+322:def check_files(rec: dict, sample: list[str] | None, opener: Opener, budget: ByteBudget) -> tuple[dict, list[dict]]:
+324:        return {"name": "files-checksummed", "level": "L2", "outcome": outcome, "detail": detail[:500]}
+326:    manifest = rec["origin"].get("manifest_url")
+328:        return check("skip", "no origin.manifest_url"), []
+347:    files: list[dict] = []
+354:            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
+359:            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
+362:            return check("fail", f"{e.name}: {err}"), files
+363:        files.append({"path": e.name, "url": e.url, "bytes": n, "sha256": digest})
+364:    if not files:
+365:        return check("skip", "; ".join(notes) or "nothing hashed"), files
+366:    total = sum(f["bytes"] for f in files)
+367:    coverage = f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed ({total} bytes); {len(entries)} entries listed"
+368:    return check("pass", "; ".join([coverage, *notes])), files
+416:    sha = hashlib.sha256(text.encode()).hexdigest()
+417:    before = (previous or {}).get("licence_text_sha256")
+442:def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime | None = None,
+465:        checks.append({"name": "files-checksummed", "level": "L2", "outcome": "skip", "detail": why})
+468:        c, files = check_files(rec, sample, opener, budget or ByteBudget())
+470:        if files:
+471:            extra["files"] = files
+475:            extra["licence_text_sha256"] = sha
+519:def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
+    35	    "licence": {
+    36	      "type": "object", "additionalProperties": false, "required": ["name", "redistribution", "attribution"],
+    37	      "properties": {
+    38	        "name": {"type": "string", "description": "The licence as the publisher names it."},
+    39	        "spdx": {"type": ["string", "null"], "description": "SPDX identifier when one exists (CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0); null for bespoke licences."},
+    40	        "url": {"type": "string", "format": "uri"},
+    41	        "redistribution": {"type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+    42	                           "description": "May a third party host a copy? Decides whether the mirror store may hold this dataset."},
+    43	        "attribution": {"type": "string", "enum": ["required", "not-required", "unknown"]},
+    44	        "share_alike": {"type": "boolean", "description": "Derived products must carry the same licence (CC BY-SA and kin)."},
+    45	        "statement": {"type": "string", "maxLength": 300, "description": "The attribution line a derived product must carry, verbatim when the publisher prescribes one."}
+    46	      }
+    47	    },
+    48	    "kinds": {
+    83	    },
+    84	    "inputs": {
+    85	      "type": "array", "minItems": 1,
+    86	      "description": "The publisher's own addresses for the geometry of this dataset (register services, files, stores), each with the CRS and units as the publisher states them. Extraction rules are tool configuration (src/osd/outlines/rules.yaml, OSD-D11), never fields here.",
+    87	      "items": {
+    88	        "type": "object", "additionalProperties": false, "required": ["name", "url", "format"],
+    89	        "properties": {
+    90	          "name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Unique within the record; the key of its rule in rules.yaml."},
+    91	          "url": {"type": "string", "format": "uri", "description": "As the publisher serves it, e.g. a WFS GetFeature request for one layer, a file, or a store prefix."},
+    92	          "format": {"type": "string", "enum": ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson"],
+    93	                     "description": "html-geojson: a page that carries a GeoJSON geometry the publisher labels as the extent."},
+    94	          "crs": {"type": "string", "pattern": "^EPSG:[0-9]+$", "description": "The CRS the publisher declares for the coordinates. Absent means not declared: the input is refused, never guessed."},
+    95	          "units": {"type": "string", "enum": ["m", "ft", "ftUS", "degree"], "description": "Coordinate units when the publisher states them outside the data."},
+    96	          "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states the CRS and units, verbatim where short."}
+    97	        }
+    98	      }
+    99	    },
+   100	    "period": {
+   101	      "type": "object", "additionalProperties": false, "required": ["start", "end"],
+   102	      "description": "The acquisition or release interval the publisher states for the dataset, inclusive (OSD-D14: STAC Items exist only for records with a period). Unquoted YAML dates and years are read as these strings.",
+   103	      "properties": {
+   104	        "start": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval starts at the beginning of it (UTC)."},
+   105	        "end": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval ends at the end of it (UTC)."},
+   106	        "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states it, verbatim where short."}
+   107	      }
+   108	    },
+   109	    "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}},
+   110	    "notes": {"type": "string", "maxLength": 1200},
+   111	    "added": {"type": "string", "format": "date"},
+   112	    "contacts": {"type": "array", "items": {"type": "string", "format": "uri"}}
+   113	  }
+   114	}
+   214	    renderList(visibleIds());
+   215	    writeHash();
+   216	    const d = $('detail'); d.hidden = false;
+   217	    const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
+   218	    const geo = base + 'data/outlines.geojson';
+   219	    const issues = (r.known_issues || []).map(x => `<li>${esc(x)}</li>`).join('');
+   220	    d.innerHTML = `
+   221	      <span class="close" title="close">✕</span>
+   222	      <h3><span class="title">${esc(r.title)}</span> ${levelBadge(r)}</h3>
+   223	      <div style="color:var(--muted)">${esc(r.summary || '')}</div>
+   224	      <dl>
+   225	        <dt>Publisher</dt><dd><a href="${esc(r.publisher.url)}" target="_blank" rel="noopener">${esc(r.publisher.name)}</a></dd>
+   226	        <dt>Origin</dt><dd><a href="${esc(r.origin.url)}" target="_blank" rel="noopener">${esc(r.origin.url)}</a> (${esc(r.origin.access)})</dd>
+   227	        <dt>Licence</dt><dd>${esc(r.licence.name)}${r.licence.spdx ? ' (' + esc(r.licence.spdx) + ')' : ''}<br>redistribution ${esc(r.licence.redistribution)}, attribution ${esc(r.licence.attribution)}</dd>
+   228	        <dt>Holds</dt><dd>${r.kinds.map(esc).join(', ')}</dd>
+   229	        <dt>Region</dt><dd>${esc([r.region && r.region.basin, r.region && r.region.country].filter(Boolean).join(', ') || '—')}</dd>
+   230	        <dt>Checked</dt><dd>${esc(r.checked_at || 'not yet')}${isStale(r) ? ' (stale: older than ' + STALE_DAYS + ' days)' : ''}</dd>
+   231	      </dl>
+   232	      ${issues ? `<div><b>Known issues</b><ul>${issues}</ul></div>` : ''}
+   233	      <div class="cards">
+   234	        <div class="card"><b>Open in QGIS</b>Layer → Add Layer → Vector, protocol HTTP, this address; filter on record_id.<code>${esc(geo)}</code></div>
+   235	        <div class="card"><b>Read in Python</b><code>import json, urllib.request
+   236	fc = json.load(urllib.request.urlopen("${esc(geo)}"))
+   237	mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id)}"]</code></div>
+   238	        <div class="card"><b>Get the data</b>Follow the origin link above. Retrieval by manifest and the Ophiolite source are chartered (E06, E09).</div>
+   239	      </div>
+   240	      <p class="how"><a href="how.html">What the levels mean, and these three cards explained</a></p>`;
+   241	    d.querySelector('.close').onclick = closeDetail;
+   242	    if (fly && r.region && r.region.bbox) map.fitBounds(r.region.bbox, { padding: 60, maxZoom: 9, duration: 700 });
+   243	  }
+   244	
+   245	  // A pasted or edited hash in the same tab applies too.
+nl: records/seg/f3.yaml: No such file or directory
+     1	## E06 Retrieval by manifest — QUEUED · Kernel · strategy at lane open · one Codex round
+     2	
+     3	Authority: owner direction 23 Oct ("the bridge to transfer/select assets from a map to a
+     4	retrieval"); Ophiolite exchange doctrine (intentional get, nothing applies itself).
+     5	
+     6	**Outcome.** A person selects datasets or wellbores on the map, downloads one manifest, and
+     7	`osd get manifest.json` fetches the files from their origins (or mirrors, E07), verifies the
+     8	checksums the catalogue knows, and writes the attribution lines the licences require next to
+     9	the files. A Python reader opens the manifest without the CLI.
+    10	
+    11	**Context today (verified 23 Oct).** No manifest format, no fetcher. The detail panel's third
+    12	card says retrieval is chartered. Records carry `origin.url` only; file-level addresses arrive
+    13	with E02's `files[]` and E04's item assets.
+    14	
+    15	**The design the lane must map to.**
+    16	1. `osd.manifest/1`: JSON with `created`, `catalog_url`, `items[]` each `{item_id, record_id,
+    17	   assets[]: {href, bytes?, sha256?}, licence: {name, spdx, statement, share_alike}}`. Schema at
+    18	   `schema/manifest.schema.json`. No credentials, ever.
+    19	2. Site: a "Select" mode adds items to a basket; "Download manifest" writes the file client
+    20	   side. Items without resolvable assets (access `registration`/`request`) are included with
+    21	   `assets: []` and the origin page, so the manifest is also the to-do list.
+    22	3. `osd get <manifest> --dest <dir>`: streams each asset, verifies `sha256` when present, writes
+    23	   `ATTRIBUTION.md` from the licence statements, refuses to continue on a mismatch, resumes on
+    24	   rerun. Honest outcome per asset: fetched, verified, mismatch, needs-sign-in, origin-dead.
+    25	4. `osd.manifest.read(path)` in `src/osd/manifest.py` returns typed items; this is the interface
+    26	   Ophiolite's intake reads (E09).
+    27	5. Rights carried: every item's `licence.statement` is copied verbatim; `share_alike` is
+    28	   surfaced in the CLI summary ("2 items require derived work to carry CC BY-SA 4.0").
+    29	
+    30	**Acceptance.**
+    31	- A manifest for two records validates against the schema; a mutated one (missing `licence`) fails.
+    32	- `osd get` on a fixture served locally with 3 assets: 3 fetched, 3 verified; corrupt one byte of
+    33	  one asset: exit non-zero, outcome `mismatch` for that asset, the other two untouched.
+    34	- `ATTRIBUTION.md` contains the F3 statement verbatim and names CC-BY-SA-4.0 as share-alike.
+    35	- Site: select two datasets, download, the file has two items (Playwright).
+    36	- Rerun after a partial failure fetches only the missing asset (test counts requests).
+    37	
+    38	**Out of scope.** Mirrors (E07), seismic slices (E10), authentication to publisher portals,
+    39	decoding any file format.
+    40	
+    41	**Stop rules.** A publisher's terms forbid automated download: that record's items get
+    42	`assets: []` and a note; continue.
+    43	
+    44	**Ownership and dependencies.** Coding lane; paths `src/osd/manifest.py`, `src/osd/get.py`,
+    45	`src/osd/cli.py`, `schema/manifest.schema.json`, `site/app.js` (select mode only, claimed after
+    46	E05 merges), `tests/test_manifest.py`. Depends on E04 (item ids and assets).
+    47	
+    48	**Evidence to inspect.** The strategy's test map; a terminal transcript of `osd get` on F3 with a
+    49	real origin, in the PR.
+# Claims
+
+One row per open lane. A lane may touch only the paths in its row. Two open rows never share a
+path. `schema/` edits are kernel and announced in the pull request title. Rows move to MERGED
+with the merge commit.
+
+| Lane | Branch | Paths | Status | Since |
+|---|---|---|---|---|
+| scaffold | main | everything | MERGED (initial commit) | 2026-10-23 |
+| E01 | e01-twenty-records | `records/**` | MERGED (PR #1) | 2026-10-23 |
+| E11 | main | `.github/workflows/**`, `site/robots.txt`, `docs/program/**` | MERGED (domain live) | 2026-10-23 |
+| E02 | e02-verifier-to-l2 | `src/osd/verify.py`, `src/osd/build.py`, `src/osd/cli.py`, `schema/verification.schema.json`, `src/osd/verifier/**` (sampling policy), `tests/test_verify.py`, `.github/workflows/verify.yml` (announced), `docs/program/charters/E02-*` (dispositions), `records/sodir/factpages.yaml`, `records/opm/norne.yaml`, `records/nopims/poseidon.yaml` (manifest_url only; records slot, ruled 23 Oct; sampling policy goes to src/osd/verifier/samples.yaml per OSD-D11) | MERGED (PR #3, 37c010c) | 2026-10-23 |
+| E05 | e05-map-that-scales | `site/**`, `tools/shot.mjs`, `tests/site/**`, `package.json`, `package-lock.json`, `.gitignore` (one line, ruled 23 Oct), `Makefile` (site targets only), `.github/workflows/ci.yml` (site test step only, announced), `docs/program/evidence/e05/**` | MERGED (PR #2, 6c232cf) | 2026-10-23 |
+| E13 | e13-registers-second-twenty | `records/**` except `records/sodir/factpages.yaml`, `records/opm/norne.yaml`, `records/nopims/poseidon.yaml` (E02); `docs/program/evidence/e13/**` | MERGED (PR #4, 6429445) | 2026-10-23 |
+| E03 | e03-outlines-from-the-data | `src/osd/outlines/**`, `src/osd/verify.py` (outline checks only), `src/osd/records.py` (outline validation), `schema/record.schema.json` (record/2: `inputs`, announced), `schema/outline.schema.json`, `outlines/**`, `records/<targets>.yaml` (`inputs` only: sodir/factpages, nlog/nlog, terranubis/f3-demo-2020, rmotc/teapot-dome, nopims/poseidon, nzpam/parihaka, nzpam/kerry-3d; E13 must not edit these seven), `pyproject.toml` (pyproj, segyio), `tests/test_outlines.py`, `tests/fixtures/outlines/**`, `tests/conftest.py`, `src/osd/cli.py` (`--outlines` only), `uv.lock`, `.github/workflows/verify.yml` (`--outlines` flag only, announced), `src/osd/verifier/samples.yaml` and `origin.manifest_url` of the seven target records (ruled 23 Oct on the E03 inbox note), `tests/site/site.test.mjs` (the 10k performance test replaces, not adds, the outline data; ruled 23 Oct on the red check), `docs/program/charters/E03-*` (strategy), `docs/program/evidence/e03/**` | MERGED (PR #7, 7ddecf0) | 2026-10-23 |
+| E08 | e08-curation-that-runs-itself | `.github/**` (announced; not `ci.yml`'s check job), `site/status.html`, `site/index.html` (one link to status.html only), `src/osd/new.py`, `src/osd/report.py`, `src/osd/cli.py` (`new` and `report` subcommands only), `tests/test_report.py`, `tests/site/status.test.mjs`, `package.json` (`site-test` script line only), `CONTRIBUTING.md`, `docs/program/evidence/e08/**` (ruled 23 Oct on the E08 inbox note) | MERGED (PR #5, e408adb) | 2026-10-23 |
+| E14 | e14-records-third-twenty | `records/**` except the seven E03 files (`sodir/factpages`, `nlog/nlog`, `terranubis/f3-demo-2020`, `rmotc/teapot-dome`, `nopims/poseidon`, `nzpam/parihaka`, `nzpam/kerry-3d`); `docs/program/evidence/e14/**` | MERGED (PR #6, 61f9527) | 2026-10-23 |
+| E04 | e04-stac-catalogue | `src/osd/stac.py`, `src/osd/build.py` (one call to the STAC writer), `schema/stac-osd.json`, `schema/stac/**`, `schema/record.schema.json` (optional `period` only, announced), `pyproject.toml` and `uv.lock` (stac-validator pinned), `Makefile` (recursive copy of build/catalog), `tests/test_stac.py`, `src/osd/records.py` (period coercion only, ruled 23 Oct), `docs/program/charters/E04-*` (strategy), `docs/program/evidence/e04/**` | MERGED (PR #8, aced173) | 2026-10-23 |
+| E15 | e15-tiles-for-the-registers | `Makefile` (build target: tiling), `src/osd/build.py` (one tiling call at the end of build), `.github/workflows/ci.yml` and `pages.yml` (tippecanoe install step, announced), `site/app.js`, `site/index.html` (if needed), `tests/site/**`, `tests/test_build.py` (tile count test), `docs/program/evidence/e15/**` | OPEN (worker osd-e15, worktree ../osd-e15-tiles-for-the-registers; shares build.py with E04: second to merge rebases) | 2026-10-23 |
+| E16 | e16-periods-from-the-publishers | `records/**` (`period` and `notes` only), `docs/program/evidence/e16/**` | OPEN (worker osd-e16, worktree ../osd-e16-periods-from-the-publishers) | 2026-10-23 |
+records/sgc/banco-informacion-petrolera-pozos.yaml:9:  manifest_url: https://services1.arcgis.com/Og2nrTKe5bptW02d/arcgis/rest/services/Banco_de_Informaci%C3%B3n_Petrolera_Pozos/FeatureServer/0
+records/nopims/poseidon.yaml:10:  manifest_url: https://tgs-opendata-poseidon.s3.amazonaws.com/?list-type=2&max-keys=1000
+records/nlog/nlog.yaml:10:  manifest_url: https://www.nlog.nl/en/boreholes
+records/ut-dogm/oil-gas-wells.yaml:9:  manifest_url: https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0
+records/ar-energia/produccion-por-pozo.yaml:9:  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=produccion-de-petroleo-y-gas-por-pozo
+records/ar-energia/fractura-adjunto-iv.yaml:9:  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=datos-de-fractura-de-pozos-adjunto-iv
+records/wa-demirs/petroleum-wells.yaml:9:  manifest_url: https://catalogue.data.wa.gov.au/api/3/action/package_show?id=wa-onshore-petroleum-wells-dmirs-025
+records/anh/produccion-fiscalizada-crudo.yaml:9:  manifest_url: https://www.datos.gov.co/api/views/fdvb-hsrf.json
+records/ar-energia/trayectorias-vaca-muerta.yaml:9:  manifest_url: https://datos.gob.ar/api/3/action/package_show?id=trayectoria-de-pozos
+records/ak-dggs/tax-credit-well-data.yaml:9:  manifest_url: https://dggs.alaska.gov/webpubs/dggs/gmc/well_data/
+records/pgi/cbdg-boreholes.yaml:9:  manifest_url: https://api.dane.gov.pl/1.4/datasets/677/resources
+records/sodir/factpages.yaml:11:  manifest_url: https://factpages.sodir.no/en/wellbore/TableView/Exploration/All
+records/opm/norne.yaml:9:  manifest_url: https://api.github.com/repos/OPM/opm-data/contents/norne
+    35	from fnmatch import fnmatchcase
+    36	from functools import cache
+    37	from html.parser import HTMLParser
+    38	from pathlib import Path
+    39	from urllib.parse import quote, urljoin, urlsplit
+    40	
+    41	import yaml
+    42	from jsonschema import Draft202012Validator
+    43	
+    44	from . import __version__, outlines, paths
+    45	from .records import load_outline, load_records
+    46	
+    47	SAMPLES_PATH = Path(__file__).parent / "verifier" / "samples.yaml"
+    48	
+    49	LEVELS = ["L0", "L1", "L2", "L3", "L4"]
+    50	USER_AGENT = ("open-subsurface-data-verifier/" + __version__
+    51	              + " (+https://github.com/ophiolite-labs/open-subsurface-data)")
+    52	PROBE_BYTES = 16384
+    53	CHUNK = 1 << 20
+    54	RUN_BYTE_BUDGET = 2 * 1024**3  # charter: never hash more than 2 GB per run
+    55	LISTING_BYTES = 32 * 1024**2
+    56	LICENCE_BYTES = 8 * 1024**2
+    57	LICENCE_TEXT_CHARS = 100_000  # stored with its hash in the results store
+    58	PAUSE_S = 2.0
+    59	STALE_DAYS = 30
+    60	CHALLENGE_MARKERS = (b"cf-chl", b"challenge-platform", b"Just a moment...",
+    61	                     b"Attention Required! | Cloudflare", b"_Incapsula_Resource")
+    62	
+    63	
+    64	@dataclass(frozen=True)
+    65	class Fetched:
+    66	    status: int
+    67	    final_url: str
+    68	    content_type: str
+    69	    elapsed_ms: int
+    70	    body: bytes = b""
+    71	    error: str = ""  # "", "timeout", "dns" or "connection" when status is 0
+    72	
+    73	
+    74	class FetchError(Exception):
+    75	    def __init__(self, url: str, status: int = 0, error: str = ""):
+    76	        self.url, self.status, self.error = url, status, error
+    77	        super().__init__(f"HTTP {status} from {url}" if status else f"{error or 'error'} at {url}")
+    78	
+    79	
+    80	Fetcher = Callable[[str], Fetched]
+    81	Opener = Callable[[str], Iterable[bytes]]
+    82	
+    83	
+    84	# --- network (only used outside tests) ---------------------------------------------------
+    85	
+    86	def _error_kind(e: BaseException) -> str:
+    87	    reason = getattr(e, "reason", e)
+    88	    if isinstance(reason, socket.gaierror):
+    89	        return "dns"
+    90	    if isinstance(reason, TimeoutError) or "timed out" in str(reason):
+    91	        return "timeout"
+    92	    return "connection"
+    93	
+    94	
+    95	def http_fetch(url: str, timeout: float = 20.0) -> Fetched:
+    96	    """GET the first 16 KB; HEAD is refused by too many publishers to be useful."""
+    97	    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Range": f"bytes=0-{PROBE_BYTES - 1}"})
+    98	    t0 = time.monotonic()
+    99	    ms = lambda: int((time.monotonic() - t0) * 1000)
+   100	    try:
+   101	        with urllib.request.urlopen(req, timeout=timeout) as resp:
+   102	            body = resp.read(PROBE_BYTES)
+   103	            return Fetched(resp.status, resp.geturl(), resp.headers.get("Content-Type", ""), ms(), body)
+   104	    except urllib.error.HTTPError as e:
+   105	        try:
+   106	            body = e.read(PROBE_BYTES)
+   107	        except OSError:
+   108	            body = b""
+   109	        return Fetched(e.code, url, e.headers.get("Content-Type", "") if e.headers else "", ms(), body)
+   110	    except (urllib.error.URLError, TimeoutError, OSError) as e:
+   111	        return Fetched(0, url, "", ms(), error=_error_kind(e))
+   112	
+   113	
+   114	def http_open(url: str, timeout: float = 60.0) -> Iterable[bytes]:
+   115	    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+   116	    try:
+   117	        with urllib.request.urlopen(req, timeout=timeout) as resp:
+   118	            while chunk := resp.read(CHUNK):
+   119	                yield chunk
+   120	    except urllib.error.HTTPError as e:
+   121	        raise FetchError(url, e.code) from None
+   122	    except (urllib.error.URLError, TimeoutError, OSError) as e:
+   123	        raise FetchError(url, 0, _error_kind(e)) from None
+   124	
+   125	
+   350	        if not robots.allowed(e.url):
+   351	            notes.append(f"robots.txt disallows {e.name}")
+   352	            continue
+   353	        if budget.remaining <= 0 or (e.size is not None and e.size > budget.remaining):
+   354	            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
+   355	            break
+   356	        try:
+   357	            digest, n = _hash(opener(e.url), budget)
+   358	        except _OverBudget:
+   359	            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
+   360	            break
+   361	        except FetchError as err:
+   362	            return check("fail", f"{e.name}: {err}"), files
+   363	        files.append({"path": e.name, "url": e.url, "bytes": n, "sha256": digest})
+   364	    if not files:
+   365	        return check("skip", "; ".join(notes) or "nothing hashed"), files
+   366	    total = sum(f["bytes"] for f in files)
+   367	    coverage = f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed ({total} bytes); {len(entries)} entries listed"
+   368	    return check("pass", "; ".join([coverage, *notes])), files
+   369	
+   370	
+   371	class _Text(HTMLParser):
+   372	    SKIP = frozenset({"script", "style", "noscript", "head", "template"})
+   373	
+   374	    def __init__(self):
+   375	        super().__init__()
+   376	        self.depth, self.parts = 0, []
+   377	
+   378	    def handle_starttag(self, tag, attrs):
+   379	        self.depth += tag in self.SKIP
+   380	
+   381	    def handle_endtag(self, tag):
+   382	        if tag in self.SKIP and self.depth:
+   383	            self.depth -= 1
+   384	
+   385	    def handle_data(self, data):
+   386	        if not self.depth:
+   387	            self.parts.append(data)
+   388	
+   389	
+   390	def licence_text(body: bytes) -> str:
+   391	    """The visible text, whitespace collapsed: markup and script churn is not a licence change."""
+   392	    text = body.decode("utf-8", "replace")
+   393	    if re.match(r"\s*(<!doctype|<html|<\?xml|<head|<body)", text, re.IGNORECASE):
+   394	        p = _Text()
+   395	        p.feed(text)
+   396	        text = " ".join(p.parts)
+   397	    return " ".join(text.split())
+   398	
+   399	
+   400	def check_licence(rec: dict, opener: Opener, previous: dict | None) -> tuple[dict, str | None, str | None]:
+   401	    def check(outcome: str, detail: str) -> dict:
+   402	        return {"name": "licence-text-captured", "level": "L2", "outcome": outcome, "detail": detail[:500]}
+   403	
+   404	    url = rec["licence"].get("url")
+   405	    if not url:
+   406	        return check("skip", "no licence.url"), None, None
+   407	    try:
+   408	        body = _read(opener(url), LICENCE_BYTES)
+   409	    except FetchError as e:
+   410	        return check("fail", f"blocked from this runner ({e})" if e.status in (403, 429) else str(e)), None, None
+   411	    if _challenge(body):
+   412	        return check("fail", f"blocked from this runner (challenge page at {url})"), None, None
+   413	    text = licence_text(body)[:LICENCE_TEXT_CHARS]
+   414	    if not text:
+   415	        return check("fail", f"no text at {url}"), None, None
+   416	    sha = hashlib.sha256(text.encode()).hexdigest()
+   417	    before = (previous or {}).get("licence_text_sha256")
+   418	    if before and before != sha:
+   419	        return check("pass", f"licence text changed since {previous['checked_at'][:10]}"), sha, text
+   420	    return check("pass", f"{len(text)} characters captured from {url}"), sha, text
+   421	
+   422	
+   423	# --- the record ------------------------------------------------------------------------------
+   424	
+   425	def level_from_checks(checks: list[dict]) -> str:
+   426	    """The highest level whose every check passed, with no gaps below it."""
+   427	    level = "L0"
+   428	    for lv in LEVELS[1:]:
+   429	        mine = [c for c in checks if c["level"] == lv]
+   430	        if not mine or any(c["outcome"] != "pass" for c in mine):
+   431	            break
+   432	        level = lv
+   433	    return level
+   434	
+   435	
+
