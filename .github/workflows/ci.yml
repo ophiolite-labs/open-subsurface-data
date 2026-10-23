@@ -16,6 +16,11 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with: { python-version: "3.12" }
       - run: uv sync --frozen || uv sync
+      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+        run: |
+          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
       - run: make check
       - name: site smoke (every data file the page fetches exists and parses)
         run: |
