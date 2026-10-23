@@ -78,6 +78,28 @@ def map_positions(coords, f):
     return [map_positions(c, f) for c in coords]
 
 
+def split_antimeridian(g: dict) -> dict:
+    """A line that steps across 180 degrees longitude, cut there (RFC 7946 section 3.1.9): each step
+    longer than 180 degrees is taken the short way round, ends at +-180 at the interpolated latitude,
+    and the next part starts on the other side. Other geometries are returned as they are."""
+    if g["type"] not in ("LineString", "MultiLineString"):
+        return g
+    parts = []
+    for line in [g["coordinates"]] if g["type"] == "LineString" else g["coordinates"]:
+        part = [line[0]]
+        for a, b in itertools.pairwise(line):
+            if abs(b[0] - a[0]) > 180:
+                edge = 180.0 if a[0] > 0 else -180.0
+                bx = b[0] + 2 * edge   # b on a's side of the antimeridian
+                lat = round(a[1] + (b[1] - a[1]) * (edge - a[0]) / (bx - a[0]), DECIMALS)
+                parts.append([*part, [edge, lat]])
+                part = [[-edge, lat]]
+            part.append(b)
+        parts.append(part)
+    return {"type": "LineString", "coordinates": parts[0]} if len(parts) == 1 else \
+        {"type": "MultiLineString", "coordinates": parts}
+
+
 def closed_ring(vertices: list[list[float]]) -> list[list[float]]:
     return vertices + [vertices[0]]
 

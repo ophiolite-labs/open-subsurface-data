@@ -315,7 +315,7 @@ def test_period_is_additive_to_record_2():
     from osd.records import validate_records
     assert validate_records() == []                       # every current record still validates
     schema = _schema("record")
-    assert schema["$id"].endswith("/record/4") and "period" not in schema["required"]
+    assert schema["$id"].endswith("/record/5") and "period" not in schema["required"]
     v = Draft202012Validator(schema, format_checker=FormatChecker())
     base = {k: x for k, x in _record("acme/demo").items()
             if k not in ("level", "checked_at", "stale", "blocked_since")}

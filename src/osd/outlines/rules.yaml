@@ -7,6 +7,11 @@
 #   keep filters features by property; params are added to every page request; hits: true
 #   compares the service's numberMatched with the features served; id_scope prefixes the
 #   feature_id (<record-id>#<scope>/<id>) where one record holds registers with overlapping ids.
+# register-arcgis (E29, record input format arcgis, url = the layer without a query): the layer
+#   description names the object id field and maxRecordCount; pages of that size in object id
+#   order, native spatial reference, f=json, asking for the object id and the fields named here
+#   (uwi, name, kind field, period_fields, keep). The object id is the feature's key; a feature
+#   without a position is listed in "unplaced". Layers above 50,000 features are refused.
 # segy-hull: x_byte/y_byte/scalar_byte (SEG-Y, 1-based) or x_field/y_field/scalar_field (MDIO).
 # publisher-file: GeoJSON, or the locn:geometry extent of a publisher's page.
 # simplify_m (default 50): Douglas-Peucker tolerance for derived polygons, recorded as
@@ -17,7 +22,7 @@
 #   the register serves without a position in the file's "unplaced" member instead of refusing.
 # period_fields {start, end} (E18): the service properties holding the feature's own dates, also
 #   named in params.propertyName; period_format the string form the service writes (iso, the
-#   default, or m/d/y for M/D/YYYY[ h:mm:ss AM|PM]); period_placeholders values that mean "no
+#   default, m/d/y for M/D/YYYY[ h:mm:ss AM|PM], or epoch-ms for an ArcGIS date field (E29)); period_placeholders values that mean "no
 #   date". An input without period_fields keeps its record's period on every Item. Field names
 #   confirmed on the live services 23 Oct 2026: docs/program/evidence/e18/fields.md.
 
@@ -101,3 +106,48 @@ nzpam/kerry-3d:
   min_features: 1
   inputs:
     survey-extent: {extractor: publisher-file, kind: survey-3d}
+
+sgudds/register-geotermalnych-vrtov:
+  min_features: 307   # 23 Oct 2026: 307 boreholes drawn, as the layer counted
+  inputs:
+    boreholes: {extractor: register-arcgis, kind: wellbore, name: technickeoznaceniezdroja}
+
+nzpam/petroleum-wells:
+  min_features: 1302   # 23 Oct 2026: 1302 wells drawn, as the layer counted
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: UWI, name: Title, period_fields: {"start": "Start_Date", "end": "End_Date"}, period_format: epoch-ms}
+
+nzpam/seismic-surveys-2d:
+  min_features: 990   # 23 Oct 2026: 990 lines drawn (959 of several paths), as the layer counted
+  inputs:
+    survey-lines: {extractor: register-arcgis, kind: survey-2d, name: Title, period_fields: {"start": "Start_Date", "end": "End_Date"}, period_format: epoch-ms}
+
+wa-demirs/petroleum-wells:
+  min_features: 4371   # 23 Oct 2026: 4371 wells drawn, as the layer counted
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: uwi, name: well_name, period_fields: {"start": "spud_date", "end": "rig_release_date"}, period_format: epoch-ms}
+
+va-energy/gas-oil-wells:
+  min_features: 8605   # 23 Oct 2026: 8605 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, name: FiNo}
+
+bcer/well-surface-holes-permitted:
+  min_features: 34431   # 23 Oct 2026: 34431 surface holes derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    surface-holes: {extractor: register-arcgis, kind: wellbore, name: WELL_NAME}
+
+sgc/banco-informacion-petrolera-pozos:
+  min_features: 25013   # 23 Oct 2026: 25013 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: UWI, name: WELL_NAME}
+
+ut-dogm/oil-gas-wells:
+  min_features: 40422   # 23 Oct 2026: 40422 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: API, name: WellName}
+
+nd-dmr/wells:
+  min_features: 44018   # 23 Oct 2026: 44018 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: api_no, name: well_name, period_fields: {"start": "spud_date"}, period_format: epoch-ms}

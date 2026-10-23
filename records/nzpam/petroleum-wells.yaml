@@ -23,4 +23,14 @@ listed_by: [publisher]
 known_issues:
   - "The copyright page says Crown copyright material on the website may be reproduced free of charge with the source acknowledged; it does not name the map services, and the service's licence field is empty."
   - "The layer includes mineral and coal boreholes as well as petroleum wells."
+inputs:
+  - name: wells
+    url: "https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/4"
+    format: arcgis
+    crs: "EPSG:2193"
+    stated: "Layer description (?f=json): spatialReference wkid 2193, latestWkid 2193 (NZGD2000 / New Zealand Transverse Mercator 2000); query pages state the same"
+period:
+  start: "1866-01-01"
+  end: "2026-09-30"
+  stated: "Publisher's own layer 4 (outStatistics, 23 Oct 2026 17:00 UTC): earliest Start_Date 1866-01-01T13:00Z, latest End_Date 2026-09-30; the service states no update schedule"
 added: 2026-10-23

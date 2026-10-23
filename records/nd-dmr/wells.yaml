@@ -27,4 +27,14 @@ known_issues:
   - "Only the well locations and headers are free; the other kinds are subscription products."
   - "The disclaimer disowns accuracy and states no licence."
   - "bbox is the State of North Dakota, approximate."
+inputs:
+  - name: wells
+    url: "https://gis.dmr.nd.gov/dmrpublicservices/rest/services/Wells/FeatureServer/0"
+    format: arcgis
+    crs: "EPSG:3857"
+    stated: "Layer description (?f=json): spatialReference wkid 102100, latestWkid 3857 (WGS 84 / Pseudo-Mercator; source data wkid 4269, served projected); query pages state the same"
+period:
+  start: "1922-04-07"
+  end: "2026-10-19"
+  stated: "Publisher's own layer 0 (outStatistics, 23 Oct 2026 17:00 UTC): spud_date from 1922-04-07 to 2026-10-19; the service states no update schedule"
 added: 2026-10-23

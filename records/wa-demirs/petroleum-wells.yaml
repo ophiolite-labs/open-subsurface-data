@@ -23,4 +23,10 @@ period:
   start: "1902"
   end: "2026-10-23"
   stated: "Earliest spud_date in the publisher's own SLIP ArcGIS layer 13 (DMIRS-025) is 1902-06-15; CKAN package states regular/daily updates; no start stated in prose"
+inputs:
+  - name: wells
+    url: "https://public-services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/Industry_and_Mining/MapServer/13"
+    format: arcgis
+    crs: "EPSG:7844"
+    stated: "Layer description (?f=json): spatialReference wkid 7844, latestWkid 7844 (GDA2020); query pages state the same"
 added: 2026-10-23

@@ -24,4 +24,10 @@ period:
   start: "1891"
   end: "2026-10-23"
   stated: "Earliest OrigComplDate in the publisher's own FeatureServer layer (outStatistics min) is 1891-12-26; SGID page states 'Last update · Nightly'; no start stated in prose"
+inputs:
+  - name: wells
+    url: "https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0"
+    format: arcgis
+    crs: "EPSG:3857"
+    stated: "Layer description (?f=json): spatialReference wkid 102100, latestWkid 3857 (WGS 84 / Pseudo-Mercator); query pages state the same"
 added: 2026-10-23

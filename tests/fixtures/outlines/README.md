@@ -13,6 +13,8 @@ Fetched 23 Oct 2026 from the publishers' own services. Each directory is laid ou
 | `nlog__nlog/surveys-3d` | `nlog:gdw_ng_smc_grid_utm`, `count=2`, `startIndex` 0, 2 | `page-000002` cut to 1 feature; `hits` 482 -> 3 |
 | `nopims__poseidon/full-stack-agc` | `s3://tgs-opendata-poseidon/full_stack_agc.mdio/`: `.zmetadata`, all four `trace_mask` chunks, the four corner `headers` chunks | none (the store holds 1080 header chunks; only those the hull needs are fetched) |
 | `nzpam__parihaka/survey-extent`, `nzpam__kerry-3d/survey-extent` | `https://geodata.nzpam.govt.nz/survey/<id>` | page cut to its `<title>` and the "Survey Extents in GeoJSON" table row |
+| `arcgis/layer.json`, `arcgis/features.json` | NZP&M `GeodataCatalogue_Layers/MapServer/4` `?f=json` and `query?outFields=OBJECTID,UWI,Title,Start_Date,End_Date,Type&orderByFields=OBJECTID ASC&resultRecordCount=5&f=json`, 23 Oct 2026 16:54 UTC | description cut to the members the adapter reads and those six fields, `maxRecordCount` 2000 -> 2 (so six features take three pages); a sixth feature, OBJECTID 151 with null geometry, is synthetic (a register entry without a position). `tests/test_outlines.py::arcgis_server` serves counts and pages from them as the service does (outFields, order, offset) |
+| `arcgis/geometries.json` | synthetic | Esri JSON geometries and the GeoJSON each must convert to (point, two-path polyline, polygon with a hole, two exteriors, multipoint, null, NaN) |
 | `segy/irregular.sgy` | synthetic, written by `segy/make_segy.py` | none: an irregular survey with a known exact hull and one dead trace |
 | `schema/*-1.schema.json` | `schema/record.schema.json` and `schema/outline.schema.json` at 37c010c | frozen version 1, for the still-validates tests |
 

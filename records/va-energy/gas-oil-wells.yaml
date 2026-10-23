@@ -21,4 +21,14 @@ listed_by: [publisher]
 known_issues:
   - "The layer and its export answered HTTP 500 several times on 23 Oct 2026 (16:11-16:12 UTC) before answering normally."
   - "bbox is the southwest Virginia gas counties, approximate."
+inputs:
+  - name: wells
+    url: "https://energy.virginia.gov/gis/rest/services/DGO/DGO_wells/MapServer/0"
+    format: arcgis
+    crs: "EPSG:2284"
+    stated: "Layer description (?f=json): spatialReference wkid 102747, latestWkid 2284 (NAD83 / Virginia South, US survey feet); query pages state the same"
+period:
+  start: "1894-01-01"
+  end: "2026-08-14"
+  stated: "Publisher's own layer 0 (outStatistics, 23 Oct 2026 17:00 UTC): drilling completion dates (FiDrComp) from 1894-01-01 to 2026-08-14; the service states no update schedule"
 added: 2026-10-23

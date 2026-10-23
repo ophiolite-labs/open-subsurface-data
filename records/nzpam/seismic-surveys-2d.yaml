@@ -23,4 +23,14 @@ known_issues:
   - "A survey line index (generalised navigation and survey attributes), not seismic traces; the nearest kind is seismic-2d. The traces are in the NZP&M geodata catalogue (RealMe login)."
   - "bbox is approximate (New Zealand and its offshore basins); some features cross the antimeridian."
   - "The copyright page does not name the map services; the service's licence field is empty."
+inputs:
+  - name: survey-lines
+    url: "https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/6"
+    format: arcgis
+    crs: "EPSG:2193"
+    stated: "Layer description (?f=json): spatialReference wkid 2193, latestWkid 2193 (NZGD2000 / New Zealand Transverse Mercator 2000); query pages state the same"
+period:
+  start: "1956-01-01"
+  end: "2021-07-05"
+  stated: "Publisher's own layer 6 (outStatistics, 23 Oct 2026 17:00 UTC): earliest Start_Date 1956-01-01T13:00Z, latest End_Date 2021-07-05; the service states no update schedule"
 added: 2026-10-23

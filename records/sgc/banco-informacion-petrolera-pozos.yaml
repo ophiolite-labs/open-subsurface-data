@@ -23,4 +23,10 @@ period:
   start: "2022-09-13"
   end: "2022-09-13"
   stated: "SGC open data hub DCAT-US feed entry for Banco de Información Petrolera: Pozos: issued 2022-09-13 (ArcGIS item created same timestamp)."
+inputs:
+  - name: wells
+    url: "https://services1.arcgis.com/Og2nrTKe5bptW02d/arcgis/rest/services/Banco_de_Informaci%C3%B3n_Petrolera_Pozos/FeatureServer/0"
+    format: arcgis
+    crs: "EPSG:3857"
+    stated: "Layer description (?f=json): spatialReference wkid 102100, latestWkid 3857 (WGS 84 / Pseudo-Mercator); query pages state the same"
 added: 2026-10-23
