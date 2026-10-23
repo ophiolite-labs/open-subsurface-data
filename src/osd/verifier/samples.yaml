@@ -25,8 +25,11 @@ boem/paleontologic-data: ["*/Paleo/Files/gepaldmp_all.zip"]   # page links three
 boem/well-data: ["*/Well/Files/5010delimit.zip"]   # page links 14 PDFs and 12 zips; the delimited Borehole file, 3,994,558 bytes (robots.txt has no group for *)
 calgem/wellstar-oil-and-gas-wells: ["*/ef53080fdf894761858dd1728610b9a0/csv?layers=0"]   # data.ca.gov entry page: the Hub CSV download (302 to hub.arcgis.com, text/csv attachment, Last-Modified 2 Jul 2026, no length)
 cgs/vrtna-prozkoumanost: ["*"]   # ArcGIS layer 1: one geojson export of at most 3000 of 746,789 features (kept as partial), 2,669,877 bytes
+cnloer/core-inventory: ["*/geoinfo/coreinv.xlsx"]   # geoscience page links seven xlsx inventories on www.cnlopb.ca; the core inventory, 172,001 bytes
 cnloer/data-information-hub: ["*/expdwts.xlsx"]   # page links spreadsheets; the exploration wells table, 146,789 bytes
+cnloer/geoscience-program-inventories: ["*/geoinfo/foageol.xlsx"]   # same page; the geological program inventory, 486,211 bytes
 cnloer/production-statistics: ["*/wp-content/uploads/off_prod-1.pdf"]   # page links ~300 PDFs; total offshore production, 377,030 bytes
+cnloer/source-rock-inventory: ["*/geoinfo/foasourcerock.xlsx"]   # same page; the source rock inventory, 469,933 bytes
 cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
 cpc/onshore-well-locations: {file: true, sample: ["*"]}   # the bare CSV of six onshore wells, under 1 KB (data.gov.tw); content type not read (www3.cpc.com.tw timed out 23 Oct)
 dov/boringen: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=Boringen.json), first 1,000 of 188,507 features, 1,099,736 bytes

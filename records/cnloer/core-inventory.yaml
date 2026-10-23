@@ -1,0 +1,27 @@
+id: cnloer/core-inventory
+title: Core Inventory (Canada-Newfoundland and Labrador offshore area)
+summary: >-
+  C-NLOER's inventory of conventional cores from offshore Newfoundland and Labrador wells, one row
+  per core: well number and name, core number, number of boxes, start and end of core, cut, recovery
+  and percent recovery. The cores are held at the regulator's Core Storage and Research Centre.
+publisher: {name: Canada-Newfoundland and Labrador Offshore Energy Regulator (C-NLOER), url: https://www.cnloer.ca, country: CA}
+origin:
+  url: https://www.cnloer.ca/geoscience/
+  access: anonymous
+  manifest_url: https://www.cnloer.ca/geoscience/
+  notes: "The Geoscience Information list on the page links coreinv.xlsx on the former www.cnlopb.ca host (172,001 bytes, Last-Modified 16 Apr 2025, read on 23 Oct 2026; one sheet, 486 rows). Requests for more information go to information@cnlopb.ca; the Core Storage and Research Centre page is https://www.cnloer.ca/about/csrc/."
+licence:
+  name: C-NLOER website copyright notice
+  spdx: null
+  url: https://www.cnloer.ca/disclaimer/
+  redistribution: forbidden
+  attribution: unknown
+kinds: [core]
+region: {country: CA, basin: Newfoundland and Labrador offshore}
+listed_by: [publisher]
+known_issues:
+  - "Copyright: 'Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications.' 'Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited.'"
+  - "The page says 'This information can now be found on the Data and Information Hub' (https://home-cnlopb.hub.arcgis.com/); the hub's search API listed no items on 23 Oct 2026."
+  - "No bbox: the inventory lists wells, not an extent."
+  - "No period: the page and file state no dates for the cores."
+added: 2026-10-23
