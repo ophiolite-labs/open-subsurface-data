@@ -330,3 +330,113 @@ def test_unquoted_yaml_period_reads_as_strings(tmp_records):
     p.write_text(p.read_text() + "period: {start: 1993, end: 1994-06-30, stated: acquired 1993-94}\n")
     assert load_record(p)["period"] == {"start": "1993", "end": "1994-06-30", "stated": "acquired 1993-94"}
     assert validate_records(tmp_records) == []
+
+
+# --- E18: Items carry their own dates ------------------------------------------------------------
+
+def _dated_catalog(tmp_path):
+    """The fixture register (tests/fixtures/outlines/dates, collection period 1990-2000) built."""
+    from test_outlines import DATED_REC, dated_register
+
+    from osd.outlines import write_outline
+    od = tmp_path / "outlines"
+    od.mkdir()
+    write_outline(dated_register(tmp_path), od / "fixture__dated-register.geojson")
+    rec = _record(DATED_REC["id"], period=DATED_REC["period"])
+    catalog = tmp_path / "catalog"
+    stac.write_catalog(catalog, [rec], vdir=tmp_path, outlines_dir=od)
+    return catalog / "stac" / "catalog.json"
+
+
+COLLECTION_1990_2000 = ("1990-01-01T00:00:00Z", "2000-12-31T23:59:59Z")
+
+
+@pytest.mark.parametrize("local, start, end, source", [
+    ("dated", "1993-06-01T00:00:00Z", "1994-02-28T23:59:59Z", "feature"),
+    ("timestamp-utc", "1992-07-08T10:11:12Z", "1992-07-09T01:02:03Z", "feature"),
+    ("timestamp-zoned", "1992-07-08T08:11:12Z", "1992-07-08T23:00:00Z", "feature"),
+    ("undated", *COLLECTION_1990_2000, "collection"),
+    ("placeholder", *COLLECTION_1990_2000, "collection"),
+    ("reversed", *COLLECTION_1990_2000, "collection"),
+    ("open-end", "1998-03-04T00:00:00Z", "2000-12-31T23:59:59Z", "feature-start,collection-end"),
+    ("late-start", *COLLECTION_1990_2000, "collection"),
+    ("malformed", *COLLECTION_1990_2000, "collection"),
+], ids=lambda x: x if isinstance(x, str) and "T" not in x else "")
+def test_fixture_register_item_periods(tmp_path, local, start, end, source):
+    catalog = _dated_catalog(tmp_path)
+    p = _items(catalog)[f"fixture/dated-register#{local}"]["properties"]
+    assert (p["start_datetime"], p["end_datetime"], p["osd:period_source"]) == (start, end, source)
+    col = json.loads((catalog.parent / "fixture--dated-register" / "collection.json").read_text())
+    assert col["extent"]["temporal"]["interval"] == [list(COLLECTION_1990_2000)]   # the record's period
+
+
+def test_fixture_items_lie_inside_their_collection_and_validate(tmp_path, no_network):
+    catalog = _dated_catalog(tmp_path)
+    assert len(_items(catalog)) == 9
+    assert stac.containment_problems(catalog.parent) == []
+    ok, messages = stac.validate(catalog, recursive=True)
+    assert ok, messages
+
+
+def test_item_outside_its_collection_fails_validation(tmp_path, no_network):
+    rec = _record("acme/dated", period={"start": "1990", "end": "2000"})
+    od = tmp_path / "outlines"
+    _outlines(od, "acme/dated", ["early", "inside"])
+    p = od / "acme__dated.geojson"
+    fc = json.loads(p.read_text())
+    fc["features"][0]["properties"].update({"osd:period_start": "1985-01-01T00:00:00Z",
+                                            "osd:period_end": "1986-01-01T23:59:59Z"})
+    p.write_text(json.dumps(fc))
+    stac.write_catalog(tmp_path / "catalog", [rec], vdir=tmp_path, outlines_dir=od)
+    root = tmp_path / "catalog" / "stac"
+    [problem] = stac.containment_problems(root)
+    assert "acme/dated#early" in problem
+    ok, messages = stac.validate(root / "catalog.json", recursive=True)
+    assert not ok and any("acme/dated#early" in str(m) for m in messages)
+
+
+def test_every_item_states_its_period_source(staged):
+    """The published tree: every Item says where its interval comes from."""
+    from collections import Counter
+    seen = Counter()
+    for col in sorted((staged / "stac").glob("*/collection.json")):
+        for it in item_sample(col.parent):
+            seen[json.loads(it.read_text())["properties"]["osd:period_source"]] += 1
+    assert seen and set(seen) <= {"feature", "feature-start,collection-end", "collection"}
+
+
+def _osd_doc(tmp_path, url, **item_fields):
+    _, cols = _write(tmp_path, [_record("acme/demo", level="L1")], {})
+    col = dict(cols[0], links=[], stac_extensions=[url])
+    item = {"type": "Feature", "stac_version": "1.0.0", "stac_extensions": [url], "id": "acme/demo#a",
+            "geometry": {"type": "Point", "coordinates": [4.5, 54.5]}, "bbox": [4.5, 54.5, 4.5, 54.5],
+            "links": [], "assets": {},
+            "properties": {"datetime": None, "start_datetime": "1990-01-01T00:00:00Z",
+                           "end_datetime": "2000-12-31T23:59:59Z", "osd:approximate": False,
+                           "osd:derivation": "fixture", **item_fields}}
+    return col, item
+
+
+V1_URL = "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"
+
+
+def test_stac_osd_1_documents_validate_under_their_frozen_schema(tmp_path, no_network):
+    """OSD-D19: the map carries the frozen v1 and the current file; a v1 document (no
+    osd:period_source) validates under its own schema and under the current one."""
+    m = json.loads(stac.SCHEMA_MAP.read_text())["schemas"]
+    assert (stac.SCHEMA_MAP.parent / m[V1_URL]).resolve() == (ROOT / "tests/fixtures/schema/stac-osd-1.json").resolve()
+    assert (stac.SCHEMA_MAP.parent / m[stac.OSD_EXTENSION]).resolve() == (ROOT / "schema/stac-osd.json").resolve()
+    current = json.loads((ROOT / "schema/stac-osd.json").read_text())
+    assert current["$id"] == stac.OSD_EXTENSION and stac.OSD_EXTENSION.startswith(V1_URL + "?v=")
+    cur = Draft202012Validator(current)
+    for url in (V1_URL, stac.OSD_EXTENSION):
+        col, item = _osd_doc(tmp_path, url)
+        assert _valid(col, tmp_path) and _valid(item, tmp_path), url
+        assert not list(cur.iter_errors(col)) and not list(cur.iter_errors(item)), url
+    col, item = _osd_doc(tmp_path, V1_URL, **{"osd:period_source": "feature"})
+    assert not _valid(item, tmp_path)   # v1 knows no period_source
+    for good in ("feature", "feature-start,collection-end", "collection"):
+        _, item = _osd_doc(tmp_path, stac.OSD_EXTENSION, **{"osd:period_source": good})
+        assert _valid(item, tmp_path), good
+    _, item = _osd_doc(tmp_path, stac.OSD_EXTENSION, **{"osd:period_source": "record"})
+    assert not _valid(item, tmp_path)   # closed enum

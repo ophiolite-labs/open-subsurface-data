@@ -1,0 +1,145 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "dated",
+    "WELL_NAME": "DATED",
+    "START": "1993-06-01",
+    "END": "1994-02-28"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.0,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "undated",
+    "WELL_NAME": "UNDATED"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.1,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "placeholder",
+    "WELL_NAME": "PLACEHOLDER",
+    "START": "1900-01-01",
+    "END": "1995-01-01"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.2,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "reversed",
+    "WELL_NAME": "REVERSED",
+    "START": "1996-05-01",
+    "END": "1995-01-01"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.3,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "open-end",
+    "WELL_NAME": "OPEN-END",
+    "START": "1998-03-04"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.4,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "late-start",
+    "WELL_NAME": "LATE-START",
+    "START": "2001-02-03"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.5,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "malformed",
+    "WELL_NAME": "MALFORMED",
+    "START": "sometime in 1993",
+    "END": "1994-01-01"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.6,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "timestamp-utc",
+    "WELL_NAME": "TIMESTAMP-UTC",
+    "START": "1992-07-08T10:11:12",
+    "END": "1992-07-09T01:02:03"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.7,
+     54.5
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "WELL_ID": "timestamp-zoned",
+    "WELL_NAME": "TIMESTAMP-ZONED",
+    "START": "1992-07-08T10:11:12+02:00",
+    "END": "1992-07-08T23:00:00Z"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     4.8,
+     54.5
+    ]
+   }
+  }
+ ]
+}

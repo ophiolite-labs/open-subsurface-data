@@ -573,3 +573,139 @@ def test_outline_inputs_check_the_committed_file_and_outlines_rewrite_it(tmp_pat
     [v] = verify_all(derive=True, **kw)
     assert len(json.loads(committed.read_text())["features"]) == 8
     assert outcome(v, "outline-derived")["outcome"] == "pass"
+
+
+# --- E18: the dates a register states for each feature --------------------------------------
+
+DATED_REC = {"id": "fixture/dated-register", "licence": {"name": "Some licence"},
+             "inputs": [{"name": "wells", "url": "https://fixture.test/wfs?typeNames=wells", "format": "wfs",
+                         "crs": "EPSG:4326"}],
+             "period": {"start": "1990", "end": "2000"}}
+DATED_RULES = {"fixture/dated-register": {"min_features": 1, "inputs": {"wells": {
+    "extractor": "register-wfs", "kind": "wellbore", "id": "WELL_ID", "name": "WELL_NAME", "page_size": 1000,
+    "period_fields": {"start": "START", "end": "END"}, "period_placeholders": ["1900-01-01"],
+    "params": {"propertyName": "WELL_ID,WELL_NAME,START,END,SHAPE"}}}}}
+
+
+def dated_register(tmp_path) -> dict:
+    """The fixture register derived as osd verify --outlines would (tests/fixtures/outlines/dates)."""
+    inputs = stage(tmp_path, DATED_REC["id"], "wells", FIX / "dates" / "wells")
+    return derive(DATED_REC, DATED_RULES, inputs)
+
+
+def _by_local(fc) -> dict:
+    return {f["properties"]["feature_id"].split("#", 1)[1]: f["properties"] for f in fc["features"]}
+
+
+PERIOD_MEMBERS = ("osd:period_start_raw", "osd:period_end_raw", "osd:period_start", "osd:period_end")
+
+
+def test_fixture_register_outline_period_members(tmp_path):
+    fc = dated_register(tmp_path)
+    got = {k: {m: p[m] for m in PERIOD_MEMBERS if m in p} for k, p in _by_local(fc).items()}
+    assert got == {
+        "dated": {"osd:period_start_raw": "1993-06-01", "osd:period_end_raw": "1994-02-28",
+                  "osd:period_start": "1993-06-01T00:00:00Z", "osd:period_end": "1994-02-28T23:59:59Z"},
+        "undated": {},
+        "placeholder": {"osd:period_start_raw": "1900-01-01", "osd:period_end_raw": "1995-01-01",
+                        "osd:period_end": "1995-01-01T23:59:59Z"},
+        "reversed": {"osd:period_start_raw": "1996-05-01", "osd:period_end_raw": "1995-01-01",
+                     "osd:period_start": "1996-05-01T00:00:00Z", "osd:period_end": "1995-01-01T23:59:59Z"},
+        "open-end": {"osd:period_start_raw": "1998-03-04", "osd:period_start": "1998-03-04T00:00:00Z"},
+        "late-start": {"osd:period_start_raw": "2001-02-03", "osd:period_start": "2001-02-03T00:00:00Z"},
+        "malformed": {"osd:period_start_raw": "sometime in 1993", "osd:period_end_raw": "1994-01-01",
+                      "osd:period_end": "1994-01-01T23:59:59Z"},
+        "timestamp-utc": {"osd:period_start_raw": "1992-07-08T10:11:12", "osd:period_end_raw": "1992-07-09T01:02:03",
+                          "osd:period_start": "1992-07-08T10:11:12Z", "osd:period_end": "1992-07-09T01:02:03Z"},
+        "timestamp-zoned": {"osd:period_start_raw": "1992-07-08T10:11:12+02:00",
+                            "osd:period_end_raw": "1992-07-08T23:00:00Z",
+                            "osd:period_start": "1992-07-08T08:11:12Z", "osd:period_end": "1992-07-08T23:00:00Z"},
+    }
+    assert fc["inputs"]["wells"]["period_fields"] == {"start": "START", "end": "END"}
+    assert not validate_outline_3(fc)
+
+
+def test_placeholder_is_kept_raw_not_normalised(tmp_path):
+    p = _by_local(dated_register(tmp_path))["placeholder"]
+    assert p["osd:period_start_raw"] == "1900-01-01" and "osd:period_start" not in p
+    rules = copy.deepcopy(DATED_RULES)
+    rules[DATED_REC["id"]]["inputs"]["wells"]["period_placeholders"] = []
+    inputs = stage(tmp_path / "again", DATED_REC["id"], "wells", FIX / "dates" / "wells")
+    assert _by_local(derive(DATED_REC, rules, inputs))["placeholder"]["osd:period_start"] == "1900-01-01T00:00:00Z"
+
+
+@pytest.mark.parametrize("raw, bound, form, want", [
+    ("1993-06-01", "start", "iso", "1993-06-01T00:00:00Z"),
+    ("1993-06-01", "end", "iso", "1993-06-01T23:59:59Z"),
+    ("1992-07-08T10:11:12", "start", "iso", "1992-07-08T10:11:12Z"),
+    ("1992-07-08T10:11:12", "end", "iso", "1992-07-08T10:11:12Z"),
+    ("1992-07-08T10:11:12.5Z", "start", "iso", "1992-07-08T10:11:12Z"),
+    ("1992-07-08T00:30:00+02:00", "start", "iso", "1992-07-07T22:30:00Z"),
+    ("2/15/1983", "start", "m/d/y", "1983-02-15T00:00:00Z"),
+    ("5/8/1983", "end", "m/d/y", "1983-05-08T23:59:59Z"),
+    ("5/1/2021 2:19:33 PM", "start", "m/d/y", "2021-05-01T14:19:33Z"),
+    ("6/3/2021 12:07:27 AM", "end", "m/d/y", "2021-06-03T00:07:27Z"),
+    ("2/15/1983", "start", "iso", None),
+    ("1983-02-15", "start", "m/d/y", None),
+    ("1993", "start", "iso", None),
+    ("1993-02-30", "start", "iso", None),
+    ("13/1/1993", "start", "m/d/y", None),
+    ("sometime in 1993", "start", "iso", None),
+    ("", "start", "iso", None),
+], ids=lambda x: str(x))
+def test_normalise_period_values(raw, bound, form, want):
+    from osd.outlines.extractors import period_instant
+    assert period_instant(raw, bound, form) == want
+
+
+def test_wfs_requests_carry_the_period_fields():
+    """Each register input with dates asks the service for them: the request's propertyName
+    names both fields, so the bytes stored and hashed hold the dates the outline carries."""
+    from urllib.parse import parse_qs, urlsplit
+
+    from osd.outlines import fetch_parts
+    dated = {(rid, n) for rid, r in RULES.items() if rid != "defaults"
+             for n, i in r["inputs"].items() if i.get("period_fields")}
+    assert dated == {("sodir/factpages", "wellbores"), ("sodir/factpages", "seismic-finished"),
+                     ("sodir/factpages", "seismic-ongoing"), ("sodir/factpages", "seismic-paused"),
+                     ("nlog/nlog", "boreholes")}
+    robots = type("R", (), {"allowed": staticmethod(lambda u: True)})()
+    for rid, name in sorted(dated):
+        rule = RULES[rid]["inputs"][name]
+        [rec_input] = [i for i in RECS[rid]["inputs"] if i["name"] == name]
+        calls = []
+        fetch_parts(rec_input, rule, wfs_opener(FIX / "dates" / "wells", calls), robots)
+        pages = [c for c in calls if "startIndex=" in c]
+        assert pages, (rid, name)
+        for c in pages:
+            asked = parse_qs(urlsplit(c).query)["propertyName"][0].split(",")
+            assert {rule["period_fields"]["start"], rule["period_fields"]["end"]} <= set(asked), (rid, name, asked)
+    for rid, name in [("nlog/nlog", "surveys-3d")]:   # the layer states only DATE_RELEASE (evidence/e18)
+        assert "period_fields" not in RULES[rid]["inputs"][name]
+
+
+def validate_outline_3(fc) -> list:
+    schema = json.loads((paths.SCHEMA_DIR / "outline.schema.json").read_text())
+    v, vc = Draft202012Validator(schema, format_checker=FormatChecker()), Draft202012Validator(
+        schema["$defs"]["collection"], format_checker=FormatChecker())
+    errs = list(vc.iter_errors({k: x for k, x in fc.items() if k not in ("type", "features")}))
+    return errs + [e for f in fc["features"] for e in v.iter_errors(f["properties"])]
+
+
+def test_outline_2_files_validate_under_outline_2_and_3(tmp_path):
+    v2 = json.loads((FIX / "schema" / "outline-2.schema.json").read_text())
+    assert v2["$id"].endswith("/outline/2")
+    assert json.loads((paths.SCHEMA_DIR / "outline.schema.json").read_text())["$id"].endswith("/outline/3")
+    p2, c2 = Draft202012Validator(v2), Draft202012Validator(v2["$defs"]["collection"])
+    files = sorted((FIX / "outline-2").glob("*.geojson"))
+    assert len(files) == 2
+    for p in files:
+        fc = json.loads(p.read_text())
+        assert not list(c2.iter_errors({k: x for k, x in fc.items() if k not in ("type", "features")})), p
+        assert not [e for f in fc["features"] for e in p2.iter_errors(f["properties"])], p
+        assert not validate_outline_3(fc), p
+    new = dated_register(tmp_path)   # an outline/3 file names its date fields: outline/2 refuses it
+    assert list(c2.iter_errors({"inputs": new["inputs"]}))
+    bad = copy.deepcopy(new)
+    bad["features"][0]["properties"]["osd:period_start"] = "1993-06-01"
+    assert validate_outline_3(bad)
