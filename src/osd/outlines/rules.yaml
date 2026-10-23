@@ -146,3 +146,8 @@ ut-dogm/oil-gas-wells:
   min_features: 40422   # 23 Oct 2026: 40422 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
   inputs:
     wells: {extractor: register-arcgis, kind: wellbore, uwi: API, name: WellName}
+
+nd-dmr/wells:
+  min_features: 44018   # 23 Oct 2026: 44018 wells derived and reviewed, as the layer counted; outline not committed (gate budget, E29 strategy)
+  inputs:
+    wells: {extractor: register-arcgis, kind: wellbore, uwi: api_no, name: well_name, period_fields: {"start": "spud_date"}, period_format: epoch-ms}
