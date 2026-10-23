@@ -8,6 +8,9 @@ Copies of the JSON schemas `stac-validator` needs to validate `build/catalog/sta
 - GeoJSON `Feature` and `Geometry`, `geojson.org/schema` (referenced by the item schema)
 - JSON Schema draft-07 meta-schema, `json-schema.org`
 - File extension v2.1.0, `stac-extensions.github.io/file` (Apache-2.0)
+- Alternate Assets extension v1.2.0, `stac-extensions.github.io/alternate-assets` (Apache-2.0),
+  fetched 23 Oct 2026 for E07 (the mirror as an asset's alternate location); it references only
+  the item `basics.json` already bundled
 
 To add an extension: fetch its schema and every schema it references, add each URL to
 `schema-map.json`, and keep the offline test in `tests/test_stac.py` green.

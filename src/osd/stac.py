@@ -29,6 +29,8 @@ STAC_VERSION = "1.0.0"
 OSD_EXTENSION = ("https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/"
                  "schema/stac-osd.json")
 FILE_EXTENSION = "https://stac-extensions.github.io/file/v2.1.0/schema.json"
+ALTERNATE_EXTENSION = "https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json"
+MIRROR_TITLE = "Open Subsurface Data mirror"
 SCHEMA_MAP = paths.SCHEMA_DIR / "stac" / "schema-map.json"
 WORLD = [-180.0, -90.0, 180.0, 90.0]
 
@@ -87,14 +89,17 @@ def _union(boxes: list[list[float]]) -> list[float] | None:
             max(b[2] for b in boxes), max(b[3] for b in boxes)]
 
 
-def _assets(verification: dict | None) -> dict:
+def _assets(verification: dict | None, mirrored: dict[str, str] | None = None) -> dict:
     """E02's checksummed files that carry a fetch address; collection-level, since which Item a
-    file belongs to is not established."""
+    file belongs to is not established. A file the mirror holds (E07, by sha256) keeps one logical
+    asset and one checksum and gains the mirror as an alternate location."""
     out = {}
     for f in (verification or {}).get("files", []):
         if f.get("url"):
             out[f["path"]] = {"href": f["url"], "title": f["path"], "roles": ["data"],
                               "file:size": f["bytes"], "file:checksum": "1220" + f["sha256"]}
+            if f["sha256"] in (mirrored or {}):
+                out[f["path"]]["alternate"] = {"mirror": {"href": mirrored[f["sha256"]], "title": MIRROR_TITLE}}
     return out
 
 
@@ -117,9 +122,10 @@ def _item(rec: dict, cid: str, feature: dict, inputs: dict, when: list) -> dict:
 
 
 def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFICATION_DIR,
-                  outlines_dir: Path = paths.OUTLINES_DIR) -> list[dict]:
+                  outlines_dir: Path = paths.OUTLINES_DIR, mirror_index: list[dict] | None = None) -> list[dict]:
     """Write out_dir/stac/ from the joined records (record fields plus level, checked_at,
-    blocked_since as build() joins them) and return the Collections. A duplicate feature_id
+    blocked_since as build() joins them) and return the Collections. `mirror_index` is the public
+    index of copies the mirror holds (osd.mirror.public_index). A duplicate feature_id
     anywhere in the outlines fails the build: it is the key Items and the map share."""
     root = out_dir / "stac"
     shutil.rmtree(root, ignore_errors=True)
@@ -148,14 +154,17 @@ def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFIC
                 raise ValueError(f"{rid}: item file {n} for both '{names[n]}' and '{it['id']}'")
             names[n] = it["id"]
         vp = vdir / (rid.replace("/", "__") + ".json")
-        assets = _assets(json.loads(vp.read_text()) if vp.exists() else None)
+        mirrored = {c["sha256"]: c["href"] for c in mirror_index or [] if c["record_id"] == rid}
+        assets = _assets(json.loads(vp.read_text()) if vp.exists() else None, mirrored)
+        alternate = any("alternate" in a for a in assets.values())
         lic = rec["licence"]
         spatial = (rec.get("region", {}).get("bbox")
                    or _union([bbox(f["geometry"]) for f in fc["features"] if f.get("geometry")])
                    or WORLD)
         col = {
             "type": "Collection", "stac_version": STAC_VERSION,
-            "stac_extensions": [OSD_EXTENSION] + ([FILE_EXTENSION] if assets else []),
+            "stac_extensions": [OSD_EXTENSION] + ([FILE_EXTENSION] if assets else [])
+                               + ([ALTERNATE_EXTENSION] if alternate else []),
             "id": cid, "title": rec["title"], "description": rec.get("summary") or rec["title"],
             "license": lic.get("spdx") or "other",
             "keywords": rec["kinds"],

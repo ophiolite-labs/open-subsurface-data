@@ -1,18 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/manifest/1",
-  "title": "Retrieval manifest, version 1 (osd.manifest/1)",
-  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials.",
+  "$id": "https://open-subsurface-data.org/schema/manifest/2",
+  "title": "Retrieval manifest, version 2 (osd.manifest/2; osd.manifest/1 still validates)",
+  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials. v2 (E07): an asset may name `alternates`, other locations of the same bytes (the mirror), tried before `href`; a manifest with alternates says osd.manifest/2, one without may stay osd.manifest/1.",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "created", "catalog_url", "selection", "entries"],
   "properties": {
-    "format": {"const": "osd.manifest/1"},
+    "format": {"enum": ["osd.manifest/1", "osd.manifest/2"]},
     "created": {"type": "string", "format": "date-time"},
     "catalog_url": {"type": "string", "format": "uri", "description": "The STAC root the ids resolve against"},
     "selection": {"enum": ["collections", "items"], "description": "Collection selection or Item selection, never a mix"},
     "entries": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/entry"}}
   },
+  "if": {"properties": {"format": {"const": "osd.manifest/1"}}},
+  "then": {"properties": {"entries": {"items": {"properties": {"assets": {
+    "additionalProperties": {"not": {"required": ["alternates"]}}}}}}}},
   "$defs": {
     "href": {
       "type": "string",
@@ -28,7 +31,11 @@
         "roles": {"type": "array", "items": {"type": "string"}},
         "file:size": {"type": "integer", "minimum": 0},
         "file:checksum": {"type": "string", "pattern": "^([0-9a-f]{2})+$", "minLength": 6,
-                          "description": "Multihash as the STAC File extension states it; osd get accepts sha2-256 (1220…) only and refuses others loudly"}
+                          "description": "Multihash as the STAC File extension states it; osd get accepts sha2-256 (1220…) only and refuses others loudly"},
+        "alternates": {"type": "object", "minProperties": 1,
+                       "description": "v2. Name (\"mirror\") to another location of the same bytes, from the STAC Alternate Assets extension; the checksum above covers every location",
+                       "additionalProperties": {"type": "object", "additionalProperties": false, "required": ["href"],
+                                                "properties": {"href": {"$ref": "#/$defs/href"}, "title": {"type": "string"}}}}
       }
     },
     "licence": {

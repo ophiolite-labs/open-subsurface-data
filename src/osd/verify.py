@@ -316,7 +316,8 @@ class _Robots:
 
 
 def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str]]:
-    return yaml.safe_load(path.read_text()) or {}
+    """Sample globs by record id; the `mirror:` section is the mirror's (osd.mirror.load_rules)."""
+    return {k: v for k, v in (yaml.safe_load(path.read_text()) or {}).items() if k != "mirror"}
 
 
 def check_files(rec: dict, sample: list[str] | None, opener: Opener, budget: ByteBudget) -> tuple[dict, list[dict]]:
@@ -443,7 +444,7 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
                   opener: Opener | None = None, previous: dict | None = None,
                   budget: ByteBudget | None = None, sample: list[str] | None = None,
                   outline_rule: dict | None = None, stored: dict[str, str] | None = None,
-                  refused: str | None = None) -> dict:
+                  refused: str | None = None, mirror_rule: list[str] | None = None) -> dict:
     checks: list[dict] = []
     extra: dict = {}
 
@@ -465,8 +466,15 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
         checks.append({"name": "files-checksummed", "level": "L2", "outcome": "skip", "detail": why})
         checks.append({"name": "licence-text-captured", "level": "L2", "outcome": "skip", "detail": why})
     else:
-        c, files = check_files(rec, sample, opener, budget or ByteBudget())
+        budget = budget or ByteBudget()   # the sample and the inventory share one run budget
+        c, files = check_files(rec, sample, opener, budget)
         checks.append(c)
+        if mirror_rule:   # E07: hash every entry the record's mirror rule selects (the inventory)
+            from .mirror import inventory
+            more, inv = inventory(rec, mirror_rule, opener, budget, known=files)
+            if inv:
+                files = files + [f for f in more if f["url"] not in {x["url"] for x in files}]
+                extra["inventory"] = inv
         if files:
             extra["files"] = files
         c, sha, text = check_licence(rec, opener, previous)
@@ -527,6 +535,8 @@ def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opene
         fetch, opener = paced(http_fetch, http_open, Pacer())
     recs = load_records()
     samples = load_samples()
+    from .mirror import load_rules
+    mirror_rules = load_rules()
     rules = outlines.load_rules()
     out_dir.mkdir(parents=True, exist_ok=True)
     budget = budget or ByteBudget()
@@ -543,7 +553,8 @@ def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opene
         previous = json.loads(out.read_text()) if out.exists() else None
         v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
                           sample=samples.get(rid), outline_rule=rules.get(rid),
-                          stored=outlines.stored_inputs(rid, inputs_dir), refused=refused)
+                          stored=outlines.stored_inputs(rid, inputs_dir), refused=refused,
+                          mirror_rule=mirror_rules.get(rid))
         _validator().validate(v)  # never write a record the schema refuses
         out.write_text(json.dumps(v, indent=2) + "\n")
         results.append(v)

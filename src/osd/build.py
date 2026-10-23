@@ -9,6 +9,8 @@ Outputs (build/catalog/):
   stac/            the static STAC catalogue (src/osd/stac.py)
   collections.json {"collections": [...]}, the same STAC Collections in one file
   outlines.pmtiles the same features as vector tiles, z0-12, when tippecanoe is installed (E15)
+  mirror.json     {"copies": [...]}, the public index of what the mirror holds, regenerated from the
+                   custody documents in <mirror_dir>/custody/ (E07); STAC assets gain the alternates
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from . import __version__, paths, stac
+from . import __version__, mirror, paths, stac
 from .records import load_outline, load_records
 from .verify import is_stale
 
@@ -28,7 +30,7 @@ def latest_verification(rid: str, vdir: Path = paths.VERIFICATION_DIR) -> dict |
 
 
 def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
-          now: datetime | None = None) -> dict:
+          now: datetime | None = None, mirror_dir: Path = mirror.MIRROR_DIR) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     recs = load_records()
     records_out = []
@@ -55,7 +57,9 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         {"tool_version": __version__, "count": len(records_out), "records": records_out}, indent=2) + "\n")
     (out_dir / "outlines.geojson").write_text(json.dumps(
         {"type": "FeatureCollection", "features": features}) + "\n")
-    collections = stac.write_catalog(out_dir, records_out, vdir)
+    index = mirror.public_index(mirror_dir / "custody")
+    (out_dir / "mirror.json").write_text(json.dumps({"copies": index}, indent=2) + "\n")
+    collections = stac.write_catalog(out_dir, records_out, vdir, mirror_index=index)
     (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
     write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
     return {"records": len(records_out), "features": len(features), "collections": len(collections)}

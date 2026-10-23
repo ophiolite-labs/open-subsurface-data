@@ -23,8 +23,9 @@ osd mirror remove <sha> --request <issue> --approved-by <login> ─▶ objects d
 - **Inventory.** `mirror.inventory(rec, rule, opener)` reads the listing with the verifier's parser,
   selects every entry the rule matches, hashes each, and returns `files[]` plus
   `inventory: {rule, listed, selected[], coverage}`. `coverage` is `complete` only when every selected
-  entry was hashed. The verifier does not call it yet (`verify.py` and verification/3 are outside
-  this claim; inbox item 1), so eligibility over the real verifications reports "no inventory".
+  entry was hashed. `verify_record` calls it for records with a `mirror:` rule (Norne only, ruled
+  23 Oct), sharing the run's 2 GB budget, and writes verification/3 (`inventory`; /2 still reads).
+  Real verifications written before this merge carry no inventory: "no inventory" until the next run.
 - **Eligibility** fails on its own, with a named reason, for each of: redistribution not `allowed`; no
   `mirror:` rule; no inventory or an inventory made under another rule; an inventory entry absent
   from `files[]` (unhashed), without bytes, or without sha256; declared `size.bytes_estimate` ≥ 20 GB
@@ -67,6 +68,8 @@ osd mirror remove <sha> --request <issue> --approved-by <login> ─▶ objects d
 | manifest/1 fixtures still read; /2 carries alternates; /1 with alternates refused | `test_manifest_v1_still_reads`, `test_manifest_v2_alternates`, `test_manifest_v1_refuses_alternates` |
 | STAC with alternate validates offline | `test_stac_alternate_validates_offline` |
 | `mirror:` rules name real, allowed records with a listing | `test_mirror_rules_name_real_records` |
+| the verifier writes the inventory within the run budget; verification/2 still validates | `test_verifier_writes_complete_inventory`, `test_inventory_counts_against_the_run_budget`, `test_verification_2_still_validates` |
+| no public copy without a valid custody document; interrupted takedown | `test_no_public_copy_without_a_valid_custody_document`, `test_interrupted_takedown_already_drops_the_copy_and_reruns` |
 
 ## Guards and their mutations (each shown red against the unchanged suite, then restored)
 

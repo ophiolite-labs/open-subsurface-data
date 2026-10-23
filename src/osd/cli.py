@@ -1,4 +1,4 @@
-"""osd: validate | verify | build | status | new | report | manifest | get"""
+"""osd: validate | verify | build | status | new | report | manifest | get | mirror"""
 
 from __future__ import annotations
 
@@ -11,11 +11,12 @@ from pathlib import Path
 from . import build as build_mod
 from . import get as get_mod
 from . import manifest as manifest_mod
+from . import mirror as mirror_mod
 from . import new as new_mod
 from . import paths
 from . import report as report_mod
 from .records import load_records, validate_outlines, validate_records
-from .verify import is_stale, verify_all
+from .verify import http_open, is_stale, verify_all
 
 
 def cmd_validate(_: argparse.Namespace) -> int:
@@ -115,6 +116,52 @@ def cmd_get(a: argparse.Namespace) -> int:
     return 1 if get_mod.failed(outcomes) else 0
 
 
+def cmd_mirror_eligible(a: argparse.Namespace) -> int:
+    rules, n, total = mirror_mod.load_rules(), 0, 0
+    for rid, rec in load_records().items():
+        if a.ids and rid not in a.ids:
+            continue
+        e = mirror_mod.eligibility(rec, build_mod.latest_verification(rid, Path(a.vdir)), rules.get(rid))
+        n, total = n + e.eligible, total + (e.bytes if e.eligible else 0)
+        why = f"{len(e.files)} files, {e.bytes} bytes" if e.eligible else "; ".join(e.reasons)
+        print(f"  {'eligible' if e.eligible else 'no':8} {rid:40} {why}")
+    print(f"{n} eligible, {total} bytes of inventory")
+    return 0
+
+
+def _store(a: argparse.Namespace) -> mirror_mod.LocalDirectory:
+    return mirror_mod.LocalDirectory(Path(a.store), a.public_url)
+
+
+def cmd_mirror_put(a: argparse.Namespace, opener=http_open) -> int:
+    recs, rules, store, bad = load_records(), mirror_mod.load_rules(), _store(a), False
+    for rid in a.ids:
+        try:
+            out = mirror_mod.put(recs[rid], build_mod.latest_verification(rid, Path(a.vdir)), rules.get(rid),
+                                 store, opener)
+        except mirror_mod.NotEligible as e:
+            print(f"refused: {e}")
+            bad = True
+            continue
+        for c in out:
+            print(f"  {c.outcome:11} {rid} {c.path} {c.sha256[:12]}  ({c.detail})")
+            bad |= c.outcome in ("mismatch", "origin-dead")
+    print(f"store {store.root}: {len(store.keys('mirror/'))} objects, {len(store.keys('custody/'))} custody documents")
+    return 1 if bad else 0
+
+
+def cmd_mirror_remove(a: argparse.Namespace) -> int:
+    try:
+        gone = mirror_mod.remove(a.sha256, _store(a), request=a.request, approved_by=a.approved_by)
+    except mirror_mod.MirrorError as e:
+        print(f"refused: {e}")
+        return 1
+    for k in gone:
+        print(f"  deleted   {k}")
+    print(f"  tombstone custody/{a.sha256}.removed.json (osd mirror never copies this digest again)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="osd", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -150,6 +197,25 @@ def main(argv: list[str] | None = None) -> int:
     pg.add_argument("manifest")
     pg.add_argument("--dest", required=True)
     pg.set_defaults(fn=cmd_get)
+    pmi = sub.add_parser("mirror", help="the mirror store: eligibility, copies, takedown (E07)")
+    msub = pmi.add_subparsers(dest="mirror_cmd", required=True)
+    me = msub.add_parser("eligible", help="which records may be mirrored, and why not (offline)")
+    me.add_argument("ids", nargs="*")
+    me.add_argument("--vdir", default=str(paths.VERIFICATION_DIR))
+    me.set_defaults(fn=cmd_mirror_eligible)
+    store_args = argparse.ArgumentParser(add_help=False)
+    store_args.add_argument("--store", default=str(mirror_mod.MIRROR_DIR), help="local store directory (slice 1)")
+    store_args.add_argument("--public-url", required=True,
+                            help="http(s) address the store is served at; custody hrefs start here")
+    mp = msub.add_parser("put", parents=[store_args], help="network: copy eligible records' inventories")
+    mp.add_argument("ids", nargs="+")
+    mp.add_argument("--vdir", default=str(paths.VERIFICATION_DIR))
+    mp.set_defaults(fn=cmd_mirror_put)
+    mr = msub.add_parser("remove", parents=[store_args], help="takedown: delete a copy, write its tombstone")
+    mr.add_argument("sha256")
+    mr.add_argument("--request", required=True, help="the approved takedown issue")
+    mr.add_argument("--approved-by", required=True, help="the approving maintainer's GitHub login")
+    mr.set_defaults(fn=cmd_mirror_remove)
     a = ap.parse_args(argv)
     return a.fn(a)
 
