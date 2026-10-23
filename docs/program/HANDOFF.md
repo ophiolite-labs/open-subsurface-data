@@ -36,6 +36,7 @@ gained `src/osd/verifier/**`. Record schema bumps (record/2: `inputs`, `period`)
 
 ## Known reds and baselines (23 Oct)
 
+- The E05 performance test (frame after `moveend` under 100 ms with 10,000 synthetic wellbores) measured against the real register outlines too once E03 landed 18,000 features in `outlines.geojson`; it now replaces the data with the synthetic set. Real-data load time is E15's (tiles).
 - A `pages` run cancelled by its concurrency group (`cancel-in-progress: true`) shows as failed in the run list; the later run deploys. Check the newest run and the site, not the red mark.
 
 - SEG wiki answers HTTP 403 to this host for any user agent (Cloudflare). Not dead; see OSD-D9.
