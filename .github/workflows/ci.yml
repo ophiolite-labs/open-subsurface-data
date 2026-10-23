@@ -21,6 +21,13 @@ jobs:
         run: |
           test -s site/data/records.json && test -s site/data/outlines.geojson
           python3 -c "import json;json.load(open('site/data/records.json'));json.load(open('site/data/outlines.geojson'))"
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm }
+      - name: site test (Playwright, offline; E05)
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          make site-test
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main'
         with: { name: site, path: site, retention-days: 7 }
