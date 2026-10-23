@@ -16,7 +16,9 @@ Reachability is one of four closed, exclusive classes, decided on the final resp
   dead     anything else: status 0 (DNS, timeout, refused), 401, 404, 410, other 4xx, 5xx;
            timeouts, refused connections and 5xx are retried once first
 Sampling policy (which listed files L2 hashes) is tool configuration in verifier/samples.yaml,
-keyed by record id, never a record field (OSD-D11).
+keyed by record id, never a record field (OSD-D11). Listings are read by shape (osd.verifier.listings,
+E23); a publisher's stated checksum is computed from the same stream beside SHA-256 and compared, and
+an export the server truncated is kept apart from `files` as a partial export.
 
 The network is injected twice: a Fetcher probes an origin (first 16 KB), an Opener streams a
 body in chunks and raises FetchError. Tests pass fakes, so the required CI check stays offline.
@@ -25,7 +27,6 @@ body in chunks and raises FetchError. Tests pass fakes, so the required CI check
 from __future__ import annotations
 
 import hashlib
-import html
 import json
 import re
 import socket
@@ -40,13 +41,14 @@ from fnmatch import fnmatchcase
 from functools import cache
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import quote, urljoin, urlsplit
+from urllib.parse import urlsplit
 
 import yaml
 from jsonschema import Draft202012Validator, FormatChecker
 
 from . import __version__, outlines, paths
 from .records import load_outline, load_records
+from .verifier.listings import TRUNCATED, Entry, ListingError, parse_listing, read_listing  # noqa: F401 (E07)
 
 SAMPLES_PATH = Path(__file__).parent / "verifier" / "samples.yaml"
 
@@ -56,6 +58,8 @@ USER_AGENT = ("open-subsurface-data-verifier/" + __version__
 PROBE_BYTES = 16384
 CHUNK = 1 << 20
 RUN_BYTE_BUDGET = 2 * 1024**3  # charter: never hash more than 2 GB per run
+RECORD_SAMPLE_BYTES = 512 * 1024**2  # E23: one record's share of the run budget (sample + inventory)
+COMPARABLE = {"md5": "md5", "sha1": "sha1", "sha256": "sha256"}  # normalised name -> hashlib name
 LISTING_BYTES = 32 * 1024**2
 LICENCE_BYTES = 8 * 1024**2
 LICENCE_TEXT_CHARS = 100_000  # stored with its hash in the results store
@@ -117,16 +121,27 @@ def http_fetch(url: str, timeout: float = 20.0) -> Fetched:
         return Fetched(0, url, "", ms(), error=_error_kind(e))
 
 
+class _Body:
+    """A streamed GET; `content_type` is known once iteration has started (listing reasons name it)."""
+
+    def __init__(self, url: str, timeout: float):
+        self.url, self.timeout, self.content_type = url, timeout, ""
+
+    def __iter__(self):
+        req = urllib.request.Request(self.url, headers={"User-Agent": USER_AGENT})
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                self.content_type = resp.headers.get("Content-Type", "")
+                while chunk := resp.read(CHUNK):
+                    yield chunk
+        except urllib.error.HTTPError as e:
+            raise FetchError(self.url, e.code) from None
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            raise FetchError(self.url, 0, _error_kind(e)) from None
+
+
 def http_open(url: str, timeout: float = 60.0) -> Iterable[bytes]:
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            while chunk := resp.read(CHUNK):
-                yield chunk
-    except urllib.error.HTTPError as e:
-        raise FetchError(url, e.code) from None
-    except (urllib.error.URLError, TimeoutError, OSError) as e:
-        raise FetchError(url, 0, _error_kind(e)) from None
+    return _Body(url, timeout)
 
 
 class Pacer:
@@ -155,14 +170,23 @@ def paced(fetch: Fetcher, opener: Opener, pacer: Pacer) -> tuple[Fetcher, Opener
         finally:
             pacer.done(url)
 
-    def o(url: str) -> Iterable[bytes]:
-        pacer.wait(url)
-        try:
-            yield from opener(url)
-        finally:
-            pacer.done(url)
+    class _Paced:
+        def __init__(self, url: str):
+            self.url, self.inner = url, None
 
-    return f, o
+        @property
+        def content_type(self) -> str:
+            return getattr(self.inner, "content_type", "")
+
+        def __iter__(self):
+            pacer.wait(self.url)
+            try:
+                self.inner = opener(self.url)
+                yield from self.inner
+            finally:
+                pacer.done(self.url)
+
+    return f, _Paced
 
 
 # --- L1 ------------------------------------------------------------------------------------
@@ -207,75 +231,38 @@ class ByteBudget:
     def remaining(self) -> int:
         return self.limit - self.used
 
+    def add(self, n: int) -> None:
+        self.used += n
+
+    def exhaust(self) -> None:
+        self.used = self.limit
+
+    def share(self, cap: int) -> ByteBudget:
+        """A record's share: at most `cap` bytes, every byte also drawn from this budget."""
+        return _Share(self, cap)
+
+
+class _Share(ByteBudget):
+    def __init__(self, parent: ByteBudget, cap: int):
+        super().__init__(cap)
+        self.parent = parent
+
+    @property
+    def remaining(self) -> int:
+        return min(self.limit - self.used, self.parent.remaining)
+
+    def add(self, n: int) -> None:
+        self.used += n
+        self.parent.add(n)
+
+    def exhaust(self) -> None:
+        if self.parent.remaining <= self.limit - self.used:
+            self.parent.exhaust()  # the run, not only this record, has no room left
+        self.used = self.limit
+
 
 class _OverBudget(Exception):
     pass
-
-
-@dataclass(frozen=True)
-class Entry:
-    name: str  # as the listing states it
-    url: str
-    size: int | None = None
-
-
-class _Links(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.hrefs: list[str] = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            href = dict(attrs).get("href")
-            if href and not href.startswith(("#", "mailto:", "javascript:")):
-                self.hrefs.append(href)
-
-
-def _json_entries(node, base: str, out: list[Entry]) -> None:
-    if isinstance(node, list):
-        for x in node:
-            if isinstance(x, str):
-                out.append(Entry(x, urljoin(base, x)))
-            else:
-                _json_entries(x, base, out)
-    elif isinstance(node, dict):
-        name = node.get("path") or node.get("name") or node.get("key")
-        size = node.get("size") if isinstance(node.get("size"), int) else None
-        if "download_url" in node:  # GitHub contents API: directories have none
-            if isinstance(node["download_url"], str):
-                out.append(Entry(name or node["download_url"], node["download_url"], size))
-            return
-        for k in ("href", "url"):
-            if isinstance(node.get(k), str):
-                out.append(Entry(name if isinstance(name, str) else node[k], urljoin(base, node[k]), size))
-                break
-        for v in node.values():
-            if isinstance(v, (list, dict)):
-                _json_entries(v, base, out)
-
-
-def parse_listing(body: bytes, base: str) -> list[Entry]:
-    """JSON (GitHub contents, STAC hrefs, name lists), S3 ListBucketResult, HTML links, or text lines."""
-    text = body.decode("utf-8", "replace")
-    head = text.lstrip()[:600]
-    out: list[Entry] = []
-    if head.startswith(("{", "[")):
-        _json_entries(json.loads(text), base, out)
-    elif "<ListBucketResult" in head:
-        u = urlsplit(base)
-        prefix = f"{u.scheme}://{u.netloc}{u.path.rstrip('/')}/"
-        for c in re.findall(r"<Contents>(.*?)</Contents>", text, re.DOTALL):
-            key = html.unescape(re.search(r"<Key>(.*?)</Key>", c, re.DOTALL).group(1))
-            size = re.search(r"<Size>(\d+)</Size>", c)
-            out.append(Entry(key, prefix + quote(key), int(size.group(1)) if size else None))
-    elif head.startswith("<"):
-        p = _Links()
-        p.feed(text)
-        out = [Entry(h, urljoin(base, h)) for h in p.hrefs]
-    else:
-        out = [Entry(s, urljoin(base, s)) for s in (x.strip() for x in text.splitlines())
-               if s and not s.startswith("#")]
-    return out
 
 
 def _read(stream: Iterable[bytes], cap: int) -> bytes:
@@ -287,16 +274,40 @@ def _read(stream: Iterable[bytes], cap: int) -> bytes:
     return bytes(buf[:cap])
 
 
-def _hash(stream: Iterable[bytes], budget: ByteBudget) -> tuple[str, int]:
+def _digest(stream: Iterable[bytes], budget: ByteBudget, algorithms: Iterable[str] = (),
+            watch: bool = False) -> tuple[str, int, dict[str, str], bool]:
+    """SHA-256, byte count, the publisher's algorithms over the same stream, and whether a generated
+    export said the server truncated it (`"exceededTransferLimit": true`, across chunk borders)."""
     h, n = hashlib.sha256(), 0
+    more = {a: hashlib.new(COMPARABLE[a]) for a in algorithms}
+    truncated, tail = False, b""
     for chunk in stream:
         if len(chunk) > budget.remaining:
-            budget.used = budget.limit  # the rest of this run has no room either
+            budget.exhaust()
             raise _OverBudget
-        budget.used += len(chunk)
+        budget.add(len(chunk))
         h.update(chunk)
+        for x in more.values():
+            x.update(chunk)
+        if watch and not truncated:
+            truncated = bool(TRUNCATED.search(tail + chunk))
+            tail = (tail + chunk)[-64:]
         n += len(chunk)
-    return h.hexdigest(), n
+    return h.hexdigest(), n, {a: x.hexdigest() for a, x in more.items()}, truncated
+
+
+def _hash(stream: Iterable[bytes], budget: ByteBudget) -> tuple[str, int]:
+    digest, n, _, _ = _digest(stream, budget)
+    return digest, n
+
+
+def comparable(checksum: dict | None) -> str | None:
+    """The hashlib algorithm a stated checksum can be compared with, or None (recorded, not compared)."""
+    if not checksum:
+        return None
+    alg = COMPARABLE.get(re.sub(r"[^a-z0-9]", "", str(checksum.get("algorithm", "")).lower()))
+    width = {"md5": 32, "sha1": 40, "sha256": 64}.get(alg or "")
+    return alg if width and re.fullmatch(f"[0-9a-fA-F]{{{width}}}", str(checksum.get("digest", ""))) else None
 
 
 class _Robots:
@@ -321,58 +332,95 @@ class _Robots:
         return self.hosts[key].can_fetch(USER_AGENT, url)
 
 
-def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str]]:
-    """Sample globs by record id; the `mirror:` section is the mirror's (osd.mirror.load_rules)."""
+def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str] | str]:
+    """Sample globs by record id, or a sentence saying why the listing has nothing to sample; the
+    `mirror:` section is the mirror's (osd.mirror.load_rules)."""
     return {k: v for k, v in (yaml.safe_load(path.read_text()) or {}).items() if k != "mirror"}
 
 
-def check_files(rec: dict, sample: list[str] | None, opener: Opener, budget: ByteBudget) -> tuple[dict, list[dict]]:
+def check_files(rec: dict, sample: list[str] | str | None, opener: Opener,
+                budget: ByteBudget) -> tuple[dict, list[dict], list[dict]]:
+    """The files-checksummed check, the files hashed, and the exports the server truncated."""
     def check(outcome: str, detail: str) -> dict:
         return {"name": "files-checksummed", "level": "L2", "outcome": outcome, "detail": detail[:500]}
 
     manifest = rec["origin"].get("manifest_url")
     if not manifest:
-        return check("skip", "no origin.manifest_url"), []
+        return check("skip", "no origin.manifest_url"), [], []
+    if isinstance(sample, str):
+        return check("skip", f"nothing to sample (verifier/samples.yaml): {sample}"), [], []
     if not sample:
-        return check("skip", "no sample for this record in verifier/samples.yaml"), []
+        return check("skip", "no sample for this record in verifier/samples.yaml"), [], []
     robots = _Robots(opener)
     if not robots.allowed(manifest):
-        return check("skip", f"robots.txt disallows the listing {manifest}"), []
+        return check("skip", f"robots.txt disallows the listing {manifest}"), [], []
     try:
-        entries = parse_listing(_read(opener(manifest), LISTING_BYTES), manifest)
+        stream = opener(manifest)
+        body = _read(stream, LISTING_BYTES)
+        listing = read_listing(body, manifest, getattr(stream, "content_type", "") or "")
     except FetchError as e:
-        return check("fail", f"listing: {e}"), []
+        return check("fail", f"listing: {e}"), [], []
+    except ListingError as e:
+        return check("fail", str(e)), [], []
     except ValueError as e:
-        return check("fail", f"listing unreadable: {e}"), []
+        return check("fail", f"listing unreadable: {e}"), [], []
+    entries = listing.entries
+    if not entries:
+        return check("fail", f"the listing ({listing.shape}) names no files"), [], []
     picked, seen = [], set()
     for e in entries:
         if e.url not in seen and any(fnmatchcase(e.name, p) or fnmatchcase(e.url, p) for p in sample):
             picked.append(e)
             seen.add(e.url)
     if not picked:
-        return check("fail", f"no entry of the listing ({len(entries)} entries) matches the sample"), []
+        return check("fail", f"no entry of the listing ({len(entries)} entries, {listing.shape}) matches the sample"), [], []
     files: list[dict] = []
+    partial: list[dict] = []
     notes: list[str] = []
-    for i, e in enumerate(picked):
+    mismatches: list[str] = []
+    for e in picked:
         if not robots.allowed(e.url):
             notes.append(f"robots.txt disallows {e.name}")
             continue
         if budget.remaining <= 0 or (e.size is not None and e.size > budget.remaining):
-            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
-            break
+            notes.append(f"sample would exceed the run budget ({e.size if e.size is not None else 'unknown'} "
+                         f"bytes listed for {e.name}, {max(budget.remaining, 0)} bytes left)")
+            continue
+        alg = comparable(e.checksum)
         try:
-            digest, n = _hash(opener(e.url), budget)
+            digest, n, theirs, truncated = _digest(opener(e.url), budget, [alg] if alg else [], e.generated)
         except _OverBudget:
-            notes.append(f"sample cut at 2 GB per run: {len(files)} of {len(picked)} files")
+            notes.append(f"sample cut at the run budget: {e.name} abandoned mid-stream and not recorded; "
+                         f"{len(files)} of {len(picked)} files hashed")
             break
         except FetchError as err:
-            return check("fail", f"{e.name}: {err}"), files
-        files.append({"path": e.name, "url": e.url, "bytes": n, "sha256": digest})
+            return check("fail", f"{e.name}: {err}"), files, partial
+        f = {"path": e.name, "url": e.url, "bytes": n, "sha256": digest}
+        if e.checksum:
+            f["publisher_checksum"] = dict(e.checksum)
+            f["compared"] = alg is not None
+            if alg and theirs[alg] != e.checksum["digest"].lower():
+                mismatches.append(f"{e.name}: publisher {e.checksum['algorithm']} {e.checksum['digest']}, "
+                                  f"computed {theirs[alg]}")
+        if truncated:
+            partial.append({**f, "partial": True})
+            notes.append(f"export truncated by the server (exceededTransferLimit): {e.name} kept as a "
+                         f"partial export, not a hashed file")
+            continue
+        files.append(f)
+    if mismatches:
+        return check("fail", "publisher checksum mismatch: " + "; ".join(mismatches)), files, partial
     if not files:
-        return check("skip", "; ".join(notes) or "nothing hashed"), files
+        return check("skip", "; ".join(notes) or "nothing hashed"), files, partial
     total = sum(f["bytes"] for f in files)
-    coverage = f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed ({total} bytes); {len(entries)} entries listed"
-    return check("pass", "; ".join([coverage, *notes])), files
+    said = [f for f in files if f.get("compared")]
+    parts = [f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed ({total} bytes); "
+             f"{len(entries)} entries listed"]
+    if said:
+        parts.append(f"publisher checksums match for {len(said)} of {len(files)}")
+    if listing.listed_at:
+        parts.append(f"listing dated {listing.listed_at}")
+    return check("pass", "; ".join(parts + notes)), files, partial
 
 
 class _Text(HTMLParser):
@@ -414,7 +462,10 @@ def check_licence(rec: dict, opener: Opener, previous: dict | None) -> tuple[dic
     try:
         body = _read(opener(url), LICENCE_BYTES)
     except FetchError as e:
-        return check("fail", f"blocked from this runner ({e})" if e.status in (403, 429) else str(e)), None, None
+        if e.status in (403, 429):
+            return check("fail", f"blocked from this runner ({e})"), None, None
+        why = f"answered HTTP {e.status}" if e.status else f"did not answer ({e.error or 'error'})"
+        return check("fail", f"licence page {url} {why}"), None, None
     if _challenge(body):
         return check("fail", f"blocked from this runner (challenge page at {url})"), None, None
     text = licence_text(body)[:LICENCE_TEXT_CHARS]
@@ -472,12 +523,15 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
         checks.append({"name": "files-checksummed", "level": "L2", "outcome": "skip", "detail": why})
         checks.append({"name": "licence-text-captured", "level": "L2", "outcome": "skip", "detail": why})
     else:
-        budget = budget or ByteBudget()   # the sample and the inventory share one run budget
-        c, files = check_files(rec, sample, opener, budget)
+        # the sample and the inventory share one budget: this record's share of the run's
+        share = (budget or ByteBudget()).share(RECORD_SAMPLE_BYTES)
+        c, files, partial = check_files(rec, sample, opener, share)
         checks.append(c)
+        if partial:
+            extra["partial_exports"] = partial
         if mirror_rule:   # E07: hash every entry the record's mirror rule selects (the inventory)
             from .mirror import inventory
-            more, inv = inventory(rec, mirror_rule, opener, budget, known=files)
+            more, inv = inventory(rec, mirror_rule, opener, share, known=files)
             if inv:
                 files = files + [f for f in more if f["url"] not in {x["url"] for x in files}]
                 extra["inventory"] = inv

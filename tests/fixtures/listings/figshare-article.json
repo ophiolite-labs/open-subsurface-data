@@ -1,0 +1,19 @@
+{
+  "id": 1000001,
+  "title": "Synthetic figshare article (documented v2 shape; api.figshare.com answered 403 on 23 Oct 2026)",
+  "doi": "10.6084/m9.figshare.1000001.v1",
+  "url": "https://api.figshare.com/v2/articles/1000001",
+  "figshare_url": "https://figshare.com/articles/dataset/example/1000001",
+  "url_public_html": "https://figshare.com/articles/dataset/example/1000001",
+  "license": {"value": 1, "name": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/"},
+  "files": [
+    {"id": 2000001, "name": "well_logs.las", "size": 51234, "is_link_only": false,
+     "download_url": "https://ndownloader.figshare.com/files/2000001",
+     "supplied_md5": "0cc175b9c0f1b6a831c399e269772661", "computed_md5": "0cc175b9c0f1b6a831c399e269772661"},
+    {"id": 2000002, "name": "survey.sgy", "size": 7340032, "is_link_only": false,
+     "download_url": "https://ndownloader.figshare.com/files/2000002",
+     "supplied_md5": "", "computed_md5": "92eb5ffee6ae2fec3ad71c777531578f"},
+    {"id": 2000003, "name": "external data", "size": 0, "is_link_only": true,
+     "download_url": "https://example.org/landing"}
+  ]
+}

@@ -524,3 +524,51 @@ def test_interrupted_takedown_already_drops_the_copy_and_reruns(tmp_path):
     s.delete = real
     mirror.remove(sha, s, request="https://x.test/issues/1", approved_by="tuna-soup", now=NOW)
     assert [k for k in s.keys("") if sha in k] == [f"custody/{sha}.removed.json"]
+
+
+# --- E23: the mirror's selection through the listing readers --------------------------------------
+
+def _contents(path, size):
+    """One entry of the GitHub contents API, as api.github.com answers for OPM/opm-data/contents/norne."""
+    name = path.rsplit("/", 1)[-1]
+    raw = f"https://raw.githubusercontent.com/OPM/opm-data/master/{path}" if size is not None else None
+    api = f"https://api.github.com/repos/OPM/opm-data/contents/{path}?ref=master"
+    html = f"https://github.com/OPM/opm-data/{'blob' if raw else 'tree'}/master/{path}"
+    return {"name": name, "path": path, "sha": "0" * 40, "size": size or 0, "url": api, "html_url": html,
+            "git_url": "https://api.github.com/repos/OPM/opm-data/git/blobs/" + "0" * 40, "download_url": raw,
+            "type": "file" if raw else "dir", "_links": {"self": api, "git": api, "html": html}}
+
+
+def test_mirror_selection_unchanged_through_readers():
+    from osd.verify import parse_listing
+    body = json.dumps([_contents("norne/INCLUDE", None)]
+                      + [_contents(p, len(b)) for p, b in NORNE_LISTING.items()]).encode()
+    entries = parse_listing(body, "https://api.github.com/repos/OPM/opm-data/contents/norne")
+    assert [(e.name, e.url, e.size) for e in entries] == [
+        (p, f"https://raw.githubusercontent.com/OPM/opm-data/master/{p}", len(b)) for p, b in NORNE_LISTING.items()]
+    rule = mirror.load_rules()["opm/norne"]
+    rec = load_record(paths.RECORDS_DIR / "opm" / "norne.yaml")
+    files = {rec["origin"]["manifest_url"]: body,
+             **{f"https://raw.githubusercontent.com/OPM/opm-data/master/{p}": b for p, b in NORNE_LISTING.items()}}
+
+    def opener(url):
+        if url not in files:
+            raise FetchError(url, 404)
+        return iter([files[url]])
+
+    got, inv = mirror.inventory(rec, rule, opener, ByteBudget())
+    assert inv == {"rule": rule, "listed": 5, "selected": list(NORNE_LISTING), "coverage": "complete"}
+    assert {f["path"]: f["sha256"] for f in got} == {p: _sha(b) for p, b in NORNE_LISTING.items()}
+
+
+def test_mirror_inventory_reads_ckan_assets_only():
+    rec = record()
+    package = json.dumps({"success": True, "result": {"url": "https://acme.example/landing", "resources": [
+        {"name": "survey/a.sgy", "url": ORIGIN + "survey/a.sgy", "format": "SEG-Y", "size": len(FILES["survey/a.sgy"])},
+        {"name": "Web Map Service", "url": ORIGIN + "wms", "format": "WMS"},
+        {"name": "Project page", "url": "https://acme.example/landing", "format": "HTML"}]}}).encode()
+    net = Net()
+    net.body = lambda url, orig=net.body: package if url == ORIGIN + "index.json" else orig(url)
+    files, inv = mirror.inventory(rec, ["*"], net, ByteBudget())
+    assert inv == {"rule": ["*"], "listed": 1, "selected": ["survey/a.sgy"], "coverage": "complete"}
+    assert [f["path"] for f in files] == ["survey/a.sgy"]
