@@ -16,7 +16,7 @@ from osd.build import build
 from osd.cli import main as cli_main
 from osd.cli import status_lines
 from osd.records import load_record, load_records
-from osd.verifier.listings import ListingError, read_listing, stated_checksum
+from osd.verifier.listings import ListingError, names_a_file, read_listing, stated_checksum
 from osd.verify import (
     BROWSER_USER_AGENT,
     USER_AGENT,
@@ -24,6 +24,7 @@ from osd.verify import (
     Fetched,
     FetchError,
     Pacer,
+    check_files,
     http_browser_probe,
     http_fetch,
     http_open,
@@ -780,8 +781,8 @@ def test_unreadable_robots_is_not_called_a_disallow(tmp_path):
         return inner(url)
 
     c = outcome(verify_record(rec, fetch_ok, None, now=NOW, opener=opener, sample=SAMPLE), "files-checksummed")
-    assert (c["outcome"], c["detail"]) == ("skip", ("robots.txt could not be read (HTTP 503 from "
-                                                    "https://fixture.test/robots.txt), so the listing is not fetched (RFC 9309)"))
+    assert (c["outcome"], c["detail"]) == ("skip", ("robots.txt unreadable (HTTP 503), treated as disallow (RFC 9309 "
+                                                    "section 2.3.1.4): the listing https://fixture.test/index.json not fetched"))
 
 
 def test_robots_disallow_never_fetches_the_listing(tmp_path):
@@ -1027,3 +1028,112 @@ def test_status_reason_names_why_blocked(tmp_path):
     (vdir / (REC["id"].replace("/", "__") + ".json")).write_text(json.dumps(hidden_result()))
     (line,) = [x for x in status_lines(vdir, now=NOW) if x.split()[1] == REC["id"]]
     assert line.endswith(f"origin-reachable: {HIDDEN.format(404, 200)}; blocked since 2026-10-23")
+
+
+# --- H1 design 8: a manifest_url that is itself the file ---------------------------------------
+
+CSV = b"well,url\nA-1,https://elsewhere.example/a.sgy\nB-2,https://elsewhere.example/b.sgy\n" * 20
+MANIFEST = BASE + "exports/wells.csv"
+
+
+class Stream:
+    """One response: its chunks and the headers check_files reads; how often it was iterated."""
+
+    def __init__(self, data, content_type="", disposition="", length=None):
+        self.data, self.content_type, self.content_disposition = data, content_type, disposition
+        self.content_length, self.iterated = length, 0
+
+    def __iter__(self):
+        self.iterated += 1
+        yield from (self.data[i:i + 7] for i in range(0, len(self.data), 7))
+
+
+def served(**headers):
+    calls = []
+
+    def open_(url):
+        calls.append(url)
+        if url == MANIFEST:
+            return Stream(CSV, **headers)
+        raise FetchError(url, 404)  # robots.txt: none, everything allowed
+    return open_, calls
+
+
+def manifest_record():
+    rec = copy.deepcopy(REC)
+    rec["origin"]["manifest_url"] = MANIFEST
+    return rec
+
+
+@pytest.mark.parametrize("headers,sample", [
+    ({"content_type": "application/zip"}, ["*"]),
+    ({"content_type": "application/json", "disposition": 'attachment; filename="wells.csv"'}, ["*.csv"]),
+    ({}, {"file": True}),
+], ids=["content-type", "attachment", "file-flag"])
+def test_file_manifest_is_the_one_entry(headers, sample):
+    # mutations: each rule removed (content type, attachment, file: true) -> the CSV read as a listing
+    opener, _ = served(**headers)
+    c, files, _ = check_files(manifest_record(), sample, opener, ByteBudget())
+    assert c["outcome"] == "pass" and "the manifest_url is the file itself" in c["detail"]
+    assert files == [{"path": "wells.csv", "url": MANIFEST, "bytes": len(CSV), "sha256": hashlib.sha256(CSV).hexdigest()}]
+
+
+def test_csv_manifest_is_a_file_not_a_url_list():
+    # mutation: "CSV rows read as URLs" (text/csv treated as a listing type) -> the rows' URLs listed
+    assert names_a_file("text/csv; charset=utf-8") and names_a_file("application/octet-stream")
+    assert not any(names_a_file(t) for t in ("", "text/html; charset=utf-8", "application/json", "text/plain",
+                                             "application/geo+json", "application/rss+xml", "text/xml"))
+    opener, calls = served(content_type="text/csv; charset=utf-8")
+    c, files, _ = check_files(manifest_record(), ["*"], opener, ByteBudget())
+    assert c["outcome"] == "pass" and [f["url"] for f in files] == [MANIFEST]
+    assert not any("elsewhere.example" in u for u in calls)
+
+
+def test_file_manifest_is_fetched_once():
+    # mutation: the manifest opened again to hash it -> two GETs of the file
+    opener, calls = served(content_type="text/csv")
+    check_files(manifest_record(), ["*"], opener, ByteBudget())
+    assert calls.count(MANIFEST) == 1
+
+
+def test_file_manifest_over_budget_is_not_hashed():
+    # mutation: Content-Length ignored -> the file hashed past the record's share
+    opener, _ = served(content_type="application/zip", length=10**12)
+    c, files, _ = check_files(manifest_record(), ["*"], opener, ByteBudget())
+    assert (c["outcome"], files) == ("skip", [])
+    assert c["detail"].startswith("sample would exceed the run budget (1000000000000 bytes listed for wells.csv")
+
+
+def test_samples_file_form(tmp_path):
+    (tmp_path / "s.yaml").write_text("a/b: {file: true}\nc/d: {file: true, sample: ['*.zip']}\n")
+    assert load_samples(tmp_path / "s.yaml") == {"a/b": {"file": True}, "c/d": {"file": True, "sample": ["*.zip"]}}
+    for rid, entry in load_samples().items():  # the committed entries use the forms check_files reads
+        if isinstance(entry, dict):
+            assert set(entry) <= {"file", "sample"} and entry.get("file") is True, rid
+
+
+# --- H1 design 9: robots.txt that cannot be read -----------------------------------------------
+
+@pytest.mark.parametrize("status", [500, 503])
+def test_robots_5xx_is_unreadable_and_treated_as_disallow(tmp_path, status):
+    # mutation: a 5xx robots.txt allowed (or called a disallow) -> the listing fetched / wording lost
+    rec, calls = l2_fixture(tmp_path), []
+    inner = dir_opener(tmp_path, calls)
+
+    def opener(url):
+        if url.endswith("/robots.txt"):
+            raise FetchError(url, status)
+        return inner(url)
+
+    c = outcome(verify_record(rec, fetch_ok, None, now=NOW, opener=opener, sample=SAMPLE), "files-checksummed")
+    assert c["outcome"] == "skip"
+    assert c["detail"] == (f"robots.txt unreadable (HTTP {status}), treated as disallow (RFC 9309 section 2.3.1.4): "
+                           f"the listing {BASE}index.json not fetched")
+    assert "disallows" not in c["detail"] and BASE + "index.json" not in calls
+
+
+def test_robots_404_allows(tmp_path):
+    # mutation: a 4xx robots.txt treated as unreadable -> no file hashed
+    rec = l2_fixture(tmp_path)
+    v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
+    assert outcome(v, "files-checksummed")["outcome"] == "pass" and v["level"] == "L2"
