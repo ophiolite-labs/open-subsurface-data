@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/record/2",
-  "title": "Open Subsurface Data record, version 2",
-  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record.",
+  "$id": "https://open-subsurface-data.org/schema/record/3",
+  "title": "Open Subsurface Data record, version 3",
+  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record. Version 3 (E19, additive) adds the kind `potential-fields`, the access `purchase` and the optional `licence.terms`; every version-2 record is a valid version-3 record.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
@@ -26,8 +26,8 @@
       "type": "object", "additionalProperties": false, "required": ["url", "access"],
       "properties": {
         "url": {"type": "string", "format": "uri", "description": "The page a person opens to get the data. Never a deep link that expires."},
-        "access": {"type": "string", "enum": ["anonymous", "registration", "api", "request"],
-                   "description": "anonymous: a download needs no account; registration: a free account; api: a documented service; request: a human approves"},
+        "access": {"type": "string", "enum": ["anonymous", "registration", "api", "request", "purchase"],
+                   "description": "anonymous: a download needs no account; registration: a free account; api: a documented service; request: a human approves; purchase: a price list or sales desk stands between the person and the files (a free account is registration)"},
         "manifest_url": {"type": "string", "format": "uri", "description": "Optional machine-readable listing of files (index, API, bucket listing) the verifier can checksum against."},
         "notes": {"type": "string", "maxLength": 400}
       }
@@ -42,7 +42,18 @@
                            "description": "May a third party host a copy? Decides whether the mirror store may hold this dataset."},
         "attribution": {"type": "string", "enum": ["required", "not-required", "unknown"]},
         "share_alike": {"type": "boolean", "description": "Derived products must carry the same licence (CC BY-SA and kin)."},
-        "statement": {"type": "string", "maxLength": 300, "description": "The attribution line a derived product must carry, verbatim when the publisher prescribes one."}
+        "statement": {"type": "string", "maxLength": 300, "description": "The attribution line a derived product must carry, verbatim when the publisher prescribes one."},
+        "terms": {
+          "type": "object", "additionalProperties": false, "required": ["stated"],
+          "description": "Record/3. What the publisher's terms say about how long a licence runs and review before publication, as the publisher states it. Never computed: a duration stays the publisher's conditional wording, and `expires` is set only when the publisher states an absolute calendar date. Absent keys are not stated.",
+          "properties": {
+            "stated": {"type": "string", "minLength": 1, "maxLength": 600, "description": "The terms in the publisher's words, verbatim where short."},
+            "duration": {"type": ["string", "null"], "minLength": 1, "description": "The publisher's wording of how long a licence runs, e.g. 'at most 10 years from purchase'; null when the terms state none."},
+            "review_before_publication": {"type": ["boolean", "null"], "description": "true when the publisher reviews work before it is published (academic papers and the like)."},
+            "expires": {"type": ["string", "null"], "format": "date", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+                        "description": "An absolute calendar date the publisher states for the end of the terms, YYYY-MM-DD; the terms hold through the end of that day (UTC). Quote it in YAML. Never computed from a duration."}
+          }
+        }
       }
     },
     "kinds": {
@@ -50,9 +61,10 @@
       "items": {"type": "string", "enum": [
         "wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth",
         "seismic-3d", "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults",
-        "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list"
+        "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list",
+        "potential-fields"
       ]},
-      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets."
+      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets; potential-fields: gravity or magnetic data (record/3)."
     },
     "region": {
       "type": "object", "additionalProperties": false,

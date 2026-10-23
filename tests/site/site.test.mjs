@@ -370,3 +370,56 @@ test('select: phone width, the basket and the download button are reachable in t
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+// E19: the record/3 vocabulary on the page. Chips come from the records present; select mode carries
+// purchase and licence.terms whole, as osd manifest writes them (manifest/4).
+test('kinds: a potential-fields chip appears from the data and filters one record in, one out', async () => {
+  const built = JSON.parse(await readFile(join(ROOT, 'site', 'data', 'records.json'), 'utf8'));
+  const gravity = { ...records['prime/national-oil-gas-database'], kinds: ['potential-fields', 'reports'] };
+  const plain = { ...records['opm/norne'], kinds: ['reports'] };
+  const fixtureCatalogue = async c => {
+    await withoutTiles(c);
+    await c.route('**/data/records.json', route => route.fulfill({ json: { ...built, count: 2, records: [gravity, plain] } }));
+    await c.route('**/data/outlines.geojson', route => route.fulfill({ json: { type: 'FeatureCollection', features: [] } }));
+  };
+  const { context, page, errors, unexpected } = await open('', { routes: fixtureCatalogue });
+  assert.deepEqual(await page.locator('#kinds .chip').allInnerTexts(), ['potential-fields', 'reports']);
+  assert.equal(await page.locator('#list li').count(), 2);
+  await page.locator('.chip', { hasText: /^potential-fields$/ }).click();
+  assert.match(await page.evaluate(() => location.hash), /k=potential-fields/);
+  assert.deepEqual(await page.locator('#list li').evaluateAll(ls => ls.map(l => l.dataset.id)), [gravity.id]);
+  await page.screenshot({ path: join(OUT, 'kinds-potential-fields.png') });
+  await page.locator('.chip', { hasText: /^reports$/ }).click();   // either kind: both again
+  assert.equal(await page.locator('#list li').count(), 2);
+  await page.locator('.chip', { hasText: /^potential-fields$/ }).click();
+  assert.deepEqual(await page.locator('#list li').evaluateAll(ls => ls.map(l => l.dataset.id)).then(x => x.sort()), [gravity.id, plain.id].sort());
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
+
+const PASA = 'pasa/national-petroleum-exploration-database';
+test('select: a purchase dataset with terms: the page writes osd.manifest/4 with the same terms object osd manifest writes', async () => {
+  const built = JSON.parse(await readFile(join(ROOT, 'site', 'data', 'records.json'), 'utf8'));
+  const { context, page, errors, unexpected } = await open(`pick=${PASA},opm/norne`, { routes: withAssets });
+  await page.waitForFunction(() => document.querySelector('#basket .files.todo'));
+  assert.match(await page.locator(`#basket li[data-id="${PASA}"] .terms`).innerText(), /at most 10 years/);
+  assert.match(await page.locator(`#basket li[data-id="${PASA}"] .files`).innerText(), /^to-do: access purchase/);
+  await page.screenshot({ path: join(OUT, 'select-purchase-terms.png') });
+  const { file, doc } = await downloadManifest(page, 'osd.manifest-purchase.json');
+  assert.equal(doc.format, 'osd.manifest/4');
+  assert.deepEqual(doc.metadata, { catalog: built.catalog });
+  const [pasa, norne] = doc.entries;
+  assert.equal(pasa.access, 'purchase');
+  assert.deepEqual(pasa.licence, records[PASA].licence);
+  assert.deepEqual(pasa.licence.terms, { stated: records[PASA].licence.terms.stated, duration: 'at most 10 years from purchase',
+    review_before_publication: true, expires: null });
+  assert.equal('terms' in norne.licence, false);
+  const { entries, dest } = await roundTrip(file, 'purchase');   // equal to osd manifest, entry for entry
+  assert.deepEqual(entries.map(e => [e.record_id, e.unresolved]), [
+    [PASA, 'access purchase: the publisher sells the files; buy them at the origin page'], ['opm/norne', null]]);
+  assert.ok((await readFile(join(dest, 'ATTRIBUTION.md'), 'utf8')).includes('  > ' + records[PASA].licence.terms.stated));
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});

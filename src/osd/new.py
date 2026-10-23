@@ -17,6 +17,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from . import paths
+from .records import _schema
 from .verify import Fetcher, http_fetch
 
 TEMPLATE = paths.RECORDS_DIR / "_template.yaml"
@@ -44,8 +45,18 @@ def record_id(url: str) -> str:
     return f"{publisher}/{dataset or 'dataset'}"
 
 
+def choices() -> dict[str, str]:
+    """The scaffold's comment lists, read from schema/record.schema.json so they never drift (E19)."""
+    p = _schema("record")["properties"]
+    return {"access": " | ".join(p["origin"]["properties"]["access"]["enum"]),
+            "redistribution": " | ".join(p["licence"]["properties"]["redistribution"]["enum"]),
+            "attribution": " | ".join(p["licence"]["properties"]["attribution"]["enum"]),
+            "listed_by": " | ".join(p["listed_by"]["items"]["enum"])}
+
+
 def scaffold(url: str, title: str | None, rid: str, today: date) -> str:
     u = urlsplit(url)
+    c = choices()
     header = [line for line in TEMPLATE.read_text().splitlines() if line.startswith("#")]
     q = json.dumps  # a JSON string is a YAML string, whatever the title holds
     return "\n".join([
@@ -59,15 +70,15 @@ def scaffold(url: str, title: str | None, rid: str, today: date) -> str:
         f"  url: {u.scheme}://{u.netloc}",
         "origin:",
         f"  url: {q(url)}",
-        "  access: null                                    # fill: anonymous | registration | api | request",
+        f"  access: null                                    # fill: {c['access']}",
         "licence:",
         "  name: null                                      # fill: the licence as the publisher names it",
         "  spdx: null                                      # CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0 or null",
-        "  redistribution: null                            # fill: allowed | restricted | forbidden | unknown",
-        "  attribution: null                               # fill: required | not-required | unknown",
+        f"  redistribution: null                            # fill: {c['redistribution']}",
+        f"  attribution: null                               # fill: {c['attribution']}",
         "kinds: []                                         # fill: see schema/record.schema.json",
         "region: {}                                        # country, basin, bbox when the publisher states them",
-        "listed_by: [community]                            # seg-wiki | publisher | osdu | community",
+        f"listed_by: [community]                            # {c['listed_by']}",
         f"added: {today.isoformat()}",
         "",
     ])

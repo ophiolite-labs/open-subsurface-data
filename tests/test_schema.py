@@ -1,0 +1,244 @@
+"""E19: vocabulary from the records lanes (charter docs/program/charters/E19-vocabulary-from-the-records-lanes.md,
+strategy E19-vocabulary-from-the-records-lanes-STRATEGY.md): record/3, the stac-osd v2 access value, the
+status expiry note, the scaffold's comment lists and the six record edits."""
+
+import copy
+import json
+import socket
+from datetime import UTC, date, datetime
+from pathlib import Path
+
+import pytest
+import yaml
+from jsonschema import Draft7Validator, Draft202012Validator, FormatChecker
+
+from osd import cli, new, paths, stac
+from osd.records import load_record, load_records, record_files, validate_records
+from osd.verify import Fetched, verify_record
+
+ROOT = Path(__file__).resolve().parents[1]
+FROZEN = ROOT / "tests" / "fixtures" / "schema"
+NOW = datetime(2026, 10, 23, 12, tzinfo=UTC)
+TERMS = {"stated": "a purchase is a licence to use the data for at most 10 years",
+         "duration": "at most 10 years from purchase", "review_before_publication": True, "expires": None}
+V1_URL = "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"
+
+
+def _v(schema: dict) -> Draft202012Validator:
+    return Draft202012Validator(schema, format_checker=FormatChecker())
+
+
+RECORD_3 = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))
+RECORD_2 = _v(json.loads((FROZEN / "record-2.schema.json").read_text()))
+
+
+def _base(**kw) -> dict:
+    rec = {"id": "acme/demo", "title": "Demo set", "publisher": {"name": "Acme", "url": "https://acme.example"},
+           "origin": {"url": "https://acme.example/demo", "access": "anonymous"},
+           "licence": {"name": "Acme terms", "spdx": None, "redistribution": "forbidden", "attribution": "unknown"},
+           "kinds": ["seismic-3d"], "region": {"country": "NL"}, "listed_by": ["publisher"], "added": "2026-10-23"}
+    for k, x in kw.items():
+        if k == "access":
+            rec["origin"]["access"] = x
+        elif k == "terms":
+            rec["licence"]["terms"] = x
+        else:
+            rec[k] = x
+    return rec
+
+
+def _errors(rec: dict) -> list:
+    return list(RECORD_3.iter_errors(rec))
+
+
+# --- record/3 --------------------------------------------------------------------------------------
+
+def test_record_ids_are_versioned():
+    assert RECORD_3.schema["$id"].endswith("/record/3") and RECORD_2.schema["$id"].endswith("/record/2")
+
+
+def test_record_3_admits_the_new_values():
+    assert _errors(_base(kinds=["potential-fields"])) == []
+    assert _errors(_base(access="purchase")) == []
+    assert _errors(_base(access="purchase", terms=TERMS)) == []
+    assert _errors(_base(terms={"stated": "Licence runs until 31 December 2030.", "expires": "2030-12-31"})) == []
+    assert _errors(_base(terms={"stated": "Terms as published.", "duration": None,
+                                "review_before_publication": None, "expires": None})) == []
+    assert _errors(_base(terms={"stated": "Only the words."})) == []
+
+
+def test_terms_without_stated_refused():
+    assert _errors(_base(terms={k: x for k, x in TERMS.items() if k != "stated"}))
+    assert _errors(_base(terms={"stated": ""}))
+
+
+@pytest.mark.parametrize("expires", ["2027-13-01", "2027-02-30", "soon", "2027", "27-01-01", "2027-01-01T00:00:00Z",
+                                     20270101, True, date(2027, 1, 1)],
+                         ids=["month-13", "feb-30", "word", "year", "short-year", "datetime", "int", "bool", "yaml-date"])
+def test_expires_not_a_date_refused(expires):
+    assert _errors(_base(terms=dict(TERMS, expires=expires)))
+
+
+@pytest.mark.parametrize("rec", [
+    _base(kinds=["gravity"]), _base(access="paid"), _base(access="Purchase"),
+    _base(terms=dict(TERMS, price="40 USD")), _base(terms="at most 10 years"),
+    _base(terms=dict(TERMS, review_before_publication="yes")), _base(terms=dict(TERMS, duration=10)),
+], ids=["kind", "access", "access-case", "terms-closed", "terms-string", "review-string", "duration-int"])
+def test_unknown_values_refused(rec):
+    assert _errors(rec)
+
+
+def test_record_2_files_validate_under_record_2():
+    """Every record/2 file is a record/3 file; every current record without its record/3 values is a
+    record/2 file under the frozen record/2 schema."""
+    assert not list(RECORD_2.iter_errors(_base())) and not _errors(_base())
+    assert list(RECORD_2.iter_errors(_base(access="purchase")))     # the frozen copy is the old contract
+    old = 0
+    for p in record_files():
+        rec = load_record(p)
+        assert not list(RECORD_3.iter_errors(rec)), p
+        if (rec["origin"]["access"] == "purchase" or "potential-fields" in rec["kinds"]
+                or "terms" in rec["licence"]):
+            continue
+        assert not list(RECORD_2.iter_errors(rec)), p
+        old += 1
+    assert old == 86   # 92 records, the six of design 5 carry record/3 values
+
+
+def test_the_six_records_state_the_new_values():
+    recs = load_records()
+    for rid in ("prime/national-oil-gas-database", "eug/national-data-repository", "namcor/exploration-production-data"):
+        assert "potential-fields" in recs[rid]["kinds"], rid
+    for rid in ("namcor/exploration-production-data", "beg/stratton-3d", "dgh/national-data-repository",
+                "pasa/national-petroleum-exploration-database"):
+        assert recs[rid]["origin"]["access"] == "purchase", rid
+    assert not any("Want" in k for k in recs["beg/stratton-3d"]["known_issues"])
+    terms = recs["pasa/national-petroleum-exploration-database"]["licence"]["terms"]
+    assert terms["duration"] == "at most 10 years from purchase"
+    assert terms["review_before_publication"] is True and terms["expires"] is None
+    assert "at most 10 years" in terms["stated"] and "review" in terms["stated"]
+    assert [r for r in recs.values() if "terms" in r["licence"]] == [recs["pasa/national-petroleum-exploration-database"]]
+    assert validate_records() == [] and len(recs) == 92
+
+
+# --- osd new: the scaffold's comment lists come from the schema -----------------------------------
+
+def test_new_scaffold_comments_list_the_schema_values():
+    props = RECORD_3.schema["properties"]
+    text = new.scaffold("https://acme.example/demo", "Demo", "acme/demo", date(2026, 10, 23))
+    lines = {line.split(":")[0].strip(): line.split("#", 1)[1].strip() for line in text.splitlines()
+             if "#" in line and not line.startswith("#")}
+    assert lines["access"] == "fill: " + " | ".join(props["origin"]["properties"]["access"]["enum"])
+    assert "purchase" in lines["access"]
+    assert lines["redistribution"] == "fill: " + " | ".join(props["licence"]["properties"]["redistribution"]["enum"])
+    assert lines["attribution"] == "fill: " + " | ".join(props["licence"]["properties"]["attribution"]["enum"])
+    assert lines["listed_by"] == " | ".join(props["listed_by"]["items"]["enum"])
+
+
+# --- osd status: a stated absolute expiry beside the level ------------------------------------------
+
+@pytest.mark.parametrize("terms, note", [
+    ({"stated": "Until 22 October 2026.", "expires": "2026-10-22"}, "(terms expired 2026-10-22)"),
+    ({"stated": "Until 23 October 2026.", "expires": "2026-10-23"}, "(terms expire 2026-10-23 (today))"),
+    ({"stated": "Until 24 October 2026.", "expires": "2026-10-24"}, "(terms expire 2026-10-24)"),
+    ({"stated": "At most 10 years.", "duration": "at most 10 years from purchase", "expires": None}, None),
+    ({"stated": "At most 10 years."}, None),
+    (None, None),
+    ({"stated": "Until soon.", "expires": "soon"}, "(terms expire ? ('soon' is not a date))"),
+], ids=["past", "today", "future", "null", "absent", "no-terms", "malformed"])
+def test_status_terms_expiry(tmp_records, tmp_path, terms, note):
+    p = tmp_records / "acme" / "demo.yaml"
+    rec = yaml.safe_load(p.read_text())
+    if terms is not None:
+        rec["licence"]["terms"] = terms
+    p.write_text(yaml.safe_dump(rec))
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    for at in (NOW, datetime(2026, 10, 23, 23, 59, 59, tzinfo=UTC), datetime(2026, 10, 23, 0, 0, tzinfo=UTC)):
+        lines = cli.status_lines(vdir, now=at, records_dir=tmp_records)
+        (row,) = lines[1:]
+        if note is None:
+            assert row.split()[:2] == ["L0", "acme/demo"] and "terms" not in row
+        else:
+            assert row.startswith(f"L0 {note} acme/demo"), row
+        assert row.index("acme/") == lines[0].index(" id ") + 1     # columns stay aligned
+
+
+def test_status_reads_an_unquoted_yaml_date_as_the_day():
+    rec = _base(terms={"stated": "Until 1 Jan 2027.", "expires": date(2027, 1, 1)})
+    assert cli.terms_note(rec, NOW) == "terms expire 2027-01-01"
+
+
+# --- verification does not read access --------------------------------------------------------------
+
+def test_verification_identical_for_request_and_purchase():
+    rec = load_record(paths.RECORDS_DIR / "dgh" / "national-data-repository.yaml")
+    before = copy.deepcopy(rec)
+    before["origin"]["access"] = "request"
+    assert rec["origin"]["access"] == "purchase"
+
+    def fetch(url):
+        return Fetched(200, url, "text/html", 12)
+
+    a, b = verify_record(before, fetch, None, now=NOW), verify_record(rec, fetch, None, now=NOW)
+    assert a["checks"] == b["checks"] and a["level"] == b["level"] == "L1"
+    assert a == b
+
+
+# --- STAC: purchase and the keyword travel; a stac-osd/1 document still validates -----------------
+
+@pytest.fixture
+def no_network(monkeypatch):
+    def refuse(*a, **k):
+        raise OSError("network access denied in tests")
+    monkeypatch.setattr(socket.socket, "connect", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
+    monkeypatch.setattr(socket, "getaddrinfo", refuse)
+    monkeypatch.setattr("stac_validator.utilities.urlopen", refuse)
+
+
+def _collection(tmp_path) -> dict:
+    rec = dict(_base(access="purchase", kinds=["seismic-2d", "potential-fields"], terms=TERMS),
+               level="L1", checked_at="2026-10-23T12:00:00+00:00", stale=False, blocked_since=None)
+    (tmp_path / "v").mkdir()
+    (tmp_path / "o").mkdir()
+    (col,) = stac.write_catalog(tmp_path / "catalog", [rec], vdir=tmp_path / "v", outlines_dir=tmp_path / "o")
+    return col
+
+
+def test_stac_collection_carries_purchase_and_keyword(tmp_path, no_network):
+    col = _collection(tmp_path)
+    assert col["osd:access"] == "purchase" and "potential-fields" in col["keywords"]
+    assert stac.OSD_EXTENSION in col["stac_extensions"] and stac.OSD_EXTENSION.endswith("?v=2")
+    ok, msg = stac.validate(tmp_path / "catalog" / "stac" / "catalog.json")
+    assert ok, msg
+    v2 = json.loads((paths.SCHEMA_DIR / "stac-osd.json").read_text())
+    assert v2["$id"] == stac.OSD_EXTENSION
+    assert not list(Draft7Validator(v2).iter_errors(col))
+    bad = dict(col, **{"osd:access": "paid"})
+    assert list(Draft7Validator(v2).iter_errors(bad))
+
+
+def test_stac_osd_1_collection_still_validates(tmp_path, no_network):
+    """A Collection written under stac-osd/1 (the v1 URL, a record/2 access value) validates under the
+    frozen v1 schema, under the current schema, and through the offline schema map."""
+    col = _collection(tmp_path)
+    old = dict(col, stac_extensions=[V1_URL if x == stac.OSD_EXTENSION else x for x in col["stac_extensions"]],
+               **{"osd:access": "request"})
+    v1 = json.loads((FROZEN / "stac-osd-1.json").read_text())
+    assert v1["$id"] == V1_URL
+    assert not list(Draft7Validator(v1).iter_errors(old))
+    assert list(Draft7Validator(v1).iter_errors(col))        # v1 never knew purchase or the v2 URL
+    assert not list(Draft7Validator(json.loads((paths.SCHEMA_DIR / "stac-osd.json").read_text())).iter_errors(old))
+    p = tmp_path / "catalog" / "stac" / col["id"] / "collection.json"
+    p.write_text(json.dumps(old))
+    ok, msg = stac.validate(p, recursive=False)
+    assert ok, msg
+    smap = json.loads(stac.SCHEMA_MAP.read_text())["schemas"]
+    assert smap[V1_URL] == smap[stac.OSD_EXTENSION] == "../stac-osd.json"
+
+
+def test_template_access_comment_lists_the_schema_values():
+    line = next(x for x in (paths.RECORDS_DIR / "_template.yaml").read_text().splitlines() if x.strip().startswith("access:"))
+    enum = RECORD_3.schema["properties"]["origin"]["properties"]["access"]["enum"]
+    assert line.split("#", 1)[1].strip() == " | ".join(enum) + " (from schema/record.schema.json)"

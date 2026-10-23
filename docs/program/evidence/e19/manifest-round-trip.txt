@@ -1,0 +1,62 @@
+$ uv run osd manifest pasa/national-petroleum-exploration-database prime/national-oil-gas-database -o build/e19.manifest.json
+wrote build/e19.manifest.json: 2 collections, 0 assets, 2 to-do
+$ python3 -c '...'   # prints the format, then record_id, access, licence, unresolved of each entry
+osd.manifest/4
+{
+  "record_id": "pasa/national-petroleum-exploration-database",
+  "access": "purchase",
+  "licence": {
+    "name": "Petroleum Agency SA Confidentiality Agreement and Data Confidentiality and Data Use Agreement",
+    "spdx": null,
+    "url": "https://www.petroleumagencysa.com/obtain-our-technical-data/",
+    "redistribution": "forbidden",
+    "attribution": "unknown",
+    "terms": {
+      "stated": "a purchase is a licence to use the data for at most 10 years, data must be returned when the agreement ends, and academic publications go to the Agency for review first",
+      "duration": "at most 10 years from purchase",
+      "review_before_publication": true,
+      "expires": null
+    }
+  },
+  "unresolved": "access purchase: the publisher sells the files; buy them at the origin page"
+}
+{
+  "record_id": "prime/national-oil-gas-database",
+  "access": "request",
+  "licence": {
+    "name": "PRIME Terms of Use (State of Israel copyright)",
+    "spdx": null,
+    "url": "https://prime.energy.gov.il/assets/static/pages/termsofuse/termsofuse_en.html",
+    "redistribution": "forbidden",
+    "attribution": "required"
+  },
+  "unresolved": "access request: sign in or ask at the origin page; no file address is published to us"
+}
+$ uv run python -c "from osd import manifest as mf; [print(e.record_id, e.access, e.licence.terms) for e in mf.read(\"build/e19.manifest.json\").entries]"
+pasa/national-petroleum-exploration-database purchase Terms(stated='a purchase is a licence to use the data for at most 10 years, data must be returned when the agreement ends, and academic publications go to the Agency for review first', duration='at most 10 years from purchase', review_before_publication=True, expires=None, stated_keys=frozenset({'expires', 'duration', 'stated', 'review_before_publication'}))
+prime/national-oil-gas-database request None
+$ uv run osd get build/e19.manifest.json --dest build/e19-get && sed -n "/^## Petroleum Exploration/,/^## /p" build/e19-get/ATTRIBUTION.md
+  to-do         pasa--national-petroleum-exploration-database: access purchase: the publisher sells the files; buy them at the origin page -> https://www.petroleumagencysa.com/introduction/
+  to-do         prime--national-oil-gas-database: access request: sign in or ask at the origin page; no file address is published to us -> https://prime.energy.gov.il/en/prime.html
+no assets
+attribution -> build/e19-get/ATTRIBUTION.md
+## Petroleum Exploration Data (national hydrocarbon exploration database of South Africa)
+
+- Record: pasa/national-petroleum-exploration-database (collection pasa--national-petroleum-exploration-database)
+- Origin: https://www.petroleumagencysa.com/introduction/
+- Licence: Petroleum Agency SA Confidentiality Agreement and Data Confidentiality and Data Use Agreement (no SPDX identifier), https://www.petroleumagencysa.com/obtain-our-technical-data/
+- Attribution: unknown
+- Redistribution: forbidden
+- Share-alike: not stated
+- Statement: none stated by the publisher in the record
+- Terms, as the record states them:
+
+  > a purchase is a licence to use the data for at most 10 years, data must be returned when the agreement ends, and academic publications go to the Agency for review first
+
+- Terms duration: at most 10 years from purchase
+- Review before publication: required by the publisher
+- Terms expire: no date stated
+- Known issue: "Data purchased from the Agency may not be sold" and may not be supplied to any third party without written authorization.
+- Known issue: bbox is South Africa with its offshore, approximate.
+
+## PRIME: The National Oil and Natural Gas Database (Israel)

@@ -1,0 +1,119 @@
+diff --git a/records/_template.yaml b/records/_template.yaml
+index e56ad74..67ea241 100644
+--- a/records/_template.yaml
++++ b/records/_template.yaml
+@@ -8,7 +8,7 @@ summary: >-
+ publisher: {name: Publisher name, url: https://publisher.example, country: NL}
+ origin:
+   url: https://publisher.example/dataset          # the page a person opens; not an expiring link
+-  access: anonymous                               # anonymous | registration | api | request
++  access: anonymous                               # anonymous | registration | api | request | purchase (from schema/record.schema.json)
+ licence:
+   name: Licence as the publisher names it
+   spdx: null                                      # CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0 or null
+diff --git a/records/beg/stratton-3d.yaml b/records/beg/stratton-3d.yaml
+index 8ceefc6..8947724 100644
+--- a/records/beg/stratton-3d.yaml
++++ b/records/beg/stratton-3d.yaml
+@@ -7,7 +7,7 @@ summary: >-
+ publisher: {name: "Bureau of Economic Geology, The University of Texas at Austin", url: https://www.beg.utexas.edu, country: US}
+ origin:
+   url: https://store.beg.utexas.edu/publications/seminars-and-workshops/sw0003
+-  access: request
++  access: purchase
+   notes: "Sold on the BEG store: \"(Digital Version) ... $40.00\". A free copy is said to be on the SEG open data wiki and its S3 bucket; both answered 403 on 23 Oct 2026 (blocked), so its terms are not recorded here."
+ licence:
+   name: Not stated on the store page
+@@ -18,7 +18,6 @@ kinds: [seismic-3d, wellbore-logs]
+ region: {country: US, basin: "Stratton Field (South Texas)"}
+ listed_by: [community]
+ known_issues:
+-  - "Want: access is a purchase; the vocabulary has no such value and request is the nearest."
+   - "No extent stated; no bbox."
+   - "Old addresses https://www.beg.utexas.edu/research/programs/stratton and https://store.beg.utexas.edu/cd-rom-sets/2120-sw0003.html answer 404."
+ period:
+diff --git a/records/dgh/national-data-repository.yaml b/records/dgh/national-data-repository.yaml
+index 23a6aed..6327f3e 100644
+--- a/records/dgh/national-data-repository.yaml
++++ b/records/dgh/national-data-repository.yaml
+@@ -8,7 +8,7 @@ summary: >-
+ publisher: {name: "Directorate General of Hydrocarbons (DGH), Ministry of Petroleum and Natural Gas", url: https://www.ndrdgh.gov.in/NDR/, country: IN}
+ origin:
+   url: https://www.ndrdgh.gov.in/NDR/
+-  access: request
++  access: purchase
+   notes: "Ordering portal (Team Work Space) needs a login; data is sold per https://www.ndrdgh.gov.in/NDR/pdf/Price_List_for_NDR_Data_Sale-Final.pdf and purchase needs a signed confidentiality agreement. Limited data up to 50 sq. km is free for academic research, still under the agreement."
+ licence:
+   name: E&P Data Policy and NDR Confidentiality Agreement
+diff --git a/records/eug/national-data-repository.yaml b/records/eug/national-data-repository.yaml
+index 9ce516f..6d4ce7a 100644
+--- a/records/eug/national-data-repository.yaml
++++ b/records/eug/national-data-repository.yaml
+@@ -15,7 +15,7 @@ licence:
+   spdx: null
+   redistribution: unknown
+   attribution: unknown
+-kinds: [wellbore-headers, seismic-2d, seismic-3d, reports]
++kinds: [wellbore-headers, seismic-2d, seismic-3d, reports, potential-fields]
+ region: {country: EG, basin: Egyptian basins incl. the Mediterranean and Nile Delta, bbox: [24.7, 21.7, 36.9, 33.6]}
+ size: {stated: "16,981+ Wells, 465+ Seismic 3D, 658+ Seismic 2D, 106+ Gravity/Magnetic (home page counters)"}
+ listed_by: [publisher]
+diff --git a/records/namcor/exploration-production-data.yaml b/records/namcor/exploration-production-data.yaml
+index 0f78946..cbc02bd 100644
+--- a/records/namcor/exploration-production-data.yaml
++++ b/records/namcor/exploration-production-data.yaml
+@@ -8,14 +8,14 @@ summary: >-
+ publisher: {name: National Petroleum Corporation of Namibia (NAMCOR), url: https://www.namcor.com.na, country: NA}
+ origin:
+   url: https://www.namcor.com.na/technical-data/
+-  access: request
++  access: purchase
+   notes: "\"For more information kindly, contact the Asset Manager\"; digital well logs are for purchase at the Windhoek head office; surveys for sale are listed at https://www.namcor.com.na/data-sales/. Speculative seismic is sold by the multi-client companies."
+ licence:
+   name: Not stated
+   spdx: null
+   redistribution: unknown
+   attribution: unknown
+-kinds: [seismic-2d, seismic-3d, wellbore-logs, time-depth, core, geochemistry, reports]
++kinds: [seismic-2d, seismic-3d, wellbore-logs, time-depth, core, geochemistry, reports, potential-fields]
+ region: {country: NA, basin: Namibian offshore and onshore, bbox: [8.0, -29.5, 25.3, -16.9]}
+ listed_by: [publisher]
+ known_issues:
+diff --git a/records/pasa/national-petroleum-exploration-database.yaml b/records/pasa/national-petroleum-exploration-database.yaml
+index 72d347a..d702873 100644
+--- a/records/pasa/national-petroleum-exploration-database.yaml
++++ b/records/pasa/national-petroleum-exploration-database.yaml
+@@ -8,7 +8,7 @@ summary: >-
+ publisher: {name: Petroleum Agency South Africa (PASA), url: https://www.petroleumagencysa.com, country: ZA}
+ origin:
+   url: https://www.petroleumagencysa.com/introduction/
+-  access: request
++  access: purchase
+   notes: "Ordering via https://geoportal.petroleumagencysa.com/Storefront/Viewer/index_map.html after registering as a commercial, governmental or academic entity; terms at /obtain-our-technical-data/, prices at /cost-of-data/, formats at /dataset-standard-format/."
+ licence:
+   name: Petroleum Agency SA Confidentiality Agreement and Data Confidentiality and Data Use Agreement
+@@ -16,6 +16,11 @@ licence:
+   url: https://www.petroleumagencysa.com/obtain-our-technical-data/
+   redistribution: forbidden
+   attribution: unknown
++  terms:
++    stated: "a purchase is a licence to use the data for at most 10 years, data must be returned when the agreement ends, and academic publications go to the Agency for review first"
++    duration: "at most 10 years from purchase"
++    review_before_publication: true
++    expires: null
+ kinds: [wellbore-headers, wellbore-logs, core, seismic-2d, seismic-3d, geochemistry, reports]
+ region: {country: ZA, basin: "South African offshore and the Karoo, Algoa and Zululand onshore basins", bbox: [13.0, -38.0, 33.5, -22.0]}
+ size: {stated: "more than 300 000 line km's of 2D and 40 000 km² of 3D seismic data"}
+diff --git a/records/prime/national-oil-gas-database.yaml b/records/prime/national-oil-gas-database.yaml
+index c48e078..0c7544f 100644
+--- a/records/prime/national-oil-gas-database.yaml
++++ b/records/prime/national-oil-gas-database.yaml
+@@ -16,7 +16,7 @@ licence:
+   url: https://prime.energy.gov.il/assets/static/pages/termsofuse/termsofuse_en.html
+   redistribution: forbidden
+   attribution: required
+-kinds: [wellbore-headers, seismic-2d, seismic-3d, reports]
++kinds: [wellbore-headers, seismic-2d, seismic-3d, reports, potential-fields]
+ region: {country: IL, basin: Levant Basin (onshore and offshore Israel), bbox: [32.0, 29.4, 35.9, 33.4]}
+ listed_by: [publisher]
+ known_issues:

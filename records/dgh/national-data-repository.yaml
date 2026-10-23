@@ -8,7 +8,7 @@ summary: >-
 publisher: {name: "Directorate General of Hydrocarbons (DGH), Ministry of Petroleum and Natural Gas", url: https://www.ndrdgh.gov.in/NDR/, country: IN}
 origin:
   url: https://www.ndrdgh.gov.in/NDR/
-  access: request
+  access: purchase
   notes: "Ordering portal (Team Work Space) needs a login; data is sold per https://www.ndrdgh.gov.in/NDR/pdf/Price_List_for_NDR_Data_Sale-Final.pdf and purchase needs a signed confidentiality agreement. Limited data up to 50 sq. km is free for academic research, still under the agreement."
 licence:
   name: E&P Data Policy and NDR Confidentiality Agreement

@@ -1,0 +1,15 @@
+id: acme/words
+title: Terms in words only
+publisher: {name: Acme Petroleum Agency, url: https://acme.example, country: ZA}
+origin: {url: https://acme.example/words, access: request}
+licence:
+  name: Acme Confidentiality Agreement
+  redistribution: forbidden
+  attribution: required
+  terms:
+    stated: "The licence ends on 31 December 2030."
+    expires: "2030-12-31"
+kinds: [wellbore-logs]
+region: {country: ZA}
+listed_by: [publisher]
+added: 2026-10-23

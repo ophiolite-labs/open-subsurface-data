@@ -1,0 +1,16 @@
+$ uv run osd status | grep -E "^level|prime/|eug/|namcor/|beg/stratton|dgh/|pasa/"
+level id                                   checked                              access       redistribution kinds
+L0    beg/stratton-3d                      never stale                          purchase     unknown        seismic-3d,wellbore-logs
+L0    dgh/national-data-repository         never stale                          purchase     forbidden      seismic-2d,seismic-3d,wellbore-headers,wellbore-logs,core,reports
+L0    eug/national-data-repository         never stale                          request      unknown        wellbore-headers,seismic-2d,seismic-3d,reports,potential-fields
+L0    namcor/exploration-production-data   never stale                          purchase     unknown        seismic-2d,seismic-3d,wellbore-logs,time-depth,core,geochemistry,reports,potential-fields
+L0    pasa/national-petroleum-exploration-database never stale                          purchase     forbidden      wellbore-headers,wellbore-logs,core,seismic-2d,seismic-3d,geochemistry,reports
+L0    prime/national-oil-gas-database      never stale                          request      forbidden      wellbore-headers,seismic-2d,seismic-3d,reports,potential-fields
+
+# cli.terms_note, the note status prints beside the level as "L1 (terms expire D)", injected clock 2026-10-23 12:00 UTC (no current record states an absolute date; tests/test_schema.py::test_status_terms_expiry asserts the full rows):
+past      expires='2026-10-22'   -> 'terms expired 2026-10-22'
+today     expires='2026-10-23'   -> 'terms expire 2026-10-23 (today)'
+future    expires='2026-10-24'   -> 'terms expire 2026-10-24'
+null      expires=None           -> ''
+malformed expires='soon'         -> "terms expire ? ('soon' is not a date)"
+absent                            -> ''

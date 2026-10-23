@@ -514,9 +514,11 @@ def test_every_version_1_record_validates_under_record_2():
                               format_checker=FormatChecker())
     v2 = Draft202012Validator(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()),
                               format_checker=FormatChecker())
-    assert v2.schema["$id"].endswith("/record/2") and v1.schema["$id"].endswith("/record/1")
+    assert v2.schema["$id"].endswith("/record/3") and v1.schema["$id"].endswith("/record/1")
     for p in record_files():
         rec = load_record(p)
+        if rec["origin"]["access"] == "purchase" or "potential-fields" in rec["kinds"] or "terms" in rec["licence"]:
+            continue  # record/3 values (E19): not a version-1 record
         rec.pop("inputs", None)  # the version-2 additions: what remains is a version-1 file
         rec.pop("period", None)
         assert not list(v1.iter_errors(rec)), p

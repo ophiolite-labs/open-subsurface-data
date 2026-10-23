@@ -1,30 +1,34 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/manifest/3",
-  "title": "Retrieval manifest, version 3 (osd.manifest/3; osd.manifest/1 and /2 still validate)",
-  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials. v2 (E07): an asset may name `alternates`, other locations of the same bytes (the mirror), tried before `href`; a manifest with alternates says osd.manifest/2, one without may stay osd.manifest/1. v3 (E09): `metadata.catalog` names the catalogue snapshot the manifest was written from (records.json `catalog`, copied whole); a /3 manifest carries it, /1 and /2 must not. A /3 licence may state `attribution: null` (the source states no value), which /1 and /2 refuse.",
+  "$id": "https://open-subsurface-data.org/schema/manifest/4",
+  "title": "Retrieval manifest, version 4 (osd.manifest/4; osd.manifest/1, /2 and /3 still validate)",
+  "description": "What a person selected from the catalogue and where its files are. Written by `osd manifest` (and, later, the site), read by `osd get` and `osd.manifest.read`. Assets are the STAC Collection assets, which are the files the verifier hashed: a sample, never the whole dataset unless `coverage` says complete. Never carries credentials. v2 (E07): an asset may name `alternates`, other locations of the same bytes (the mirror), tried before `href`; a manifest with alternates says osd.manifest/2, one without may stay osd.manifest/1. v3 (E09): `metadata.catalog` names the catalogue snapshot the manifest was written from (records.json `catalog`, copied whole); a /3 manifest carries it, /1 and /2 must not. A /3 licence may state `attribution: null` (the source states no value), which /1 and /2 refuse. v4 (E19): the record/3 vocabulary travels: an entry may say `access: purchase` and its licence may carry `terms`, copied whole (absent keys stay absent); a /4 manifest carries `metadata.catalog` like /3, and /1 to /3 refuse both new values, so an old manifest means what it meant. A manifest is written as /4 only when an entry needs it.",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "created", "catalog_url", "selection", "entries"],
   "properties": {
-    "format": {"enum": ["osd.manifest/1", "osd.manifest/2", "osd.manifest/3"]},
+    "format": {"enum": ["osd.manifest/1", "osd.manifest/2", "osd.manifest/3", "osd.manifest/4"]},
     "created": {"type": "string", "format": "date-time"},
     "catalog_url": {"type": "string", "format": "uri", "description": "The STAC root the ids resolve against"},
     "selection": {"enum": ["collections", "items"], "description": "Collection selection or Item selection, never a mix"},
     "entries": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/entry"}},
     "metadata": {"type": "object", "additionalProperties": false, "required": ["catalog"],
-                 "description": "v3. About the manifest itself: the catalogue snapshot it was written from",
+                 "description": "v3 and v4. About the manifest itself: the catalogue snapshot it was written from",
                  "properties": {"catalog": {"$ref": "#/$defs/catalog"}}}
   },
   "allOf": [
     {"if": {"properties": {"format": {"const": "osd.manifest/1"}}},
      "then": {"properties": {"entries": {"items": {"properties": {"assets": {
        "additionalProperties": {"not": {"required": ["alternates"]}}}}}}}}},
-    {"if": {"properties": {"format": {"const": "osd.manifest/3"}}},
+    {"if": {"properties": {"format": {"enum": ["osd.manifest/3", "osd.manifest/4"]}}},
      "then": {"required": ["metadata"]},
      "else": {"not": {"required": ["metadata"]},
               "properties": {"entries": {"items": {"properties": {"licence": {"properties": {
-                "attribution": {"type": "string"}}}}}}}}}
+                "attribution": {"type": "string"}}}}}}}}},
+    {"if": {"properties": {"format": {"const": "osd.manifest/4"}}},
+     "else": {"properties": {"entries": {"items": {"properties": {
+       "access": {"not": {"const": "purchase"}},
+       "licence": {"not": {"required": ["terms"]}}}}}}}}
   ],
   "$defs": {
     "catalog": {
@@ -70,7 +74,15 @@
         "attribution": {"enum": ["required", "not-required", "unknown", null],
                         "description": "v3 admits null: the source states no value; a reader treats it as not stated and supplies no default"},
         "share_alike": {"type": "boolean"},
-        "statement": {"type": "string", "maxLength": 300}
+        "statement": {"type": "string", "maxLength": 300},
+        "terms": {"type": "object", "additionalProperties": false, "required": ["stated"],
+                  "description": "v4. The record's licence.terms (record/3), copied whole: the keys the record states, nothing added",
+                  "properties": {
+                    "stated": {"type": "string", "minLength": 1, "maxLength": 600},
+                    "duration": {"type": ["string", "null"], "minLength": 1},
+                    "review_before_publication": {"type": ["boolean", "null"]},
+                    "expires": {"type": ["string", "null"], "format": "date",
+                                "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"}}}
       }
     },
     "entry": {
@@ -83,7 +95,7 @@
         "feature_id": {"type": "string", "description": "Item selection: the map feature that was selected"},
         "title": {"type": "string"},
         "origin_url": {"type": "string", "format": "uri", "description": "The publisher's page; the to-do address when assets are empty"},
-        "access": {"enum": ["anonymous", "registration", "api", "request"]},
+        "access": {"enum": ["anonymous", "registration", "api", "request", "purchase"], "description": "purchase is v4 only"},
         "licence": {"$ref": "#/$defs/licence"},
         "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}, "description": "The record's known_issues, verbatim (publisher restrictions live here and in licence.redistribution)"},
         "assets": {"type": "object", "additionalProperties": {"$ref": "#/$defs/asset"},

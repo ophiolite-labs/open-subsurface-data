@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json",
-  "title": "Open Subsurface Data (osd) STAC extension, v1.0.0",
-  "description": "Collection fields state what our tools established about the whole record (record-level assurance, not per file or per feature). Item fields state how one feature's geometry was obtained. Enums are closed and no other osd: field is allowed. Offline validation maps this URL to schema/stac-osd.json (schema/stac/schema-map.json).",
+  "$id": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2",
+  "title": "Open Subsurface Data (osd) STAC extension, v2.0.0",
+  "description": "Collection fields state what our tools established about the whole record (record-level assurance, not per file or per feature). Item fields state how one feature's geometry was obtained. Enums are closed and no other osd: field is allowed. Offline validation maps this URL to schema/stac-osd.json (schema/stac/schema-map.json). v2 (E19): `osd:access` admits `purchase`; the identifier gains `?v=2`. The v1 identifier resolves to this same file online, so a document naming either identifier validates here; v1 is frozen at tests/fixtures/schema/stac-osd-1.json.",
   "type": "object",
   "oneOf": [
     {
@@ -35,7 +35,7 @@
       "properties": {
         "stac_extensions": {
           "type": "array",
-          "contains": {"const": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"}
+          "contains": {"enum": ["https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json?v=2", "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"]}
         }
       }
     },
@@ -52,8 +52,8 @@
           "description": "When that level was established; null when the record was never verified"
         },
         "osd:access": {
-          "type": "string", "enum": ["anonymous", "registration", "api", "request"],
-          "description": "As the record states it: anonymous, a free account, a documented service, or a human approves"
+          "type": "string", "enum": ["anonymous", "registration", "api", "request", "purchase"],
+          "description": "As the record states it: anonymous, a free account, a documented service, a human approves, or the files are sold (v2)"
         },
         "osd:redistribution": {
           "type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
