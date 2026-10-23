@@ -63,11 +63,11 @@ register_arcgis (pure, over stored parts): every page present, none short but th
 | the 50,000 cap | `test_arcgis_layer_above_the_cap_is_refused` |
 | point, two-path polyline, polygon with a hole, two-exterior polygon == GeoJSON fixtures | `test_esri_json_geometries_match_geojson_fixtures[...]` |
 | native CRS transformed like the WFS path | `test_arcgis_native_coordinates_transform_like_wfs` |
-| epoch-ms dates == given RFC 3339 strings, feature dates distinct from the collection's | `test_arcgis_feature_dates_are_exact`; `test_normalise_period_values[epoch-ms ...]` |
+| epoch-ms dates == given RFC 3339 strings, feature dates distinct from the collection's | `test_arcgis_feature_dates_are_exact`; `test_epoch_ms_period_values` |
 | request names oid order, offset, maxRecordCount, rule fields; no outSR, f=json | `test_arcgis_requests_page_by_object_id` |
 | refused input fails outline-derived; an L3 record is demoted | `test_refused_arcgis_input_demotes_an_l3_record` |
-| STAC Item id set == object-id set; exact dates, `feature`; suppressing Items fails | `test_stac.py::test_arcgis_register_items_equal_the_object_ids` |
-| record/5, record/4 frozen, one fixture set under both, every record under record/5 | `test_schema.py::test_record_4_fixtures_validate_under_record_4_and_record_5`, `test_record_ids_are_versioned`, `test_record_4_refuses_arcgis` |
+| STAC Item id set == object-id set; exact dates, `feature`; suppressing Items fails | `test_outlines.py::test_arcgis_register_items_equal_the_object_ids` |
+| record/5, record/4 frozen, one fixture set under both, every record under record/5 | `test_schema.py::test_record_4_fixtures_validate_under_record_4_and_record_5`, `test_record_ids_are_versioned`, `test_record_5_admits_arcgis_and_record_4_refuses_it` |
 | MultiLineString, MultiPoint geometry rules | `test_outlines.py::test_multilinestring_parts_follow_linestring_rules`, `test_multipoint_parts_follow_point_rules` |
 | rules for the nine | `test_rules_name_records_with_inputs` (existing) |
 

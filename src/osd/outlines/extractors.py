@@ -16,7 +16,7 @@ import json
 import math
 import re
 import struct
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
@@ -48,15 +48,24 @@ def _ident(rule: dict, props: dict) -> dict:
 
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 ISO_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?")
+EPOCH_MS = re.compile(r"-?\d{1,15}")
+EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 MDY = re.compile(r"(\d{1,2})/(\d{1,2})/(\d{4})(?: (\d{1,2}):(\d{2}):(\d{2}) ([AP]M))?")
 
 
 def period_instant(raw: str, bound: str, form: str = "iso") -> str | None:
     """A publisher's date or timestamp as an RFC 3339 UTC instant, or None when it is not in the
     form the rule names. A date is its first second for a start and its last for an end; a
-    timestamp without a zone is read as UTC. form: iso (YYYY-MM-DD, YYYY-MM-DDThh:mm:ss[.f][zone])
-    or m/d/y (FactMaps GeoJSON: M/D/YYYY[ h:mm:ss AM|PM])."""
+    timestamp without a zone is read as UTC. form: iso (YYYY-MM-DD, YYYY-MM-DDThh:mm:ss[.f][zone]),
+    m/d/y (FactMaps GeoJSON: M/D/YYYY[ h:mm:ss AM|PM]) or epoch-ms (an ArcGIS date field:
+    milliseconds since 1970-01-01T00:00:00Z, an instant, E29)."""
     try:
+        if form == "epoch-ms":
+            if not EPOCH_MS.fullmatch(raw):
+                return None
+            when = EPOCH + timedelta(milliseconds=int(raw))
+            frac = f".{int(raw) % 1000:03d}" if int(raw) % 1000 else ""
+            return when.strftime("%Y-%m-%dT%H:%M:%S") + frac + "Z"
         if form == "m/d/y":
             m = MDY.fullmatch(raw)
             if not m:

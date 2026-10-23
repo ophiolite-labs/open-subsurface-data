@@ -22,7 +22,7 @@
 #   the register serves without a position in the file's "unplaced" member instead of refusing.
 # period_fields {start, end} (E18): the service properties holding the feature's own dates, also
 #   named in params.propertyName; period_format the string form the service writes (iso, the
-#   default, or m/d/y for M/D/YYYY[ h:mm:ss AM|PM]); period_placeholders values that mean "no
+#   default, m/d/y for M/D/YYYY[ h:mm:ss AM|PM], or epoch-ms for an ArcGIS date field (E29)); period_placeholders values that mean "no
 #   date". An input without period_fields keeps its record's period on every Item. Field names
 #   confirmed on the live services 23 Oct 2026: docs/program/evidence/e18/fields.md.
 

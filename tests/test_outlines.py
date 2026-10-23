@@ -867,6 +867,31 @@ def test_arcgis_native_coordinates_transform_like_wfs(tmp_path):
     assert wfs["geometry"]["coordinates"] == got
 
 
+ARC_DATES = {   # date -u -d @<ms/1000>, written by hand from features.json
+    "40": ("1147953600000", "2006-05-18T12:00:00Z", "1148644800000", "2006-05-26T12:00:00Z"),
+    "150": ("57157200000", "1971-10-24T13:00:00Z", "67093200000", "1972-02-16T13:00:00Z"),
+    "78": ("503326800000", "1985-12-13T13:00:00Z", "506005200000", "1986-01-13T13:00:00Z"),
+}
+
+
+def test_arcgis_feature_dates_are_exact(tmp_path):
+    fc, _ = arcgis_derive(tmp_path)
+    by = {f["properties"]["publisher_id"]: f["properties"] for f in fc["features"]}
+    for oid, (rs, s, re_, e) in ARC_DATES.items():
+        p = by[oid]
+        assert (p["osd:period_start_raw"], p["osd:period_start"], p["osd:period_end_raw"], p["osd:period_end"]) == \
+            (rs, s, re_, e), oid
+    assert fc["inputs"]["wells"]["period_fields"] == {"start": "Start_Date", "end": "End_Date"}
+
+
+@pytest.mark.parametrize(("raw", "want"), [
+    ("-3281857200000", "1866-01-01T13:00:00Z"), ("1733356800000", "2024-12-05T00:00:00Z"),
+    ("1733356800123", "2024-12-05T00:00:00.123Z"), ("0", "1970-01-01T00:00:00Z"),
+    ("2024-12-05", None), ("1.5e12", None), ("", None)])
+def test_epoch_ms_period_values(raw, want):
+    from osd.outlines.extractors import period_instant
+    assert period_instant(raw, "start", "epoch-ms") == want
+    assert period_instant(raw, "end", "epoch-ms") == want   # an instant: no end-of-day widening
 
 
 def test_arcgis_requests_page_by_object_id(tmp_path):
@@ -913,3 +938,23 @@ def test_multipoint_parts_follow_point_rules():
     assert geometry_problems({"type": "MultiPoint", "coordinates": [[174, -39], [1638611.12, 5621550.6]]}) == \
         ["position [1638611.12, 5621550.6] outside WGS84 lon/lat"]
     assert geometry_problems({"type": "MultiPoint", "coordinates": []}) == ["multipoint has no positions"]
+
+
+def test_arcgis_register_items_equal_the_object_ids(tmp_path):
+    """The fixture layer, derived and built: one STAC Item per placed object id, named Items with the
+    feature's own dates (`feature`), all inside the Collection's 1960 to 2026-10-23."""
+    from osd import stac
+    fc, _ = arcgis_derive(tmp_path / "in")
+    od = tmp_path / "outlines"
+    od.mkdir()
+    write_outline(fc, od / "fixture__arcgis-register.geojson")
+    rec = {**ARC_REC, "level": "L3", "checked_at": "2026-10-23T12:00:00+00:00", "stale": False, "blocked_since": None}
+    stac.write_catalog(tmp_path / "catalog", [rec], vdir=tmp_path, outlines_dir=od)
+    root = tmp_path / "catalog" / "stac"
+    items = {json.loads(p.read_text())["id"]: json.loads(p.read_text())["properties"]
+             for p in (root / "fixture--arcgis-register" / "items").glob("*.json")}
+    assert set(items) == {f"fixture/arcgis-register#{i}" for i in ARC_OIDS}
+    for oid, (_, s, _, e) in ARC_DATES.items():
+        p = items[f"fixture/arcgis-register#{oid}"]
+        assert (p["start_datetime"], p["end_datetime"], p["osd:period_source"]) == (s, e, "feature"), oid
+    assert stac.containment_problems(root) == []
