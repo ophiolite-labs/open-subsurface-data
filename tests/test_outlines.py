@@ -517,7 +517,8 @@ def test_every_version_1_record_validates_under_record_2():
     assert v2.schema["$id"].endswith("/record/2") and v1.schema["$id"].endswith("/record/1")
     for p in record_files():
         rec = load_record(p)
-        rec.pop("inputs", None)  # the only version-2 addition: what remains is a version-1 file
+        rec.pop("inputs", None)  # the version-2 additions: what remains is a version-1 file
+        rec.pop("period", None)
         assert not list(v1.iter_errors(rec)), p
         assert not list(v2.iter_errors(rec)), p
 

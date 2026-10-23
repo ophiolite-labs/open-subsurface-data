@@ -2,6 +2,7 @@
 
 import copy
 import json
+import random
 import re
 import shutil
 import socket
@@ -108,11 +109,53 @@ def test_makefile_copies_catalog_recursively():
     assert "cp -R build/catalog/. site/data/" in recipe
 
 
-def test_staged_tree_validates_recursively_offline(staged, no_network):
-    ok, messages = stac.validate(staged / "stac" / "catalog.json", recursive=True)
-    assert ok, [m for m in messages if not m.get("valid_stac")]
-    assert len(messages) == 1 + len(load_records()) + len(list(staged.glob("stac/*/items/*.json")))
-    assert all(m["valid_stac"] for m in messages)
+ITEM_SAMPLE, ITEM_SEED = 20, 18   # OSD-D18: the gate samples Items; `make check-full` validates them all
+
+
+def item_sample(collection_dir: Path) -> list[Path]:
+    """First and last Item by file name, plus up to ITEM_SAMPLE between them chosen by a fixed seed."""
+    items = sorted((collection_dir / "items").glob("*.json"))
+    if len(items) <= 2:
+        return items
+    middle = items[1:-1]
+    picked = random.Random(ITEM_SEED).sample(middle, min(ITEM_SAMPLE, len(middle)))
+    return [items[0], *sorted(picked), items[-1]]
+
+
+def test_item_sample_is_bounded_and_fixed(tmp_path):
+    d = tmp_path / "c" / "items"
+    d.mkdir(parents=True)
+    for i in range(100):
+        (d / f"{i:03}.json").write_text("{}")
+    s = item_sample(tmp_path / "c")
+    assert len(s) == ITEM_SAMPLE + 2 and s[0].name == "000.json" and s[-1].name == "099.json"
+    assert s == item_sample(tmp_path / "c") and len(set(s)) == len(s)
+    for p in list(d.glob("*.json"))[:97]:
+        p.unlink()
+    assert len(item_sample(tmp_path / "c")) == 3
+
+
+def test_staged_catalog_collections_and_item_sample_validate_offline(staged, no_network):
+    """OSD-D18: the catalog, every Collection, and per Collection first, last and a seeded sample of Items."""
+    stac_dir = staged / "stac"
+    cols = sorted(stac_dir.glob("*/collection.json"))
+    assert len(cols) == len(load_records())
+    targets = [stac_dir / "catalog.json", *cols, *(i for c in cols for i in item_sample(c.parent))]
+    assert any("/items/" in str(t) for t in targets)   # records with a period put Items in the sample
+    for t in targets:
+        ok, messages = stac.validate(t, recursive=False)
+        assert ok and len(messages) == 1, (t, messages)
+
+
+def test_makefile_check_full_validates_whole_tree_and_verify_runs_it_on_main_only():
+    mk = (ROOT / "Makefile").read_text()
+    recipe = re.search(r"^check-full:.*?\n((?:\t.*\n)+)", mk, re.MULTILINE).group(1)
+    assert "stac.validate" in recipe and "site/data/stac/catalog.json" in recipe
+    assert not re.search(r"^check:.*check-full", mk, re.MULTILINE)   # never part of the gate
+    wf = (ROOT / ".github" / "workflows" / "verify.yml").read_text()
+    step = re.search(r"- name: full STAC tree.*?\n((?:        .*\n)+)", wf).group(0)
+    assert "make check-full" in step
+    assert "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'" in step
 
 
 def test_validator_needs_the_bundled_schemas(staged, no_network, tmp_path):
