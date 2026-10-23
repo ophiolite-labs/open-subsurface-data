@@ -1,0 +1,1800 @@
+Reading additional input from stdin...
+OpenAI Codex v0.159.0
+--------
+workdir: /home/epic/src/open-subsurface-data
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: concise
+session id: 01a16802-3b26-7143-82f3-19f082d8d5fd
+--------
+user
+You are a fresh, independent senior reviewer of one epic charter in the Open Subsurface Data project (a verified catalogue of open subsurface datasets: YAML records -> verifier levels L0-L4 -> outlines -> STAC/GeoJSON catalogue -> static MapLibre map; Python package src/osd, tests in tests/, schemas in schema/). Read docs/ARCHITECTURE.md, docs/ENGINEERING.md, docs/program/PROGRAM.md, then the charter at /home/epic/src/open-subsurface-data/docs/program/charters/E02-verifier-to-L2.md. VERIFY every 'exists' claim in its Context section against the code at HEAD (open the files; do not trust the document) and state the commit you verified against (git rev-parse HEAD). Report in Markdown: (1) Verdict: APPROVE / APPROVE WITH CHANGES / REWORK, one sentence why. (2) Factual errors about current code, with file:line evidence. (3) Design objections: an owner, boundary, format or contract choice that is unsafe or misplaced, each with a concrete alternative that stays within docs/ENGINEERING.md (no new CI stations, no server, standards over bespoke). (4) Acceptance lines that can pass vacuously or whose proposed test would stay green under the mutation it should catch. (5) Scope creep into another charter in docs/program/charters/. Be specific and terse; no praise; at most 60 lines. Do not modify any files.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll read the project guidance and charter, verify its Context claims against HEAD, and check adjacent charters for scope overlap.
+exec
+/bin/bash -lc 'git rev-parse HEAD; cat docs/ARCHITECTURE.md docs/ENGINEERING.md docs/program/PROGRAM.md docs/program/charters/E02-verifier-to-L2.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+e58e2f547715fc46d94a7e778eb142190578803c
+# Architecture
+
+One sentence: contributors write facts about open datasets, tools turn those facts into verified
+levels, outlines and a catalogue, and a static map plus a manifest let anyone find and fetch the
+data; Ophiolite reads the same catalogue as a source.
+
+## The chain
+
+```
+  SEG wiki, national        contributor            verifier            outline extractor
+  registers, publishers ──► records/*.yaml ──────► build/verification ─► outlines/*.geojson
+        (lists)             (facts, CC0)            (levels L1–L2)        (L3, derived)
+                                 │                        │                    │
+                                 └──────────┬─────────────┴────────────────────┘
+                                            ▼
+                                     osd build  ─────►  build/catalog/
+                                                        records.json · outlines.geojson · collections.json (STAC)
+                                            │
+                 ┌──────────────────────────┼──────────────────────────────┐
+                 ▼                          ▼                              ▼
+           site/ (MapLibre)           QGIS / any GIS                 manifest (E06)
+           toggles, search,           GeoJSON / STAC by address      osd get · Python reader
+           panel, cards                                                   │
+                                                                          ▼
+                                                              Ophiolite source (E09, L4)
+                                                              E85 intake · E35 rights-basis
+```
+
+## Components and their boundaries
+
+| Component | Owns | Never does |
+|---|---|---|
+| **Records** (`records/`, `schema/record.schema.json`) | Facts as the publisher states them: origin, licence, kinds, region | Carry a level, a checksum or anything a tool produced |
+| **Verifier** (`src/osd/verify.py`, `schema/verification.schema.json`) | Network checks, checksums, licence text capture, the level ladder | Change a record; run inside the required CI check |
+| **Outlines** (`outlines/`, `schema/outline.schema.json`, extractor in E03) | Geometry per wellbore or survey in WGS84, with its derivation named | Invent geometry without saying `approximate: true` |
+| **Build** (`src/osd/build.py`) | Joins records, outlines and levels into the published files | Fetch anything |
+| **Catalogue** (`build/catalog/`) | The one published artefact; STAC-shaped collections, GeoJSON outlines, records JSON | Hold dataset bytes |
+| **Site** (`site/`) | Reading the catalogue and showing it; copyable addresses and snippets | Hold its own data store; need a server |
+| **Retrieval** (E06) | A manifest from a selection; a fetcher that verifies checksums | Decode proprietary project files (Ophiolite connector doctrine) |
+| **Mirror store** (E07) | Checksummed copies of small or orphaned datasets whose licence allows it | Copy anything with `redistribution: unknown` |
+| **Ophiolite bridge** (E09) | The catalogue as an Ophiolite source; rights-basis from the record; fidelity records | Live outside the Ophiolite monorepo's own conventions |
+
+## Formats, all standard
+
+- Records: YAML validated by JSON Schema 2020-12. Outlines: GeoJSON, EPSG:4326.
+- Catalogue: STAC 1.0 collections and items (full validity is E04), plus one GeoJSON for map and GIS.
+- Tiles: PMTiles once outlines exceed what one GeoJSON serves comfortably (E05).
+- Manifest: `osd.manifest/1` JSON (E06). Seismic store, if ever: Zarr-based (E10).
+
+## The level ladder
+
+L0 listed → L1 reachable → L2 checksummed and licence captured → L3 outlined from the data →
+L4 converted to a canonical type with a fidelity record. No rung is skipped, and a level is
+computed from check outcomes, never typed. The ladder is the product's honesty: a dashed outline
+on the map is a placeholder and says so.
+
+## What the map is and is not
+
+The map is a view of the catalogue, nothing more. It has no account, no state beyond the URL, no
+server. Everything it shows can be opened in QGIS by one address. That is also why the website
+and "a GIS layer" are one deliverable rather than two.
+
+## Where Ophiolite comes in
+
+Ophiolite is a consumer of the catalogue, and the catalogue borrows Ophiolite's vocabulary
+(kinds from the E55 registry, rights-basis from E35). The two repositories meet at one interface:
+a manifest or STAC collection Ophiolite's intake (E85) can read. No Ophiolite code runs here;
+no catalogue code runs there.
+# Engineering setup
+
+Fit for purpose: a Python package, YAML records and a static page. The Ophiolite program
+(docs/program-2026-09-25 in the Ophiolite monorepo) taught what to keep and what to drop; the
+evidence for each line is in the Ophiolite program records of 8–22 October 2026.
+
+## Keep (copied from Ophiolite)
+
+| Practice | Why it earned its place |
+|---|---|
+| Claims board: a lane names its paths before it starts, two lanes never share a path | Overlap was the cause of merge pain; the 21 Oct simplification cut kept the board deliberately |
+| Contract first: slice 0 is schema, fixtures and stubs; later slices vertical | Layer-cut slices made serial chains (18 Oct rule) |
+| Kernel vs surface proof bar | Surface strategies capped at one review round after revisions ran to 8 and 18 rounds on E60 and E42c |
+| Outcome-named slices: the brief says what a user can do after merge, or no lane | Success metric is slices merged per day, not green CI |
+| Revert first: a red main gets one revert within the hour, the fix follows | Owner accepted a briefly red main on about one merge in five |
+| No artificial schedule: act when the precondition holds, never on a timer | Nightly timers and self-set dates cost days (night 2026.10.95) |
+| Small fixes batched, one push per merge, no wait on the repeat run | Loop steps 7 and 8 |
+| Brief by reference, one drafting and one execution agent, small contexts | 83 % of usage was sessions over 150k tokens, 78 % subagent-heavy |
+| A different model reviews kernel charters, read-only, one round | Reviews caught contract mistakes; multiple rounds did not pay |
+
+## Drop (what cost Ophiolite more than it returned)
+
+| Station | Evidence | Here instead |
+|---|---|---|
+| Self-hosted runners, pool builders, runner crews | needrestart killed runner units after any apt run; two crews and "chair out, station out" existed only to manage them | GitHub-hosted `ubuntu-24.04`, one job, under two minutes |
+| Merge trains, then a merge queue | 8 workers gave 10× activity for 2–3× merges; merges per worker-day fell from 5.6 to 0.3 at 18 workers | Squash merge on a green check; at most 2 coding lanes plus 1 records lane |
+| Nightly releases, release pinning, qualification | A night took 1 h 50 min at best, ARM64 70 min on the critical path; per-lane qualification 45 min serial | Every merge to main publishes the site; no version numbers |
+| Hardening lanes and a growing item list | 87 hardening merges against about 10 epic slices in a week; the list grew 150 → 217 | Defects under 50 lines ride on the next lane; a red main is reverted, not hardened |
+| Committed conformance results, locks, worker-check cron | Three lanes lost 30–45 min each on a dead lock; a queue stopped for an hour on a docs-only deadline | Nothing is committed that a job can regenerate; no locks; no cron |
+| Multiple Codex rounds, 4-revision caps | 2–4 h of a worker per round | One round for a kernel charter; none for surface or records |
+| Dispatch per commit group | Worth it for a 27-minute C++ build | A 2-minute check runs on every push; nothing to batch |
+| ccache, proven-tree skip, CI spend caps | Needed for a 27-minute C++ build | Irrelevant at Python-and-static scale; revisit above 10 min per check |
+
+## The gate
+
+`make check` = ruff + pytest + schema validation + build, offline. It is the only required
+status. Network verification (`verify` workflow) comments on pull requests and never blocks: a
+publisher's outage is a finding, not a red gate. The site publishes from main on every merge.
+
+## Proof bar by class
+
+- **Kernel** (schemas, verifier, build, manifest, bridge): tests for every acceptance line, a
+  mutation shown to fail for every guard, one Codex round on the charter. Strategy at lane open,
+  at most two pages.
+- **Surface** (site, docs, records): `make check` green and a screenshot or the verify comment.
+  No strategy document; the charter's acceptance list is the brief.
+- **Records**: the verify comment shows the level; a human checks the licence fields against
+  the publisher's page. Same-day merge.
+
+## Roles
+
+- **Supervisor** (one): keeps `docs/program/PROGRAM.md` true, writes lane briefs by reference,
+  merges on green, reverts on red, records decisions in `DECISIONS.md`. Does not write product
+  code except a revert.
+- **Worker** (at most three concurrent: two coding lanes, one records lane): takes a charter,
+  claims paths, opens a branch `e<nn>-<slug>`, pushes when the diff is inside the claim, opens
+  the pull request with the outcome sentence and the proof. Waits for nothing but its own check.
+- **Reviewer** (Codex, read-only): one round per kernel charter, dispositions recorded in the
+  charter.
+
+## What is deliberately absent
+
+No merge queue, no release branches, no version tags, no nightly, no self-hosted compute, no
+lock files committed by hand, no conformance ledger, no item list. If one of these starts to look
+necessary, the measured reason goes into `DECISIONS.md` first.
+# Program: Open Subsurface Data
+
+Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two coding lanes and
+one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
+Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
+
+## Queue (23 Oct 2026)
+
+| # | Epic | Class | Status | Depends on | Outcome a user can observe |
+|---|---|---|---|---|---|
+| 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
+| 2 | E02 Verifier to L2 | Kernel | QUEUED | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
+| 3 | E03 Outlines from the data | Kernel | QUEUED | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
+| 4 | E05 Map that scales | Surface | QUEUED (parallel with E02, disjoint paths) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
+| 5 | E04 STAC catalogue | Kernel | QUEUED | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
+| 6 | E06 Retrieval by manifest | Kernel | QUEUED | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
+| 7 | E08 Curation that runs itself | Surface | QUEUED | E02 | An outside contributor's record merges the same day; dead links become issues |
+| 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
+| 9 | E07 Mirror store and custody | Kernel | QUEUED | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
+| 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | QUEUED | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
+| 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
+| 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
+
+Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
+map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
+(three of them the SEG wiki blocking this host with HTTP 403, one NOPIMS 403; see OSD-D9).
+Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
+`verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
+with real levels through the `verification-results` branch. `main` requires `check`.
+DNS entered and the domain verified for ophiolite-labs by the owner 23 Oct; HTTPS enforced (certificate issued after re-setting the custom domain).
+E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
+opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
+
+## The loop
+
+1. The supervisor takes the first QUEUED epic whose dependencies are MERGED and whose paths are
+   free on `CLAIMS.md`. Surfaces are disjoint: `records/`, `site/`, `src/osd/`, `.github/`.
+2. Kernel: the worker writes a strategy of at most two pages at lane open (acceptance line → test
+   name), one Codex round on the charter if not yet reviewed, dispositions recorded in the charter.
+   Surface and records: no strategy, the charter's acceptance list is the brief.
+3. The worker claims paths, branches `e<nn>-<slug>`, commits in outcome-named slices.
+4. The worker pushes unasked when the diff is inside the claim; asks for `schema/` version bumps
+   and `.github/` edits.
+5. Pull request: outcome sentence, proof (check green, screenshot or verify comment). The
+   required status is `check` only.
+6. Supervisor merges on green with squash. Main publishes the site. Nobody waits for the
+   repeat run on main.
+7. Red main: revert within the hour, then a fix lane. No hardening lanes, no item list.
+8. Defects under 50 lines ride on the next lane that owns the path. Larger ones get a charter.
+9. During any wait the worker starts the next slice on a stacked branch; it is merged after.
+10. After a merge the supervisor updates this table, moves the claim rows to MERGED, and
+    `/compact`s.
+
+## Rules
+
+- R1 WIP: two coding lanes plus one records lane. A third coding lane waits.
+- R2 Gate: `make check` only. Nothing network-bound is ever required.
+- R3 Records say what the publisher says; tools say what they established. Never cross.
+- R4 Every slice names what a user can do after it merges.
+- R5 Surface gets a screenshot, kernel gets tests and one mutation per guard, records get the
+  verify comment and a licence read.
+- R6 No timers, no nightly, no self-set dates. Act when the precondition holds.
+- R7 Nothing a job can regenerate is committed (`build/`, `site/data/`).
+## E02 Verifier to L2 — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: `docs/ARCHITECTURE.md` (level ladder); owner direction 23 Oct ("verify the sources").
+
+**Outcome.** The level on the map is real and dated: a dead origin shows L0, a reachable one L1,
+a dataset whose files were hashed and whose licence text was captured shows L2, and every level
+shows the date it was established.
+
+**Context today (verified 23 Oct).** `src/osd/verify.py` implements L1 with an injected fetcher,
+a single GET with a 1-byte range and a 20 s timeout, and writes `build/verification/<id>.json`
+against `schema/verification.schema.json`. L2 checks are declared with outcome `skip`. The
+`verify` workflow runs on records PRs and on dispatch and uploads an artifact; the published site
+reads the `verification-results` branch (OSD-D5). The SEG wiki and NOPIMS
+refuse the VPS with 403 (OSD-D9); five of nine origins answered on 23 Oct.
+
+**The design the lane must map to.**
+1. Reachability classes, closed: `ok` (2xx/3xx), `blocked` (403 or a challenge page body: not
+   dead, level stays L1 with detail "blocked from this runner"), `dead` (404/410/DNS failure/
+   timeout after one retry), `moved` (final URL host differs: pass with a `known_issues` hint).
+2. L2 file check: for records with `origin.manifest_url`, fetch the listing, pick files by a
+   per-record `files:` allow-list in a new optional record field `verification.sample`, stream
+   each with SHA-256, store `files[]`. Full-dataset hashing is never attempted over 2 GB per run.
+3. L2 licence check: fetch `licence.url`, store `licence_text_sha256`; a change in the hash
+   between runs is a finding (detail "licence text changed since <date>"), not a failure.
+4. Results store: the `verification-results` branch (OSD-D5), written by the verify workflow on
+   dispatch and read by pages; the lane keeps that contract and adds nothing else.
+5. Freshness: `checked_at` older than 30 days is rendered by the site as "stale" (E05 reads it;
+   this lane emits it).
+6. Rate: one request per origin at a time, a 2 s pause per host, a fixed User-Agent that names
+   the repository.
+
+**Acceptance.**
+- Classification test: four fake fetchers (200, 403-with-challenge-body, 404, timeout) give
+  `L1 pass`, `L1 pass + blocked detail`, `L0`, `L0` respectively.
+- Mutation: removing the retry makes the timeout test fail (shown and restored in the PR).
+- Checksum test on a 3-file fixture served from a local directory: `files[]` has 3 entries with
+  the SHA-256 values computed independently by `sha256sum` in the test.
+- Licence-change test: two runs with different fixture texts produce the "changed" detail.
+- After a dispatched verify run, the published `records.json` shows the same levels `osd status`
+  prints on the results branch.
+- The verification record of every real run validates against the schema (existing test).
+
+**Out of scope.** Outlines (E03), mirrors (E07), running the verifier on a schedule (R6: on
+demand and on PRs only), a results bucket.
+
+**Stop rules.** A publisher's robots.txt disallows the listing: skip L2 for it with detail, do
+not work around. Hashing would exceed 2 GB: cut the sample, say so.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/verify.py`, `src/osd/build.py`,
+`src/osd/cli.py`, `schema/verification.schema.json`, `tests/test_verify.py`,
+`.github/workflows/verify.yml`. Depends on E01 for records with `manifest_url`.
+
+**Evidence to inspect.** The test names mapped to the acceptance lines in the two-page strategy;
+the PR's verify comment on at least three records reaching L2.
+
+exec
+/bin/bash -lc 'rg --files src/osd tests schema .github/workflows docs/program/charters; nl -ba src/osd/verify.py; nl -ba tests/test_verify.py; nl -ba schema/verification.schema.json; nl -ba schema/record.schema.json' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+.github/workflows/verify.yml
+.github/workflows/pages.yml
+.github/workflows/ci.yml
+docs/program/charters/E01-twenty-records.md
+docs/program/charters/E12-catalogue-into-a-workspace.md
+docs/program/charters/E08-curation-that-runs-itself.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.log
+docs/program/charters/E06-retrieval-by-manifest.md
+docs/program/charters/E03-outlines-from-the-data.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue.md
+docs/program/charters/E07-mirror-store-and-custody.md
+docs/program/charters/E11-hosting-and-domain.md
+docs/program/charters/E02-verifier-to-L2.md
+docs/program/charters/E10-seismic-slices.md
+docs/program/charters/E04-stac-catalogue.md
+docs/program/charters/E05-map-that-scales.md
+schema/verification.schema.json
+schema/record.schema.json
+schema/outline.schema.json
+src/osd/records.py
+src/osd/cli.py
+src/osd/paths.py
+src/osd/__init__.py
+src/osd/verify.py
+src/osd/build.py
+tests/conftest.py
+tests/test_verify.py
+tests/test_build.py
+tests/test_records.py
+     1	"""Verification: what our tools can establish about a record today.
+     2	
+     3	L1 (origin reachable) is implemented. L2 (checksums and licence text), L3 (outlines derived
+     4	from the data) and L4 (canonical conversion) are chartered epics; their checks are declared
+     5	here with outcome "skip" so the level ladder and its records are stable from the start.
+     6	
+     7	The fetcher is injected so tests never touch the network and the required CI check stays
+     8	offline.
+     9	"""
+    10	
+    11	from __future__ import annotations
+    12	
+    13	import json
+    14	import time
+    15	import urllib.error
+    16	import urllib.request
+    17	from collections.abc import Callable
+    18	from dataclasses import dataclass
+    19	from datetime import UTC, datetime
+    20	from pathlib import Path
+    21	
+    22	from . import __version__, paths
+    23	from .records import load_outline, load_records
+    24	
+    25	LEVELS = ["L0", "L1", "L2", "L3", "L4"]
+    26	USER_AGENT = "open-subsurface-data-verifier/" + __version__ + " (+https://github.com/ophiolite-labs)"
+    27	
+    28	
+    29	@dataclass(frozen=True)
+    30	class Fetched:
+    31	    status: int
+    32	    final_url: str
+    33	    content_type: str
+    34	    elapsed_ms: int
+    35	
+    36	
+    37	Fetcher = Callable[[str], Fetched]
+    38	
+    39	
+    40	def http_fetch(url: str, timeout: float = 20.0) -> Fetched:
+    41	    """GET with a small read; HEAD is refused by too many publishers to be useful."""
+    42	    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Range": "bytes=0-0"})
+    43	    t0 = time.monotonic()
+    44	    try:
+    45	        with urllib.request.urlopen(req, timeout=timeout) as resp:
+    46	            return Fetched(
+    47	                resp.status, resp.geturl(), resp.headers.get("Content-Type", ""),
+    48	                int((time.monotonic() - t0) * 1000),
+    49	            )
+    50	    except urllib.error.HTTPError as e:
+    51	        return Fetched(e.code, url, "", int((time.monotonic() - t0) * 1000))
+    52	    except (urllib.error.URLError, TimeoutError, OSError) as e:
+    53	        return Fetched(0, url, str(e)[:120], int((time.monotonic() - t0) * 1000))
+    54	
+    55	
+    56	def level_from_checks(checks: list[dict]) -> str:
+    57	    """The highest level whose every check passed, with no gaps below it."""
+    58	    level = "L0"
+    59	    for lv in LEVELS[1:]:
+    60	        mine = [c for c in checks if c["level"] == lv]
+    61	        if not mine or any(c["outcome"] != "pass" for c in mine):
+    62	            break
+    63	        level = lv
+    64	    return level
+    65	
+    66	
+    67	def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime | None = None) -> dict:
+    68	    checks: list[dict] = []
+    69	    origin: dict = {}
+    70	
+    71	    f = fetch(rec["origin"]["url"])
+    72	    origin = {"http_status": f.status, "final_url": f.final_url, "content_type": f.content_type[:100],
+    73	              "elapsed_ms": f.elapsed_ms}
+    74	    ok = 200 <= f.status < 400
+    75	    checks.append({"name": "origin-reachable", "level": "L1", "outcome": "pass" if ok else "fail",
+    76	                   "detail": f"HTTP {f.status} from {f.final_url}"[:500]})
+    77	
+    78	    checks.append({"name": "files-checksummed", "level": "L2", "outcome": "skip", "detail": "E02"})
+    79	    checks.append({"name": "licence-text-captured", "level": "L2", "outcome": "skip", "detail": "E02"})
+    80	
+    81	    if outline is None:
+    82	        checks.append({"name": "outline-present", "level": "L3", "outcome": "fail",
+    83	                       "detail": "no outlines file"})
+    84	    else:
+    85	        approx = [x for x in outline.get("features", []) if x["properties"].get("approximate")]
+    86	        checks.append({"name": "outline-present", "level": "L3", "outcome": "pass",
+    87	                       "detail": f"{len(outline.get('features', []))} features"})
+    88	        checks.append({"name": "outline-derived", "level": "L3",
+    89	                       "outcome": "fail" if approx else "skip",
+    90	                       "detail": f"{len(approx)} approximate features" if approx else "E03"})
+    91	    checks.append({"name": "canonical-conversion", "level": "L4", "outcome": "skip", "detail": "E09"})
+    92	
+    93	    return {
+    94	        "record_id": rec["id"],
+    95	        "checked_at": (now or datetime.now(UTC)).isoformat(timespec="seconds"),
+    96	        "tool_version": __version__,
+    97	        "level": level_from_checks(checks),
+    98	        "checks": checks,
+    99	        "origin": origin,
+   100	    }
+   101	
+   102	
+   103	def verify_all(ids: list[str] | None = None, fetch: Fetcher = http_fetch,
+   104	               out_dir: Path = paths.VERIFICATION_DIR) -> list[dict]:
+   105	    recs = load_records()
+   106	    out_dir.mkdir(parents=True, exist_ok=True)
+   107	    results = []
+   108	    for rid, rec in recs.items():
+   109	        if ids and rid not in ids:
+   110	            continue
+   111	        op = paths.outline_path(rid)
+   112	        outline = load_outline(op) if op.exists() else None
+   113	        v = verify_record(rec, fetch, outline)
+   114	        (out_dir / (rid.replace("/", "__") + ".json")).write_text(json.dumps(v, indent=2) + "\n")
+   115	        results.append(v)
+   116	    return results
+     1	import json
+     2	from datetime import UTC, datetime
+     3	
+     4	from jsonschema import Draft202012Validator
+     5	
+     6	from osd import paths
+     7	from osd.records import load_record
+     8	from osd.verify import Fetched, level_from_checks, verify_record
+     9	
+    10	NOW = datetime(2026, 10, 23, 12, 0, tzinfo=UTC)
+    11	REC = load_record(paths.RECORDS_DIR / "terranubis" / "f3-demo-2020.yaml")
+    12	
+    13	
+    14	def fetch_ok(url):
+    15	    return Fetched(200, url, "text/html", 12)
+    16	
+    17	
+    18	def fetch_dead(url):
+    19	    return Fetched(404, url, "", 12)
+    20	
+    21	
+    22	def test_reachable_origin_with_placeholder_outline_is_L1():
+    23	    outline = json.loads(paths.outline_path(REC["id"]).read_text())
+    24	    v = verify_record(REC, fetch_ok, outline, now=NOW)
+    25	    assert v["level"] == "L1"
+    26	    names = {c["name"]: c["outcome"] for c in v["checks"]}
+    27	    assert names["origin-reachable"] == "pass"
+    28	    assert names["outline-derived"] == "fail"  # approximate: true
+    29	
+    30	
+    31	def test_dead_origin_is_L0():
+    32	    v = verify_record(REC, fetch_dead, None, now=NOW)
+    33	    assert v["level"] == "L0"
+    34	
+    35	
+    36	def test_verification_record_matches_schema():
+    37	    schema = json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text())
+    38	    v = verify_record(REC, fetch_ok, None, now=NOW)
+    39	    Draft202012Validator(schema).validate(v)
+    40	
+    41	
+    42	def test_level_ladder_has_no_gaps():
+    43	    # L2 passing cannot lift the level over a failed L1
+    44	    checks = [{"name": "a", "level": "L1", "outcome": "fail"},
+    45	              {"name": "b", "level": "L2", "outcome": "pass"}]
+    46	    assert level_from_checks(checks) == "L0"
+    47	    checks[0]["outcome"] = "pass"
+    48	    assert level_from_checks(checks) == "L2"
+    49	    # a skipped check at a level stops the ladder there
+    50	    checks.append({"name": "c", "level": "L3", "outcome": "skip"})
+    51	    assert level_from_checks(checks) == "L2"
+     1	{
+     2	  "$schema": "https://json-schema.org/draft/2020-12/schema",
+     3	  "$id": "https://open-subsurface-data.org/schema/verification/1",
+     4	  "title": "Verification record, version 1",
+     5	  "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
+     6	  "type": "object",
+     7	  "additionalProperties": false,
+     8	  "required": ["record_id", "checked_at", "tool_version", "level", "checks"],
+     9	  "properties": {
+    10	    "record_id": {"type": "string"},
+    11	    "checked_at": {"type": "string", "format": "date-time"},
+    12	    "tool_version": {"type": "string"},
+    13	    "level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+    14	              "description": "L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted to a canonical type with a fidelity record"},
+    15	    "checks": {
+    16	      "type": "array",
+    17	      "items": {
+    18	        "type": "object", "additionalProperties": false,
+    19	        "required": ["name", "level", "outcome"],
+    20	        "properties": {
+    21	          "name": {"type": "string"},
+    22	          "level": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
+    23	          "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+    24	          "detail": {"type": "string", "maxLength": 500}
+    25	        }
+    26	      }
+    27	    },
+    28	    "origin": {
+    29	      "type": "object", "additionalProperties": false,
+    30	      "properties": {
+    31	        "http_status": {"type": "integer"},
+    32	        "final_url": {"type": "string"},
+    33	        "content_type": {"type": "string"},
+    34	        "elapsed_ms": {"type": "integer"}
+    35	      }
+    36	    },
+    37	    "files": {
+    38	      "type": "array",
+    39	      "items": {
+    40	        "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+    41	        "properties": {"path": {"type": "string"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+    42	      }
+    43	    },
+    44	    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    45	  }
+    46	}
+     1	{
+     2	  "$schema": "https://json-schema.org/draft/2020-12/schema",
+     3	  "$id": "https://open-subsurface-data.org/schema/record/1",
+     4	  "title": "Open Subsurface Data record, version 1",
+     5	  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here.",
+     6	  "type": "object",
+     7	  "additionalProperties": false,
+     8	  "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
+     9	  "properties": {
+    10	    "id": {
+    11	      "type": "string",
+    12	      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$",
+    13	      "description": "publisher-slug/dataset-slug; stable forever, also the file path records/<id>.yaml"
+    14	    },
+    15	    "title": {"type": "string", "minLength": 3, "maxLength": 120},
+    16	    "summary": {"type": "string", "maxLength": 600, "description": "Two or three sentences in the publisher's own terms."},
+    17	    "publisher": {
+    18	      "type": "object", "additionalProperties": false, "required": ["name", "url"],
+    19	      "properties": {
+    20	        "name": {"type": "string"},
+    21	        "url": {"type": "string", "format": "uri"},
+    22	        "country": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2"}
+    23	      }
+    24	    },
+    25	    "origin": {
+    26	      "type": "object", "additionalProperties": false, "required": ["url", "access"],
+    27	      "properties": {
+    28	        "url": {"type": "string", "format": "uri", "description": "The page a person opens to get the data. Never a deep link that expires."},
+    29	        "access": {"type": "string", "enum": ["anonymous", "registration", "api", "request"],
+    30	                   "description": "anonymous: a download needs no account; registration: a free account; api: a documented service; request: a human approves"},
+    31	        "manifest_url": {"type": "string", "format": "uri", "description": "Optional machine-readable listing of files (index, API, bucket listing) the verifier can checksum against."},
+    32	        "notes": {"type": "string", "maxLength": 400}
+    33	      }
+    34	    },
+    35	    "licence": {
+    36	      "type": "object", "additionalProperties": false, "required": ["name", "redistribution", "attribution"],
+    37	      "properties": {
+    38	        "name": {"type": "string", "description": "The licence as the publisher names it."},
+    39	        "spdx": {"type": ["string", "null"], "description": "SPDX identifier when one exists (CC-BY-4.0, CC-BY-SA-4.0, OGL-UK-3.0, NLOD-2.0); null for bespoke licences."},
+    40	        "url": {"type": "string", "format": "uri"},
+    41	        "redistribution": {"type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+    42	                           "description": "May a third party host a copy? Decides whether the mirror store may hold this dataset."},
+    43	        "attribution": {"type": "string", "enum": ["required", "not-required", "unknown"]},
+    44	        "share_alike": {"type": "boolean", "description": "Derived products must carry the same licence (CC BY-SA and kin)."},
+    45	        "statement": {"type": "string", "maxLength": 300, "description": "The attribution line a derived product must carry, verbatim when the publisher prescribes one."}
+    46	      }
+    47	    },
+    48	    "kinds": {
+    49	      "type": "array", "minItems": 1, "uniqueItems": true,
+    50	      "items": {"type": "string", "enum": [
+    51	        "wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth",
+    52	        "seismic-3d", "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults",
+    53	        "reservoir-model", "production", "pressure", "geochemistry", "reports", "source-list"
+    54	      ]},
+    55	      "description": "What the dataset holds, in the vocabulary of the Ophiolite kind registry (E55) where it overlaps; source-list marks a page that lists other datasets."
+    56	    },
+    57	    "region": {
+    58	      "type": "object", "additionalProperties": false,
+    59	      "properties": {
+    60	        "country": {"type": "string", "pattern": "^[A-Z]{2}$"},
+    61	        "basin": {"type": "string"},
+    62	        "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"},
+    63	                 "description": "[west, south, east, north] in WGS84 decimal degrees, approximate, for the map's first zoom only."},
+    64	        "crs": {"type": "string", "description": "The dataset's own CRS as the publisher states it, e.g. EPSG:23031."}
+    65	      }
+    66	    },
+    67	    "size": {
+    68	      "type": "object", "additionalProperties": false,
+    69	      "properties": {
+    70	        "bytes_estimate": {"type": "integer", "minimum": 0},
+    71	        "stated": {"type": "string", "description": "As the publisher states it, e.g. '~5 TB including seismic'."}
+    72	      }
+    73	    },
+    74	    "listed_by": {
+    75	      "type": "array", "minItems": 1, "uniqueItems": true,
+    76	      "items": {"type": "string", "enum": ["seg-wiki", "publisher", "osdu", "community"]},
+    77	      "description": "Where we found it; seg-wiki means https://wiki.seg.org/wiki/Open_data"
+    78	    },
+    79	    "osdu": {
+    80	      "type": "object", "additionalProperties": false,
+    81	      "properties": {"reference_id": {"type": "string"}, "notes": {"type": "string"}},
+    82	      "description": "Identifiers in the OSDU reference data where the same dataset is carried."
+    83	    },
+    84	    "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}},
+    85	    "notes": {"type": "string", "maxLength": 1200},
+    86	    "added": {"type": "string", "format": "date"},
+    87	    "contacts": {"type": "array", "items": {"type": "string", "format": "uri"}}
+    88	  }
+    89	}
+
+exec
+/bin/bash -lc "nl -ba .github/workflows/verify.yml; nl -ba .github/workflows/pages.yml; nl -ba src/osd/build.py; nl -ba src/osd/cli.py; nl -ba src/osd/paths.py; cat docs/program/charters/E0{1,3,4,5,6,7,8}-*.md; rg -n 'manifest_url|OSD-D5|OSD-D9|403|five' records docs/program/DECISIONS.md; nl -ba site/app.js" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	# Network verification. Never a required check: a publisher's outage must not stop merges.
+     2	# Pull requests touching records: verify the changed records, comment the levels.
+     3	# Dispatch on main: verify (all or some), store the results on the `verification-results`
+     4	# branch (OSD-D5: no bucket, no secret), then republish the site so the map shows them.
+     5	name: verify
+     6	on:
+     7	  workflow_dispatch:
+     8	    inputs:
+     9	      ids: { description: "record ids, space separated (empty = all)", required: false, default: "" }
+    10	  pull_request:
+    11	    paths: ["records/**", "outlines/**"]
+    12	jobs:
+    13	  verify:
+    14	    runs-on: ubuntu-24.04
+    15	    timeout-minutes: 20
+    16	    permissions: { contents: write, pull-requests: write, actions: write }
+    17	    steps:
+    18	      - uses: actions/checkout@v4
+    19	        with: { fetch-depth: 0 }
+    20	      - uses: astral-sh/setup-uv@v3
+    21	        with: { python-version: "3.12" }
+    22	      - run: uv sync
+    23	      - name: earlier results (so a partial run keeps the others)
+    24	        run: |
+    25	          if git ls-remote --exit-code origin verification-results >/dev/null; then
+    26	            git fetch -q origin verification-results
+    27	            mkdir -p build/verification
+    28	            git archive origin/verification-results | tar -x -C build/verification
+    29	          fi
+    30	      - name: pick ids
+    31	        id: ids
+    32	        run: |
+    33	          if [ "${{ github.event_name }}" = "pull_request" ]; then
+    34	            ids=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- records | sed -n 's|^records/\(.*\)\.yaml$|\1|p' | grep -v '^_' | tr '\n' ' ')
+    35	          else
+    36	            ids="${{ inputs.ids }}"
+    37	          fi
+    38	          echo "ids=$ids" >> "$GITHUB_OUTPUT"
+    39	      - run: uv run osd verify ${{ steps.ids.outputs.ids }} | tee verify.txt
+    40	      - uses: actions/upload-artifact@v4
+    41	        with: { name: verification, path: build/verification }
+    42	      - name: comment on the pull request
+    43	        if: github.event_name == 'pull_request'
+    44	        env: { GH_TOKEN: "${{ github.token }}" }
+    45	        run: |
+    46	          { echo '### Verification'; echo '```'; cat verify.txt; echo '```'; } > body.md
+    47	          gh pr comment ${{ github.event.pull_request.number }} --body-file body.md || true
+    48	      - name: store results and republish
+    49	        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    50	        env: { GH_TOKEN: "${{ github.token }}" }
+    51	        run: |
+    52	          cd build/verification
+    53	          git init -q -b verification-results
+    54	          git config user.name "osd-verifier"; git config user.email "osd-verifier@users.noreply.github.com"
+    55	          git add -A
+    56	          git commit -q -m "verification $(date -u +%FT%TZ) run ${{ github.run_id }}"
+    57	          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" verification-results
+    58	          gh workflow run pages.yml --repo ${{ github.repository }} --ref main
+     1	# Publish the site from main. Continuous: every merge is a release. No version numbers,
+     2	# no qualification step; the check on the pull request was the proof.
+     3	# Levels come from the `verification-results` branch the verify workflow writes (OSD-D5).
+     4	name: pages
+     5	on:
+     6	  push:
+     7	    branches: [main]
+     8	  workflow_dispatch:
+     9	permissions: { contents: read, pages: write, id-token: write }
+    10	concurrency: { group: pages, cancel-in-progress: true }
+    11	jobs:
+    12	  publish:
+    13	    runs-on: ubuntu-24.04
+    14	    timeout-minutes: 10
+    15	    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    16	    steps:
+    17	      - uses: actions/checkout@v4
+    18	        with: { fetch-depth: 0 }
+    19	      - uses: astral-sh/setup-uv@v3
+    20	        with: { python-version: "3.12" }
+    21	      - run: uv sync
+    22	      - name: latest verification results
+    23	        run: |
+    24	          if git ls-remote --exit-code origin verification-results >/dev/null; then
+    25	            git fetch -q origin verification-results
+    26	            mkdir -p build/verification
+    27	            git archive origin/verification-results | tar -x -C build/verification
+    28	          fi
+    29	      - run: make build
+    30	      - uses: actions/configure-pages@v5
+    31	      - uses: actions/upload-pages-artifact@v3
+    32	        with: { path: site }
+    33	      - id: deploy
+    34	        uses: actions/deploy-pages@v4
+     1	"""Build the published catalogue from records, outlines and verification records.
+     2	
+     3	Outputs (build/catalog/):
+     4	  records.json    every record, joined with its latest verification level
+     5	  outlines.geojson one FeatureCollection, every feature joined with record title, kinds,
+     6	                   licence and level so the map needs no second lookup
+     7	  collections.json STAC-shaped collections, one per record (full STAC validity is E04)
+     8	"""
+     9	
+    10	from __future__ import annotations
+    11	
+    12	import json
+    13	from pathlib import Path
+    14	
+    15	from . import __version__, paths
+    16	from .records import load_outline, load_records
+    17	
+    18	
+    19	def latest_verification(rid: str, vdir: Path = paths.VERIFICATION_DIR) -> dict | None:
+    20	    p = vdir / (rid.replace("/", "__") + ".json")
+    21	    return json.loads(p.read_text()) if p.exists() else None
+    22	
+    23	
+    24	def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR) -> dict:
+    25	    out_dir.mkdir(parents=True, exist_ok=True)
+    26	    recs = load_records()
+    27	    records_out = []
+    28	    features = []
+    29	    collections = []
+    30	    for rid, rec in recs.items():
+    31	        v = latest_verification(rid, vdir)
+    32	        level = v["level"] if v else "L0"
+    33	        checked = v["checked_at"] if v else None
+    34	        joined = dict(rec, level=level, checked_at=checked)
+    35	        records_out.append(joined)
+    36	        op = paths.outline_path(rid)
+    37	        if op.exists():
+    38	            for f in load_outline(op)["features"]:
+    39	                props = dict(f["properties"])
+    40	                props.update({
+    41	                    "title": rec["title"], "publisher": rec["publisher"]["name"],
+    42	                    "kinds": rec["kinds"], "licence": rec["licence"]["name"],
+    43	                    "redistribution": rec["licence"]["redistribution"], "level": level,
+    44	                })
+    45	                features.append({"type": "Feature", "properties": props, "geometry": f["geometry"]})
+    46	        bbox = rec.get("region", {}).get("bbox")
+    47	        collections.append({
+    48	            "type": "Collection", "stac_version": "1.0.0", "id": rid.replace("/", "--"),
+    49	            "title": rec["title"], "description": rec.get("summary", ""),
+    50	            "license": rec["licence"].get("spdx") or "proprietary",
+    51	            "extent": {"spatial": {"bbox": [bbox] if bbox else []}, "temporal": {"interval": [[None, None]]}},
+    52	            "keywords": rec["kinds"],
+    53	            "providers": [{"name": rec["publisher"]["name"], "roles": ["producer", "licensor"],
+    54	                           "url": rec["publisher"]["url"]}],
+    55	            "links": [{"rel": "about", "href": rec["origin"]["url"]},
+    56	                      {"rel": "license", "href": rec["licence"].get("url", rec["origin"]["url"])}],
+    57	            "osd:level": level, "osd:access": rec["origin"]["access"],
+    58	        })
+    59	    (out_dir / "records.json").write_text(json.dumps(
+    60	        {"tool_version": __version__, "count": len(records_out), "records": records_out}, indent=2) + "\n")
+    61	    (out_dir / "outlines.geojson").write_text(json.dumps(
+    62	        {"type": "FeatureCollection", "features": features}) + "\n")
+    63	    (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
+    64	    return {"records": len(records_out), "features": len(features), "collections": len(collections)}
+     1	"""osd: validate | verify | build | status"""
+     2	
+     3	from __future__ import annotations
+     4	
+     5	import argparse
+     6	import sys
+     7	
+     8	from . import build as build_mod
+     9	from . import paths
+    10	from .records import load_records, validate_outlines, validate_records
+    11	from .verify import verify_all
+    12	
+    13	
+    14	def cmd_validate(_: argparse.Namespace) -> int:
+    15	    problems = validate_records() + validate_outlines()
+    16	    for p in problems:
+    17	        print(f"  {p}")
+    18	    n = len(load_records())
+    19	    print(f"{n} records, {len(problems)} problems")
+    20	    return 1 if problems else 0
+    21	
+    22	
+    23	def cmd_verify(a: argparse.Namespace) -> int:
+    24	    results = verify_all(ids=a.ids or None)
+    25	    for v in results:
+    26	        print(f"  {v['level']}  {v['record_id']}  (origin HTTP {v['origin'].get('http_status')})")
+    27	    print(f"{len(results)} verified -> {paths.VERIFICATION_DIR}")
+    28	    return 0
+    29	
+    30	
+    31	def cmd_build(_: argparse.Namespace) -> int:
+    32	    n = build_mod.build()
+    33	    print(f"built {n} -> {paths.CATALOG_DIR}")
+    34	    return 0
+    35	
+    36	
+    37	def cmd_status(_: argparse.Namespace) -> int:
+    38	    recs = load_records()
+    39	    print(f"{'level':5} {'id':28} {'access':12} {'redistribution':14} kinds")
+    40	    for rid, r in recs.items():
+    41	        v = build_mod.latest_verification(rid)
+    42	        lv = v["level"] if v else "L0"
+    43	        print(f"{lv:5} {rid:28} {r['origin']['access']:12} {r['licence']['redistribution']:14} "
+    44	              f"{','.join(r['kinds'])}")
+    45	    return 0
+    46	
+    47	
+    48	def main(argv: list[str] | None = None) -> int:
+    49	    ap = argparse.ArgumentParser(prog="osd", description=__doc__)
+    50	    sub = ap.add_subparsers(dest="cmd", required=True)
+    51	    sub.add_parser("validate", help="records and outlines against their schemas").set_defaults(fn=cmd_validate)
+    52	    pv = sub.add_parser("verify", help="network: reach each origin, write verification records")
+    53	    pv.add_argument("ids", nargs="*")
+    54	    pv.set_defaults(fn=cmd_verify)
+    55	    sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
+    56	    sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)
+    57	    a = ap.parse_args(argv)
+    58	    return a.fn(a)
+    59	
+    60	
+    61	if __name__ == "__main__":
+    62	    sys.exit(main())
+     1	from __future__ import annotations
+     2	
+     3	from pathlib import Path
+     4	
+     5	ROOT = Path(__file__).resolve().parents[2]
+     6	SCHEMA_DIR = ROOT / "schema"
+     7	RECORDS_DIR = ROOT / "records"
+     8	OUTLINES_DIR = ROOT / "outlines"
+     9	BUILD_DIR = ROOT / "build"
+    10	CATALOG_DIR = BUILD_DIR / "catalog"
+    11	VERIFICATION_DIR = BUILD_DIR / "verification"
+    12	
+    13	
+    14	def outline_path(record_id: str) -> Path:
+    15	    """outlines/<publisher>__<dataset>.geojson for records/<publisher>/<dataset>.yaml."""
+    16	    return OUTLINES_DIR / (record_id.replace("/", "__") + ".geojson")
+## E01 Twenty records from the open lists — QUEUED, next · Records · no strategy
+
+Authority: owner direction 23 Oct 2026 ("combine the SEG open data list and the national
+registers, verify the sources, show the real data"); this charter.
+
+**Outcome.** The map lists at least twenty datasets. Each record states publisher, origin, access
+mode, licence (name, redistribution, attribution) and kinds in the publisher's words, and each
+origin was opened by a person on the day the record was written.
+
+**Context today (verified 23 Oct, scaffold commit).** Nine records exist in `records/`
+(equinor/volve, terranubis/f3-demo-2020, rmotc/teapot-dome, nopims/poseidon, nzpam/parihaka,
+sodir/factpages, nlog/nlog, nsta/ndr, seg/open-data-wiki). `osd validate` passes. Licence
+`redistribution` is `unknown` on five of them. The SEG wiki page cannot be fetched from the VPS
+(HTTP 403, OSD-D9); it opens in an ordinary browser.
+
+**The design the lane must map to.**
+1. One record per dataset, never per file; a register (Sodir, NLOG, NDR, NOPIMS) is one record
+   with `source-list` among its kinds plus one record per named dataset it carries that the SEG
+   list names.
+2. Candidates, in this order until twenty: the SEG open-data list entries whose origin still
+   answers; Penobscot, Kerry 3D, Stratton, Groningen (NAM/NLOG), Netherlands F3 wells, Norne
+   (NTNU), SEAM Phase I, Marmousi (synthetic, flagged in `notes`), Dutch and Danish (GEUS) registers,
+   Geoscience Australia NOPIMS 3D surveys beyond Poseidon.
+3. A dead origin is still a record: `known_issues` says "origin dead on <date>; last mirror
+   <url>", and the record stays at L0. Dead links are the point of a verified list.
+4. Licence fields: `unknown` when the publisher's page does not state it; never inferred from a
+   country. `share_alike: true` whenever the licence is a BY-SA family.
+5. Each record's `added` is the day the origin was opened by the author; the PR says who opened it.
+
+**Acceptance.**
+- `osd validate` reports `>= 20 records, 0 problems` (counted from `records/*/*.yaml`).
+- Every record has `licence.redistribution` in {allowed, restricted, forbidden, unknown} and a
+  `licence.url`; at most 8 of the twenty are `unknown` (hand count in the PR).
+- `kinds` of every record intersect the Ophiolite E55 registry vocabulary (the schema enum).
+- At least 12 records carry a `region.bbox` (the map's extent rectangles).
+- The `verify` workflow comment on the PR lists every changed record with a level.
+- Validity is three separate tests, each with a mutation, already in `tests/test_records.py`;
+  the lane adds none unless the schema changes.
+
+**Out of scope.** Outlines (E03), checksums (E02), mirrors (E07), any schema change (if one is
+needed, stop and open a D item).
+
+**Stop rules.** A publisher's page says redistribution is forbidden: record it, do not mirror,
+continue. A licence page needs a login to read: `unknown`, note it, continue. More than three
+candidates from the SEG list are dead: continue, they are records at L0.
+
+**Ownership and dependencies.** Records lane; paths `records/**`. No dependency.
+
+**Evidence to inspect.** `uv run osd status` output in the PR; the verify comment; a screenshot
+of the map list showing the count.
+## E03 Outlines from the data — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: `docs/ARCHITECTURE.md`; owner direction 23 Oct ("display the outlines of known
+available wellbores, seismic outlines on a map").
+
+**Outcome.** Outlines on the map are derived from the data or the publisher's own register, with
+the derivation named on every feature. Every wellbore and survey on the Norwegian and Dutch
+shelves, and the five 3D surveys of the SEG list that are at L1, are drawn solid. No dashed
+placeholder remains for a record at L3.
+
+**Context today (verified 23 Oct).** Five outline files exist, all `approximate: true`, hand
+placed. `schema/outline.schema.json` fixes the feature properties. The verifier marks
+`outline-derived` fail when any feature is approximate. Sodir FactMaps serves WMS/WFS; NLOG
+serves WFS and CSV downloads; the SEG surveys ship as SEG-Y whose trace headers carry
+coordinates (verified for F3 in Ophiolite's E123 work; assumed for the others).
+
+**The design the lane must map to.**
+1. One extractor per derivation rule, each a function `(record, inputs) -> FeatureCollection`
+   in `src/osd/outlines/<rule>.py`: `register-wfs` (Sodir, NLOG), `segy-hull` (trace-header
+   convex hull, with `segyio`), `las-header` (wellhead lat/long or publisher CSV), `publisher-file`
+   (a shapefile or GeoJSON the publisher ships).
+2. A record names its rule and inputs in a new optional field `outlines: {rule, inputs}`; the
+   extractor writes `outlines/<id>.geojson` with `approximate: false` and `source` naming the rule
+   and the input address. Committed outlines are the contract; the extractor is rerun on demand.
+3. Coordinates are transformed to EPSG:4326 with `pyproj` from the CRS the record states;
+   a record without `region.crs` cannot reach L3 for SEG-Y-derived outlines.
+4. Size: when the merged `outlines.geojson` exceeds 20 MB, the build also writes PMTiles via
+   `tippecanoe` (E05 consumes it). The GeoJSON stays the GIS address.
+5. Wellbores are Points with `uwi` or `publisher_id`; surveys are Polygons; 2D lines are
+   LineStrings. Nothing else.
+
+**Acceptance.**
+- Sodir: the number of exploration wellbores in `outlines/sodir__factpages.geojson` equals the
+  count on the Sodir wellbore table page on the day of the run, by hand, ±0 (recorded in the PR).
+- NLOG: the number of boreholes equals the NLOG borehole count on its data page, by hand.
+- `segy-hull` on the F3 volume yields a polygon whose area in EPSG:23031 is within 2 % of the
+  survey's stated inline × crossline extent (computed by hand from the survey definition).
+- Mutation: a shuffled trace-header fixture still yields the same hull (order independence),
+  and a fixture with one outlier trace changes the hull (the test proves the hull reads the data).
+- `osd verify` reports `outline-derived pass` for every record with an `outlines` field.
+- No feature with `approximate: true` remains for sodir, nlog, f3, teapot, poseidon, parihaka.
+
+**Out of scope.** Rendering (E05), tiling beyond the PMTiles write, any dataset whose files need a
+login the lane does not have (record stays at L1 with a note).
+
+**Stop rules.** A publisher's WFS has no licence statement for the outlines: stop, add a D item.
+SEG-Y coordinates are in a unit the header does not declare: mark approximate, note it.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/outlines/**`, `outlines/**`,
+`schema/record.schema.json` (adds `outlines`, kernel bump to record/2 with a test that version-1
+files still validate), `tests/test_outlines.py`. Depends on E02 (the level ladder it feeds).
+
+**Evidence to inspect.** The hand counts in the PR; a screenshot of Norway with solid outlines;
+`osd status` showing L3 for the six records.
+## E04 STAC catalogue — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: `docs/ARCHITECTURE.md` ("formats, all standard"); Ophiolite connector doctrine
+(SDK or standard, never bespoke).
+
+**Outcome.** The QGIS STAC browser plug-in, and any STAC client, opens the catalogue by one
+address and lists collections and items with licence, level and access mode. The map, QGIS and
+Ophiolite read one catalogue, not three.
+
+**Context today (verified 23 Oct).** `build/catalog/collections.json` is STAC-shaped (type,
+stac_version, id, license, extent, providers, links) but unvalidated and has no items and no
+root catalog. `osd:level` and `osd:access` are bare fields with no extension schema.
+
+**The design the lane must map to.**
+1. Static STAC 1.0: `catalog.json` root → one `Collection` per record → one `Item` per outline
+   feature (wellbore or survey), with the feature geometry and bbox; assets link to the origin
+   page today and to mirror files when E07 adds them.
+2. An `osd` extension schema at `schema/stac-osd.json` for `osd:level`, `osd:checked_at`,
+   `osd:access`, `osd:redistribution`, `osd:derivation` (the outline `source`).
+3. `license`: the SPDX id when the record has one, else `other` with a `license` link, per the
+   STAC spec; never `proprietary` for a bespoke open licence.
+4. Validation in `make check` with `stac-validator` against the core and the osd extension; a
+   fixture of two collections and three items with a known-bad mutation each.
+5. The GeoJSON `outlines.geojson` stays; items reference the same feature ids so a map click and a
+   STAC item agree.
+
+**Acceptance.**
+- `stac-validator catalog.json --recursive` passes on the build output.
+- Item count equals outline feature count (test).
+- A record at L0 still yields a collection with zero items (no vacuous pass: a test asserts both
+  the collection and its empty item list).
+- QGIS 3.34 STAC browser lists the collections from a local `http.server` (screenshot in the PR).
+- Mutation: removing `osd:level` from one item fails validation (shown and restored).
+
+**Out of scope.** A STAC API (static only), mirrors, search endpoints.
+
+**Stop rules.** The STAC extension process needs a published schema URL: use the repository's
+raw URL and note it; do not block on a registered extension.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/stac.py`, `src/osd/build.py`,
+`schema/stac-osd.json`, `tests/test_stac.py`, `Makefile`. Depends on E03 (items need outlines).
+
+**Evidence to inspect.** The validator output in CI; the QGIS screenshot.
+## E05 Map that scales — QUEUED · Surface · no strategy
+
+Authority: owner direction 23 Oct (the offentligdata.com example: toggles, key, search, detail);
+`docs/ENGINEERING.md` proof bar for surface.
+
+**Outcome.** A person can filter the map, share the link and the receiver sees the same view;
+thousands of wellbores pan without lag; a visitor understands in one page what the levels mean
+and how to open a layer in QGIS or Python.
+
+**Context today (verified 23 Oct).** `site/` is one HTML, one JS, one CSS on MapLibre 4.7 over
+OpenFreeMap Positron; chips per kind, a level select, extents and placeholder toggles, search,
+a list, a detail panel with three cards, a key. State is in memory only. GeoJSON source only.
+Headless screenshot works with Playwright and swiftshader; the basemap did not render in the
+headless run (overlays did).
+
+**The design the lane must map to.**
+1. URL state: filters, selection and viewport in the hash; load restores it.
+2. Sources: PMTiles via `pmtiles` protocol when `data/outlines.pmtiles` exists, else GeoJSON;
+   wellbores clustered below zoom 7.
+3. Stale levels: `checked_at` older than 30 days shows "stale" next to the level.
+4. A `how.html` page: the ladder, the three cards, the licence rule ("the publisher's page is the
+   authority"), the contribution path. Plain words, no marketing.
+5. Theme: dark basemap when OSD-D3 names one; until then Positron.
+6. Mobile: the panel is a bottom sheet under 640 px (exists; keep it working).
+7. `tools/shot.mjs` (exists) gets Playwright as a devDependency instead of borrowing the Ophiolite
+   web tree.
+
+**Acceptance.**
+- Open `#q=volve`, the list shows one dataset (screenshot).
+- A hash with a kind filter and a selection, pasted in a second browser context, renders the
+  same list count and panel title (Playwright test, `tests/site/`).
+- 10,000 synthetic wellbore points (generated in the test) render at zoom 5 with clusters; the
+  frame after `moveend` arrives under 100 ms in the Playwright trace.
+- `how.html` exists and the three cards' snippets run as written (the Python one executed in CI
+  against the local server).
+- No console error on load (Playwright asserts).
+
+**Out of scope.** Accounts, state beyond the URL, a server, analytics.
+
+**Stop rules.** A basemap needs a key: do not add one; keep Positron and note it under OSD-D3.
+
+**Ownership and dependencies.** Coding lane; paths `site/**`, `tools/shot.mjs`, `tests/site/**`,
+`Makefile` (site targets only). No dependency; runs in parallel with E02 on disjoint paths.
+
+**Evidence to inspect.** Two screenshots (desktop, phone width) and the Playwright run in the PR.
+## E06 Retrieval by manifest — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("the bridge to transfer/select assets from a map to a
+retrieval"); Ophiolite exchange doctrine (intentional get, nothing applies itself).
+
+**Outcome.** A person selects datasets or wellbores on the map, downloads one manifest, and
+`osd get manifest.json` fetches the files from their origins (or mirrors, E07), verifies the
+checksums the catalogue knows, and writes the attribution lines the licences require next to
+the files. A Python reader opens the manifest without the CLI.
+
+**Context today (verified 23 Oct).** No manifest format, no fetcher. The detail panel's third
+card says retrieval is chartered. Records carry `origin.url` only; file-level addresses arrive
+with E02's `files[]` and E04's item assets.
+
+**The design the lane must map to.**
+1. `osd.manifest/1`: JSON with `created`, `catalog_url`, `items[]` each `{item_id, record_id,
+   assets[]: {href, bytes?, sha256?}, licence: {name, spdx, statement, share_alike}}`. Schema at
+   `schema/manifest.schema.json`. No credentials, ever.
+2. Site: a "Select" mode adds items to a basket; "Download manifest" writes the file client
+   side. Items without resolvable assets (access `registration`/`request`) are included with
+   `assets: []` and the origin page, so the manifest is also the to-do list.
+3. `osd get <manifest> --dest <dir>`: streams each asset, verifies `sha256` when present, writes
+   `ATTRIBUTION.md` from the licence statements, refuses to continue on a mismatch, resumes on
+   rerun. Honest outcome per asset: fetched, verified, mismatch, needs-sign-in, origin-dead.
+4. `osd.manifest.read(path)` in `src/osd/manifest.py` returns typed items; this is the interface
+   Ophiolite's intake reads (E09).
+5. Rights carried: every item's `licence.statement` is copied verbatim; `share_alike` is
+   surfaced in the CLI summary ("2 items require derived work to carry CC BY-SA 4.0").
+
+**Acceptance.**
+- A manifest for two records validates against the schema; a mutated one (missing `licence`) fails.
+- `osd get` on a fixture served locally with 3 assets: 3 fetched, 3 verified; corrupt one byte of
+  one asset: exit non-zero, outcome `mismatch` for that asset, the other two untouched.
+- `ATTRIBUTION.md` contains the F3 statement verbatim and names CC-BY-SA-4.0 as share-alike.
+- Site: select two datasets, download, the file has two items (Playwright).
+- Rerun after a partial failure fetches only the missing asset (test counts requests).
+
+**Out of scope.** Mirrors (E07), seismic slices (E10), authentication to publisher portals,
+decoding any file format.
+
+**Stop rules.** A publisher's terms forbid automated download: that record's items get
+`assets: []` and a note; continue.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/manifest.py`, `src/osd/get.py`,
+`src/osd/cli.py`, `schema/manifest.schema.json`, `site/app.js` (select mode only, claimed after
+E05 merges), `tests/test_manifest.py`. Depends on E04 (item ids and assets).
+
+**Evidence to inspect.** The strategy's test map; a terminal transcript of `osd get` on F3 with a
+real origin, in the PR.
+## E07 Mirror store and custody — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: `DECISIONS.md` OSD-D6 (mirror policy); Ophiolite E35 (custody registry of every copy).
+
+**Outcome.** Small datasets whose licence allows redistribution download from the catalogue at
+full speed with a checksum, and every copy we hold has a custody record saying what it is, where
+it came from, under which licence, and how to ask for its removal.
+
+**Context today (verified 23 Oct).** Nothing is mirrored. Two Hetzner S3 buckets exist for the
+Ophiolite program; none for this project, and its keys must never reach this one. Records carry
+`licence.redistribution`; four of nine are `allowed`.
+
+**The design the lane must map to.**
+1. Eligibility is a function, tested: `redistribution == allowed` and estimated size under 20 GB
+   (OSD-D6) and `origin` reachable at L2 with checksums. Nothing else is ever copied.
+2. Layout: `s3://<bucket>/mirror/<record-id>/<sha256-prefix>/<filename>`, public read, no listing.
+3. Custody record `build/custody/<record-id>.json`: files, sha256, bytes, copied_at, origin href,
+   licence snapshot (name, url, text sha from E02), takedown contact (a repository issue template).
+4. STAC assets (E04) gain a second href with `roles: ["mirror"]`; `osd get` prefers the mirror
+   when its checksum matches the origin's.
+5. Takedown: an issue with the template removes the files and marks the custody record
+   `removed_at`; the catalogue keeps the record at its level with `assets` pointing at origin.
+6. Cost line in the PR: bytes mirrored and the monthly storage and egress estimate at Hetzner
+   prices, by hand.
+
+**Acceptance.**
+- Eligibility test: F3 (allowed, 1.3 GB) eligible; Volve (unknown) not; NDR (unknown, TB) not;
+  a fixture with `allowed` and 25 GB not.
+- Mutation: flipping the size cap to 30 GB makes the 25 GB fixture eligible (shown, restored).
+- After mirroring F3: `osd get` for F3 reports every asset `verified` from the mirror href.
+- The custody record validates against `schema/custody.schema.json`.
+- Takedown dry run on the fixture removes the mirror href and writes `removed_at`.
+
+**Out of scope.** Seismic chunking (E10), anything with `redistribution: unknown` even if the
+licence looks permissive.
+
+**Stop rules.** The bucket needs a key in CI: ask the owner for the repository secret (owner
+action), continue with a local directory backend meanwhile.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/mirror.py`, `schema/custody.schema.json`,
+`.github/ISSUE_TEMPLATE/takedown.yml`, `tests/test_mirror.py`. Depends on E06 and OSD-D6; the bucket
+and its key on E11.
+
+**Evidence to inspect.** The cost line; the custody record for F3; the `osd get` transcript.
+## E08 Curation that runs itself — QUEUED · Surface · no strategy
+
+Authority: `CONTRIBUTING.md`; analogues named 23 Oct (Registry of Open Data on AWS, conda-forge).
+
+**Outcome.** An outside contributor's record merges the same day with one human reading the
+licence fields; a dead origin becomes an issue with the date it died; a visitor sees when each
+record was last verified and by what.
+
+**Context today (verified 23 Oct).** `CONTRIBUTING.md`, a PR template and a dataset issue
+template exist. The `verify` workflow comments levels on records PRs. No CODEOWNERS, no dead-link
+report, no status page, no outside contribution yet.
+
+**The design the lane must map to.**
+1. `CODEOWNERS`: `records/**` to the records maintainers, `schema/**` and `src/**` to the kernel
+   maintainers.
+2. Dead-link report: a dispatch of `verify` over all records ends with one issue per record
+   that fell from L1+ to L0 since the last stored result, titled "origin dead: <id>", with the
+   HTTP class and date; blocked (403) never opens an issue (OSD-D9).
+3. `site/status.html`: the `osd status` table with `checked_at`, sortable, from `records.json`.
+4. A "Suggest a dataset" issue is turned into a record PR by a maintainer with `osd new <url>`,
+   which scaffolds the YAML from the template and the page title.
+5. First outside contribution: the lane asks two named people from the Software Underground
+   community to add one record each and records the elapsed time from PR open to merge.
+
+**Acceptance.**
+- Two outside PRs merged, each under 24 h from open to merge (dates in the PR descriptions).
+- A fixture run where one record's fetcher returns 404 after a stored L1 opens exactly one issue
+  (dry-run output in the test).
+- `status.html` lists every record with level and date (screenshot).
+- `osd new https://example.org/x` writes a file that fails validation only on the fields a human
+  must fill (test asserts the exact problem list).
+
+**Out of scope.** Automated licence detection, scheduled runs (R6: on demand), moderation tooling.
+
+**Stop rules.** No outside contributor answers within a week: record it, merge the rest, leave
+the acceptance line open in PROGRAM.md rather than faking a contribution.
+
+**Ownership and dependencies.** Coding lane; paths `.github/**` (announced), `site/status.html`,
+`src/osd/new.py`, `src/osd/report.py`, `tests/test_report.py`. Depends on E02 (stored results).
+
+**Evidence to inspect.** The two PR links; the status screenshot.
+docs/program/DECISIONS.md:12:| OSD-D5 | Where verification results live | A `verification-results` branch the verify workflow force-pushes; pages reads it. No bucket and no secret until mirrors (E07) need bytes; then a separate Hetzner project `open-subsurface-data` so its keys cannot reach Ophiolite's buckets | DEFAULT 23 Oct (replaces the bucket-first default) |
+docs/program/DECISIONS.md:16:| OSD-D9 | Publishers that refuse automated requests | Measured 23 Oct: the SEG wiki and NOPIMS answer 403 from the VPS and from GitHub-hosted runners alike, so a runner change does not help. E02 classifies a 403 or challenge page as `blocked` (level stays L1 with that detail, never 'dead'); E01 points records at the publisher's own page where one exists instead of a SEG wiki page | DEFAULT 23 Oct, revised on evidence |
+records/nzpam/parihaka.yaml:20:  - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the NZP&M geodata catalogue entry PARIHAKA-3D : PR3460, opened 23 Oct 2026; downloads there need a RealMe login (not tested)."
+records/rmotc/teapot-dome.yaml:22:  - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the DOE NETL EDX dataset page; that URL answers 200 but redirects to an EDX login, so the licence field there could not be read (licence below is the US Government works statement, not read from EDX)."
+records/sodir/factpages.yaml:11:  manifest_url: https://factpages.sodir.no/en/wellbore/TableView/Exploration/All
+records/nopims/poseidon.yaml:20:  - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the TGS Open Data page on the AWS Registry of Open Data (opened 23 Oct 2026; CC BY 4.0, MDIO, public S3 bucket). Original survey: Geoscience Australia / ConocoPhillips via NOPIMS."
+     1	/* Open Subsurface Data map. Static: reads data/records.json and data/outlines.geojson
+     2	   produced by `make build`. No framework; one file on purpose (ENGINEERING.md, "surface"). */
+     3	(async function () {
+     4	  const [recordsRes, outlinesRes] = await Promise.all([fetch('data/records.json'), fetch('data/outlines.geojson')]);
+     5	  const records = (await recordsRes.json()).records;
+     6	  const outlines = await outlinesRes.json();
+     7	  const byId = Object.fromEntries(records.map(r => [r.id, r]));
+     8	  const LEVEL = s => Number((s || 'L0').slice(1));
+     9	
+    10	  // Dataset extents: one rectangle per record bbox, drawn from the record, not the data.
+    11	  const extents = {
+    12	    type: 'FeatureCollection',
+    13	    features: records.filter(r => r.region && r.region.bbox).map(r => {
+    14	      const [w, s, e, n] = r.region.bbox;
+    15	      return { type: 'Feature', properties: { record_id: r.id, kind: 'dataset-extent', name: r.title,
+    16	        approximate: true, level: r.level, title: r.title, publisher: r.publisher.name, kinds: r.kinds },
+    17	        geometry: { type: 'Polygon', coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } };
+    18	    })
+    19	  };
+    20	
+    21	  const map = new maplibregl.Map({
+    22	    container: 'map', style: 'https://tiles.openfreemap.org/styles/positron',
+    23	    center: [5, 55], zoom: 3.2, attributionControl: { compact: false }
+    24	  });
+    25	  map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
+    26	
+    27	  const state = { kinds: new Set(), minLevel: 0, extents: true, approx: true, q: '', sel: null };
+    28	  const allKinds = [...new Set(records.flatMap(r => r.kinds))].sort();
+    29	
+    30	  function matches(r) {
+    31	    if (LEVEL(r.level) < state.minLevel) return false;
+    32	    if (state.kinds.size && !r.kinds.some(k => state.kinds.has(k))) return false;
+    33	    if (state.q) {
+    34	      const hay = [r.title, r.publisher.name, r.region && r.region.basin, r.region && r.region.country, r.id].join(' ').toLowerCase();
+    35	      if (!hay.includes(state.q)) return false;
+    36	    }
+    37	    return true;
+    38	  }
+    39	
+    40	  function visibleIds() { return records.filter(matches).map(r => r.id); }
+    41	
+    42	  function applyFilters() {
+    43	    const ids = visibleIds();
+    44	    const idFilter = ['in', ['get', 'record_id'], ['literal', ids]];
+    45	    const approxFilter = state.approx ? true : ['!', ['get', 'approximate']];
+    46	    for (const l of Object.keys(LAYER_BASE)) {
+    47	      map.setFilter(l, ['all', LAYER_BASE[l], idFilter, approxFilter]);
+    48	    }
+    49	    for (const l of ['extents-fill', 'extents-line']) {
+    50	      map.setLayoutProperty(l, 'visibility', state.extents ? 'visible' : 'none');
+    51	      map.setFilter(l, ['all', idFilter]);
+    52	    }
+    53	    renderList(ids);
+    54	  }
+    55	
+    56	  // line-dasharray takes no data expression in MapLibre 4, so derived and placeholder
+    57	  // outlines are two line layers each.
+    58	  const SURVEY = ['in', ['get', 'kind'], ['literal', ['survey-3d', 'survey-2d']]];
+    59	  const FIELD = ['in', ['get', 'kind'], ['literal', ['field', 'block']]];
+    60	  const DERIVED = ['!', ['get', 'approximate']];
+    61	  const PLACEHOLDER = ['==', ['get', 'approximate'], true];
+    62	  const LAYER_BASE = {
+    63	    'surveys-fill': SURVEY, 'surveys-line': ['all', SURVEY, DERIVED], 'surveys-dash': ['all', SURVEY, PLACEHOLDER],
+    64	    'fields-fill': FIELD, 'fields-line': ['all', FIELD, DERIVED], 'fields-dash': ['all', FIELD, PLACEHOLDER],
+    65	    'wells': ['==', ['get', 'kind'], 'wellbore'],
+    66	  };
+    67	
+    68	  map.on('load', () => {
+    69	    map.addSource('outlines', { type: 'geojson', data: outlines });
+    70	    map.addSource('extents', { type: 'geojson', data: extents });
+    71	    map.addLayer({ id: 'extents-fill', type: 'fill', source: 'extents', paint: { 'fill-color': '#6ea8fe', 'fill-opacity': 0.06 } });
+    72	    map.addLayer({ id: 'extents-line', type: 'line', source: 'extents', paint: { 'line-color': '#6ea8fe', 'line-width': 1, 'line-dasharray': [3, 3], 'line-opacity': 0.7 } });
+    73	    map.addLayer({ id: 'fields-fill', type: 'fill', source: 'outlines', filter: LAYER_BASE['fields-fill'], paint: { 'fill-color': '#e5484d', 'fill-opacity': 0.18 } });
+    74	    map.addLayer({ id: 'fields-line', type: 'line', source: 'outlines', filter: LAYER_BASE['fields-line'], paint: { 'line-color': '#e5484d', 'line-width': 2 } });
+    75	    map.addLayer({ id: 'fields-dash', type: 'line', source: 'outlines', filter: LAYER_BASE['fields-dash'], paint: { 'line-color': '#e5484d', 'line-width': 2, 'line-dasharray': [2, 2] } });
+    76	    map.addLayer({ id: 'surveys-fill', type: 'fill', source: 'outlines', filter: LAYER_BASE['surveys-fill'], paint: { 'fill-color': '#f2a93b', 'fill-opacity': 0.2 } });
+    77	    map.addLayer({ id: 'surveys-line', type: 'line', source: 'outlines', filter: LAYER_BASE['surveys-line'], paint: { 'line-color': '#f2a93b', 'line-width': 2 } });
+    78	    map.addLayer({ id: 'surveys-dash', type: 'line', source: 'outlines', filter: LAYER_BASE['surveys-dash'], paint: { 'line-color': '#f2a93b', 'line-width': 2, 'line-dasharray': [2, 2] } });
+    79	    map.addLayer({ id: 'wells', type: 'circle', source: 'outlines', filter: LAYER_BASE['wells'], paint: { 'circle-color': '#3dd68c', 'circle-radius': 4, 'circle-stroke-color': '#0f1419', 'circle-stroke-width': 1 } });
+    80	
+    81	    for (const l of ['surveys-fill', 'fields-fill', 'wells', 'extents-fill']) {
+    82	      map.on('click', l, e => select(e.features[0].properties.record_id));
+    83	      map.on('mouseenter', l, () => map.getCanvas().style.cursor = 'pointer');
+    84	      map.on('mouseleave', l, () => map.getCanvas().style.cursor = '');
+    85	    }
+    86	    applyFilters();
+    87	  });
+    88	
+    89	  // Controls
+    90	  const kindsEl = document.getElementById('kinds');
+    91	  for (const k of allKinds) {
+    92	    const c = document.createElement('span'); c.className = 'chip'; c.textContent = k;
+    93	    c.onclick = () => { c.classList.toggle('on'); state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k); applyFilters(); };
+    94	    kindsEl.appendChild(c);
+    95	  }
+    96	  document.getElementById('minlevel').onchange = e => { state.minLevel = Number(e.target.value); applyFilters(); };
+    97	  document.getElementById('extents').onchange = e => { state.extents = e.target.checked; applyFilters(); };
+    98	  document.getElementById('approx').onchange = e => { state.approx = e.target.checked; applyFilters(); };
+    99	  document.getElementById('q').oninput = e => { state.q = e.target.value.trim().toLowerCase(); applyFilters(); };
+   100	
+   101	  function renderList(ids) {
+   102	    const ul = document.querySelector('#list ul'); ul.innerHTML = '';
+   103	    document.getElementById('count').textContent = `(${ids.length} of ${records.length})`;
+   104	    for (const id of ids) {
+   105	      const r = byId[id];
+   106	      const li = document.createElement('li'); li.className = id === state.sel ? 'sel' : '';
+   107	      li.innerHTML = `<span class="lvl ${r.level}">${r.level}</span><span class="t">${r.title}<span class="p">${r.publisher.name}</span></span>`;
+   108	      li.onclick = () => select(id, true);
+   109	      ul.appendChild(li);
+   110	    }
+   111	  }
+   112	
+   113	  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+   114	
+   115	  function select(id, fly) {
+   116	    state.sel = id; const r = byId[id];
+   117	    renderList(visibleIds());
+   118	    const d = document.getElementById('detail'); d.hidden = false;
+   119	    const base = location.origin + location.pathname.replace(/[^/]*$/, '');
+   120	    const geo = base + 'data/outlines.geojson';
+   121	    const issues = (r.known_issues || []).map(x => `<li>${esc(x)}</li>`).join('');
+   122	    d.innerHTML = `
+   123	      <span class="close" title="close">✕</span>
+   124	      <h3>${esc(r.title)} <span class="lvl ${r.level}">${r.level}</span></h3>
+   125	      <div style="color:var(--muted)">${esc(r.summary || '')}</div>
+   126	      <dl>
+   127	        <dt>Publisher</dt><dd><a href="${esc(r.publisher.url)}" target="_blank" rel="noopener">${esc(r.publisher.name)}</a></dd>
+   128	        <dt>Origin</dt><dd><a href="${esc(r.origin.url)}" target="_blank" rel="noopener">${esc(r.origin.url)}</a> (${esc(r.origin.access)})</dd>
+   129	        <dt>Licence</dt><dd>${esc(r.licence.name)}${r.licence.spdx ? ' (' + esc(r.licence.spdx) + ')' : ''}<br>redistribution ${esc(r.licence.redistribution)}, attribution ${esc(r.licence.attribution)}</dd>
+   130	        <dt>Holds</dt><dd>${r.kinds.map(esc).join(', ')}</dd>
+   131	        <dt>Region</dt><dd>${esc([r.region && r.region.basin, r.region && r.region.country].filter(Boolean).join(', ') || '—')}</dd>
+   132	        <dt>Checked</dt><dd>${esc(r.checked_at || 'not yet')}</dd>
+   133	      </dl>
+   134	      ${issues ? `<div><b>Known issues</b><ul>${issues}</ul></div>` : ''}
+   135	      <div class="cards">
+   136	        <div class="card"><b>Open in QGIS</b>Layer → Add Layer → Vector, protocol HTTP, this address; filter on record_id.<code>${esc(geo)}</code></div>
+   137	        <div class="card"><b>Read in Python</b><code>import json, urllib.request
+   138	fc = json.load(urllib.request.urlopen("${esc(geo)}"))
+   139	mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id)}"]</code></div>
+   140	        <div class="card"><b>Get the data</b>Follow the origin link above. Retrieval by manifest and the Ophiolite source are chartered (E06, E09).</div>
+   141	      </div>`;
+   142	    d.querySelector('.close').onclick = () => { d.hidden = true; state.sel = null; renderList(visibleIds()); };
+   143	    if (fly && r.region && r.region.bbox) map.fitBounds(r.region.bbox, { padding: 60, maxZoom: 9, duration: 700 });
+   144	  }
+   145	})();
+
+codex
+The retry test would still pass with retries removed, and only one current record has a `manifest_url`, despite the requirement to demonstrate three L2 records. I’m checking the remaining contract and ownership boundaries.
+exec
+/bin/bash -lc "git status --short; nl -ba docs/program/charters/E02-verifier-to-L2.md; nl -ba docs/program/charters/E04-stac-catalogue.md; nl -ba docs/program/charters/E05-map-that-scales.md; cat docs/program/charters/E09-ophiolite-reads-the-catalogue.md docs/program/charters/E10-seismic-slices.md docs/program/charters/E11-hosting-and-domain.md docs/program/charters/E12-catalogue-into-a-workspace.md; nl -ba Makefile; nl -ba records/sodir/factpages.yaml; rg --files records -g '*.yaml'" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+?? docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.log
+     1	## E02 Verifier to L2 — QUEUED · Kernel · strategy at lane open · one Codex round
+     2	
+     3	Authority: `docs/ARCHITECTURE.md` (level ladder); owner direction 23 Oct ("verify the sources").
+     4	
+     5	**Outcome.** The level on the map is real and dated: a dead origin shows L0, a reachable one L1,
+     6	a dataset whose files were hashed and whose licence text was captured shows L2, and every level
+     7	shows the date it was established.
+     8	
+     9	**Context today (verified 23 Oct).** `src/osd/verify.py` implements L1 with an injected fetcher,
+    10	a single GET with a 1-byte range and a 20 s timeout, and writes `build/verification/<id>.json`
+    11	against `schema/verification.schema.json`. L2 checks are declared with outcome `skip`. The
+    12	`verify` workflow runs on records PRs and on dispatch and uploads an artifact; the published site
+    13	reads the `verification-results` branch (OSD-D5). The SEG wiki and NOPIMS
+    14	refuse the VPS with 403 (OSD-D9); five of nine origins answered on 23 Oct.
+    15	
+    16	**The design the lane must map to.**
+    17	1. Reachability classes, closed: `ok` (2xx/3xx), `blocked` (403 or a challenge page body: not
+    18	   dead, level stays L1 with detail "blocked from this runner"), `dead` (404/410/DNS failure/
+    19	   timeout after one retry), `moved` (final URL host differs: pass with a `known_issues` hint).
+    20	2. L2 file check: for records with `origin.manifest_url`, fetch the listing, pick files by a
+    21	   per-record `files:` allow-list in a new optional record field `verification.sample`, stream
+    22	   each with SHA-256, store `files[]`. Full-dataset hashing is never attempted over 2 GB per run.
+    23	3. L2 licence check: fetch `licence.url`, store `licence_text_sha256`; a change in the hash
+    24	   between runs is a finding (detail "licence text changed since <date>"), not a failure.
+    25	4. Results store: the `verification-results` branch (OSD-D5), written by the verify workflow on
+    26	   dispatch and read by pages; the lane keeps that contract and adds nothing else.
+    27	5. Freshness: `checked_at` older than 30 days is rendered by the site as "stale" (E05 reads it;
+    28	   this lane emits it).
+    29	6. Rate: one request per origin at a time, a 2 s pause per host, a fixed User-Agent that names
+    30	   the repository.
+    31	
+    32	**Acceptance.**
+    33	- Classification test: four fake fetchers (200, 403-with-challenge-body, 404, timeout) give
+    34	  `L1 pass`, `L1 pass + blocked detail`, `L0`, `L0` respectively.
+    35	- Mutation: removing the retry makes the timeout test fail (shown and restored in the PR).
+    36	- Checksum test on a 3-file fixture served from a local directory: `files[]` has 3 entries with
+    37	  the SHA-256 values computed independently by `sha256sum` in the test.
+    38	- Licence-change test: two runs with different fixture texts produce the "changed" detail.
+    39	- After a dispatched verify run, the published `records.json` shows the same levels `osd status`
+    40	  prints on the results branch.
+    41	- The verification record of every real run validates against the schema (existing test).
+    42	
+    43	**Out of scope.** Outlines (E03), mirrors (E07), running the verifier on a schedule (R6: on
+    44	demand and on PRs only), a results bucket.
+    45	
+    46	**Stop rules.** A publisher's robots.txt disallows the listing: skip L2 for it with detail, do
+    47	not work around. Hashing would exceed 2 GB: cut the sample, say so.
+    48	
+    49	**Ownership and dependencies.** Coding lane; paths `src/osd/verify.py`, `src/osd/build.py`,
+    50	`src/osd/cli.py`, `schema/verification.schema.json`, `tests/test_verify.py`,
+    51	`.github/workflows/verify.yml`. Depends on E01 for records with `manifest_url`.
+    52	
+    53	**Evidence to inspect.** The test names mapped to the acceptance lines in the two-page strategy;
+    54	the PR's verify comment on at least three records reaching L2.
+     1	## E04 STAC catalogue — QUEUED · Kernel · strategy at lane open · one Codex round
+     2	
+     3	Authority: `docs/ARCHITECTURE.md` ("formats, all standard"); Ophiolite connector doctrine
+     4	(SDK or standard, never bespoke).
+     5	
+     6	**Outcome.** The QGIS STAC browser plug-in, and any STAC client, opens the catalogue by one
+     7	address and lists collections and items with licence, level and access mode. The map, QGIS and
+     8	Ophiolite read one catalogue, not three.
+     9	
+    10	**Context today (verified 23 Oct).** `build/catalog/collections.json` is STAC-shaped (type,
+    11	stac_version, id, license, extent, providers, links) but unvalidated and has no items and no
+    12	root catalog. `osd:level` and `osd:access` are bare fields with no extension schema.
+    13	
+    14	**The design the lane must map to.**
+    15	1. Static STAC 1.0: `catalog.json` root → one `Collection` per record → one `Item` per outline
+    16	   feature (wellbore or survey), with the feature geometry and bbox; assets link to the origin
+    17	   page today and to mirror files when E07 adds them.
+    18	2. An `osd` extension schema at `schema/stac-osd.json` for `osd:level`, `osd:checked_at`,
+    19	   `osd:access`, `osd:redistribution`, `osd:derivation` (the outline `source`).
+    20	3. `license`: the SPDX id when the record has one, else `other` with a `license` link, per the
+    21	   STAC spec; never `proprietary` for a bespoke open licence.
+    22	4. Validation in `make check` with `stac-validator` against the core and the osd extension; a
+    23	   fixture of two collections and three items with a known-bad mutation each.
+    24	5. The GeoJSON `outlines.geojson` stays; items reference the same feature ids so a map click and a
+    25	   STAC item agree.
+    26	
+    27	**Acceptance.**
+    28	- `stac-validator catalog.json --recursive` passes on the build output.
+    29	- Item count equals outline feature count (test).
+    30	- A record at L0 still yields a collection with zero items (no vacuous pass: a test asserts both
+    31	  the collection and its empty item list).
+    32	- QGIS 3.34 STAC browser lists the collections from a local `http.server` (screenshot in the PR).
+    33	- Mutation: removing `osd:level` from one item fails validation (shown and restored).
+    34	
+    35	**Out of scope.** A STAC API (static only), mirrors, search endpoints.
+    36	
+    37	**Stop rules.** The STAC extension process needs a published schema URL: use the repository's
+    38	raw URL and note it; do not block on a registered extension.
+    39	
+    40	**Ownership and dependencies.** Coding lane; paths `src/osd/stac.py`, `src/osd/build.py`,
+    41	`schema/stac-osd.json`, `tests/test_stac.py`, `Makefile`. Depends on E03 (items need outlines).
+    42	
+    43	**Evidence to inspect.** The validator output in CI; the QGIS screenshot.
+     1	## E05 Map that scales — QUEUED · Surface · no strategy
+     2	
+     3	Authority: owner direction 23 Oct (the offentligdata.com example: toggles, key, search, detail);
+     4	`docs/ENGINEERING.md` proof bar for surface.
+     5	
+     6	**Outcome.** A person can filter the map, share the link and the receiver sees the same view;
+     7	thousands of wellbores pan without lag; a visitor understands in one page what the levels mean
+     8	and how to open a layer in QGIS or Python.
+     9	
+    10	**Context today (verified 23 Oct).** `site/` is one HTML, one JS, one CSS on MapLibre 4.7 over
+    11	OpenFreeMap Positron; chips per kind, a level select, extents and placeholder toggles, search,
+    12	a list, a detail panel with three cards, a key. State is in memory only. GeoJSON source only.
+    13	Headless screenshot works with Playwright and swiftshader; the basemap did not render in the
+    14	headless run (overlays did).
+    15	
+    16	**The design the lane must map to.**
+    17	1. URL state: filters, selection and viewport in the hash; load restores it.
+    18	2. Sources: PMTiles via `pmtiles` protocol when `data/outlines.pmtiles` exists, else GeoJSON;
+    19	   wellbores clustered below zoom 7.
+    20	3. Stale levels: `checked_at` older than 30 days shows "stale" next to the level.
+    21	4. A `how.html` page: the ladder, the three cards, the licence rule ("the publisher's page is the
+    22	   authority"), the contribution path. Plain words, no marketing.
+    23	5. Theme: dark basemap when OSD-D3 names one; until then Positron.
+    24	6. Mobile: the panel is a bottom sheet under 640 px (exists; keep it working).
+    25	7. `tools/shot.mjs` (exists) gets Playwright as a devDependency instead of borrowing the Ophiolite
+    26	   web tree.
+    27	
+    28	**Acceptance.**
+    29	- Open `#q=volve`, the list shows one dataset (screenshot).
+    30	- A hash with a kind filter and a selection, pasted in a second browser context, renders the
+    31	  same list count and panel title (Playwright test, `tests/site/`).
+    32	- 10,000 synthetic wellbore points (generated in the test) render at zoom 5 with clusters; the
+    33	  frame after `moveend` arrives under 100 ms in the Playwright trace.
+    34	- `how.html` exists and the three cards' snippets run as written (the Python one executed in CI
+    35	  against the local server).
+    36	- No console error on load (Playwright asserts).
+    37	
+    38	**Out of scope.** Accounts, state beyond the URL, a server, analytics.
+    39	
+    40	**Stop rules.** A basemap needs a key: do not add one; keep Positron and note it under OSD-D3.
+    41	
+    42	**Ownership and dependencies.** Coding lane; paths `site/**`, `tools/shot.mjs`, `tests/site/**`,
+    43	`Makefile` (site targets only). No dependency; runs in parallel with E02 on disjoint paths.
+    44	
+    45	**Evidence to inspect.** Two screenshots (desktop, phone width) and the Playwright run in the PR.
+## E09 Ophiolite reads the catalogue — QUEUED · Kernel, cross-repo · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("verified bits … pull into their workspace"); Ophiolite E85
+(one intake), E35 (rights-basis), E55 (kind registry), E122 (provenance).
+
+**Outcome.** In an Ophiolite project a person pastes a manifest or STAC collection address into
+the intake, the files land through the normal upload run, every landed item carries a
+rights-basis filled from the record's licence, and the fidelity record says which files converted
+to which canonical type and which did not. That is level L4.
+
+**Context today (verified 23 Oct for this repository; Ophiolite side from program memory, to be
+re-verified at lane open).** Ophiolite's E85 intake accepts "an address" as a drop; E35
+rights-basis/1 exists on uploads; E57 reads LAS 1.2/3.0 and DLIS; E123 reads ZGY. The Ophiolite
+monorepo is private; this repository's reader interface is `osd.manifest.read` (E06). Ophiolite
+ships an NLOG sample in its try-it image (E79).
+
+**The design the lane must map to.**
+1. Two halves, two repositories, one interface: here, the manifest and STAC are the contract and
+   gain nothing Ophiolite-specific; there, an intake address handler recognises `osd.manifest/1`
+   and STAC collections.
+2. Rights: `licence.{name, spdx, url, statement, share_alike}` map to Ophiolite's rights-basis
+   fields; `redistribution: unknown` becomes the rights-basis state that refuses publication
+   (E35's refusal state) while allowing private use.
+3. Fidelity record: written by the Ophiolite run, exported back as `verification` check
+   `canonical-conversion` with detail "<n> of <m> files to <kinds>", so this repository's
+   verifier can read it from a file the Ophiolite run publishes (no live coupling).
+4. Provenance: each landed item's E122 record names the catalogue item id and the catalogue
+   version (git commit of this repository at build time, written into `records.json`).
+5. The NLOG sample in E79 and the `nlog/nlog` record agree on kinds and licence text.
+
+**Acceptance.**
+- Here: `records.json` carries `catalog_version` (commit); a manifest fixture round-trips through
+  `osd.manifest.read` with every licence field intact (test).
+- There (Ophiolite journey test): intake of the F3 manifest lands 4 LAS files as wellbore-logs,
+  rights-basis shows CC-BY-SA-4.0 with the statement, and a publish attempt of an item from a
+  `redistribution: unknown` record is refused with E35's plain-words reason.
+- Fidelity: the exported check file validates against `schema/verification.schema.json` and
+  `osd status` shows L4 for F3 after `osd verify --fidelity-from <file>`.
+- Mutation: removing `statement` from the manifest makes the rights-basis test fail.
+
+**Out of scope.** Workspace references without copying (E12), seismic (E10), any change to
+Ophiolite's canonical types.
+
+**Stop rules.** Ophiolite's E85 is not merged at lane open: build the half here, leave the
+Ophiolite half as a charter in the Ophiolite queue, mark this epic PARTIAL.
+
+**Ownership and dependencies.** Coding lane here (paths `src/osd/manifest.py`, `src/osd/build.py`,
+`src/osd/verify.py`, tests) plus one Ophiolite lane chartered in the Ophiolite program by its
+planner. Depends on E06 and Ophiolite E85.
+
+**Evidence to inspect.** The Ophiolite journey test run; the fidelity file; `osd status`.
+## E10 Seismic slices — DEFERRED · Kernel · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("only a slice from a 3D cube rather than the entire dataset");
+Ophiolite E100 (ranged reads at a resolution).
+
+**Outcome.** In a notebook, a person reads one inline, crossline or time slice of a mirrored
+seismic volume through an HTTP byte-range read, without downloading the cube and without a
+server of ours running.
+
+**Context today (verified 23 Oct).** Nothing. E07 would hold mirrored SEG-Y, which cannot be
+sliced without a full read. The analogue is Zarr over object storage (Pangeo); the subsurface
+form is MDIO (Zarr-based) or OpenVDS (OSDU). Ophiolite reads ZGY (E123).
+
+**The design the lane must map to.**
+1. One chunked store format for mirrored volumes, Zarr-based, chosen at lane open with a
+   measured comparison on F3 (file count, bytes, slice latency from the bucket): MDIO is the
+   default candidate.
+2. Conversion is an E07 mirror step with a fidelity check: 100 random traces compared sample by
+   sample to the SEG-Y original, zero differences.
+3. Reader: `osd.seismic.open(item_id)` returns an xarray-like object; a slice reads only the
+   chunks it needs (asserted by counting HTTP requests in the test).
+4. Cost line: bytes stored per volume and egress per slice, by hand, in the PR.
+
+**Acceptance.**
+- A time slice of F3 from the bucket completes in under 3 s on the VPS and issues fewer than
+  (volume chunks / 10) range requests.
+- The fidelity check passes on F3 and fails on a fixture with one altered sample (mutation).
+- The notebook in `examples/` runs top to bottom in CI against a local store.
+
+**Out of scope.** Hosted compute, interpretation, anything beyond slicing.
+
+**Stop rules.** F3's licence (CC BY-SA) requires the converted store to carry the same licence:
+record it in custody; if any candidate volume is `redistribution: unknown`, it is not converted.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/seismic/**`, `examples/**`, tests.
+Depends on E07 and OSD-D6. Deferred until E07 is merged and a second volume with `allowed` exists.
+
+**Evidence to inspect.** The comparison table at lane open; the request count; the cost line.
+## E11 Hosting and domain — IN PROGRESS · Ops · no strategy
+
+Authority: `DECISIONS.md` OSD-D1 (public repository), OSD-D4 (opensubsurfacedata.org, bought at
+Spaceship 23 Oct), OSD-D5 (results on a branch, bucket only for mirrors).
+
+**Outcome.** The site answers at https://opensubsurfacedata.org with real verification levels,
+and nothing about hosting needs a secret.
+
+**Context today (23 Oct).** Repository public at `ophiolite-labs/open-subsurface-data`; `pages.yml`
+publishes `site/` on every merge and reads the `verification-results` branch that a dispatched
+`verify` run force-pushes. GitHub Pages serves from the github.io address until DNS points at it.
+
+**The design the lane must map to.**
+1. Apex `opensubsurfacedata.org` on GitHub Pages: four A and four AAAA records at Spaceship, a
+   `www` CNAME to `ophiolite-labs.github.io`, the custom domain set on the repository's Pages
+   settings, HTTPS enforced once the certificate is issued.
+2. Domain verified for the ophiolite-labs organisation (a TXT record) so no other account can
+   claim the name on Pages.
+3. Verification results: the `verification-results` branch; no bucket, no key.
+4. No analytics, no cookies; a plain `robots.txt` that allows indexing.
+5. Mirrors (E07) get a bucket in a separate Hetzner project when that lane opens; nothing here.
+
+**Acceptance.**
+- `curl -sI https://opensubsurfacedata.org/` returns 200; `http://` redirects to `https://`.
+- `www.opensubsurfacedata.org` redirects to the apex.
+- After a dispatched verify run, the published `data/records.json` shows `L1` for
+  `sodir/factpages` with that run's date.
+- `dig TXT _github-pages-challenge-ophiolite-labs.opensubsurfacedata.org` returns the value the
+  organisation settings show.
+
+**Out of scope.** CDN beyond Pages, mirrors, uptime monitoring.
+
+**Stop rules.** DNS not yet entered: everything else is done; the domain lines wait on the owner.
+
+**Ownership and dependencies.** Supervisor; paths `.github/workflows/**`, `site/robots.txt`,
+`docs/program/**`. Owner actions: the DNS records and the TXT record.
+
+**Evidence to inspect.** The curl and dig outputs; the published `records.json`.
+## E12 Catalogue into a workspace — DEFERRED · Kernel, cross-repo · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("pull references of that data into their private workspace …
+read-only access … derive products … push back"); Ophiolite E72a (source bindings), E73/E65
+(fixed address per version), E69 (versions), E36/E79/E80 (where a person's workspace runs).
+
+**Outcome.** A person binds a catalogue collection to their Ophiolite project as a read-only
+source, works on a curve or a slice without copying the dataset, derives a new asset and keeps it
+in their own project with provenance pointing at the catalogue item and version. The read is
+intentional (check, get), nothing updates itself.
+
+**Context today (23 Oct, from program memory; verify at lane open).** Ophiolite source bindings
+exist for connected databases (E39–E42) and remote sources (E100a's Workspace remote source);
+E36 public tenancy is deferred; E79 gives a local instance, E80 an own instance. Cross-instance
+binding does not exist and is out of scope here: the catalogue is static HTTP, so any instance
+can read it.
+
+**The design the lane must map to.**
+1. A catalogue collection is a source kind in Ophiolite ("Open Subsurface Data"), bound by the
+   STAC collection address; items are read on demand through E06's manifest reader and, for
+   curves, E100's ranged reads over mirrored files.
+2. Derived assets are ordinary E69 versions whose E122 provenance names catalogue item id and
+   `catalog_version`; "check" compares `catalog_version` and shows what changed, applies nothing.
+3. Rights follow E09's mapping; a derived asset from a share-alike item inherits the licence in
+   its rights-basis.
+4. Where it runs: the E79 try-it instance first (no hosted sign-up needed), E80 second, hosted
+   when E36 lands.
+
+**Acceptance (frozen at lane open from the Ophiolite journey fixtures, by hand).**
+- Bind F3, open one well's gamma-ray curve through a ranged read (request count below the
+  file's chunk count), run a notebook cell that derives a smoothed curve, save it: the new
+  version's provenance names the F3 item id and the catalogue commit.
+- Change the catalogue fixture's commit: "check" lists F3 as changed; nothing in the project moves.
+- A derived asset from F3 shows CC-BY-SA-4.0 in its rights-basis; one from Teapot Dome shows
+  public domain with no attribution requirement.
+
+**Out of scope.** Cross-instance bindings, hosted compute next to the data, seismic beyond E10.
+
+**Stop rules.** Ophiolite E36 and E79 both unavailable to the lane: stop, the epic stays
+deferred.
+
+**Ownership and dependencies.** One Ophiolite lane (chartered in the Ophiolite program) and a small
+lane here for whatever the reader needs. Depends on E09, E10 for slices, and Ophiolite E36 or E79.
+
+**Evidence to inspect.** The Ophiolite journey test; the provenance record; the rights-basis views.
+     1	# One target per station. CI runs exactly `make check`.
+     2	.PHONY: check test lint validate build verify site serve clean
+     3	
+     4	check: lint test validate build          ## the required CI check (offline, < 2 min)
+     5	
+     6	lint:
+     7		uv run ruff check src tests
+     8	
+     9	test:
+    10		uv run pytest -q
+    11	
+    12	validate:                                ## every record and outline against its schema
+    13		uv run osd validate
+    14	
+    15	build:                                   ## build/catalog/*.json + site/data/ from records + outlines
+    16		uv run osd build
+    17		mkdir -p site/data && cp build/catalog/*.json build/catalog/*.geojson site/data/
+    18	
+    19	verify:                                  ## network: reach origins, record levels (not part of `check`)
+    20		uv run osd verify
+    21	
+    22	site: build                              ## serve the map locally
+    23		python3 -m http.server --directory site 8765
+    24	
+    25	clean:
+    26		rm -rf build site/data
+     1	id: sodir/factpages
+     2	title: Sodir FactPages and FactMaps (Norwegian continental shelf)
+     3	summary: >-
+     4	  The Norwegian Offshore Directorate's register of every wellbore, field, discovery,
+     5	  licence and seismic survey on the Norwegian continental shelf, with coordinates and
+     6	  map layers. Metadata and outlines, not the underlying logs or seismic.
+     7	publisher: {name: Norwegian Offshore Directorate (Sodir), url: https://www.sodir.no, country: "NO"}
+     8	origin:
+     9	  url: https://factpages.sodir.no
+    10	  access: api
+    11	  manifest_url: https://factpages.sodir.no/en/wellbore/TableView/Exploration/All
+    12	  notes: Tables download as CSV; FactMaps serves WMS/WFS layers.
+    13	licence:
+    14	  name: Norwegian Licence for Open Government Data 2.0
+    15	  spdx: NLOD-2.0
+    16	  url: https://data.norge.no/nlod/en/2.0
+    17	  redistribution: allowed
+    18	  attribution: required
+    19	  statement: "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by the Norwegian Offshore Directorate"
+    20	kinds: [wellbore-headers, wellbore-paths, tops, production, source-list]
+    21	region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0]}
+    22	listed_by: [publisher]
+    23	added: 2026-10-23
+records/nlog/nlog.yaml
+records/nzpam/parihaka.yaml
+records/nzpam/kerry-3d.yaml
+records/nopims/poseidon.yaml
+records/seg/open-data-wiki.yaml
+records/terranubis/laurentian-basin.yaml
+records/terranubis/blake-ridge-hydrates-3d.yaml
+records/terranubis/usgs-central-alaska-2023.yaml
+records/terranubis/force-ml-2020-ichthys-3d.yaml
+records/terranubis/oga-rockall-trough.yaml
+records/terranubis/delft.yaml
+records/terranubis/penobscot.yaml
+records/terranubis/force-ml-2020-synthetic.yaml
+records/terranubis/oga-mnsh.yaml
+records/terranubis/usgs-beaufort-sea-2023.yaml
+records/terranubis/f3-demo-2020.yaml
+records/_template.yaml
+records/opm/norne.yaml
+records/equinor/volve.yaml
+records/nsta/ndr.yaml
+records/sodir/factpages.yaml
+records/rmotc/teapot-dome.yaml
+
+codex
+**1. Verdict: REWORK.** L2 coverage, reachability classification and ownership remain underspecified, and the acceptance tests cannot establish several promised guards.
+
+Verified against HEAD `e58e2f547715fc46d94a7e778eb142190578803c`. No files modified.
+
+**2. Factual errors and Context verification**
+
+- Confirmed: injected fetcher, one initial GET with `Range: bytes=0-0`, default 20-second timeout, and skipped L2 checks (`src/osd/verify.py:40–53,67–79`). Redirects can cause additional requests; the implementation never reads response bytes.
+- Output filenames flatten `/` to `__`; they are not literally `<id>.json` (`src/osd/verify.py:114`, `src/osd/paths.py:11`).
+- “Against the schema” overstates runtime enforcement: `verify_all` serializes without validation (`src/osd/verify.py:103–116`). The “existing test” validates one synthetic L1 result, not every real run (`tests/test_verify.py:36–39`).
+- Confirmed: PR and dispatch triggers and artifact upload (`.github/workflows/verify.yml:7–11,40–41`). PR triggers also include outlines.
+- Branch consumption is indirect: pages imports results before building (`.github/workflows/pages.yml:22–29`); the browser reads generated JSON (`site/app.js:4–5`). Only dispatch **on main** publishes results (`.github/workflows/verify.yml:48–58`).
+- The historical 403s and “five of nine” cannot be verified from code at HEAD. They are reported in `docs/program/DECISIONS.md:16` and PROGRAM’s scaffold history, not executable evidence. Label them historical and link the run; HEAD contains 21 dataset records.
+- E01 has not supplied the stated L2 prerequisite: the only `manifest_url` is `records/sodir/factpages.yaml:11`. Three real L2 records require additional record work absent from E02’s owned paths.
+
+**3. Design objections and concrete alternatives**
+
+- **Classification is neither closed nor exclusive.** 401/429/5xx are unspecified; a cross-host redirect ending in 404 satisfies both “moved” and “dead.” Define an exhaustive outcome table; make relocation a separate observation subordinate to final response success.
+- **Blocked → L1 changes the ladder’s meaning.** A challenge proves an intermediary answered, not that the origin content is reachable. Record `blocked` separately and award no new L1 without successful reachability evidence; explicitly revise OSD-D9 if adopting this.
+- **Tool policy leaks into publisher records.** `verification.sample` configures the verifier; generated `known_issues` would mix tool findings with record facts (`schema/record.schema.json:5,84`). Keep selection policy in verifier configuration and observations in verification output; records may name publisher-declared assets.
+- **Ownership omits a required contract change.** The proposed record field is rejected by `additionalProperties: false` (`schema/record.schema.json:7`), yet E02 does not claim that schema. Remove the field or claim the schema, bump `$id`, retain old-record compatibility tests and name the kernel change in the PR.
+- **Listing and asset contracts are undefined.** `manifest_url` admits indexes, APIs and bucket listings (`schema/record.schema.json:31`); `files[].path` provides no explicit address semantics (`schema/verification.schema.json:40–41`). Choose supported existing listing formats, reject unsupported ones explicitly, and define resolvable asset URLs for E04/E06.
+- **Sampling can overstate L2.** Empty selections, omitted files and cap-truncated files have no prescribed level outcome. Require at least one completely hashed file, record selection coverage, and distinguish sampled evidence from complete dataset coverage.
+- **The 2 GB guard is ambiguous.** Specify an aggregate streamed-byte budget, including retries, enforced without trusting Content-Length; partial files must never receive successful checksums.
+- **A licence hash is not captured licence text.** Preserve the bounded source text alongside its hash in the existing results store; missing URLs, failed requests and challenge bodies must not pass the licence check.
+
+**4. Acceptance weaknesses**
+
+- **Retry mutation survives:** permanent timeout produces L0 with or without retry. Assert exactly two attempts and add timeout→success recovery.
+- **Challenge detection mutation survives:** the only challenge fixture is already HTTP 403. Add HTTP 200 challenge content and ordinary HTTP 200 content.
+- **Checksum coverage is insufficient:** three correct hashes do not test allow-list enforcement, empty selection, incomplete streams or the aggregate cap. Inject streams containing selected and excluded files; assert bytes, identities and failure outcomes.
+- **Licence-change test permits “always changed.”** Add first-run and unchanged-text cases, assert the previous date, and prove failed licence retrieval prevents L2.
+- **Publication equality can pass with both sides at L0 or stale.** Assert explicit IDs, expected L2 outcomes and this run’s timestamp. Import branch JSON into the main checkout; the results branch contains no CLI (`.github/workflows/verify.yml:52–57`).
+- **Schema acceptance lacks coverage:** validate every emitted result before writing; exercise success, blocked, partial and failed outputs, plus legacy fixtures.
+- No acceptance guards robots refusal, host pacing, absent licence URLs or failed-file prevention of L2. Add injected-fetcher/clock tests and mutations inside existing pytest; no new CI station or test server.
+
+**5. Scope across charters**
+
+- Stale rendering belongs to E05 (`E05-map-that-scales.md:20,42–43`); E02 should own timestamp emission only, with an explicit handoff.
+- Adding the required real listings is E01-style record curation; assign those paths explicitly rather than assuming E01 delivered them.
+- A record-schema change intersects E03’s planned `record/2` change (`E03-outlines-from-the-data.md`, Ownership); coordinate versioning and sequential claims.
+- Keep STAC asset publication in E04, retrieval in E06 and dead-link issue creation in E08; E02 should supply their evidence contracts only.
+tokens used
+36,588
+**1. Verdict: REWORK.** L2 coverage, reachability classification and ownership remain underspecified, and the acceptance tests cannot establish several promised guards.
+
+Verified against HEAD `e58e2f547715fc46d94a7e778eb142190578803c`. No files modified.
+
+**2. Factual errors and Context verification**
+
+- Confirmed: injected fetcher, one initial GET with `Range: bytes=0-0`, default 20-second timeout, and skipped L2 checks (`src/osd/verify.py:40–53,67–79`). Redirects can cause additional requests; the implementation never reads response bytes.
+- Output filenames flatten `/` to `__`; they are not literally `<id>.json` (`src/osd/verify.py:114`, `src/osd/paths.py:11`).
+- “Against the schema” overstates runtime enforcement: `verify_all` serializes without validation (`src/osd/verify.py:103–116`). The “existing test” validates one synthetic L1 result, not every real run (`tests/test_verify.py:36–39`).
+- Confirmed: PR and dispatch triggers and artifact upload (`.github/workflows/verify.yml:7–11,40–41`). PR triggers also include outlines.
+- Branch consumption is indirect: pages imports results before building (`.github/workflows/pages.yml:22–29`); the browser reads generated JSON (`site/app.js:4–5`). Only dispatch **on main** publishes results (`.github/workflows/verify.yml:48–58`).
+- The historical 403s and “five of nine” cannot be verified from code at HEAD. They are reported in `docs/program/DECISIONS.md:16` and PROGRAM’s scaffold history, not executable evidence. Label them historical and link the run; HEAD contains 21 dataset records.
+- E01 has not supplied the stated L2 prerequisite: the only `manifest_url` is `records/sodir/factpages.yaml:11`. Three real L2 records require additional record work absent from E02’s owned paths.
+
+**3. Design objections and concrete alternatives**
+
+- **Classification is neither closed nor exclusive.** 401/429/5xx are unspecified; a cross-host redirect ending in 404 satisfies both “moved” and “dead.” Define an exhaustive outcome table; make relocation a separate observation subordinate to final response success.
+- **Blocked → L1 changes the ladder’s meaning.** A challenge proves an intermediary answered, not that the origin content is reachable. Record `blocked` separately and award no new L1 without successful reachability evidence; explicitly revise OSD-D9 if adopting this.
+- **Tool policy leaks into publisher records.** `verification.sample` configures the verifier; generated `known_issues` would mix tool findings with record facts (`schema/record.schema.json:5,84`). Keep selection policy in verifier configuration and observations in verification output; records may name publisher-declared assets.
+- **Ownership omits a required contract change.** The proposed record field is rejected by `additionalProperties: false` (`schema/record.schema.json:7`), yet E02 does not claim that schema. Remove the field or claim the schema, bump `$id`, retain old-record compatibility tests and name the kernel change in the PR.
+- **Listing and asset contracts are undefined.** `manifest_url` admits indexes, APIs and bucket listings (`schema/record.schema.json:31`); `files[].path` provides no explicit address semantics (`schema/verification.schema.json:40–41`). Choose supported existing listing formats, reject unsupported ones explicitly, and define resolvable asset URLs for E04/E06.
+- **Sampling can overstate L2.** Empty selections, omitted files and cap-truncated files have no prescribed level outcome. Require at least one completely hashed file, record selection coverage, and distinguish sampled evidence from complete dataset coverage.
+- **The 2 GB guard is ambiguous.** Specify an aggregate streamed-byte budget, including retries, enforced without trusting Content-Length; partial files must never receive successful checksums.
+- **A licence hash is not captured licence text.** Preserve the bounded source text alongside its hash in the existing results store; missing URLs, failed requests and challenge bodies must not pass the licence check.
+
+**4. Acceptance weaknesses**
+
+- **Retry mutation survives:** permanent timeout produces L0 with or without retry. Assert exactly two attempts and add timeout→success recovery.
+- **Challenge detection mutation survives:** the only challenge fixture is already HTTP 403. Add HTTP 200 challenge content and ordinary HTTP 200 content.
+- **Checksum coverage is insufficient:** three correct hashes do not test allow-list enforcement, empty selection, incomplete streams or the aggregate cap. Inject streams containing selected and excluded files; assert bytes, identities and failure outcomes.
+- **Licence-change test permits “always changed.”** Add first-run and unchanged-text cases, assert the previous date, and prove failed licence retrieval prevents L2.
+- **Publication equality can pass with both sides at L0 or stale.** Assert explicit IDs, expected L2 outcomes and this run’s timestamp. Import branch JSON into the main checkout; the results branch contains no CLI (`.github/workflows/verify.yml:52–57`).
+- **Schema acceptance lacks coverage:** validate every emitted result before writing; exercise success, blocked, partial and failed outputs, plus legacy fixtures.
+- No acceptance guards robots refusal, host pacing, absent licence URLs or failed-file prevention of L2. Add injected-fetcher/clock tests and mutations inside existing pytest; no new CI station or test server.
+
+**5. Scope across charters**
+
+- Stale rendering belongs to E05 (`E05-map-that-scales.md:20,42–43`); E02 should own timestamp emission only, with an explicit handoff.
+- Adding the required real listings is E01-style record curation; assign those paths explicitly rather than assuming E01 delivered them.
+- A record-schema change intersects E03’s planned `record/2` change (`E03-outlines-from-the-data.md`, Ownership); coordinate versioning and sequential claims.
+- Keep STAC asset publication in E04, retrieval in E06 and dead-link issue creation in E08; E02 should supply their evidence contracts only.
