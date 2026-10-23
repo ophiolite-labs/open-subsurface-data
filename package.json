@@ -4,7 +4,7 @@
   "description": "Dev tools for the static site: screenshots and the Playwright site test. The site itself has no build step.",
   "type": "module",
   "scripts": {
-    "site-test": "node --test --test-reporter=spec tests/site/site.test.mjs",
+    "site-test": "node --test --test-reporter=spec tests/site/site.test.mjs tests/site/status.test.mjs",
     "shot": "node tools/shot.mjs"
   },
   "devDependencies": {
