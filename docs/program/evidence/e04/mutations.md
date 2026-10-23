@@ -18,3 +18,4 @@
 | lossy item names without hash | `src/osd/stac.py` | `test_item_file_names_are_path_safe_and_distinct` | FAILS (good): 1 failed, 22 deselected in 0.22s |
 | period made required | `schema/record.schema.json` | `test_period_is_additive_to_record_2` | FAILS (good): 1 failed, 22 deselected in 0.40s |
 restored: 23 passed in 2.09s
+| unquoted period coercion removed | `src/osd/records.py` | `test_unquoted_yaml_period_reads_as_strings` | FAILS (good): 1 failed, 23 deselected in 0.22s |
