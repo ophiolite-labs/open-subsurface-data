@@ -1,7 +1,11 @@
 """E03: outlines from the data. Every test runs offline over frozen responses in
 tests/fixtures/outlines/ (see its README for what was truncated)."""
 import copy
+import hashlib
+import itertools
 import json
+import math
+import struct
 from pathlib import Path
 
 import pytest
@@ -22,6 +26,7 @@ from osd.outlines import (
 )
 from osd.outlines.codecs import blosc_decode
 from osd.outlines.extractors import segy_hull
+from osd.outlines.geometry import ring_area_m2, simplify
 from osd.records import load_record, load_records, record_files, validate_outlines
 from osd.verify import FetchError, verify_record
 
@@ -179,7 +184,6 @@ def test_blosc_lz4_decodes_a_real_chunk():
     d = FIX / "nopims__poseidon" / "full-stack-agc"
     raw = blosc_decode((d / "headers" / "0" / "0").read_bytes())
     assert len(raw) == 128 * 128 * 18
-    import struct
     il, xl, scalar, x, y = struct.unpack_from("<iihii", raw, 0)
     assert (il, xl, scalar) == (983, 504, -100) and (x, y) == (41613223, 844759437)
     mask = blosc_decode((d / "trace_mask" / "1" / "1").read_bytes())
@@ -193,7 +197,105 @@ def test_mdio_hull_from_frozen_poseidon_chunks(tmp_path):
     assert p["publisher_id"] == "Poseidon" and p["kind"] == "survey-3d"
     ring = f["geometry"]["coordinates"][0]
     assert len(ring) == 5  # every trace live: the four corner traces
-    assert [122.223263, -14.041063] in ring  # inline 983, crossline 504: x 416132.23, y 8447594.37 (MGA 51)
+    assert [122.22326, -14.04106] in ring  # polygon_decimals 5; inline 983, crossline 504: x 416132.23, y 8447594.37 (MGA 51)
+
+
+def test_wellbores_without_a_position_are_listed_not_drawn(tmp_path):
+    """FactMaps serves [nan,nan] (not JSON) for 6407/9-U-4: listed as unplaced, never dropped."""
+    inputs = stage(tmp_path, "sodir/factpages", "wellbores", FIX / "sodir__factpages" / "wellbores-unplaced")
+    fc = derive(only(RECS["sodir/factpages"], "wellbores"), RULES, inputs)
+    assert sorted(published_ids(fc)) == ["138", "140"] and fc["unplaced"] == ["sodir/factpages#wellbore/139"]
+    rules = copy.deepcopy(RULES)
+    del rules["sodir/factpages"]["inputs"]["wellbores"]["unplaced"]
+    with pytest.raises(Refused, match="geometry"):
+        derive(only(RECS["sodir/factpages"], "wellbores"), rules, inputs)
+    out = tmp_path / "out.geojson"
+    write_outline(fc, out)
+    assert json.loads(out.read_text())["unplaced"] == fc["unplaced"]
+
+
+def test_overlapping_publisher_ids_are_scoped_not_collided(tmp_path):
+    """Sodir numbers wellbores and surveys from one NPDID sequence: wellbore 140, survey 140 can
+    both exist. The rule's id_scope keeps feature_ids unique; without it they would collide."""
+    inputs = stage(tmp_path, "sodir/factpages", "wellbores", FIX / "sodir__factpages" / "wellbores-unplaced")
+    store(inputs / "sodir__factpages" / "seismic-finished", [("page-000000", json.dumps({
+        "type": "FeatureCollection", "features": [{"type": "Feature", "properties": {
+            "NPDID_for_survey": 140, "Survey_name": "S", "Sub_type": "3D", "Net_or_gross": "net"},
+            "geometry": {"type": "Polygon", "coordinates": [[[2, 60], [3, 60], [3, 61], [2, 60]]]}}]}).encode())])
+    rec = only(RECS["sodir/factpages"], "wellbores", "seismic-finished")
+    ids = [f["properties"]["feature_id"] for f in derive(rec, RULES, inputs)["features"]]
+    assert "sodir/factpages#wellbore/140" in ids and "sodir/factpages#survey/140" in ids
+    rules = copy.deepcopy(RULES)
+    for r in rules["sodir/factpages"]["inputs"].values():
+        r.pop("id_scope", None)
+    with pytest.raises(Refused, match="collisions"):
+        derive(rec, rules, inputs)
+
+
+def test_surveys_without_an_area_are_listed_not_drawn(tmp_path):
+    """FactMaps serves {"type":"MultiPolygon",} (not JSON) for CSSC-65 (1965, no area)."""
+    inputs = stage(tmp_path, "sodir/factpages", "seismic-finished", FIX / "sodir__factpages" / "seismic-unplaced")
+    fc = derive(only(RECS["sodir/factpages"], "seismic-finished"), RULES, inputs)
+    assert published_ids(fc) == ["11191"] and fc["unplaced"] == ["sodir/factpages#survey/2000"]
+
+
+def _to_segment(p, a, b):
+    k = 111320 * math.cos(math.radians(p[1]))
+    ax, ay, bx, by, px, py = a[0] * k, a[1] * 110540, b[0] * k, b[1] * 110540, p[0] * k, p[1] * 110540
+    dx, dy = bx - ax, by - ay
+    t = max(0, min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy or 1)))
+    return math.hypot(px - ax - t * dx, py - ay - t * dy)
+
+
+def test_survey_polygons_are_simplified_within_tolerance_points_exact(tmp_path):
+    inputs = stage(tmp_path, "nlog/nlog", "surveys-3d")
+    rules = copy.deepcopy(RULES)
+    rules["nlog/nlog"]["simplify_m"] = 0
+    exact = derive(only(RECS["nlog/nlog"], "surveys-3d"), rules, inputs)
+    fc = derive(only(RECS["nlog/nlog"], "surveys-3d"), RULES, inputs)
+    before = sum(len(r) for f in exact["features"] for r in f["geometry"]["coordinates"])
+    after = sum(len(r) for f in fc["features"] for r in f["geometry"]["coordinates"])
+    assert after < before
+    for e, s in zip(exact["features"], fc["features"], strict=True):
+        assert s["properties"]["simplified_m"] == 50 and e["properties"]["simplified_m"] == 0
+        ring = s["geometry"]["coordinates"][0]
+        assert ring[0] == ring[-1]
+        for p in e["geometry"]["coordinates"][0]:  # every served vertex within 50 m of the simplified ring
+            assert min(_to_segment(p, a, b) for a, b in itertools.pairwise(ring)) <= 51  # 50 m plus 5-decimal rounding
+    pts = derive(only(RECS["nlog/nlog"], "boreholes"), RULES, stage(tmp_path, "nlog/nlog", "boreholes"))
+    assert all("simplified_m" not in f["properties"] for f in pts["features"])
+
+
+def test_rings_below_tolerance_squared_are_dropped_and_counted():
+    """OSD-D16 amended: a ring whose area is below tol² is dropped; a polygon whose exterior is
+    dropped goes with its holes; the count is returned for rings_dropped."""
+    def square(x, y, d):  # d degrees at 60N: 0.001 deg ~ 56 m x 111 m
+        return [[x, y], [x + d, y], [x + d, y + d], [x, y + d], [x, y]]
+    big = [square(2, 60, 0.1), square(2.01, 60.01, 0.01), square(2.05, 60.05, 0.0002)]  # hole 11 m x 22 m
+    speck = [square(3, 60, 0.0003)]  # 17 m x 33 m < 50 m x 50 m
+    g, dropped = simplify({"type": "MultiPolygon", "coordinates": [big, speck]}, 50)
+    assert dropped == 2 and len(g["coordinates"]) == 1 and len(g["coordinates"][0]) == 2
+    assert ring_area_m2(square(2, 60, 0.001)) == pytest.approx(55.66 * 110.54, rel=1e-3)
+    g, dropped = simplify({"type": "Polygon", "coordinates": speck}, 50)  # nothing above tol²: kept
+    assert dropped == 0 and g["coordinates"] == speck
+    as_served = [[[round(v, 12) for v in p] for p in r] for r in big]
+    assert simplify({"type": "Polygon", "coordinates": big}, 0, decimals=12) == ({"type": "Polygon", "coordinates": as_served}, 0)
+    g, dropped = simplify({"type": "Polygon", "coordinates": big}, 50, exterior_only=True)  # 2D coverage
+    assert dropped == 2 and g["coordinates"] == [square(2, 60, 0.1)]
+    g, _ = simplify({"type": "Polygon", "coordinates": [square(2.123456789, 60, 0.1)]}, 50, decimals=5)
+    assert g["coordinates"][0][0] == [2.12346, 60]
+
+
+def test_polygon_rules_are_named_in_the_derivation(tmp_path):
+    ring = [[2, 60], [3, 60], [3, 61], [2, 60]]
+    store(tmp_path / "sodir__factpages" / "seismic-finished", [("page-000000", json.dumps({
+        "type": "FeatureCollection", "features": [{"type": "Feature", "properties": {
+            "NPDID_for_survey": n, "Survey_name": s, "Sub_type": s, "Net_or_gross": "net"},
+            "geometry": {"type": "Polygon", "coordinates": [ring]}} for n, s in ((1, "2D"), (2, "3D"))]}).encode())])
+    fc = derive(only(RECS["sodir/factpages"], "seismic-finished"), RULES, tmp_path)
+    src = {f["properties"]["kind"]: f["properties"]["source"] for f in fc["features"]}
+    assert src["survey-2d"] == "register-wfs (seismic-finished), simplified 50 m, exterior only, 5 decimals"
+    assert src["survey-3d"] == "register-wfs (seismic-finished), simplified 50 m, 5 decimals"
 
 
 # --- publisher-file and register-csv ------------------------------------------------------
@@ -202,7 +304,8 @@ def test_publisher_page_extent(tmp_path):
     inputs = stage(tmp_path, "nzpam/parihaka", "survey-extent")
     [f] = derive(RECS["nzpam/parihaka"], RULES, inputs)["features"]
     assert f["properties"]["publisher_id"] == "927165623" and f["properties"]["name"] == "PARIHAKA-3D : PR3460"
-    assert f["geometry"]["type"] == "Polygon" and len(f["geometry"]["coordinates"][0]) == 152
+    assert f["geometry"]["type"] == "Polygon" and f["properties"]["simplified_m"] == 50 and f["properties"]["rings_dropped"] == 0
+    assert 4 <= len(f["geometry"]["coordinates"][0]) < 152  # 152 positions as served
 
 
 def test_register_csv_ids_equal_the_fixture_id_set(tmp_path):
@@ -225,14 +328,14 @@ def test_derived_features_carry_identity_and_licence(tmp_path):
     fc = derive(only(RECS["sodir/factpages"], "wellbores"), RULES, inputs)
     sha = stored_inputs("sodir/factpages", inputs) or None
     sums = (inputs / "sodir__factpages" / "wellbores" / "SHA256SUMS").read_bytes()
-    import hashlib
     for f in fc["features"]:
         p = f["properties"]
         assert p["approximate"] is False and p["source"] == "register-wfs (wellbores)"
-        assert p["feature_id"] == f"sodir/factpages#{p['publisher_id']}"
-        assert p["input_url"] == RECS["sodir/factpages"]["inputs"][0]["url"]
-        assert p["input_sha256"] == hashlib.sha256(sums).hexdigest()
-        assert p["licence"] == "Norwegian Licence for Open Government Data 2.0"  # OSD-D13
+        assert p["feature_id"] == f"sodir/factpages#wellbore/{p['publisher_id']}"
+        assert p["input"] == "wellbores" and "licence" not in p
+    assert fc["inputs"] == {"wellbores": {"url": RECS["sodir/factpages"]["inputs"][0]["url"],
+                                          "sha256": hashlib.sha256(sums).hexdigest()}}
+    assert fc["licence"] == "Norwegian Licence for Open Government Data 2.0"  # OSD-D13, once per file
     assert sha is None  # no inputs.json: only fetch_inputs records what was fetched
     out = tmp_path / "outlines"
     out.mkdir()
@@ -253,8 +356,15 @@ def test_open_ring_is_a_problem(tmp_path, tmp_records, tmp_outlines):
 
 def test_derived_feature_without_identity_is_a_problem(tmp_records, tmp_outlines):
     p = tmp_outlines / "acme__demo.geojson"
-    p.write_text(p.read_text().replace('"input_sha256"', '"input_sha"'))
-    assert any("input_sha256" in str(m) for m in validate_outlines(tmp_outlines, tmp_records))
+    good = p.read_text()
+    p.write_text(good.replace('"input": "demo-3d"', '"inputs_": "demo-3d"'))
+    assert any("'input' is a required property" in str(m) for m in validate_outlines(tmp_outlines, tmp_records))
+    p.write_text(good.replace('"input": "demo-3d"', '"input": "other"'))  # names an input the file lacks
+    assert any("not in the collection's inputs" in str(m) for m in validate_outlines(tmp_outlines, tmp_records))
+    p.write_text(good.replace('"sha256": "' + "0" * 64, '"sha": "' + "0" * 64))
+    assert any("collection: " in str(m) and "sha256" in str(m) for m in validate_outlines(tmp_outlines, tmp_records))
+    p.write_text(good.replace('"licence": "CC BY 4.0", ', ""))
+    assert any("no licence" in str(m) for m in validate_outlines(tmp_outlines, tmp_records))
 
 
 # --- fetching through the injected opener ------------------------------------------------
@@ -268,6 +378,8 @@ def wfs_opener(d: Path, calls: list):
         if url.endswith("/robots.txt"):
             raise FetchError(url, 404)
         q = parse_qs(urlsplit(url).query)
+        if "startIndex" not in q and "resultType" not in q:
+            raise FetchError(url, 404)
         name = "hits" if q.get("resultType") == ["hits"] else f"page-{int(q['startIndex'][0]):06d}"
         p = d / name
         if not p.exists():
@@ -306,15 +418,18 @@ def test_missing_inputs_never_passes(tmp_path):
     with pytest.raises(Refused, match="declares no inputs"):
         derive(rec, RULES, tmp_path)
     fc = derive(only(RECS["sodir/factpages"], "wellbores"), RULES, stage(tmp_path, "sodir/factpages", "wellbores"))
-    o, d = check(rec, fc, {"min_features": 1}, {f["properties"]["input_url"]: f["properties"]["input_sha256"]
-                                                 for f in fc["features"]})
+    o, d = check(rec, fc, {"min_features": 1}, stored_of(fc))
     assert (o, d) == ("fail", "the record declares no inputs")
 
 
-def test_approximate_feature_never_passes():
+def test_approximate_feature_never_passes(tmp_path):
     outline = json.loads(paths.outline_path("terranubis/f3-demo-2020").read_text())
     rec = {**RECS["terranubis/f3-demo-2020"], "inputs": [SEGY_INPUT]}
-    assert check(rec, outline, {"min_features": 1}, {})[0] == "fail"
+    assert check(rec, outline, {"min_features": 1}, {})[0] == "fail"  # the committed placeholder
+    rec, fc, stored = derived_sodir(tmp_path)
+    fc["features"][3]["properties"]["approximate"] = True  # identity intact, one placeholder
+    o, d = check(rec, fc, {"min_features": 8}, stored)
+    assert (o, d) == ("fail", "1 approximate features")
 
 
 def test_duplicate_feature_id_never_passes(tmp_path):
@@ -329,8 +444,7 @@ def test_duplicate_feature_id_never_passes(tmp_path):
         derive(rec, rules, stage(tmp_path, "sodir/factpages", "seismic-finished", src))
     fc = derive(rec, RULES, stage(tmp_path, "sodir/factpages", "seismic-finished"))
     fc["features"].append(copy.deepcopy(fc["features"][0]))
-    stored = {f["properties"]["input_url"]: f["properties"]["input_sha256"] for f in fc["features"]}
-    o, d = check(rec, fc, {"min_features": 1}, stored)
+    o, d = check(rec, fc, {"min_features": 1}, stored_of(fc))
     assert o == "fail" and "duplicate feature_id" in d
 
 
@@ -340,8 +454,12 @@ def derived_sodir(tmp_path):
     rec = only(RECS["sodir/factpages"], "wellbores")
     inputs = stage(tmp_path, "sodir/factpages", "wellbores")
     fc = derive(rec, RULES, inputs)
-    stored = {rec["inputs"][0]["url"]: fc["features"][0]["properties"]["input_sha256"]}
-    return rec, fc, stored
+    return rec, fc, stored_of(fc)
+
+
+def stored_of(fc):
+    """What stored_inputs would report for the inputs this collection names."""
+    return {i["url"]: i["sha256"] for i in fc["inputs"].values()}
 
 
 def l2_passing(tmp_path, rec):
@@ -416,7 +534,10 @@ def test_every_version_1_outline_validates_under_outline_2():
 
 
 def test_rules_name_records_with_inputs():
+    assert set(RULES["defaults"]) <= {"simplify_m", "polygon_decimals"}
     for rid, rule in RULES.items():
+        if rid == "defaults":
+            continue
         names = {i["name"] for i in RECS[rid].get("inputs", [])}
         assert rule["inputs"] and set(rule["inputs"]) <= names, rid
         assert isinstance(rule["min_features"], int) and rule["min_features"] >= 1, rid
@@ -427,3 +548,25 @@ def test_rules_name_records_with_inputs():
 def test_record_schema_has_no_outline_policy():
     props = json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text())["properties"]["inputs"]
     assert set(props["items"]["properties"]) == {"name", "url", "format", "crs", "units", "stated"}  # OSD-D11
+
+
+def test_outline_inputs_check_the_committed_file_and_outlines_rewrite_it(tmp_path, monkeypatch):
+    from osd.verify import verify_all
+    rec = only(RECS["sodir/factpages"], "wellbores")
+    rules = copy.deepcopy(RULES)
+    rules["sodir/factpages"]["inputs"] = {"wellbores": {**rules["sodir/factpages"]["inputs"]["wellbores"], "page_size": 3}}
+    rules["sodir/factpages"]["min_features"] = 8
+    monkeypatch.setattr("osd.verify.load_records", lambda: {rec["id"]: rec})
+    monkeypatch.setattr("osd.verify.outlines.load_rules", lambda: rules)
+    od = tmp_path / "outlines"
+    od.mkdir()
+    committed = od / "sodir__factpages.geojson"
+    committed.write_text('{"type":"FeatureCollection","features":[]}\n')
+    kw = {"fetch": fetch_ok, "opener": wfs_opener(FIX / "sodir__factpages" / "wellbores", []),
+          "out_dir": tmp_path / "v", "inputs_dir": tmp_path / "in", "outlines_dir": od}
+    [v] = verify_all(fetch_inputs=True, **kw)
+    assert committed.read_text() == '{"type":"FeatureCollection","features":[]}\n'  # checked, not rewritten
+    assert outcome(v, "outline-derived")["outcome"] == "fail"
+    [v] = verify_all(derive=True, **kw)
+    assert len(json.loads(committed.read_text())["features"]) == 8
+    assert outcome(v, "outline-derived")["outcome"] == "pass"

@@ -25,12 +25,13 @@ def tmp_records(tmp_path: Path):
 def tmp_outlines(tmp_path: Path):
     d = tmp_path / "outlines"
     d.mkdir()
-    (d / "acme__demo.geojson").write_text(json.dumps({"type": "FeatureCollection", "features": [{
+    (d / "acme__demo.geojson").write_text(json.dumps({
+        "type": "FeatureCollection", "licence": "CC BY 4.0",
+        "inputs": {"demo-3d": {"url": "https://acme.example/demo.geojson", "sha256": "0" * 64}}, "features": [{
         "type": "Feature",
         "properties": {"record_id": "acme/demo", "kind": "survey-3d", "name": "Demo 3D",
                        "approximate": False, "source": "publisher shapefile",
-                       "feature_id": "acme/demo#demo-3d", "input_url": "https://acme.example/demo.geojson",
-                       "input_sha256": "0" * 64, "licence": "CC BY 4.0"},
+                       "feature_id": "acme/demo#demo-3d", "input": "demo-3d"},
         "geometry": {"type": "Polygon", "coordinates": [[[4, 54], [5, 54], [5, 55], [4, 55], [4, 54]]]},
     }]}))
     return d

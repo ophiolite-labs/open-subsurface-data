@@ -63,6 +63,9 @@ def _features(rec_input: dict, rule: dict, collections: list[dict]) -> list[dict
             if not _keep(rule, props):
                 continue
             g = feat.get("geometry") or {}
+            if not g.get("coordinates") and rule.get("unplaced") == "report":
+                out.append({"kind": _kind(rule, props), **_ident(rule, props), "geometry": None})
+                continue
             if g.get("type") not in GEOMETRY_TYPES or not g.get("coordinates"):
                 raise Refused(f"{rec_input['name']}: a feature has geometry {g.get('type')!r}")
             out.append({"kind": _kind(rule, props), **_ident(rule, props),
@@ -70,9 +73,20 @@ def _features(rec_input: dict, rule: dict, collections: list[dict]) -> list[dict
     return out
 
 
+NAN_POSITION = re.compile(rb"\[\s*nan\s*,\s*nan\s*\]")
+EMPTY_GEOMETRY = re.compile(rb'\{"type":"(\w+)",\}')
+
+
+def geojson_page(b: bytes) -> dict:
+    """A GeoJSON page. FactMaps writes two things that are not JSON: `[nan,nan]` for a wellbore
+    without a position and `{"type":"MultiPolygon",}` for a survey without an area; both read as
+    a geometry without coordinates (the rule decides: unplaced: report, or refuse)."""
+    return json.loads(EMPTY_GEOMETRY.sub(rb'{"type":"\1","coordinates":null}', NAN_POSITION.sub(b"null", b)))
+
+
 def register_wfs(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
     """GeoJSON pages of a WFS GetFeature; a stored hit count must equal the features served."""
-    pages = [json.loads(b) for n, b in parts if n.startswith("page-")]
+    pages = [geojson_page(b) for n, b in parts if n.startswith("page-")]
     served = sum(len(p.get("features") or []) for p in pages)
     hits = dict(parts).get("hits")
     if hits is not None:

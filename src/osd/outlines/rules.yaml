@@ -5,26 +5,42 @@
 #
 # register-wfs: id/uwi/name are property names; kind is a literal or {field, map, default};
 #   keep filters features by property; params are added to every page request; hits: true
-#   compares the service's numberMatched with the features served.
+#   compares the service's numberMatched with the features served; id_scope prefixes the
+#   feature_id (<record-id>#<scope>/<id>) where one record holds registers with overlapping ids.
 # segy-hull: x_byte/y_byte/scalar_byte (SEG-Y, 1-based) or x_field/y_field/scalar_field (MDIO).
 # publisher-file: GeoJSON, or the locn:geometry extent of a publisher's page.
+# simplify_m (default 50): Douglas-Peucker tolerance for derived polygons, recorded as
+#   simplified_m on each; rings below simplify_m² are dropped; polygon_decimals (default 5) rounds
+#   polygon positions; exteriors_only lists kinds written without holes; rings dropped are counted
+#   in rings_dropped, and the rules applied are named in the feature's source (OSD-D16 amended,
+#   answers E03-2, E03-3). Per record, over `defaults`. Points are never moved. unplaced: report lists features
+#   the register serves without a position in the file's "unplaced" member instead of refusing.
+
+defaults:
+  simplify_m: 50
+  polygon_decimals: 5
 
 sodir/factpages:
-  min_features: 1
+  exteriors_only: [survey-2d]   # a 2D survey's holes are artefacts of buffering its line network
+  min_features: 11210   # 23 Oct 2026: 9805 wellbores + 1405 surveys drawn; 2589 listed unplaced
   inputs:
     wellbores:
       extractor: register-wfs
       kind: wellbore
       id: NPDID_wellbore
+      id_scope: wellbore   # NPDIDs of wellbores and surveys overlap (wellbore 2000, survey 2000)
       name: Wellbore_name
+      unplaced: report   # FactMaps serves [nan,nan] for wellbores without a position
       page_size: 1000
       params: {outputFormat: GEOJSON, propertyName: "Wellbore_name,NPDID_wellbore,SHAPE"}
     seismic-finished: &sodir-seismic
       extractor: register-wfs
       kind: {field: Sub_type, map: {"2D": survey-2d}, default: survey-3d}
       id: NPDID_for_survey
+      id_scope: survey
       name: Survey_name
       keep: {Net_or_gross: net}   # every survey has one net area; 634 also have a gross area incl. turns
+      unplaced: report            # FactMaps serves {"type":"MultiPolygon",} for old surveys without an area
       page_size: 1000
       params: {outputFormat: GEOJSON, propertyName: "Survey_name,NPDID_for_survey,Sub_type,Net_or_gross,SHAPE"}
     seismic-ongoing: *sodir-seismic
@@ -32,7 +48,7 @@ sodir/factpages:
     # planned, pending and cancelled surveys hold no data and are not outlined
 
 nlog/nlog:
-  min_features: 1
+  min_features: 7220    # 23 Oct 2026: 6738 boreholes + 482 3D surveys
   inputs:
     boreholes:
       extractor: register-wfs

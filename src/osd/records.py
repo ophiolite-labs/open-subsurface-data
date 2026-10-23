@@ -88,9 +88,11 @@ def validate_outlines(
 ) -> list[Problem]:
     """Each outline file is a FeatureCollection whose features carry the outline properties
     and name an existing record; the file name must match that record. Geometry is WGS84 with
-    closed, non-empty rings; a feature_id is '<record-id>#...' and unique in its file."""
+    closed, non-empty rings; a feature_id is '<record-id>#...' and unique in its file; a derived
+    feature names an input the collection carries and has a licence (its own or the file's)."""
     problems: list[Problem] = []
     v = _validator("outline")
+    vc = Draft202012Validator(_schema("outline")["$defs"]["collection"], format_checker=FormatChecker())
     known = set(load_records(records_dir))
     for p in sorted(outlines_dir.glob("*.geojson")):
         rel = p.name
@@ -104,6 +106,9 @@ def validate_outlines(
             continue
         expected_id = p.stem.replace("__", "/")
         ids: dict[str, int] = {}
+        for err in vc.iter_errors({k: x for k, x in fc.items() if k not in ("type", "features")}):
+            problems.append(Problem(rel, f"collection: {err.message}"))
+        named = fc.get("inputs") if isinstance(fc.get("inputs"), dict) else {}
         if expected_id not in known:
             problems.append(Problem(rel, f"no record '{expected_id}' for this outline file"))
         for i, f in enumerate(fc.get("features", [])):
@@ -116,6 +121,11 @@ def validate_outlines(
                 )
             for msg in geometry_problems(f.get("geometry") or {}):
                 problems.append(Problem(rel, f"feature {i}: {msg}"))
+            if props.get("approximate") is False:
+                if "input" in props and props["input"] not in named:
+                    problems.append(Problem(rel, f"feature {i}: input '{props['input']}' is not in the collection's inputs"))
+                if not (props.get("licence") or fc.get("licence")):
+                    problems.append(Problem(rel, f"feature {i}: no licence (the feature's or the collection's)"))
             fid = props.get("feature_id")
             if fid is not None:
                 if not str(fid).startswith(expected_id + "#"):

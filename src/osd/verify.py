@@ -477,7 +477,7 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
 
     if outline is None:
         checks.append({"name": "outline-present", "level": "L3", "outcome": "fail",
-                       "detail": "no outlines file"})
+                       "detail": ("no outlines file" + (f"; derivation refused: {refused}" if refused else ""))[:500]})
     else:
         checks.append({"name": "outline-present", "level": "L3", "outcome": "pass",
                        "detail": f"{len(outline.get('features', []))} features"})
@@ -501,11 +501,16 @@ def _validator() -> Draft202012Validator:
     return Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text()))
 
 
-def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, outline_path: Path) -> str | None:
-    """`--outlines`: fetch the record's inputs, derive, rewrite the committed file; the reason if refused."""
+def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, outline_path: Path,
+                   rewrite: bool) -> str | None:
+    """Fetch the record's inputs and derive from them; `rewrite` (--outlines) replaces the committed
+    file, otherwise (--outline-inputs, the verify workflow) the committed file is checked against
+    today's bytes. Returns the reason when refused."""
     try:
         outlines.fetch_inputs(rec, rules, opener, inputs_dir)
-        outlines.write_outline(outlines.derive(rec, rules, inputs_dir), outline_path)
+        fc = outlines.derive(rec, rules, inputs_dir)
+        if rewrite:
+            outlines.write_outline(fc, outline_path)
     except outlines.Refused as e:
         return str(e)
     return None
@@ -513,10 +518,11 @@ def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, out
 
 def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
                out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None,
-               derive: bool = False, inputs_dir: Path = outlines.INPUTS_DIR,
+               derive: bool = False, fetch_inputs: bool = False, inputs_dir: Path = outlines.INPUTS_DIR,
                outlines_dir: Path = paths.OUTLINES_DIR) -> list[dict]:
     """Defaults are the network, paced; tests inject both and are not paced. `derive` (osd verify
-    --outlines) refetches the inputs of records that have outline rules and rewrites their outlines."""
+    --outlines) refetches the inputs of records that have outline rules and rewrites their outlines;
+    `fetch_inputs` (--outline-inputs) refetches them and checks the committed outlines against them."""
     if fetch is None and opener is None:
         fetch, opener = paced(http_fetch, http_open, Pacer())
     recs = load_records()
@@ -530,8 +536,8 @@ def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opene
             continue
         op = outlines_dir / (rid.replace("/", "__") + ".geojson")
         refused = None
-        if derive and opener is not None and rid in rules:
-            refused = derive_outline(rec, rules, opener, inputs_dir, op)
+        if (derive or fetch_inputs) and opener is not None and rid in rules:
+            refused = derive_outline(rec, rules, opener, inputs_dir, op, rewrite=derive)
         outline = load_outline(op) if op.exists() else None
         out = out_dir / (rid.replace("/", "__") + ".json")
         previous = json.loads(out.read_text()) if out.exists() else None

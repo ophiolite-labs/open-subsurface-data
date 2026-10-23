@@ -1,0 +1,5 @@
+{"type":"FeatureCollection","licence":"New Zealand Crown copyright (no dataset licence stated on the survey page)",
+"inputs":{"survey-extent":{"url":"https://geodata.nzpam.govt.nz/survey/8223848313","sha256":"07ace9f7f5debb31099cbdc4cd5b952cdba8b68cf4b3359c9e1168b6c1991a98"}},
+"features":[
+{"type":"Feature","properties":{"record_id":"nzpam/kerry-3d","kind":"survey-3d","name":"KERRY-3D : PR1556","approximate":false,"source":"publisher-file (survey-extent), simplified 50 m, 5 decimals","publisher_id":"8223848313","rings_dropped":0,"simplified_m":50,"feature_id":"nzpam/kerry-3d#8223848313","input":"survey-extent"},"geometry":{"type":"Polygon","coordinates":[[[174.21363,-39.67771],[174.08977,-39.67764],[174.08961,-39.77328],[174.04681,-39.77323],[174.04636,-39.95112],[174.0893,-39.95116],[174.08921,-39.9928],[174.20434,-39.99285],[174.20437,-39.79597],[174.21363,-39.79596],[174.21363,-39.67771]]]}}
+]}

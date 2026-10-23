@@ -23,7 +23,7 @@ def cmd_validate(_: argparse.Namespace) -> int:
 
 
 def cmd_verify(a: argparse.Namespace) -> int:
-    results = verify_all(ids=a.ids or None, derive=a.outlines)
+    results = verify_all(ids=a.ids or None, derive=a.outlines, fetch_inputs=a.outline_inputs)
     for v in results:
         o = v["origin"]
         l2 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L2")
@@ -66,6 +66,8 @@ def main(argv: list[str] | None = None) -> int:
     pv.add_argument("ids", nargs="*")
     pv.add_argument("--outlines", action="store_true",
                     help="also fetch outline inputs and rewrite outlines/ (osd.outlines, E03)")
+    pv.add_argument("--outline-inputs", action="store_true",
+                    help="also fetch outline inputs and check the committed outlines against them (CI)")
     pv.set_defaults(fn=cmd_verify)
     sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)

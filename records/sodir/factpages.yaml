@@ -20,6 +20,8 @@ licence:
 kinds: [wellbore-headers, wellbore-paths, tops, production, source-list]
 region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0]}
 listed_by: [publisher]
+known_issues:
+  - "Geonorge catalogue links NLOD 1.0, the FactPages terms page NLOD 2.0 (23 Oct)"
 inputs:
   - name: wellbores
     url: "https://factmaps.sodir.no/api/services/Factmaps/FactMapsWGS84/MapServer/WFSServer?service=WFS&version=2.0.0&request=GetFeature&typeNames=FactMapsWGS84:Wellbores__all"

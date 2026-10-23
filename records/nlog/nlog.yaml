@@ -7,6 +7,7 @@ publisher: {name: "TNO Geological Survey of the Netherlands", url: https://www.n
 origin:
   url: https://www.nlog.nl/en/data
   access: anonymous
+  manifest_url: https://www.nlog.nl/en/boreholes
 licence:
   name: NLOG terms of use (public data under the Dutch Mining Act)
   spdx: null

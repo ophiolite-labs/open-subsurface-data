@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import itertools
+import math
 from functools import cache
 
 from pyproj import CRS, Transformer
@@ -78,3 +80,84 @@ def map_positions(coords, f):
 
 def closed_ring(vertices: list[list[float]]) -> list[list[float]]:
     return vertices + [vertices[0]]
+
+
+def _dp(pts: list[list[float]], tol: float, kx: float, ky: float) -> list[list[float]]:
+    """Douglas-Peucker on lon/lat scaled to metres around the ring (kx, ky metres per degree)."""
+    keep = [False] * len(pts)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(pts) - 1)]
+    while stack:
+        a, b = stack.pop()
+        ax, ay, bx, by = pts[a][0] * kx, pts[a][1] * ky, pts[b][0] * kx, pts[b][1] * ky
+        dx, dy = bx - ax, by - ay
+        n2 = dx * dx + dy * dy
+        far, at = -1.0, -1
+        for k in range(a + 1, b):
+            px, py = pts[k][0] * kx - ax, pts[k][1] * ky - ay
+            if n2:
+                t = max(0.0, min(1.0, (px * dx + py * dy) / n2))
+                d = math.hypot(px - t * dx, py - t * dy)
+            else:
+                d = math.hypot(px, py)
+            if d > far:
+                far, at = d, k
+        if far > tol:
+            keep[at] = True
+            stack += [(a, at), (at, b)]
+    return [p for p, k in zip(pts, keep) if k]
+
+
+def _scale(ring: list[list[float]]) -> tuple[float, float]:
+    lat = sum(p[1] for p in ring) / len(ring)
+    return 111320.0 * math.cos(math.radians(lat)), 110540.0
+
+
+def ring_area_m2(ring: list[list[float]]) -> float:
+    """Shoelace area in the ring's local metre scaling."""
+    kx, ky = _scale(ring)
+    return abs(sum(a[0] * kx * b[1] * ky - b[0] * kx * a[1] * ky for a, b in itertools.pairwise(ring))) / 2
+
+
+def _ring(ring: list[list[float]], tol: float) -> list[list[float]]:
+    kx, ky = _scale(ring)
+    # split the closed ring at its farthest vertex from the start so both halves have ends
+    far = max(range(len(ring)), key=lambda k: math.hypot((ring[k][0] - ring[0][0]) * kx,
+                                                         (ring[k][1] - ring[0][1]) * ky))
+    if far == 0:
+        return ring
+    out = _dp(ring[:far + 1], tol, kx, ky)[:-1] + _dp(ring[far:], tol, kx, ky)
+    return out if len(out) >= 4 else ring
+
+
+def _polygon(rings: list, tol: float, exterior_only: bool) -> tuple[list | None, int]:
+    """(simplified rings, rings dropped); None when the exterior itself is below tol²."""
+    if tol and ring_area_m2(rings[0]) < tol * tol:
+        return None, len(rings)
+    holes = [] if exterior_only else [r for r in rings[1:] if not tol or ring_area_m2(r) >= tol * tol]
+    return [_ring(r, tol) for r in [rings[0], *holes]], len(rings) - 1 - len(holes)
+
+
+def _round(c: list, decimals: int) -> list:
+    return [_round(x, decimals) for x in c] if isinstance(c[0], list) else [round(v, decimals) for v in c]
+
+
+def simplify(g: dict, tol_m: float, exterior_only: bool = False, decimals: int = DECIMALS) -> tuple[dict, int]:
+    """(geometry, rings dropped): every ring simplified to tol_m metres, rings whose area is
+    below tol_m² dropped, every hole dropped when exterior_only, positions rounded to decimals
+    (OSD-D16). A polygon whose exterior is dropped goes with its holes; a geometry with nothing
+    left above tol_m² keeps its largest polygon's exterior."""
+    polys = [g["coordinates"]] if g["type"] == "Polygon" else g["coordinates"]
+    kept, dropped = [], 0
+    for rings in polys:
+        out, n = _polygon(rings, tol_m, exterior_only)
+        dropped += n
+        if out:
+            kept.append(out)
+    if not kept:
+        big = max(polys, key=lambda rings: ring_area_m2(rings[0]))
+        kept, dropped = [[_ring(big[0], tol_m)]], sum(len(r) for r in polys) - 1
+    kept = _round(kept, decimals)
+    if g["type"] == "Polygon":
+        return {"type": "Polygon", "coordinates": kept[0]}, dropped
+    return {"type": "MultiPolygon", "coordinates": kept}, dropped

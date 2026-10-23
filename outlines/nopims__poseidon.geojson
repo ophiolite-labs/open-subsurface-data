@@ -1,4 +1,5 @@
-{"type":"FeatureCollection","features":[
-{"type":"Feature","properties":{"record_id":"nopims/poseidon","kind":"survey-3d","name":"Poseidon 3D","approximate":true,"source":"hand placed from publisher map; placeholder until E03"},
- "geometry":{"type":"Polygon","coordinates":[[[122.6,-13.4],[123.4,-13.4],[123.4,-12.6],[122.6,-12.6],[122.6,-13.4]]]}}
+{"type":"FeatureCollection","licence":"CC BY 4.0 (as the TGS Open Data page states)",
+"inputs":{"full-stack-agc":{"url":"https://tgs-opendata-poseidon.s3.amazonaws.com/full_stack_agc.mdio/","sha256":"78b44b1c5bcc9c8ffc09b40ac07a80e39a491bd66e3b70d298658ac890806ce1"}},
+"features":[
+{"type":"Feature","properties":{"record_id":"nopims/poseidon","kind":"survey-3d","name":"Poseidon","approximate":false,"source":"segy-hull (full-stack-agc), simplified 50 m, 5 decimals","publisher_id":"Poseidon","rings_dropped":0,"simplified_m":50,"feature_id":"nopims/poseidon#Poseidon","input":"full-stack-agc"},"geometry":{"type":"Polygon","coordinates":[[[121.77721,-13.67225],[122.22326,-14.04106],[122.60754,-13.59575],[122.16165,-13.22762],[121.77721,-13.67225]]]}}
 ]}

@@ -1,0 +1,5 @@
+{"type":"FeatureCollection","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"features":[
+{"type":"Feature","geometry":{"type":"Point","coordinates":[7.21285033,65.45438801]},"properties":{"GmlID":"Wellbores__all.137","OBJECTID":137,"Wellbore_name":"6507/7-1","NPDID_wellbore":138}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[nan,nan]},"properties":{"GmlID":"Wellbores__all.138","OBJECTID":138,"Wellbore_name":"6407/9-U-4","NPDID_wellbore":139}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[2.24842502,61.21487891]},"properties":{"GmlID":"Wellbores__all.139","OBJECTID":139,"Wellbore_name":"34/10-9","NPDID_wellbore":140}}
+]}

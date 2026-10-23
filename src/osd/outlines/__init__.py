@@ -4,8 +4,9 @@
                 parts under build/inputs/<id>/<input>/ with a SHA256SUMS; the input's identity
                 is the sha256 of that SHA256SUMS. The only network in this package.
   derive        pure over the stored parts: one extractor per input (rules.yaml, OSD-D11), every
-                feature stamped with its input identity, feature_id and the record's licence
-                (OSD-D13). Refused names the reason; nothing is guessed.
+                feature names its input and carries a feature_id; the collection carries each
+                input's identity {url, sha256} and the record's licence once (OSD-D13, D16).
+                Refused names the reason; nothing is guessed.
   check         the L3 `outline-derived` outcome for a committed outline file (OSD-D12).
 """
 
@@ -21,12 +22,14 @@ import yaml
 
 from .. import paths
 from ..records import geometry_problems
-from .extractors import EXTRACTORS, mdio_header_chunks
-from .geometry import Refused
+from .extractors import EXTRACTORS, geojson_page, mdio_header_chunks
+from .geometry import Refused, simplify
 
 RULES_PATH = Path(__file__).parent / "rules.yaml"
 INPUTS_DIR = paths.BUILD_DIR / "inputs"
 PART_BYTES = 64 * 1024**2
+SIMPLIFY_M = 50  # OSD-D16 default: below the bin size a survey's staircase outline encodes;
+POLYGON_DECIMALS = 5  # about 1.1 m, below SIMPLIFY_M; rules.yaml `defaults` may restate both
 MAX_PAGES = 200
 
 __all__ = ["Refused", "check", "derive", "fetch_inputs", "load_rules", "stored_inputs", "write_outline"]
@@ -121,7 +124,7 @@ def fetch_parts(rec_input: dict, rule: dict, opener, robots) -> list[tuple[str, 
             b = _get(_with(url, {**(rule.get("params") or {}), "count": size, "startIndex": start}), opener, robots)
             parts.append((f"page-{start:06d}", b))
             try:
-                served = len(json.loads(b).get("features") or [])
+                served = len(geojson_page(b).get("features") or [])
             except ValueError:
                 raise Refused(f"{rec_input['name']}: page at {start} is not GeoJSON: {b[:120]!r}") from None
             if served < size:
@@ -182,41 +185,65 @@ def _inputs_with_rules(rec: dict, rules: dict) -> list[dict]:
 def derive(rec: dict, rules: dict, inputs_dir: Path = INPUTS_DIR) -> dict:
     """The FeatureCollection for outlines/<id>.geojson, from the stored inputs only."""
     rid = rec["id"]
-    feats = []
+    feats, unplaced, used = [], [], {}
+    defaults = rules.get("defaults") or {}
+    tolerance = rules[rid].get("simplify_m", defaults.get("simplify_m", SIMPLIFY_M))
+    decimals = rules[rid].get("polygon_decimals", defaults.get("polygon_decimals", POLYGON_DECIMALS))
+    exteriors = set(rules[rid].get("exteriors_only") or [])
     for i in _inputs_with_rules(rec, rules):
         rule = rules[rid]["inputs"][i["name"]]
         parts = read_parts(_dir(inputs_dir, rid, i["name"]))
-        sha = input_sha256(parts)
+        used[i["name"]] = {"url": i["url"], "sha256": input_sha256(parts)}
         for f in EXTRACTORS[rule["extractor"]](i, rule, parts):
             g = f.pop("geometry")
+            key = f.get("publisher_id") or f.get("uwi") or i["name"]
+            if rule.get("id_scope"):  # a publisher numbering several registers from one sequence
+                key = f"{rule['id_scope']}/{key}"
+            if g is None:  # the register lists it without a position (rule unplaced: report)
+                unplaced.append(f"{rid}#{key}")
+                continue
+            how = ""
+            if g["type"] in ("Polygon", "MultiPolygon"):  # OSD-D16; points stay exact
+                ext = f["kind"] in exteriors
+                g, f["rings_dropped"] = simplify(g, tolerance, ext, decimals)
+                f["simplified_m"] = tolerance
+                how = f", simplified {tolerance} m{', exterior only' if ext else ''}, {decimals} decimals"
             bad = geometry_problems(g)
             if bad:
                 raise Refused(f"{i['name']}: {f.get('publisher_id') or f['name']}: {bad[0]}")
-            key = f.get("publisher_id") or f.get("uwi") or i["name"]
             props = {"record_id": rid, "kind": f.pop("kind"), "name": f.pop("name"), "approximate": False,
-                     "source": f"{rule['extractor']} ({i['name']})", **f, "feature_id": f"{rid}#{key}",
-                     "input_url": i["url"], "input_sha256": sha, "licence": rec["licence"]["name"]}
+                     "source": f"{rule['extractor']} ({i['name']}){how}", **f, "feature_id": f"{rid}#{key}",
+                     "input": i["name"]}
             feats.append({"type": "Feature", "properties": props, "geometry": g})
-    dup = [k for k, n in Counter(f["properties"]["feature_id"] for f in feats).items() if n > 1]
+    dup = [k for k, n in Counter([f["properties"]["feature_id"] for f in feats] + unplaced).items() if n > 1]
     if dup:
         raise Refused(f"{len(dup)} feature_id collisions, e.g. {dup[0]}")
     feats.sort(key=lambda f: f["properties"]["feature_id"])
-    return {"type": "FeatureCollection", "features": feats}
+    fc = {"type": "FeatureCollection", "licence": rec["licence"]["name"], "inputs": used, "features": feats}
+    if unplaced:
+        fc["unplaced"] = sorted(unplaced)  # GeoJSON foreign member: listed, no position to draw
+    return fc
 
 
 def write_outline(fc: dict, path: Path) -> None:
     """One feature per line: a rerun is a reviewable diff (OSD-D12)."""
     lines = [json.dumps(f, ensure_ascii=False, separators=(",", ":")) for f in fc["features"]]
-    path.write_text('{"type":"FeatureCollection","features":[\n' + ",\n".join(lines) + "\n]}\n")
+    head = '{"type":"FeatureCollection",'
+    for k in ("licence", "inputs"):
+        if k in fc:
+            head += json.dumps(k) + ":" + json.dumps(fc[k], ensure_ascii=False, separators=(",", ":")) + ",\n"
+    if fc.get("unplaced"):
+        head += '"unplaced":' + json.dumps(fc["unplaced"], ensure_ascii=False) + ",\n"
+    path.write_text(head + '"features":[\n' + ",\n".join(lines) + "\n]}\n")
 
 
 # --- the L3 check ------------------------------------------------------------------------------
 
 def check(rec: dict, outline: dict, rule: dict | None, stored: dict[str, str],
           refused: str | None = None) -> tuple[str, str]:
-    """(outcome, detail) of `outline-derived`: pass only when every feature is derived, its
-    (input_url, input_sha256) is a stored input of the record, ids are unique and the count
-    reaches the rules' min_features."""
+    """(outcome, detail) of `outline-derived`: pass only when every feature is derived and names
+    an input of the collection whose (url, sha256) is a stored input of the record, ids are unique
+    and the count reaches the rules' min_features."""
     feats = outline.get("features") or []
     if refused:
         return "fail", f"derivation refused this run: {refused}"
@@ -226,16 +253,17 @@ def check(rec: dict, outline: dict, rule: dict | None, stored: dict[str, str],
     approx = sum(1 for p in props if p.get("approximate") is not False)
     if approx:
         return "fail", f"{approx} approximate features"
-    lacking = sum(1 for p in props if not (p.get("input_sha256") and p.get("input_url") and p.get("feature_id")))
+    named = outline.get("inputs") or {}
+    lacking = sum(1 for p in props if not (p.get("feature_id") and (named.get(p.get("input")) or {}).get("sha256")))
     if lacking:
-        return "fail", f"{lacking} features without input identity or feature_id"
+        return "fail", f"{lacking} features without feature_id or an input the collection carries"
     dup = [k for k, n in Counter(p["feature_id"] for p in props).items() if n > 1]
     if dup:
         return "fail", f"duplicate feature_id {dup[0]}"
     declared = {i["url"] for i in rec.get("inputs") or []}
     if not declared:
         return "fail", "the record declares no inputs"
-    used = {(p["input_url"], p["input_sha256"]) for p in props}
+    used = {(named[p["input"]]["url"], named[p["input"]]["sha256"]) for p in props}
     if any(u not in declared for u, _ in used):
         return "fail", "features name an input the record does not declare"
     want = (rule or {}).get("min_features")
@@ -248,5 +276,6 @@ def check(rec: dict, outline: dict, rule: dict | None, stored: dict[str, str],
     stale = sorted(u for u, s in used if stored.get(u) != s)
     if stale:
         return "fail", f"derived from bytes that differ from the stored input {stale[0]}: rerun --outlines, review the diff"
-    return "pass", (f"{len(feats)} features derived from {len(used)} inputs, every input_sha256 equal to the "
-                    f"stored bytes (min_features {want})")
+    unplaced = f"; {len(outline['unplaced'])} listed without a position" if outline.get("unplaced") else ""
+    return "pass", (f"{len(feats)} features derived from {len(used)} inputs, every input sha256 equal to the "
+                    f"stored bytes (min_features {want}){unplaced}")
