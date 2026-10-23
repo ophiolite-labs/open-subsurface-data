@@ -1,0 +1,25 @@
+id: orogo/well-data
+title: Well Data (OROGO, Northwest Territories)
+summary: >-
+  OROGO's list of wells in its jurisdiction, the Northwest Territories outside federal areas and the
+  Inuvialuit Settlement Region: each well page gives operator, classification, region, first spud
+  year, latest spud and rig release dates, UWI and the well history documents as PDF.
+publisher: {name: "Office of the Regulator of Oil and Gas Operations (OROGO), Northwest Territories", url: https://www.orogo.gov.nt.ca, country: CA}
+origin:
+  url: https://www.orogo.gov.nt.ca/en/well-data
+  access: anonymous
+  notes: "685 wells listed on 23 Oct 2026, filterable by operator, classification (Exploratory 595, Development 33, Delineation 29, Test Hole 24, Water Well 3, Service Well 1) and region (Dehcho 453, Sahtu 191, Gwich'in 41). No manifest_url: the list links well pages, not files."
+licence:
+  name: Government of the Northwest Territories website Terms of Use (copyright)
+  spdx: null
+  url: https://www.orogo.gov.nt.ca/en/terms-use
+  redistribution: restricted
+  attribution: required
+kinds: [wellbore-headers, reports]
+region: {country: CA, basin: "Northwest Territories (Dehcho, Sahtu and Gwich'in regions)"}
+listed_by: [publisher]
+known_issues:
+  - "\"Material may not be used or reproduced for commercial purposes without the prior written consent ... If it is reproduced or redistributed for non-commercial purposes, the Government of the Northwest Territories copyright is to be acknowledged.\""
+  - "No bbox: the page names regions but states no extent."
+notes: "No period stated for the list; single wells give spud dates (Canol Bluefish No. 1A, WID 0043, spudded 29 Aug 1943)."
+added: 2026-10-23

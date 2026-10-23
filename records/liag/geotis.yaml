@@ -1,0 +1,28 @@
+id: liag/geotis
+title: GeotIS – Geothermisches Informationssystem für Deutschland
+summary: >-
+  Germany's geothermal information system: "Datengrundlage für das GeotIS sind zum Einen mehr als
+  30.000 Bohrungen; das sind überwiegend Erdöl-Erdgas-Bohrungen", with hydraulic data (porosity,
+  permeability, tests), temperature data from LIAG's FIS Geophysik and structural data, prepared as
+  3D subsurface models with vertical and horizontal sections to 5000 m below sea level.
+publisher: {name: LIAG-Institut für Angewandte Geophysik, url: https://www.geotis.de, country: DE}
+origin:
+  url: https://www.geotis.de/homepage/basics
+  access: anonymous
+  notes: "Interactive maps, sections and site profiles at https://www.geotis.de/geotisapp/geotis.php, and a WMS map service (https://www.geotis.de/homepage/wms). No manifest_url: the portal serves maps and sections, not files."
+licence:
+  name: Nutzungsbedingungen für GeotIS
+  spdx: null
+  url: https://www.geotis.de/homepage/terms
+  redistribution: restricted
+  attribution: required
+  statement: "Datenquelle: Datensatzbezeichnung, © LIAG-Institut für Angewandte Geophysik, Ort, Jahr"
+kinds: [geological-model]
+region: {country: DE, basin: Germany}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'Die Weitergabe an Dritte oder die Veröffentlichung von Raumdaten aus GeotIS … ist nur in begrenztem Umfang gestattet. Ohne vorherige Zustimmung … nicht mehr als ein Fünftel der Landesfläche Deutschlands in einer Veröffentlichung'."
+  - "Derived products may be subject to the reporting duties of the Geologiedatengesetz (GeolDG §§ 8, 9), as the terms state."
+  - "No bbox: the page states no extent."
+notes: "No period stated."
+added: 2026-10-23

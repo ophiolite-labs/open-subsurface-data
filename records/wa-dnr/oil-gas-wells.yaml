@@ -1,0 +1,32 @@
+id: wa-dnr/oil-gas-wells
+title: Oil and Gas Wells (Washington Geological Survey, Digital Data Series 21)
+summary: >-
+  "These data contain point locations that represent oil and gas test well sites in Washington State
+  from 1890 to present." Each well carries API and state file numbers, well and company names,
+  elevation, depth, permit, drill start and stop dates, hydrocarbon show, status, location and whether
+  scanned documents exist.
+publisher: {name: "Washington State Department of Natural Resources, Washington Geological Survey", url: https://dnr.wa.gov/washington-geological-survey, country: US}
+origin:
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/geology-gis-data-and-databases
+  access: anonymous
+  manifest_url: https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Oil_and_Gas_Wells/MapServer/1?f=json
+  notes: "The GIS data page lists 'Oil and Gas Wells Feb. 2019 5 MB' (ger_portal_oil_gas_wells.zip on fortress.wa.gov). Layer 1 of the Oil_and_Gas_Wells map service holds 830 wells, maxRecordCount 2000."
+licence:
+  name: Washington Geological Survey Disclaimers and Citation Guidelines
+  spdx: null
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/disclaimers-and-citation-guidelines
+  redistribution: allowed
+  attribution: required
+  statement: "Washington Geological Survey, 2019, Oil and gas wells--GIS data: Washington Geological Survey Digital Data Series 21, version 3.4"
+kinds: [wellbore-headers]
+region: {country: US, basin: "Washington State (onshore)", bbox: [-124.69, 45.56, -116.89, 49.01], crs: "EPSG:2927"}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimers and Citation Guidelines: \"All of the materials we produce (publications, digital content, posters, videos) are free for you to use in any way you choose, for both commercial and non-commercial purposes, including modifying or adapting anything, as long as you cite us.\""
+  - "bbox is the map layer's extent (EPSG:2927) converted to WGS84, not a stated extent."
+  - "The zip's host fortress.wa.gov gave no answer to robots.txt on 23 Oct 2026; the map layer on gis.dnr.wa.gov is the listing."
+period:
+  start: "1901-01-01"
+  end: "2012-09-05"
+  stated: "Layer 1 field DRILL_START_DATE: min 1901-01-01, max 2012-09-05 (23 Oct 2026); the description says 'from 1890 to present'"
+added: 2026-10-23

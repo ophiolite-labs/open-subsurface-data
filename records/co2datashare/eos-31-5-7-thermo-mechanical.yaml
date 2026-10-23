@@ -1,0 +1,30 @@
+id: co2datashare/eos-31-5-7-thermo-mechanical
+title: Rock mechanics data for 31/5-7 Eos well - thermo-mechanical response
+summary: >-
+  "Part II of a rock mechanical testing program performed by NGI for Northern Lights JV DA on sandstone
+  and shale from CCS exploration well 31/5-7 (Eos) in EL 001", addressing "the thermo-mechanical
+  response of the reservoir and caprock to CO2 injection": Cook, Johansen 3 and 4 sandstones and
+  Intra-Drake shale tested close to in-situ temperatures, as spreadsheets with figures and photos.
+publisher: {name: Northern Lights JV via CO2 DataShare, url: https://co2datashare.org, country: "NO"}
+origin:
+  url: https://co2datashare.org/dataset/rock-mechanics-data-for-31-5-7-eos-well-thermo-mechanical-response
+  access: anonymous
+  notes: "Download parts after ticking the licence-acceptance box; no login. The download is a POST behind that box, so there is no listing the verifier reads and no manifest_url. DOI 10.11582/2025.fgo3cnz3."
+licence:
+  name: Northern Lights Eos 31/5-7 Rock Mechanical Data License
+  spdx: null
+  url: https://co2datashare.org/view/license/8ce3e4ab-3f67-467b-aff5-2385fd55c76a
+  redistribution: allowed
+  attribution: required
+kinds: [core]
+region: {country: "NO", basin: "North Sea (Horda Platform, Aurora/EL 001)"}
+size: {bytes_estimate: 132120576, stated: "Figures and photos ZIP 63.5 MiB, Excel data ZIP 63 MiB"}
+listed_by: [publisher]
+notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Credit to Northern Lights JV DA and a link to the terms are required. Same licence as the part I set (co2datashare/eos-31-5-7-rock-mechanics)."
+known_issues:
+  - "No bbox: the portal states one point (Longitude 3.4434, Latitude 60.576), not an extent."
+period:
+  start: "2020-06-12"
+  end: "2023-05-01"
+  stated: "CO2 DataShare dataset page 'Period covered by the dataset' Start: June 12, 2020 End: May 1, 2023; release date 2025-08-29"
+added: 2026-10-23

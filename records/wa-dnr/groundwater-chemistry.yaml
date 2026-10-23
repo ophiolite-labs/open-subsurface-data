@@ -1,0 +1,32 @@
+id: wa-dnr/groundwater-chemistry
+title: Groundwater Chemistry (Washington Geological Survey, Digital Data Series 32)
+summary: >-
+  "Groundwater chemistry information on groundwater within Washington State, and includes data from
+  springs, oil and gas wells, a carbon capture well, and water wells": major anions and cations, pH,
+  trace elements and isotopes, "intended to aid public research in hydrogeology, geologic carbon
+  sequestration feasibility, and geothermal exploration."
+publisher: {name: "Washington State Department of Natural Resources, Washington Geological Survey", url: https://dnr.wa.gov/washington-geological-survey, country: US}
+origin:
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/geology-gis-data-and-databases
+  access: anonymous
+  manifest_url: https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Groundwater_Chemistry/MapServer/0?f=json
+  notes: "The GIS data page lists 'Groundwater Geochemistry Jul. 2025 4 MB'. Layer 0 of the Groundwater_Chemistry map service holds 1,501 samples with well depth, sample interval and formation."
+licence:
+  name: Washington Geological Survey Disclaimers and Citation Guidelines
+  spdx: null
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/disclaimers-and-citation-guidelines
+  redistribution: allowed
+  attribution: required
+  statement: "Washington Geological Survey, 2025, Groundwater Chemistry--GIS data, July 2025: Washington Geological Survey Digital Data Series 32, version 1.0"
+kinds: [geochemistry]
+region: {country: US, basin: "Washington State", bbox: [-121.46, 45.6, -116.96, 48.0], crs: "EPSG:2927"}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimers and Citation Guidelines: \"All of the materials we produce (publications, digital content, posters, videos) are free for you to use in any way you choose, for both commercial and non-commercial purposes, including modifying or adapting anything, as long as you cite us.\""
+  - "bbox is the map layer's extent (EPSG:2927) converted to WGS84, not a stated extent."
+  - "It incorporates data from the geothermal resources geodatabase, federal and state databases, reports, articles and theses."
+period:
+  start: "1916-09-16"
+  end: "2024-03-20"
+  stated: "Layer 0 field COLLECTION_DATE: min 1916-09-16, max 2024-03-20, set on 1,472 of 1,501 samples (23 Oct 2026)"
+added: 2026-10-23

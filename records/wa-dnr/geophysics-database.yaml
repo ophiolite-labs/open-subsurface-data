@@ -1,0 +1,29 @@
+id: wa-dnr/geophysics-database
+title: Geophysics Database (Washington Geological Survey, Digital Data Series 28)
+summary: >-
+  Washington Geological Survey's compilation of geophysical surveys: gravity observations, profiles,
+  base stations and anomaly maps, magnetic observations and anomaly maps, seismic profiles, ground
+  penetrating radar and electrical profiles, with project locations. "A gravity station is a point
+  where a gravity measurement was made on the Earth's surface."
+publisher: {name: "Washington State Department of Natural Resources, Washington Geological Survey", url: https://dnr.wa.gov/washington-geological-survey, country: US}
+origin:
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/geology-gis-data-and-databases
+  access: anonymous
+  manifest_url: https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Geophysics/MapServer/2?f=json
+  notes: "The GIS data page lists 'Geophysics Database Apr. 2023 61 MB'. Layer 2 'Gravity Observation Data' of the Geophysics map service holds 7,577 stations; layer 17 'Seismic Profile' 205 profiles."
+licence:
+  name: Washington Geological Survey Disclaimers and Citation Guidelines
+  spdx: null
+  url: https://dnr.wa.gov/washington-geological-survey/publications-and-data/disclaimers-and-citation-guidelines
+  redistribution: allowed
+  attribution: required
+  statement: "Geophysics Database--GIS data: Washington Geological Survey Digital Data Series 28, version 1.0, April 2023"
+kinds: [potential-fields, seismic-2d]
+region: {country: US, basin: "Washington State", bbox: [-124.31, 45.59, -119.35, 48.92], crs: "EPSG:2927"}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimers and Citation Guidelines: \"All of the materials we produce (publications, digital content, posters, videos) are free for you to use in any way you choose, for both commercial and non-commercial purposes, including modifying or adapting anything, as long as you cite us.\""
+  - "bbox is the gravity layer's extent (EPSG:2927) converted to WGS84, not a stated extent."
+  - "Seismic profiles are active and passive near-surface profiles (reflection, refraction, tomography) as described by the layer, not exploration surveys."
+notes: "No period stated: ACQUISTION_DATE is empty on every gravity observation (23 Oct 2026)."
+added: 2026-10-23

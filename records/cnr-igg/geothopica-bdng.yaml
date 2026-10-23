@@ -1,0 +1,27 @@
+id: cnr-igg/geothopica-bdng
+title: GeoThopica 2.0 – Banca Dati Nazionale Geotermica (BDNG)
+summary: >-
+  Italy's geothermal data infrastructure run by CNR-IGG. "Il cuore dell’infrastruttura dati italiani
+  geotermici è la BDNG, che contiene principalmente i dati stratigrafici e termici del sottosuolo, i
+  dati di interesse geotermico provenienti da sorgenti termali, manifestazioni gassose, pozzi e numerosi
+  dati geochimici descritti nella letteratura scientifica", updated by the VIGOR and Atlante Geotermico
+  del Mezzogiorno projects.
+publisher: {name: "Consiglio Nazionale delle Ricerche, Istituto di Geoscienze e Georisorse (CNR-IGG)", url: https://geothopica.igg.cnr.it, country: IT}
+origin:
+  url: https://geothopica.igg.cnr.it/index.php/it/geothopica2-0
+  access: registration
+  notes: "Data are reached 'dopo aver effettuato la registrazione ed aver accettato i termini e le condizioni di utilizzo', through the portal's applications or thematic document categories; OGC services per RNDT 2.0 and INSPIRE."
+licence:
+  name: Creative Commons Attribution 4.0 International (GeoThopica Termini d'utilizzo)
+  spdx: CC-BY-4.0
+  url: https://geothopica.igg.cnr.it/index.php/it/termini-dutilizzo
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, geochemistry]
+region: {country: IT}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'Salvo diverse indicazioni, i dati, i documenti e i servizi pubblicati sul presente portale sono messi a disposizione con licenza Creative Commons Attribution 4.0 International (CC BY 4.0)'; single items may state otherwise."
+  - "No bbox: the page states no extent."
+notes: "No period stated."
+added: 2026-10-23

@@ -1,0 +1,32 @@
+id: sk-mer/non-vertical-wells
+title: Non Vertical Wells (Saskatchewan PETROLEUM schema, GeoAtlas)
+summary: >-
+  Saskatchewan's non-vertical (deviated and horizontal) wellbores from the PETROLEUM schema of the
+  Production Data Warehouse, as lines from surface to bottom hole, with licence, trajectory, Lahee
+  classification, status, spud, finish-drill and abandonment dates, measured and true vertical depths,
+  completion pool and formations.
+publisher: {name: "Government of Saskatchewan, Ministry of Energy and Resources", url: https://www.saskatchewan.ca, country: CA}
+origin:
+  url: https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer
+  access: anonymous
+  manifest_url: https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/1?f=json
+  notes: "Layer 1 of the Economy/Petroleum map service (\"All feature classes from the PETROLEUM schema in the Production Data Warehouse\"), 68,000 features on 23 Oct 2026, maxRecordCount 2000. Vertical wells are layer 0, drill core layer 2, drill cuttings layer 3."
+licence:
+  name: Government of Saskatchewan Standard Unrestricted Use Data Licence (Version 2.0)
+  spdx: null
+  url: https://gisappl.saskatchewan.ca/Html5Ext/Resources/GOS_Standard_Unrestricted_Use_Data_Licence_v2.0.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Contains information licensed under the Government of Saskatchewan Standard Unrestricted Use Data Licence (Version 2.0)."
+kinds: [wellbore-headers, wellbore-paths]
+region: {country: CA, basin: Western Canada Sedimentary Basin and Williston Basin (Saskatchewan), bbox: [-111.02, 48.89, -100.6, 57.33], crs: "EPSG:2957"}
+listed_by: [publisher]
+known_issues:
+  - "No GeoAtlas metadata page answers for layer 1; the licence is the one the GeoAtlas states for its PETROLEUM layers (Vertical_well.html), not one stated on this layer."
+  - "bbox is the layer's extent (EPSG:2957) converted to WGS84, not a stated extent."
+  - "The map service caps a query at 2000 features; a full copy takes paged queries."
+period:
+  start: "1953-08-26"
+  end: "2026-10-07"
+  stated: "Layer 1 field WELLDERIVEDSPUDDATE: min 1953-08-26, max 2026-10-07 (23 Oct 2026)"
+added: 2026-10-23

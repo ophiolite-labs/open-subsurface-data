@@ -1,0 +1,27 @@
+id: sk-mer/drill-cuttings
+title: Drill Cuttings (Saskatchewan PETROLEUM schema, GeoAtlas)
+summary: >-
+  "Locations of Phanerozoic wells with drill cutting samples stored at the Subsurface Lab in Regina."
+  Each sampled interval carries the well UWI and licence, surface and bottom-hole positions, interval
+  top and base, missing intervals and the off-confidential date.
+publisher: {name: "Government of Saskatchewan, Ministry of Energy and Resources", url: https://www.saskatchewan.ca, country: CA}
+origin:
+  url: https://gisappl.saskatchewan.ca/WebDocs/Geo_Atlas/MetaData/Drill_Cuttings.html
+  access: anonymous
+  manifest_url: https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/3?f=json
+  notes: "Layer 3 of the Economy/Petroleum map service; 73,632 features on 23 Oct 2026 (the metadata says 69,908), maxRecordCount 2000."
+licence:
+  name: Government of Saskatchewan Standard Unrestricted Use Data Licence (Version 2.0)
+  spdx: null
+  url: https://gisappl.saskatchewan.ca/Html5Ext/Resources/GOS_Standard_Unrestricted_Use_Data_Licence_v2.0.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Contains information licensed under the Government of Saskatchewan Standard Unrestricted Use Data Licence (Version 2.0)."
+kinds: [core]
+region: {country: CA, basin: Western Canada Sedimentary Basin and Williston Basin (Saskatchewan), bbox: [-111.020086, 48.895534, -100.600802, 57.326061]}
+listed_by: [publisher]
+known_issues:
+  - "An inventory of cuttings samples held at the Subsurface Geological Laboratory, not sample measurements; the metadata page itself carries only a use disclaimer, the licence is the GeoAtlas data licence."
+  - "The map service caps a query at 2000 features; a full copy takes paged queries."
+notes: "No period stated: the metadata has no time period. Cuttings are not a separate kind in the schema; recorded as core, as for the drill-core inventory."
+added: 2026-10-23
