@@ -1,0 +1,17 @@
+{
+  "schemas": {
+    "http://json-schema.org/draft-07/schema": "json-schema.org/draft-07/schema.json",
+    "https://geojson.org/schema/Feature.json": "geojson.org/schema/Feature.json",
+    "https://geojson.org/schema/Geometry.json": "geojson.org/schema/Geometry.json",
+    "https://schemas.stacspec.org/v1.0.0/catalog-spec/json-schema/catalog.json": "schemas.stacspec.org/v1.0.0/catalog-spec/json-schema/catalog.json",
+    "https://schemas.stacspec.org/v1.0.0/collection-spec/json-schema/collection.json": "schemas.stacspec.org/v1.0.0/collection-spec/json-schema/collection.json",
+    "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/basics.json": "schemas.stacspec.org/v1.0.0/item-spec/json-schema/basics.json",
+    "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/datetime.json": "schemas.stacspec.org/v1.0.0/item-spec/json-schema/datetime.json",
+    "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/instrument.json": "schemas.stacspec.org/v1.0.0/item-spec/json-schema/instrument.json",
+    "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/item.json": "schemas.stacspec.org/v1.0.0/item-spec/json-schema/item.json",
+    "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/licensing.json": "schemas.stacspec.org/v1.0.0/item-spec/json-schema/licensing.json",
+    "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/provider.json": "schemas.stacspec.org/v1.0.0/item-spec/json-schema/provider.json",
+    "https://stac-extensions.github.io/file/v2.1.0/schema.json": "stac-extensions.github.io/file/v2.1.0/schema.json",
+    "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json": "../stac-osd.json"
+  }
+}

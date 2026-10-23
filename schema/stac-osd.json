@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json",
+  "title": "Open Subsurface Data (osd) STAC extension, v1.0.0",
+  "description": "Collection fields state what our tools established about the whole record (record-level assurance, not per file or per feature). Item fields state how one feature's geometry was obtained. Enums are closed and no other osd: field is allowed. Offline validation maps this URL to schema/stac-osd.json (schema/stac/schema-map.json).",
+  "type": "object",
+  "oneOf": [
+    {
+      "$comment": "Item",
+      "allOf": [
+        {
+          "type": "object",
+          "required": ["type", "properties"],
+          "properties": {
+            "type": {"const": "Feature"},
+            "properties": {"$ref": "#/definitions/item_fields"}
+          }
+        },
+        {"$ref": "#/definitions/stac_extensions"}
+      ]
+    },
+    {
+      "$comment": "Collection",
+      "allOf": [
+        {"type": "object", "required": ["type"], "properties": {"type": {"const": "Collection"}}},
+        {"$ref": "#/definitions/collection_fields"},
+        {"$ref": "#/definitions/stac_extensions"}
+      ]
+    }
+  ],
+  "definitions": {
+    "stac_extensions": {
+      "type": "object",
+      "required": ["stac_extensions"],
+      "properties": {
+        "stac_extensions": {
+          "type": "array",
+          "contains": {"const": "https://raw.githubusercontent.com/ophiolite-labs/open-subsurface-data/main/schema/stac-osd.json"}
+        }
+      }
+    },
+    "collection_fields": {
+      "type": "object",
+      "required": ["osd:level", "osd:checked_at", "osd:access", "osd:redistribution"],
+      "properties": {
+        "osd:level": {
+          "type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+          "description": "The record's latest verification level: L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted with a fidelity record"
+        },
+        "osd:checked_at": {
+          "type": ["string", "null"], "format": "date-time",
+          "description": "When that level was established; null when the record was never verified"
+        },
+        "osd:access": {
+          "type": "string", "enum": ["anonymous", "registration", "api", "request"],
+          "description": "As the record states it: anonymous, a free account, a documented service, or a human approves"
+        },
+        "osd:redistribution": {
+          "type": "string", "enum": ["allowed", "restricted", "forbidden", "unknown"],
+          "description": "May a third party host a copy, as the record states it"
+        },
+        "osd:blocked_since": {
+          "type": "string", "format": "date-time",
+          "description": "Present while the origin refuses our runner: the first check of the current blocked run (OSD-D9)"
+        }
+      },
+      "patternProperties": {"^(?!osd:)": {}},
+      "additionalProperties": false
+    },
+    "item_fields": {
+      "type": "object",
+      "required": ["osd:approximate", "osd:derivation"],
+      "properties": {
+        "osd:approximate": {
+          "type": "boolean",
+          "description": "true when the geometry is a placeholder, not derived from the data"
+        },
+        "osd:derivation": {
+          "type": "string", "minLength": 1,
+          "description": "How the geometry was derived: the outline feature's source"
+        },
+        "osd:input_sha256": {
+          "type": "string", "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256 of the input the geometry was derived from, as the outline collection's inputs state it"
+        }
+      },
+      "patternProperties": {"^(?!osd:)": {}},
+      "additionalProperties": false
+    }
+  }
+}

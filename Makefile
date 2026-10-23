@@ -14,7 +14,7 @@ validate:                                ## every record and outline against its
 
 build:                                   ## build/catalog/*.json + site/data/ from records + outlines
 	uv run osd build
-	mkdir -p site/data && cp build/catalog/*.json build/catalog/*.geojson site/data/
+	mkdir -p site/data && rm -rf site/data/stac && cp -R build/catalog/. site/data/   # stac/ is a tree
 	cp build/catalog/*.pmtiles site/data/ 2>/dev/null || true
 	ls site/data | grep -vx files.txt > site/data/files.txt   # the map reads optional files from this list
 

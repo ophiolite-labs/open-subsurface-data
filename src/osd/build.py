@@ -6,7 +6,8 @@ Outputs (build/catalog/):
                    `blocked_since` while the origin refuses this runner (OSD-D9)
   outlines.geojson one FeatureCollection, every feature joined with record title, kinds,
                    licence and level so the map needs no second lookup
-  collections.json STAC-shaped collections, one per record (full STAC validity is E04)
+  stac/            the static STAC catalogue (src/osd/stac.py)
+  collections.json {"collections": [...]}, the same STAC Collections in one file
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from . import __version__, paths
+from . import __version__, paths, stac
 from .records import load_outline, load_records
 from .verify import is_stale
 
@@ -31,7 +32,6 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     recs = load_records()
     records_out = []
     features = []
-    collections = []
     for rid, rec in recs.items():
         v = latest_verification(rid, vdir)
         level = v["level"] if v else "L0"
@@ -48,23 +48,12 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
                     "kinds": rec["kinds"], "licence": rec["licence"]["name"],
                     "redistribution": rec["licence"]["redistribution"], "level": level,
                 })
-                features.append({"type": "Feature", "properties": props, "geometry": f["geometry"]})
-        bbox = rec.get("region", {}).get("bbox")
-        collections.append({
-            "type": "Collection", "stac_version": "1.0.0", "id": rid.replace("/", "--"),
-            "title": rec["title"], "description": rec.get("summary", ""),
-            "license": rec["licence"].get("spdx") or "proprietary",
-            "extent": {"spatial": {"bbox": [bbox] if bbox else []}, "temporal": {"interval": [[None, None]]}},
-            "keywords": rec["kinds"],
-            "providers": [{"name": rec["publisher"]["name"], "roles": ["producer", "licensor"],
-                           "url": rec["publisher"]["url"]}],
-            "links": [{"rel": "about", "href": rec["origin"]["url"]},
-                      {"rel": "license", "href": rec["licence"].get("url", rec["origin"]["url"])}],
-            "osd:level": level, "osd:access": rec["origin"]["access"],
-        })
+                fid = {"id": props["feature_id"]} if "feature_id" in props else {}
+                features.append({"type": "Feature", **fid, "properties": props, "geometry": f["geometry"]})
     (out_dir / "records.json").write_text(json.dumps(
         {"tool_version": __version__, "count": len(records_out), "records": records_out}, indent=2) + "\n")
     (out_dir / "outlines.geojson").write_text(json.dumps(
         {"type": "FeatureCollection", "features": features}) + "\n")
+    collections = stac.write_catalog(out_dir, records_out, vdir)
     (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
     return {"records": len(records_out), "features": len(features), "collections": len(collections)}

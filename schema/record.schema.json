@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://open-subsurface-data.org/schema/record/2",
   "title": "Open Subsurface Data record, version 2",
-  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs`; every version-1 record is a valid version-2 record.",
+  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
@@ -95,6 +95,15 @@
           "units": {"type": "string", "enum": ["m", "ft", "ftUS", "degree"], "description": "Coordinate units when the publisher states them outside the data."},
           "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states the CRS and units, verbatim where short."}
         }
+      }
+    },
+    "period": {
+      "type": "object", "additionalProperties": false, "required": ["start", "end"],
+      "description": "The acquisition or release interval the publisher states for the dataset, inclusive (OSD-D14: STAC Items exist only for records with a period). Unquoted YAML dates and years are read as these strings.",
+      "properties": {
+        "start": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval starts at the beginning of it (UTC)."},
+        "end": {"type": "string", "pattern": "^[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?$", "description": "YYYY, YYYY-MM or YYYY-MM-DD; the interval ends at the end of it (UTC)."},
+        "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states it, verbatim where short."}
       }
     },
     "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}},
