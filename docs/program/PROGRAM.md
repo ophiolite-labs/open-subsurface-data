@@ -22,8 +22,8 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 13 | E13 Twenty records from the national registers | Records | MERGED 23 Oct (PR #4, 6429445; 42 records, 10 countries with a government publisher, 0 new TerraNubis) | E01 | Forty datasets listed; a government source for at least eight countries |
 | 14 | E14 Twenty records: research drilling, CO2 sites, state archives | Records | MERGED 23 Oct (PR #6, 61f9527; 68 records, 26 new, six new countries, all 26 at L1) | E13 | Sixty datasets listed, wider kinds and regions |
 | 15 | E15 Tiles for the registers | Surface | MERGED (PR #10, 23 Oct; main 2904db0) | E03 | The map on a phone connection loads tiles for the viewport, not 7 MB of outlines |
-| 16 | E16 Periods from the publishers | Records | IN LANE (osd-e16, 23 Oct; records slot) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
-| 17 | E17 Records, fourth twenty (Africa, Middle East, Asia, Canada, open seismic and model sets) | Records | QUEUED (records slot after E16) | E16 | The map lists at least 85 datasets on six continents |
+| 16 | E16 Periods from the publishers | Records | MERGED (PR #11, 23 Oct; main fa13d75; 53 of 68 records with a period, 18,432 Items; OSD-D18 gate sample) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
+| 17 | E17 Records, fourth twenty (Africa, Middle East, Asia, Canada, open seismic and model sets) | Records | IN LANE (osd-e17, 23 Oct; records slot) | E16 | The map lists at least 85 datasets on six continents |
 | 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
 
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
