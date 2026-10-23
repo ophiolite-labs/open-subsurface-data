@@ -1,0 +1,53 @@
+{
+  "format": "osd.manifest/3",
+  "created": "2026-10-23T12:00:00Z",
+  "catalog_url": "https://opensubsurfacedata.org/data/stac/catalog.json",
+  "selection": "collections",
+  "entries": [
+    {
+      "collection_id": "acme--two-wells",
+      "record_id": "acme/two-wells",
+      "title": "Two synthetic wells (E09 fidelity fixture)",
+      "origin_url": "https://acme.example/two-wells",
+      "access": "anonymous",
+      "licence": {
+        "name": "Acme Two Wells Licence 1.0",
+        "spdx": "CC-BY-SA-4.0",
+        "url": "https://acme.example/two-wells/licence",
+        "redistribution": "restricted",
+        "attribution": "required",
+        "share_alike": true,
+        "statement": "Contains synthetic Acme data, two wells, 2026"
+      },
+      "assets": {
+        "well-a.las": {
+          "href": "https://acme.example/two-wells/well-a.las",
+          "title": "well-a.las",
+          "roles": [
+            "data"
+          ],
+          "file:size": 787,
+          "file:checksum": "1220172d963522d1df1bdbaffac11a85eb11fe3fcc32fe7f005959e63042d6202830"
+        },
+        "well-b.las": {
+          "href": "https://acme.example/two-wells/well-b.las",
+          "title": "well-b.las",
+          "roles": [
+            "data"
+          ],
+          "file:size": 731,
+          "file:checksum": "1220be341779f2c0a7f799ab94f84ccf709c82553875dec59caca097b4058c06bc31"
+        }
+      },
+      "coverage": "sampled"
+    }
+  ],
+  "metadata": {
+    "catalog": {
+      "source_commit": "1111111111111111111111111111111111111111",
+      "verification_commit": "2222222222222222222222222222222222222222",
+      "built_at": "2026-10-23T12:00:00Z",
+      "records_digest": "0aa23aa46181ee776770dd02b7d5acdaaedfbc36904160ae53e42b119d43b4a5"
+    }
+  }
+}

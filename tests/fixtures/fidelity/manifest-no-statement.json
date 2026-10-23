@@ -1,0 +1,32 @@
+{
+  "format": "osd.manifest/3",
+  "created": "2026-10-23T12:00:00Z",
+  "catalog_url": "https://opensubsurfacedata.org/data/stac/catalog.json",
+  "selection": "collections",
+  "entries": [
+    {
+      "collection_id": "acme--no-statement",
+      "record_id": "acme/no-statement",
+      "title": "Licence without a statement (E09 rights fixture)",
+      "origin_url": "https://acme.example/no-statement",
+      "access": "registration",
+      "licence": {
+        "name": "Acme Plain Terms",
+        "spdx": null,
+        "redistribution": "unknown",
+        "attribution": "not-required",
+        "share_alike": false
+      },
+      "assets": {},
+      "unresolved": "access registration: sign in or ask at the origin page; no file address is published to us"
+    }
+  ],
+  "metadata": {
+    "catalog": {
+      "source_commit": "1111111111111111111111111111111111111111",
+      "verification_commit": "2222222222222222222222222222222222222222",
+      "built_at": "2026-10-23T12:00:00Z",
+      "records_digest": "0aa23aa46181ee776770dd02b7d5acdaaedfbc36904160ae53e42b119d43b4a5"
+    }
+  }
+}
