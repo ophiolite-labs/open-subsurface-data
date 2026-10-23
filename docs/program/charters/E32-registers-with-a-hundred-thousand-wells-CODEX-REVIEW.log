@@ -1,0 +1,2406 @@
+Reading additional input from stdin...
+OpenAI Codex v0.159.0
+--------
+workdir: /home/epic/src/open-subsurface-data
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: concise
+session id: 01a169e1-4372-7bc0-a9d6-ee365ecb39dc
+--------
+user
+You are a fresh, independent senior reviewer of one epic charter in the Open Subsurface Data project (a verified catalogue of open subsurface datasets: YAML records -> verifier levels L0-L4 -> outlines -> STAC/GeoJSON catalogue -> static MapLibre map; Python package src/osd, tests in tests/, schemas in schema/). Read docs/ARCHITECTURE.md, docs/ENGINEERING.md, docs/program/PROGRAM.md, then the charter at /home/epic/src/open-subsurface-data/docs/program/charters/E32-registers-with-a-hundred-thousand-wells.md. VERIFY every 'exists' claim in its Context section against the code at HEAD (open the files; do not trust the document) and state the commit you verified against (git rev-parse HEAD). Report in Markdown: (1) Verdict: APPROVE / APPROVE WITH CHANGES / REWORK, one sentence why. (2) Factual errors about current code, with file:line evidence. (3) Design objections: an owner, boundary, format or contract choice that is unsafe or misplaced, each with a concrete alternative that stays within docs/ENGINEERING.md (no new CI stations, no server, standards over bespoke). (4) Acceptance lines that can pass vacuously or whose proposed test would stay green under the mutation it should catch. (5) Scope creep into another charter in docs/program/charters/. Be specific and terse; no praise; at most 60 lines. Do not modify any files.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll check the charter’s Context claims against HEAD, then review its design, acceptance criteria, and scope against the project rules and neighboring charters.
+exec
+/bin/bash -lc 'git rev-parse HEAD; cat docs/ARCHITECTURE.md docs/ENGINEERING.md docs/program/PROGRAM.md docs/program/charters/E32-registers-with-a-hundred-thousand-wells.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+f1f05ae2756a1d89d3e8b17ea88755a4f11c130f
+# Architecture
+
+One sentence: contributors write facts about open datasets, tools turn those facts into verified
+levels, outlines and a catalogue, and a static map plus a manifest let anyone find and fetch the
+data; Ophiolite reads the same catalogue as a source.
+
+## The chain
+
+```
+  SEG wiki, national        contributor            verifier            outline extractor
+  registers, publishers ──► records/*.yaml ──────► build/verification ─► outlines/*.geojson
+        (lists)             (facts, CC0)            (levels L1–L2)        (L3, derived)
+                                 │                        │                    │
+                                 └──────────┬─────────────┴────────────────────┘
+                                            ▼
+                                     osd build  ─────►  build/catalog/
+                                                        records.json · outlines.geojson · collections.json (STAC)
+                                            │
+                 ┌──────────────────────────┼──────────────────────────────┐
+                 ▼                          ▼                              ▼
+           site/ (MapLibre)           QGIS / any GIS                 manifest (E06)
+           toggles, search,           GeoJSON / STAC by address      osd get · Python reader
+           panel, cards                                                   │
+                                                                          ▼
+                                                              Ophiolite source (E09, L4)
+                                                              E85 intake · E35 rights-basis
+```
+
+## Components and their boundaries
+
+| Component | Owns | Never does |
+|---|---|---|
+| **Records** (`records/`, `schema/record.schema.json`) | Facts as the publisher states them: origin, licence, kinds, region | Carry a level, a checksum or anything a tool produced |
+| **Verifier** (`src/osd/verify.py`, `schema/verification.schema.json`) | Network checks, checksums, licence text capture, the level ladder | Change a record; run inside the required CI check |
+| **Outlines** (`outlines/`, `schema/outline.schema.json`, extractor in E03) | Geometry per wellbore or survey in WGS84, with its derivation named | Invent geometry without saying `approximate: true` |
+| **Build** (`src/osd/build.py`) | Joins records, outlines and levels into the published files | Fetch anything |
+| **Catalogue** (`build/catalog/`) | The one published artefact; STAC-shaped collections, GeoJSON outlines, records JSON | Hold dataset bytes |
+| **Site** (`site/`) | Reading the catalogue and showing it; copyable addresses and snippets | Hold its own data store; need a server |
+| **Retrieval** (E06) | A manifest from a selection; a fetcher that verifies checksums | Decode proprietary project files (Ophiolite connector doctrine) |
+| **Mirror store** (E07) | Checksummed copies of small or orphaned datasets whose licence allows it | Copy anything with `redistribution: unknown` |
+| **Ophiolite bridge** (E09) | The catalogue as an Ophiolite source; rights-basis from the record; fidelity records | Live outside the Ophiolite monorepo's own conventions |
+
+## Formats, all standard
+
+- Records: YAML validated by JSON Schema 2020-12. Outlines: GeoJSON, EPSG:4326.
+- Catalogue: STAC 1.0 collections and items (full validity is E04), plus one GeoJSON for map and GIS.
+- Tiles: PMTiles once outlines exceed what one GeoJSON serves comfortably (E05).
+- Manifest: `osd.manifest/1` JSON (E06). Seismic store, if ever: Zarr-based (E10).
+
+## The level ladder
+
+L0 listed → L1 reachable → L2 checksummed and licence captured → L3 outlined from the data →
+L4 converted to a canonical type with a fidelity record. No rung is skipped, and a level is
+computed from check outcomes, never typed. The ladder is the product's honesty: a dashed outline
+on the map is a placeholder and says so.
+
+## What the map is and is not
+
+The map is a view of the catalogue, nothing more. It has no account, no state beyond the URL, no
+server. Everything it shows can be opened in QGIS by one address. That is also why the website
+and "a GIS layer" are one deliverable rather than two.
+
+## Where Ophiolite comes in
+
+Ophiolite is a consumer of the catalogue, and the catalogue borrows Ophiolite's vocabulary
+(kinds from the E55 registry, rights-basis from E35). The two repositories meet at one interface:
+a manifest or STAC collection Ophiolite's intake (E85) can read. No Ophiolite code runs here;
+no catalogue code runs there.
+# Engineering setup
+
+Fit for purpose: a Python package, YAML records and a static page. The Ophiolite program
+(docs/program-2026-09-25 in the Ophiolite monorepo) taught what to keep and what to drop; the
+evidence for each line is in the Ophiolite program records of 8–22 October 2026.
+
+## Keep (copied from Ophiolite)
+
+| Practice | Why it earned its place |
+|---|---|
+| Claims board: a lane names its paths before it starts, two lanes never share a path | Overlap was the cause of merge pain; the 21 Oct simplification cut kept the board deliberately |
+| Contract first: slice 0 is schema, fixtures and stubs; later slices vertical | Layer-cut slices made serial chains (18 Oct rule) |
+| Kernel vs surface proof bar | Surface strategies capped at one review round after revisions ran to 8 and 18 rounds on E60 and E42c |
+| Outcome-named slices: the brief says what a user can do after merge, or no lane | Success metric is slices merged per day, not green CI |
+| Revert first: a red main gets one revert within the hour, the fix follows | Owner accepted a briefly red main on about one merge in five |
+| No artificial schedule: act when the precondition holds, never on a timer | Nightly timers and self-set dates cost days (night 2026.10.95) |
+| Small fixes batched, one push per merge, no wait on the repeat run | Loop steps 7 and 8 |
+| Brief by reference, one drafting and one execution agent, small contexts | 83 % of usage was sessions over 150k tokens, 78 % subagent-heavy |
+| A different model reviews kernel charters, read-only, one round | Reviews caught contract mistakes; multiple rounds did not pay |
+
+## Drop (what cost Ophiolite more than it returned)
+
+| Station | Evidence | Here instead |
+|---|---|---|
+| Self-hosted runners, pool builders, runner crews | needrestart killed runner units after any apt run; two crews and "chair out, station out" existed only to manage them | GitHub-hosted `ubuntu-24.04`, one job, under two minutes |
+| Merge trains, then a merge queue | 8 workers gave 10× activity for 2–3× merges; merges per worker-day fell from 5.6 to 0.3 at 18 workers | Squash merge on a green check; at most 2 coding lanes plus 1 records lane |
+| Nightly releases, release pinning, qualification | A night took 1 h 50 min at best, ARM64 70 min on the critical path; per-lane qualification 45 min serial | Every merge to main publishes the site; no version numbers |
+| Hardening lanes and a growing item list | 87 hardening merges against about 10 epic slices in a week; the list grew 150 → 217 | Defects under 50 lines ride on the next lane; a red main is reverted, not hardened |
+| Committed conformance results, locks, worker-check cron | Three lanes lost 30–45 min each on a dead lock; a queue stopped for an hour on a docs-only deadline | Nothing is committed that a job can regenerate; no locks; no cron |
+| Multiple Codex rounds, 4-revision caps | 2–4 h of a worker per round | One round for a kernel charter; none for surface or records |
+| Dispatch per commit group | Worth it for a 27-minute C++ build | A 2-minute check runs on every push; nothing to batch |
+| ccache, proven-tree skip, CI spend caps | Needed for a 27-minute C++ build | Irrelevant at Python-and-static scale; revisit above 10 min per check |
+
+## The gate
+
+`make check` = ruff + pytest + schema validation + build, offline. It is the only required
+status. Network verification (`verify` workflow) comments on pull requests and never blocks: a
+publisher's outage is a finding, not a red gate. The site publishes from main on every merge.
+
+## Proof bar by class
+
+- **Kernel** (schemas, verifier, build, manifest, bridge): tests for every acceptance line, a
+  mutation shown to fail for every guard, one Codex round on the charter. Strategy at lane open,
+  at most two pages.
+- **Surface** (site, docs, records): `make check` green and a screenshot or the verify comment.
+  No strategy document; the charter's acceptance list is the brief.
+- **Records**: the verify comment shows the level; a human checks the licence fields against
+  the publisher's page. Same-day merge.
+
+## Roles
+
+- **Supervisor** (one): keeps `docs/program/PROGRAM.md` true, writes lane briefs by reference,
+  merges on green, reverts on red, records decisions in `DECISIONS.md`. Does not write product
+  code except a revert.
+- **Worker** (at most three concurrent: two coding lanes, one records lane): takes a charter,
+  claims paths, opens a branch `e<nn>-<slug>`, pushes when the diff is inside the claim, opens
+  the pull request with the outcome sentence and the proof. Waits for nothing but its own check.
+- **Reviewer** (Codex, read-only): one round per kernel charter, dispositions recorded in the
+  charter.
+
+## What is deliberately absent
+
+No merge queue, no release branches, no version tags, no nightly, no self-hosted compute, no
+lock files committed by hand, no conformance ledger, no item list. If one of these starts to look
+necessary, the measured reason goes into `DECISIONS.md` first.
+# Program: Open Subsurface Data
+
+Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two coding lanes and
+one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
+Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
+
+## Queue (23 Oct 2026)
+
+| # | Epic | Class | Status | Depends on | Outcome a user can observe |
+|---|---|---|---|---|---|
+| 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
+| 2 | E02 Verifier to L2 | Kernel | MERGED 23 Oct (PR #3, 37c010c; 18 mutations; three records at L2, SEG wiki blocked) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
+| 3 | E03 Outlines from the data | Kernel | MERGED 23 Oct (PR #7, 7ddecf0; record/2 inputs, outline/2; Sodir, NLOG, Poseidon at L3; F3 and Teapot behind logins) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
+| 4 | E05 Map that scales | Surface | MERGED 23 Oct (PR #2, 6c232cf; shareable hash, 10k clustered wells, how.html, Playwright site test in CI) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
+| 5 | E04 STAC catalogue | Kernel | MERGED 23 Oct (PR #8, aced173; 68 Collections validate offline, Items need periods; QGIS screenshot is owner action 102) | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
+| 6 | E06 Retrieval by manifest | Kernel | DONE (slice 1 PR #9, slice 2 PR #12, 23 Oct; main cc7c470) | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
+| 7 | E08 Curation that runs itself | Surface | MERGED 23 Oct (PR #5, e408adb; status page, dead-link issues, osd new, CODEOWNERS, labels). DONE when two outside PRs have merged (owner action 101) | E02 | An outside contributor's record merges the same day; dead links become issues |
+| 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
+| 9 | E07 Mirror store and custody | Kernel | slice 1 MERGED (PR #13, 23 Oct; main 58e895f; manifest/2, custody/1, verification/3, local transport; Norne eligible); slice 2 QUEUED after owner action 103 | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
+| 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | OSD slice 1 MERGED (PR #14, 23 Oct; main c370a87: manifest/3 catalog snapshot, fidelity/1, L4 rule); static manifest/3 fixtures PR #16 (pin 82ae5563d); PARTIAL until Ophiolite E127 lands (after E121 there; rights part after E35) | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
+| 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
+| 13 | E13 Twenty records from the national registers | Records | MERGED 23 Oct (PR #4, 6429445; 42 records, 10 countries with a government publisher, 0 new TerraNubis) | E01 | Forty datasets listed; a government source for at least eight countries |
+| 14 | E14 Twenty records: research drilling, CO2 sites, state archives | Records | MERGED 23 Oct (PR #6, 61f9527; 68 records, 26 new, six new countries, all 26 at L1) | E13 | Sixty datasets listed, wider kinds and regions |
+| 15 | E15 Tiles for the registers | Surface | MERGED (PR #10, 23 Oct; main 2904db0) | E03 | The map on a phone connection loads tiles for the viewport, not 7 MB of outlines |
+| 16 | E16 Periods from the publishers | Records | MERGED (PR #11, 23 Oct; main fa13d75; 53 of 68 records with a period, 18,432 Items; OSD-D18 gate sample) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
+| 17 | E17 Records, fourth twenty (Africa, Middle East, Asia, Canada, open seismic and model sets) | Records | MERGED (PR #15, 23 Oct; main 98eb254; 92 records, 9 new countries) | E16 | The map lists at least 85 datasets on six continents |
+| 18 | E18 Items carry their own dates | Kernel | MERGED (PR #19, 23 Oct, main 8581b50; charter reworked after its Codex round) | E03, E04, E16 | Time filters in a STAC client return the wellbores and surveys of that window, not a whole register |
+| 19 | E19 Vocabulary from the records lanes (potential fields, purchase, licence terms) | Kernel (small) | MERGED (PR #18, 23 Oct; main ae7a812; record/3, manifest/4, stac-osd v2) | E17 | Records can say gravity/magnetics, sold data and time-limited terms as the publisher states them |
+| 20 | E20 Records: the retry and the publishers' sentences | Records | MERGED (PR #21, 23 Oct; main a1f8832; 96 records, NRCan potential-fields, PASA/DGH publisher sentences; six hosts still refuse) | E17, E19 | Unreached publishers are listed when they answer; purchase records carry the publisher's own licence sentence |
+| 21 | E21 The map says when | Surface | MERGED (PR #22, 23 Oct; main 3d5841c; period filter `t=`/`dated=1`, When row, journey tests) | E05, E16 | A person filters the map by acquisition years and reads when a dataset was acquired, in the publisher's words |
+| 22 | E22 Records, fifth twenty (US states, Iberia and the Alps, Latin America, Africa, geothermal and CO2 sites) | Records | MERGED (PR #30, 23 Oct; main 595a30f; 121 records, ten new countries, seven US states) | E20 | The map lists 116 datasets with the open US state regulators and five more countries |
+| 23 | E23 More datasets checksummed | Kernel | MERGED (PR #31, 23 Oct; main 3ece7a2; verification/4, ten listing readers, publisher checksums, a reason per record below L2) | E02, E07 | Every listed dataset has its sample attempted each run; passes show L2, the rest say which check stopped them |
+| 24 | E24 Records: files the verifier can reach, and the sixth twenty | Records | MERGED (PR #32, 23 Oct; main 4dcdc56; 140 records; 24 of 49 lane records L2 on the branch run) |
+| 25 | E25 Records: the seventh twenty, and the bare files | Records | MERGED (PR #35, 23 Oct; main 8843f3e; 160 records, five new countries; branch run 35 L2 + Poseidon L3) | E24, H1 | At least 156 datasets listed; bare-file records reach L2 or say why |
+| 26 | E26 Vocabulary: the kinds the records lanes asked for | Kernel (small) | MERGED (PR #34, 23 Oct; main dcbc1d3; record/4; ten records retagged) | E19, E24 | A record can say velocity model, geological model, airborne EM, radiometrics, stress; ten records lose their want sentence |
+| 27 | E27 The map says why | Surface | MERGED (PR #36, 23 Oct; main 16a2f5a; reasons on the map and the status page; frame budget scaled by runner speed) | E23, H1, E08 | A person reads on the map and the status page why a dataset is at its level, in the verifier's words, with the date |
+| 28 | E28 Periods and extents for the newer records | Records | MERGED (PR #39, 23 Oct; main 520b4c1; periods 90 → 111 of 160, bbox 136 → 138) | E16, E25 | The time filter and STAC reach the datasets added since E16; first zoom right for every located dataset |
+| 29 | E29 Outlines from the registers' map services | Kernel | IN LANE (osd-e29, 23 Oct; charter reworked after its Codex round; record/5) | E03, E18, E23, E25, E26 | Registers with an ArcGIS service show their wells and surveys as real points and outlines; L3; one Item per feature |
+| 30 | E30 Listings for the datasets people can download | Records | MERGED (PR #40, 23 Oct; main 641f750; 11 listings, 10 of them L2 on the branch run; 80 records with a manifest_url) | E23, E24, E25 | More anonymous-access datasets at L2; the rest say why in the verifier's words |
+| 31 | E31 Records: the eighth twenty (offshore regulators, Canadian provinces, CCS sites, the rest of Europe) | Records | IN LANE (osd-e31, 23 Oct) | E25, E30 | At least 176 datasets, BOEM and C-NLOPB among them, four more countries |
+| 32 | E32 Registers with a hundred thousand wells | Kernel | CHARTERED, Codex round running (23 Oct); opens after E29 merges | E29, E18, E15 | Virginia, BCER, SGC, Utah and North Dakota wells on the map at L3 with pageable Items; the gate stays under three minutes |
+| H1 | H1 Origins that recover, and origins that hide from robots | Kernel (hardening) | MERGED (PR #33, 23 Oct; main 5cbe7af; OSD-D20; issues close on recovery; single-file listings) | E08, E23 | Origin-dead issues close themselves; publishers that hide from the verifier are called blocked, not dead |
+| 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
+
+Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
+map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
+(three of them the SEG wiki blocking this host with HTTP 403, one NOPIMS 403; see OSD-D9).
+Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
+`verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
+with real levels through the `verification-results` branch. `main` requires `check`.
+DNS entered and the domain verified for ophiolite-labs by the owner 23 Oct; HTTPS enforced (certificate issued after re-setting the custom domain).
+E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
+opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
+
+## The loop
+
+1. The supervisor takes the first QUEUED epic whose dependencies are MERGED and whose paths are
+   free on `CLAIMS.md`. Surfaces are disjoint: `records/`, `site/`, `src/osd/`, `.github/`.
+2. Kernel: the worker writes a strategy of at most two pages at lane open (acceptance line → test
+   name), one Codex round on the charter if not yet reviewed, dispositions recorded in the charter.
+   Surface and records: no strategy, the charter's acceptance list is the brief.
+3. The worker claims paths, branches `e<nn>-<slug>`, commits in outcome-named slices.
+4. The worker pushes unasked when the diff is inside the claim; asks for `schema/` version bumps
+   and `.github/` edits.
+5. Pull request: outcome sentence, proof (check green, screenshot or verify comment). The
+   required status is `check` only.
+6. Supervisor merges on green with squash. Main publishes the site. Nobody waits for the
+   repeat run on main.
+7. Red main: revert within the hour, then a fix lane. No hardening lanes, no item list.
+8. Defects under 50 lines ride on the next lane that owns the path. Larger ones get a charter.
+9. During any wait the worker starts the next slice on a stacked branch; it is merged after.
+10. After a merge the supervisor updates this table, moves the claim rows to MERGED, and
+    `/compact`s.
+
+## Rules
+
+- R1 WIP: two coding lanes plus one records lane. A third coding lane waits.
+- R2 Gate: `make check` only. Nothing network-bound is ever required.
+- R3 Records say what the publisher says; tools say what they established. Never cross.
+- R4 Every slice names what a user can do after it merges.
+- R5 Surface gets a screenshot, kernel gets tests and one mutation per guard, records get the
+  verify comment and a licence read.
+- R6 No timers, no nightly, no self-set dates. Act when the precondition holds.
+- R7 Nothing a job can regenerate is committed (`build/`, `site/data/`).
+## E32 Registers with a hundred thousand wells — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct 2026 (levels on the map are real; the map scales, E05/E15);
+E29 (ArcGIS adapter, its inbox note 5 with the measurements below, PR pending); E18 (Items carry
+their own dates; the tippecanoe ruling); E15 (tiles); OSD-D18 (the gate validates a sample of
+Items, `make check-full` the tree); `docs/ENGINEERING.md`.
+
+**Outcome.** The five registers E29 could only prepare (Virginia 8,605 wells, BCER 34,431, SGC
+25,013, Utah DOGM 40,422, North Dakota 44,018) show their wells on the map, reach L3, and have
+STAC Items a client can page through, while `make check` stays a gate a contributor waits for
+(under three minutes on CI) and the site's pages build stays within GitHub Pages' limits.
+
+**Context today (E29 measurements, VPS, 23 Oct 17:40 UTC; CI is about 0.7 of these times).**
+Nine tests build the real catalogue (`test_build`, `test_stac`, `test_verify`, `test_manifest`,
+`test_mirror`, site snippets); one build writes one STAC Item file per feature of a record with a
+period. `make check` today: 2m02 here, 86 s on CI, 18,436 features. With E29's four committed
+registers: 2m48 / ~118 s, 25,406 features. With all nine: 8m37 / ~6 min, 177,895 features, 178,056
+Item files (193 MB; 35 of 46 s per build in `stac.write_catalog`, Collections indented with tens of
+thousands of item links), and the tile test fails: tippecanoe 2.49 writes another feature's string
+as `feature_id` for two features (ND #18505, UT #11965 carry BCER well names), the known red of
+E18's ruling now reproduced on real data. Pages would publish about 190 MB of STAC and a 150 MB
+pmtiles. After E29 merges, the five records carry `inputs`, `period` and `rules.yaml` entries, and
+their outlines are one `osd verify --outlines` away.
+
+**The design the lane must map to.**
+1. One real build per test session: a session-scoped fixture builds the catalogue once into a
+   temporary directory and the nine tests read it; a test that mutates the build gets its own
+   copy. `make check` with all nine registers under three minutes on CI (the PR's check run is the
+   proof, its duration stated).
+2. STAC writing proportional to the data: Collections written compact (no indentation of item
+   link arrays) or Items grouped per Collection in paged link files as the STAC spec allows
+   (`rel: next` pages of item links), chosen in the strategy with the client test (OSD-D18 sample
+   validation and `make check-full` on the tree); a STAC client (pystac or the QGIS browser,
+   stated) lists the Items of North Dakota. Item count and byte size per Collection are printed
+   by `osd build` and go in the PR.
+3. Tiles: the tippecanoe attribute corruption is reproduced in a fixture test (two features whose
+   strings cross), then fixed by a tippecanoe version that is correct (stated and pinned in the
+   CI setup) or by writing `feature_id` as a numeric property and keeping strings out of the
+   tile attributes (the detail panel reads strings from `records.json` and the outline files,
+   not from the tile); the fix is proven by the fixture test and by the real tile of all nine
+   registers. The E18 known red is closed in HANDOFF.
+4. Outlines for the five records committed under `outlines/` (`osd verify --outlines`, reviewed:
+   counts equal the day's `returnCountOnly`), verified with `--outline-inputs` on the branch
+   dispatch; the all-record dispatch under 60 minutes, duration stated.
+5. Pages: the published site size stated (STAC bytes, pmtiles bytes, records.json bytes) and
+   under GitHub Pages' 1 GB site limit with headroom; a phone-width screenshot of North Dakota's
+   wells at a town zoom and the detail panel of one well.
+
+**Acceptance.**
+- `make check` on CI under three minutes with all nine registers' outlines committed; the
+  session fixture test proves one build (a counter or a spy; mutation: fixture scope dropped →
+  the build count test red).
+- STAC: `make check-full` green; pystac (or the stated client) walks the North Dakota Collection
+  and counts 44,018 Items (or the day's count); a Collection file under 2 MB; mutation: paging
+  removed → the size test red.
+- Tiles: the fixture test with crossing strings red before the fix, green after; the real tile
+  of all nine registers has every feature's `feature_id` equal to its outline id (a full
+  comparison, not a sample).
+- The five records at L3 on the branch dispatch (or the first failing check named with outage
+  evidence); outlines diff shows only the five files; record diffs empty.
+- Published size table in the PR.
+
+**Out of scope.** Layers above 50,000 features (SK MER, PGI, CGS); new formats; any records
+beyond the five; site features.
+
+**Stop rules.** If no STAC layout keeps a client listing Items and the tree under `check-full`,
+stop after design 1 and 3, record the measurements, and name the layout question for a decision.
+
+**Ownership and dependencies.** Coding lane; paths `tests/conftest.py`, the nine test modules
+(fixture use only), `src/osd/stac.py`, `src/osd/build.py` (tile attributes, size print),
+`schema/stac/**` if the layout needs it (named in the PR title), `tests/test_stac.py`,
+`tests/test_build.py`, `tests/fixtures/stac/**` and `tests/fixtures/tiles/**` (new), the
+tippecanoe install step in `.github/workflows/check.yml` (granted, named in the PR),
+`outlines/` for the five records, `docs/program/evidence/e32/**`. Depends on E29 (merged first).
+
+**Evidence to inspect.** CI durations before and after; the build-count test; the client walk;
+the tile comparison; the size table; the screenshot.
+
+exec
+/bin/bash -lc "rg -n 'write_catalog|build_catalog|build\\(|feature_id|tippecanoe|check-full|indent|period' src/osd/stac.py src/osd/build.py tests/conftest.py tests/test_build.py tests/test_stac.py tests/test_verify.py tests/test_manifest.py tests/test_mirror.py Makefile .github/workflows/*.yml; rg --files docs/program/charters tests | sort; nl -ba docs/program/charters/E32-registers-with-a-hundred-thousand-wells.md" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+.github/workflows/pages.yml:30:      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+.github/workflows/pages.yml:32:          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+.github/workflows/pages.yml:33:          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+.github/workflows/pages.yml:34:          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
+src/osd/stac.py:6:                                   checksummed as assets, temporal extent from the record's `period`
+src/osd/stac.py:7:  <cid>/items/<name>.json         one Item per outline feature with a feature_id, only when the record
+src/osd/stac.py:8:                                   declares a `period` (OSD-D14); id = the outline's feature_id; its
+src/osd/stac.py:10:                                   (E18, `osd:period_source`); validate() fails an Item whose
+src/osd/stac.py:33:                 "schema/stac-osd.json?v=3")   # OSD-D19; v2 (E19): purchase; v3 (E18): osd:period_source
+src/osd/stac.py:45:def item_file_name(feature_id: str) -> str:
+src/osd/stac.py:47:    local = feature_id.split("#", 1)[1]
+src/osd/stac.py:50:        safe += "-" + hashlib.sha256(feature_id.encode()).hexdigest()[:8]
+src/osd/stac.py:66:    p = rec.get("period")
+src/osd/stac.py:71:        raise ValueError(f"{rec['id']}: period ends before it starts ({p['start']} > {p['end']})")
+src/osd/stac.py:109:def item_period(props: dict, collection: list) -> tuple[list, str]:
+src/osd/stac.py:110:    """(interval, osd:period_source) of one outline feature in a Collection with that interval:
+src/osd/stac.py:113:    start, end = props.get("osd:period_start"), props.get("osd:period_end")
+src/osd/stac.py:123:    period, source = item_period(p, when)
+src/osd/stac.py:124:    props = {"title": p["name"], "datetime": None, "start_datetime": period[0], "end_datetime": period[1],
+src/osd/stac.py:125:             "osd:period_source": source, "osd:approximate": p["approximate"], "osd:derivation": p["source"]}
+src/osd/stac.py:131:        "id": p["feature_id"], "collection": cid, "geometry": feature["geometry"],
+src/osd/stac.py:140:def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFICATION_DIR,
+src/osd/stac.py:143:    blocked_since as build() joins them) and return the Collections. `mirror_index` is the public
+src/osd/stac.py:144:    index of copies the mirror holds (osd.mirror.public_index). A duplicate feature_id
+src/osd/stac.py:156:            fid = f["properties"].get("feature_id")
+src/osd/stac.py:158:                raise ValueError(f"duplicate feature_id '{fid}'")
+src/osd/stac.py:163:        if rec.get("period"):
+src/osd/stac.py:165:                     for f in fc["features"] if f["properties"].get("feature_id")]
+src/osd/stac.py:206:        (d / "collection.json").write_text(json.dumps(col, indent=2) + "\n")
+src/osd/stac.py:219:    (root / "catalog.json").write_text(json.dumps(catalog, indent=2) + "\n")
+.github/workflows/ci.yml:19:      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+.github/workflows/ci.yml:21:          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+.github/workflows/ci.yml:22:          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+.github/workflows/ci.yml:23:          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
+src/osd/build.py:18:  outlines.pmtiles the same features as vector tiles, z0-12, when tippecanoe is installed (E15)
+src/osd/build.py:71:def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
+src/osd/build.py:91:                # E18: a feature's dates are its STAC Item's, not map attributes (tippecanoe 2.49
+src/osd/build.py:93:                props = {k: v for k, v in f["properties"].items() if not k.startswith("osd:period_")}
+src/osd/build.py:99:                fid = {"id": props["feature_id"]} if "feature_id" in props else {}
+src/osd/build.py:111:        indent=2) + "\n")
+src/osd/build.py:115:    (out_dir / "mirror.json").write_text(json.dumps({"copies": index}, indent=2) + "\n")
+src/osd/build.py:116:    collections = stac.write_catalog(out_dir, records_out, vdir, mirror_index=index)
+src/osd/build.py:117:    (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
+src/osd/build.py:123:# zoom (-r1) and clustered by the page; polygons are simplified by tippecanoe below zoom 8 only, so
+src/osd/build.py:124:# z0-7 and z8-12 are two runs joined. Pinned in CI: Ubuntu 24.04 tippecanoe 2.49.0-1build1.
+src/osd/build.py:136:    tippecanoe is absent (the page then reads the GeoJSON whole). Cached by input and tool version,
+src/osd/build.py:146:    if not (shutil.which("tippecanoe") and shutil.which("tile-join")):
+src/osd/build.py:147:        print("notice: tippecanoe not found, outlines.pmtiles not written; the map reads outlines.geojson "
+src/osd/build.py:148:              f"whole (install tippecanoe {TIPPECANOE_PIN}, see .github/workflows/ci.yml)", file=sys.stderr)
+src/osd/build.py:150:    version = subprocess.run(["tippecanoe", "--version"], capture_output=True, text=True, check=False).stderr.strip()
+src/osd/build.py:158:            runs = [subprocess.Popen(["tippecanoe", *TILE_COMMON, *zooms, "-o", str(part), str(src)],
+src/osd/build.py:163:                    raise RuntimeError(f"tippecanoe failed: {err}")
+Makefile:2:.PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
+Makefile:15:build:                                   ## build/catalog/*.json, outlines.pmtiles (tippecanoe) + site/data/
+Makefile:17:	mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
+Makefile:20:check-full: build                        ## the whole STAC tree, every Item (OSD-D18; verify workflow on main, not the gate)
+tests/conftest.py:34:                       "feature_id": "acme/demo#demo-3d", "input": "demo-3d"},
+.github/workflows/verify.yml:84:        run: make check-full
+tests/test_verify.py:369:    build(out, vdir, now=NOW)
+tests/test_manifest.py:108:    for rec, with_period in ((records[0], True), (records[1], False)):
+tests/test_manifest.py:112:            "feature_id": f"{rid}#w-1"}, "geometry": {"type": "Point", "coordinates": [4.5, 54.5]}}]}
+tests/test_manifest.py:114:        if with_period:
+tests/test_manifest.py:115:            rec["period"] = {"start": "2019", "end": "2019"}
+tests/test_manifest.py:118:    stac.write_catalog(out, records, vdir, odir)
+tests/test_manifest.py:217:    assert e["item_id"] == "acme/alpha#w-1" and e["feature_id"] == "acme/alpha#w-1"
+tests/test_manifest.py:446:    build(out, FIDELITY / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror",
+tests/test_manifest.py:548:    build(out, vdir, now=NOW, mirror_dir=tmp_path / "no-mirror", source_commit="1" * 40, verification_commit=None)
+tests/test_manifest.py:568:    build(out, FIDELITY / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror",
+tests/test_manifest.py:586:    build(out, tmp_path / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror", records_dir=VOCAB,
+tests/test_mirror.py:297:    stac.write_catalog(out, [joined], vdir, odir, mirror_index=mirror.public_index(s.root / "custody"))
+tests/test_mirror.py:469:    build(out, vdir, mirror_dir=s.root)
+tests/test_build.py:20:    n = build(out, vdir)
+tests/test_build.py:147:    return p.get("feature_id") or (p["record_id"], p["kind"], p["name"])
+tests/test_build.py:150:_needs_tippecanoe = pytest.mark.skipif(not (shutil.which("tippecanoe") or os.environ.get("CI")),
+tests/test_build.py:151:                                       reason="tippecanoe not installed (CI installs it)")
+tests/test_build.py:154:@_needs_tippecanoe
+tests/test_build.py:157:    build(out)  # the real catalogue, as `make build` writes it; tiling is cached by content
+tests/test_build.py:159:    assert tiles is not None, "tippecanoe must be installed where CI is set"
+tests/test_build.py:174:    for k, p in want.items():  # tippecanoe writes arrays as JSON text; MVT has no array value
+tests/test_build.py:179:def test_build_without_tippecanoe_prints_the_notice_and_writes_no_tiles(tmp_path, monkeypatch, capsys):
+tests/test_build.py:181:    build(out)
+tests/test_build.py:183:    monkeypatch.setenv("PATH", str(tmp_path))  # no tippecanoe on it
+tests/test_build.py:185:    assert "notice: tippecanoe not found" in capsys.readouterr().err
+tests/test_build.py:196:def _fixture_build(tmp_path, name="catalog", now=None, vdir=None, records_dir=None):
+tests/test_build.py:200:    build(out, Path(vdir or os.path.join(FIDELITY, "verification")),
+tests/test_build.py:208:    doc = _fixture_build(tmp_path)
+tests/test_build.py:218:    a = _fixture_build(tmp_path, "a", now=datetime(2026, 10, 23, 12, tzinfo=UTC))
+tests/test_build.py:219:    b = _fixture_build(tmp_path, "b", now=datetime(2026, 10, 23, 12, 5, tzinfo=UTC))
+tests/test_build.py:225:    base = _fixture_build(tmp_path, "base")["catalog"]["records_digest"]
+tests/test_build.py:230:    edited = _fixture_build(tmp_path, "edited", records_dir=recs)["catalog"]["records_digest"]
+tests/test_build.py:235:    reverified = _fixture_build(tmp_path, "reverified", vdir=vdir)["catalog"]["records_digest"]
+tests/test_build.py:247:    doc = _fixture_build(tmp_path, records_dir=recs)
+tests/test_build.py:296:    build(tmp_path / "catalog", vdir)
+tests/test_stac.py:35:def _record(rid, *, period=None, level="L0", spdx="CC-BY-4.0", url=True):
+tests/test_stac.py:46:    if period:
+tests/test_stac.py:47:        rec["period"] = period
+tests/test_stac.py:54:                           "source": "segy-bin-grid:grid", "feature_id": f"{rid}#{local}", "input": input_},
+tests/test_stac.py:76:    cols = stac.write_catalog(out, records, vdir=vd, outlines_dir=od)
+tests/test_stac.py:101:    build(catalog, vdir)
+tests/test_stac.py:112:ITEM_SAMPLE, ITEM_SEED = 20, 18   # OSD-D18: the gate samples Items; `make check-full` validates them all
+tests/test_stac.py:144:    assert any("/items/" in str(t) for t in targets)   # records with a period put Items in the sample
+tests/test_stac.py:152:    recipe = re.search(r"^check-full:.*?\n((?:\t.*\n)+)", mk, re.MULTILINE).group(1)
+tests/test_stac.py:154:    assert not re.search(r"^check:.*check-full", mk, re.MULTILINE)   # never part of the gate
+tests/test_stac.py:157:    assert "make check-full" in step
+tests/test_stac.py:208:def test_outlines_geojson_carries_feature_id(staged):
+tests/test_stac.py:210:    with_id = [f for f in fc["features"] if "feature_id" in f["properties"]]
+tests/test_stac.py:211:    assert with_id and all(f["id"] == f["properties"]["feature_id"] for f in with_id)
+tests/test_stac.py:212:    assert all("id" not in f for f in fc["features"] if "feature_id" not in f["properties"])
+tests/test_stac.py:217:def test_item_ids_equal_feature_ids_with_period(tmp_path, no_network):
+tests/test_stac.py:218:    recs = [_record("acme/dated", period={"start": "1993", "end": "1994-06"}), _record("acme/undated")]
+tests/test_stac.py:232:    rec = _record("acme/l0", period={"start": "2001-02-03", "end": "2001-02-03"}, level="L0")
+tests/test_stac.py:241:    rec = _record("acme/dated", period={"start": "1993", "end": "1994-02", "stated": "acquired 1993-94"})
+tests/test_stac.py:254:def test_period_end_before_start_fails(tmp_path):
+tests/test_stac.py:255:    rec = _record("acme/dated", period={"start": "1995", "end": "1994"})
+tests/test_stac.py:256:    with pytest.raises(ValueError, match="period"):
+tests/test_stac.py:267:def test_duplicate_feature_id_fails_build(tmp_path):
+tests/test_stac.py:268:    recs = [_record("acme/one", period={"start": "2000", "end": "2000"})]
+tests/test_stac.py:271:    with pytest.raises(ValueError, match="duplicate feature_id 'acme/one#a'"):
+tests/test_stac.py:272:        stac.write_catalog(tmp_path / "catalog", recs, vdir=tmp_path, outlines_dir=od)
+tests/test_stac.py:276:    recs = [_record("acme/one", period={"start": "2000", "end": "2000"})]
+tests/test_stac.py:312:# --- record/2: period ----------------------------------------------------------------------------
+tests/test_stac.py:314:def test_period_is_additive_to_record_2():
+tests/test_stac.py:318:    assert schema["$id"].endswith("/record/4") and "period" not in schema["required"]
+tests/test_stac.py:322:    assert not list(v.iter_errors(dict(base, period={"start": "1993", "end": "1994-06-30"})))
+tests/test_stac.py:324:        assert list(v.iter_errors(dict(base, period=bad))), bad
+tests/test_stac.py:327:def test_unquoted_yaml_period_reads_as_strings(tmp_records):
+tests/test_stac.py:330:    p.write_text(p.read_text() + "period: {start: 1993, end: 1994-06-30, stated: acquired 1993-94}\n")
+tests/test_stac.py:331:    assert load_record(p)["period"] == {"start": "1993", "end": "1994-06-30", "stated": "acquired 1993-94"}
+tests/test_stac.py:338:    """The fixture register (tests/fixtures/outlines/dates, collection period 1990-2000) built."""
+tests/test_stac.py:345:    rec = _record(DATED_REC["id"], period=DATED_REC["period"])
+tests/test_stac.py:347:    stac.write_catalog(catalog, [rec], vdir=tmp_path, outlines_dir=od)
+tests/test_stac.py:365:def test_fixture_register_item_periods(tmp_path, local, start, end, source):
+tests/test_stac.py:368:    assert (p["start_datetime"], p["end_datetime"], p["osd:period_source"]) == (start, end, source)
+tests/test_stac.py:370:    assert col["extent"]["temporal"]["interval"] == [list(COLLECTION_1990_2000)]   # the record's period
+tests/test_stac.py:382:    rec = _record("acme/dated", period={"start": "1990", "end": "2000"})
+tests/test_stac.py:387:    fc["features"][0]["properties"].update({"osd:period_start": "1985-01-01T00:00:00Z",
+tests/test_stac.py:388:                                            "osd:period_end": "1986-01-01T23:59:59Z"})
+tests/test_stac.py:390:    stac.write_catalog(tmp_path / "catalog", [rec], vdir=tmp_path, outlines_dir=od)
+tests/test_stac.py:398:def test_every_item_states_its_period_source(staged):
+tests/test_stac.py:404:            seen[json.loads(it.read_text())["properties"]["osd:period_source"]] += 1
+tests/test_stac.py:424:    """OSD-D19: documents naming the v1 or v2 identifier (no osd:period_source) validate under their
+tests/test_stac.py:426:    to the current file as the host does online; the frozen copies refuse osd:period_source."""
+tests/test_stac.py:439:        _, dated = _osd_doc(tmp_path, url, **{"osd:period_source": "feature"})
+tests/test_stac.py:440:        assert list(Draft7Validator(frozen).iter_errors(dated)), url   # v1 and v2 know no period_source
+tests/test_stac.py:442:        _, item = _osd_doc(tmp_path, stac.OSD_EXTENSION, **{"osd:period_source": good})
+tests/test_stac.py:444:    _, item = _osd_doc(tmp_path, stac.OSD_EXTENSION, **{"osd:period_source": "record"})
+docs/program/charters/E01-twenty-records.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.log
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.md
+docs/program/charters/E02-verifier-to-L2-STRATEGY.md
+docs/program/charters/E02-verifier-to-L2.md
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.log
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.md
+docs/program/charters/E03-outlines-from-the-data-STRATEGY.md
+docs/program/charters/E03-outlines-from-the-data.md
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.log
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.md
+docs/program/charters/E04-stac-catalogue-STRATEGY.md
+docs/program/charters/E04-stac-catalogue.md
+docs/program/charters/E05-map-that-scales.md
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.log
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.md
+docs/program/charters/E06-retrieval-by-manifest-STRATEGY.md
+docs/program/charters/E06-retrieval-by-manifest.md
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.log
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.md
+docs/program/charters/E07-mirror-store-and-custody-STRATEGY.md
+docs/program/charters/E07-mirror-store-and-custody.md
+docs/program/charters/E08-curation-that-runs-itself.md
+docs/program/charters/E09-ophiolite-half.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.log
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-STRATEGY.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue.md
+docs/program/charters/E10-seismic-slices.md
+docs/program/charters/E11-hosting-and-domain.md
+docs/program/charters/E12-catalogue-into-a-workspace.md
+docs/program/charters/E13-registers-second-twenty.md
+docs/program/charters/E14-records-third-twenty.md
+docs/program/charters/E15-tiles-for-the-registers.md
+docs/program/charters/E16-periods-from-the-publishers.md
+docs/program/charters/E17-records-fourth-twenty.md
+docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.log
+docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.md
+docs/program/charters/E18-items-carry-their-own-dates-STRATEGY.md
+docs/program/charters/E18-items-carry-their-own-dates.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes-CODEX-REVIEW.log
+docs/program/charters/E19-vocabulary-from-the-records-lanes-CODEX-REVIEW.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes-STRATEGY.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes.md
+docs/program/charters/E20-records-retry-and-the-publishers-sentences.md
+docs/program/charters/E21-the-map-says-when.md
+docs/program/charters/E22-records-fifth-twenty.md
+docs/program/charters/E23-more-datasets-checksummed-CODEX-REVIEW.log
+docs/program/charters/E23-more-datasets-checksummed-CODEX-REVIEW.md
+docs/program/charters/E23-more-datasets-checksummed-STRATEGY.md
+docs/program/charters/E23-more-datasets-checksummed.md
+docs/program/charters/E24-records-files-the-verifier-can-reach.md
+docs/program/charters/E25-records-seventh-twenty-and-the-bare-files.md
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-CODEX-REVIEW.log
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-CODEX-REVIEW.md
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-STRATEGY.md
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for.md
+docs/program/charters/E27-the-map-says-why.md
+docs/program/charters/E28-periods-and-extents-for-the-newer-records.md
+docs/program/charters/E29-outlines-from-the-map-services-CODEX-REVIEW.log
+docs/program/charters/E29-outlines-from-the-map-services-CODEX-REVIEW.md
+docs/program/charters/E29-outlines-from-the-map-services.md
+docs/program/charters/E30-listings-for-the-datasets-people-can-download.md
+docs/program/charters/E31-records-eighth-twenty.md
+docs/program/charters/E32-registers-with-a-hundred-thousand-wells-CODEX-REVIEW.log
+docs/program/charters/E32-registers-with-a-hundred-thousand-wells.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-CODEX-REVIEW.log
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-CODEX-REVIEW.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-STRATEGY.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide.md
+tests/conftest.py
+tests/fixtures/fidelity/fidelity.json
+tests/fixtures/fidelity/manifest-no-statement.json
+tests/fixtures/fidelity/manifest-null-attribution.json
+tests/fixtures/fidelity/manifest-two-wells.json
+tests/fixtures/fidelity/records/acme/no-statement.yaml
+tests/fixtures/fidelity/records/acme/null-attribution.yaml
+tests/fixtures/fidelity/records/acme/two-wells.yaml
+tests/fixtures/fidelity/verification/acme__two-wells.json
+tests/fixtures/fidelity/well-a.las
+tests/fixtures/fidelity/well-b.las
+tests/fixtures/listings/README.md
+tests/fixtures/listings/ak-dggs.html
+tests/fixtures/listings/arcgis-featureserver-sgc.html
+tests/fixtures/listings/arcgis-featureserver-ut.html
+tests/fixtures/listings/arcgis-mapserver-bcer.json
+tests/fixtures/listings/ckan-ar-energia-fractura.json
+tests/fixtures/listings/ckan-gsq.json
+tests/fixtures/listings/ckan-wa-demirs.json
+tests/fixtures/listings/danegovpl-cbdg.json
+tests/fixtures/listings/datacite-egg.json
+tests/fixtures/listings/datagovtw-cpc.json
+tests/fixtures/listings/dataverse-geus.json
+tests/fixtures/listings/figshare-article.json
+tests/fixtures/listings/github-release-cli.json
+tests/fixtures/listings/github-repo-csp11.html
+tests/fixtures/listings/jamstec-cruises.json
+tests/fixtures/listings/kigam-metadata.json
+tests/fixtures/listings/socrata-anh.json
+tests/fixtures/listings/zenodo-record.json
+tests/fixtures/manifest/two-records.json
+tests/fixtures/mirror/custody/bad-inconsistent-size.json
+tests/fixtures/mirror/custody/bad-invalid-removal-state.json
+tests/fixtures/mirror/custody/bad-malformed-hash.json
+tests/fixtures/mirror/custody/bad-missing-contact.json
+tests/fixtures/mirror/custody/bad-missing-licence.json
+tests/fixtures/mirror/custody/bad-missing-origin.json
+tests/fixtures/mirror/custody/held.json
+tests/fixtures/mirror/custody/removed.json
+tests/fixtures/mirror/verification-2-norne.json
+tests/fixtures/outlines/README.md
+tests/fixtures/outlines/dates/wells/page-000000
+tests/fixtures/outlines/nlog__nlog/boreholes/hits
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000000
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000003
+tests/fixtures/outlines/nlog__nlog/boreholes/page-000006
+tests/fixtures/outlines/nlog__nlog/surveys-3d/hits
+tests/fixtures/outlines/nlog__nlog/surveys-3d/page-000000
+tests/fixtures/outlines/nlog__nlog/surveys-3d/page-000002
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/0/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/0/39
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/26/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/headers/26/39
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/0/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/0/1
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/1/0
+tests/fixtures/outlines/nopims__poseidon/full-stack-agc/trace_mask/1/1
+tests/fixtures/outlines/nzpam__kerry-3d/survey-extent/body
+tests/fixtures/outlines/nzpam__parihaka/survey-extent/body
+tests/fixtures/outlines/outline-2/nlog__nlog.geojson
+tests/fixtures/outlines/outline-2/nzpam__parihaka.geojson
+tests/fixtures/outlines/schema/outline-1.schema.json
+tests/fixtures/outlines/schema/outline-2.schema.json
+tests/fixtures/outlines/schema/record-1.schema.json
+tests/fixtures/outlines/segy/irregular.sgy
+tests/fixtures/outlines/segy/make_segy.py
+tests/fixtures/outlines/sodir__factpages/seismic-finished/hits
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000000
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000002
+tests/fixtures/outlines/sodir__factpages/seismic-finished/page-000004
+tests/fixtures/outlines/sodir__factpages/seismic-unplaced/page-000547
+tests/fixtures/outlines/sodir__factpages/wellbores-unplaced/page-000136
+tests/fixtures/outlines/sodir__factpages/wellbores/hits
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000000
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000003
+tests/fixtures/outlines/sodir__factpages/wellbores/page-000006
+tests/fixtures/report/open-issues.json
+tests/fixtures/schema/manifest-3.schema.json
+tests/fixtures/schema/record-2.schema.json
+tests/fixtures/schema/record-3.schema.json
+tests/fixtures/schema/stac-osd-1.json
+tests/fixtures/schema/stac-osd-2.json
+tests/fixtures/schema/verification-3.schema.json
+tests/fixtures/site/README.md
+tests/fixtures/site/verification/ak-dggs__tax-credit-well-data.json
+tests/fixtures/site/verification/bgs__single-onshore-borehole-index.json
+tests/fixtures/site/verification/geus__deep-subsurface-data.json
+tests/fixtures/site/verification/gsq__qped.json
+tests/fixtures/site/verification/nm-ocd__oil-and-gas-wells.json
+tests/fixtures/site/verification/nopims__poseidon.json
+tests/fixtures/site/verification/nzpam__kerry-3d.json
+tests/fixtures/site/verification/seg__open-data-wiki.json
+tests/fixtures/site/verification/sodir__factpages.json
+tests/fixtures/verification/README.md
+tests/fixtures/verification/stored-3.jsonl.gz
+tests/fixtures/vocabulary/records/acme/plain.yaml
+tests/fixtures/vocabulary/records/acme/sold.yaml
+tests/fixtures/vocabulary/records/acme/words.yaml
+tests/site/harness.mjs
+tests/site/manifest_roundtrip.py
+tests/site/site.test.mjs
+tests/site/status.test.mjs
+tests/site/test_how_snippets.py
+tests/test_build.py
+tests/test_fidelity.py
+tests/test_manifest.py
+tests/test_mirror.py
+tests/test_outlines.py
+tests/test_records.py
+tests/test_report.py
+tests/test_schema.py
+tests/test_stac.py
+tests/test_verify.py
+     1	## E32 Registers with a hundred thousand wells — QUEUED · Kernel · strategy at lane open · one Codex round
+     2	
+     3	Authority: owner direction 23 Oct 2026 (levels on the map are real; the map scales, E05/E15);
+     4	E29 (ArcGIS adapter, its inbox note 5 with the measurements below, PR pending); E18 (Items carry
+     5	their own dates; the tippecanoe ruling); E15 (tiles); OSD-D18 (the gate validates a sample of
+     6	Items, `make check-full` the tree); `docs/ENGINEERING.md`.
+     7	
+     8	**Outcome.** The five registers E29 could only prepare (Virginia 8,605 wells, BCER 34,431, SGC
+     9	25,013, Utah DOGM 40,422, North Dakota 44,018) show their wells on the map, reach L3, and have
+    10	STAC Items a client can page through, while `make check` stays a gate a contributor waits for
+    11	(under three minutes on CI) and the site's pages build stays within GitHub Pages' limits.
+    12	
+    13	**Context today (E29 measurements, VPS, 23 Oct 17:40 UTC; CI is about 0.7 of these times).**
+    14	Nine tests build the real catalogue (`test_build`, `test_stac`, `test_verify`, `test_manifest`,
+    15	`test_mirror`, site snippets); one build writes one STAC Item file per feature of a record with a
+    16	period. `make check` today: 2m02 here, 86 s on CI, 18,436 features. With E29's four committed
+    17	registers: 2m48 / ~118 s, 25,406 features. With all nine: 8m37 / ~6 min, 177,895 features, 178,056
+    18	Item files (193 MB; 35 of 46 s per build in `stac.write_catalog`, Collections indented with tens of
+    19	thousands of item links), and the tile test fails: tippecanoe 2.49 writes another feature's string
+    20	as `feature_id` for two features (ND #18505, UT #11965 carry BCER well names), the known red of
+    21	E18's ruling now reproduced on real data. Pages would publish about 190 MB of STAC and a 150 MB
+    22	pmtiles. After E29 merges, the five records carry `inputs`, `period` and `rules.yaml` entries, and
+    23	their outlines are one `osd verify --outlines` away.
+    24	
+    25	**The design the lane must map to.**
+    26	1. One real build per test session: a session-scoped fixture builds the catalogue once into a
+    27	   temporary directory and the nine tests read it; a test that mutates the build gets its own
+    28	   copy. `make check` with all nine registers under three minutes on CI (the PR's check run is the
+    29	   proof, its duration stated).
+    30	2. STAC writing proportional to the data: Collections written compact (no indentation of item
+    31	   link arrays) or Items grouped per Collection in paged link files as the STAC spec allows
+    32	   (`rel: next` pages of item links), chosen in the strategy with the client test (OSD-D18 sample
+    33	   validation and `make check-full` on the tree); a STAC client (pystac or the QGIS browser,
+    34	   stated) lists the Items of North Dakota. Item count and byte size per Collection are printed
+    35	   by `osd build` and go in the PR.
+    36	3. Tiles: the tippecanoe attribute corruption is reproduced in a fixture test (two features whose
+    37	   strings cross), then fixed by a tippecanoe version that is correct (stated and pinned in the
+    38	   CI setup) or by writing `feature_id` as a numeric property and keeping strings out of the
+    39	   tile attributes (the detail panel reads strings from `records.json` and the outline files,
+    40	   not from the tile); the fix is proven by the fixture test and by the real tile of all nine
+    41	   registers. The E18 known red is closed in HANDOFF.
+    42	4. Outlines for the five records committed under `outlines/` (`osd verify --outlines`, reviewed:
+    43	   counts equal the day's `returnCountOnly`), verified with `--outline-inputs` on the branch
+    44	   dispatch; the all-record dispatch under 60 minutes, duration stated.
+    45	5. Pages: the published site size stated (STAC bytes, pmtiles bytes, records.json bytes) and
+    46	   under GitHub Pages' 1 GB site limit with headroom; a phone-width screenshot of North Dakota's
+    47	   wells at a town zoom and the detail panel of one well.
+    48	
+    49	**Acceptance.**
+    50	- `make check` on CI under three minutes with all nine registers' outlines committed; the
+    51	  session fixture test proves one build (a counter or a spy; mutation: fixture scope dropped →
+    52	  the build count test red).
+    53	- STAC: `make check-full` green; pystac (or the stated client) walks the North Dakota Collection
+    54	  and counts 44,018 Items (or the day's count); a Collection file under 2 MB; mutation: paging
+    55	  removed → the size test red.
+    56	- Tiles: the fixture test with crossing strings red before the fix, green after; the real tile
+    57	  of all nine registers has every feature's `feature_id` equal to its outline id (a full
+    58	  comparison, not a sample).
+    59	- The five records at L3 on the branch dispatch (or the first failing check named with outage
+    60	  evidence); outlines diff shows only the five files; record diffs empty.
+    61	- Published size table in the PR.
+    62	
+    63	**Out of scope.** Layers above 50,000 features (SK MER, PGI, CGS); new formats; any records
+    64	beyond the five; site features.
+    65	
+    66	**Stop rules.** If no STAC layout keeps a client listing Items and the tree under `check-full`,
+    67	stop after design 1 and 3, record the measurements, and name the layout question for a decision.
+    68	
+    69	**Ownership and dependencies.** Coding lane; paths `tests/conftest.py`, the nine test modules
+    70	(fixture use only), `src/osd/stac.py`, `src/osd/build.py` (tile attributes, size print),
+    71	`schema/stac/**` if the layout needs it (named in the PR title), `tests/test_stac.py`,
+    72	`tests/test_build.py`, `tests/fixtures/stac/**` and `tests/fixtures/tiles/**` (new), the
+    73	tippecanoe install step in `.github/workflows/check.yml` (granted, named in the PR),
+    74	`outlines/` for the five records, `docs/program/evidence/e32/**`. Depends on E29 (merged first).
+    75	
+    76	**Evidence to inspect.** CI durations before and after; the build-count test; the client walk;
+    77	the tile comparison; the size table; the screenshot.
+
+exec
+/bin/bash -lc "sed -n '140,225p' src/osd/stac.py; sed -n '71,178p' src/osd/build.py; cat Makefile; cat tests/conftest.py; sed -n '85,110p' tests/test_stac.py; sed -n '1,35p;150,195p;275,305p' tests/test_build.py; sed -n '350,378p' tests/test_verify.py; sed -n '455,477p' tests/test_mirror.py; sed -n '530,575p' tests/test_manifest.py; cat tests/site/test_how_snippets.py" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+def write_catalog(out_dir: Path, records: list[dict], vdir: Path = paths.VERIFICATION_DIR,
+                  outlines_dir: Path = paths.OUTLINES_DIR, mirror_index: list[dict] | None = None) -> list[dict]:
+    """Write out_dir/stac/ from the joined records (record fields plus level, checked_at,
+    blocked_since as build() joins them) and return the Collections. `mirror_index` is the public
+    index of copies the mirror holds (osd.mirror.public_index). A duplicate feature_id
+    anywhere in the outlines fails the build: it is the key Items and the map share."""
+    root = out_dir / "stac"
+    shutil.rmtree(root, ignore_errors=True)
+    root.mkdir(parents=True, exist_ok=True)
+    seen: set[str] = set()
+    collections, children = [], []
+    for rec in records:
+        rid, cid = rec["id"], collection_id(rec["id"])
+        op = outlines_dir / (rid.replace("/", "__") + ".geojson")
+        fc = load_outline(op) if op.exists() else {"features": []}
+        for f in fc["features"]:
+            fid = f["properties"].get("feature_id")
+            if fid in seen:
+                raise ValueError(f"duplicate feature_id '{fid}'")
+            if fid:
+                seen.add(fid)
+        when = interval(rec)
+        items = []
+        if rec.get("period"):
+            items = [_item(rec, cid, f, fc.get("inputs", {}), when)
+                     for f in fc["features"] if f["properties"].get("feature_id")]
+        names: dict[str, str] = {}
+        for it in items:
+            n = item_file_name(it["id"])
+            if n in names:
+                raise ValueError(f"{rid}: item file {n} for both '{names[n]}' and '{it['id']}'")
+            names[n] = it["id"]
+        vp = vdir / (rid.replace("/", "__") + ".json")
+        mirrored = {c["sha256"]: c["href"] for c in mirror_index or [] if c["record_id"] == rid}
+        assets = _assets(json.loads(vp.read_text()) if vp.exists() else None, mirrored)
+        alternate = any("alternate" in a for a in assets.values())
+        lic = rec["licence"]
+        spatial = (rec.get("region", {}).get("bbox")
+                   or _union([bbox(f["geometry"]) for f in fc["features"] if f.get("geometry")])
+                   or WORLD)
+        col = {
+            "type": "Collection", "stac_version": STAC_VERSION,
+            "stac_extensions": [OSD_EXTENSION] + ([FILE_EXTENSION] if assets else [])
+                               + ([ALTERNATE_EXTENSION] if alternate else []),
+            "id": cid, "title": rec["title"], "description": rec.get("summary") or rec["title"],
+            "license": lic.get("spdx") or "other",
+            "keywords": rec["kinds"],
+            "providers": [{"name": rec["publisher"]["name"], "roles": ["producer", "licensor"],
+                           "url": rec["publisher"]["url"]}],
+            "extent": {"spatial": {"bbox": [spatial]}, "temporal": {"interval": [when]}},
+            "links": [{"rel": "root", "href": "../catalog.json", "type": "application/json"},
+                      {"rel": "parent", "href": "../catalog.json", "type": "application/json"},
+                      {"rel": "about", "href": rec["origin"]["url"], "title": "Publisher's page"},
+                      {"rel": "license", "href": lic.get("url", rec["origin"]["url"]),
+                       "title": lic["name"]}]
+                     + [{"rel": "item", "href": f"./items/{n}", "type": "application/geo+json"}
+                        for n in names],
+            "osd:level": rec["level"], "osd:checked_at": rec["checked_at"],
+            "osd:access": rec["origin"]["access"], "osd:redistribution": lic["redistribution"],
+        }
+        if rec.get("blocked_since"):
+            col["osd:blocked_since"] = rec["blocked_since"]
+        if assets:
+            col["assets"] = assets
+        d = root / cid
+        (d / "items" if items else d).mkdir(parents=True, exist_ok=True)
+        (d / "collection.json").write_text(json.dumps(col, indent=2) + "\n")
+        for n, it in zip(names, items):
+            (d / "items" / n).write_text(json.dumps(it) + "\n")
+        collections.append(col)
+        children.append({"rel": "child", "href": f"./{cid}/collection.json",
+                         "type": "application/json", "title": rec["title"]})
+    catalog = {
+        "type": "Catalog", "stac_version": STAC_VERSION, "id": "open-subsurface-data",
+        "title": "Open Subsurface Data",
+        "description": "Open subsurface datasets as their publishers state them, one Collection per "
+                       "record, with the level our tools verified.",
+        "links": [{"rel": "root", "href": "./catalog.json", "type": "application/json"}] + children,
+    }
+    (root / "catalog.json").write_text(json.dumps(catalog, indent=2) + "\n")
+    return collections
+
+
+def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MAP) -> tuple[bool, list]:
+    """stac-validator over a local file or tree, against the bundled schemas only."""
+    from stac_validator.utilities import fetch_and_parse_schema
+def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
+          now: datetime | None = None, mirror_dir: Path = mirror.MIRROR_DIR,
+          records_dir: Path = paths.RECORDS_DIR, source_commit: str | None = FROM_ENVIRONMENT,
+          verification_commit: str | None = FROM_ENVIRONMENT) -> dict:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    recs = load_records(records_dir)
+    records_out = []
+    reasons = {}
+    features = []
+    for rid, rec in recs.items():
+        v = latest_verification(rid, vdir)
+        level = v["level"] if v else "L0"
+        checked = v["checked_at"] if v else None
+        blocked = (v or {}).get("origin", {}).get("blocked_since")
+        joined = dict(rec, level=level, checked_at=checked, stale=is_stale(checked, now), blocked_since=blocked)
+        reasons[rid] = reason(v, rec)
+        records_out.append(joined)
+        op = paths.outline_path(rid)
+        if op.exists():
+            for f in load_outline(op)["features"]:
+                # E18: a feature's dates are its STAC Item's, not map attributes (tippecanoe 2.49
+                # wrote other features' values into three tiles with them: evidence/e18/registers.md)
+                props = {k: v for k, v in f["properties"].items() if not k.startswith("osd:period_")}
+                props.update({
+                    "title": rec["title"], "publisher": rec["publisher"]["name"],
+                    "kinds": rec["kinds"], "licence": rec["licence"]["name"],
+                    "redistribution": rec["licence"]["redistribution"], "level": level,
+                })
+                fid = {"id": props["feature_id"]} if "feature_id" in props else {}
+                features.append({"type": "Feature", **fid, "properties": props, "geometry": f["geometry"]})
+    catalog = {
+        "source_commit": git_head() if source_commit == FROM_ENVIRONMENT else source_commit,
+        "verification_commit": (verification_commit_from_env() if verification_commit == FROM_ENVIRONMENT
+                                else verification_commit),
+        "built_at": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "records_digest": records_digest(records_out),
+    }
+    (out_dir / "records.json").write_text(json.dumps(
+        {"tool_version": __version__, "count": len(records_out), "catalog": catalog, "records": records_out,
+         "reasons": reasons},
+        indent=2) + "\n")
+    (out_dir / "outlines.geojson").write_text(json.dumps(
+        {"type": "FeatureCollection", "features": features}) + "\n")
+    index = mirror.public_index(mirror_dir / "custody")
+    (out_dir / "mirror.json").write_text(json.dumps({"copies": index}, indent=2) + "\n")
+    collections = stac.write_catalog(out_dir, records_out, vdir, mirror_index=index)
+    (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
+    write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
+    return {"records": len(records_out), "features": len(features), "collections": len(collections)}
+
+
+# Tiling (E15). One source layer, "outlines", every GeoJSON property kept. Points are kept at every
+# zoom (-r1) and clustered by the page; polygons are simplified by tippecanoe below zoom 8 only, so
+# z0-7 and z8-12 are two runs joined. Pinned in CI: Ubuntu 24.04 tippecanoe 2.49.0-1build1.
+TIPPECANOE_PIN = "2.49.0"
+TILE_RUNS = (
+    ["-Z0", "-z7"],
+    ["-Z8", "-z12", "--no-line-simplification"],
+)
+TILE_COMMON = ["-q", "-f", "-l", "outlines", "-r1", "--no-feature-limit", "--no-tile-size-limit",
+               "--no-tiny-polygon-reduction"]
+
+
+def write_tiles(out_dir: Path, cache_dir: Path = paths.BUILD_DIR / "tiles") -> Path | None:
+    """out_dir/outlines.pmtiles from out_dir/outlines.geojson, or None with a notice when
+    tippecanoe is absent (the page then reads the GeoJSON whole). Cached by input and tool version,
+    so a second build of the same outlines (the site test's) costs a copy."""
+    import hashlib
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+
+    src, dst = out_dir / "outlines.geojson", out_dir / "outlines.pmtiles"
+    dst.unlink(missing_ok=True)
+    if not (shutil.which("tippecanoe") and shutil.which("tile-join")):
+        print("notice: tippecanoe not found, outlines.pmtiles not written; the map reads outlines.geojson "
+              f"whole (install tippecanoe {TIPPECANOE_PIN}, see .github/workflows/ci.yml)", file=sys.stderr)
+        return None
+    version = subprocess.run(["tippecanoe", "--version"], capture_output=True, text=True, check=False).stderr.strip()
+    key = hashlib.sha256(src.read_bytes())
+    key.update(json.dumps([version, TILE_RUNS, TILE_COMMON]).encode())
+    cached = cache_dir / f"outlines-{key.hexdigest()[:16]}.pmtiles"
+    if not cached.exists():
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory() as tmp:
+            parts = [Path(tmp) / f"z{i}.pmtiles" for i in range(len(TILE_RUNS))]
+            runs = [subprocess.Popen(["tippecanoe", *TILE_COMMON, *zooms, "-o", str(part), str(src)],
+                                     stderr=subprocess.PIPE, text=True) for zooms, part in zip(TILE_RUNS, parts)]
+            for r in runs:
+                err = r.communicate()[1]
+                if r.returncode:
+                    raise RuntimeError(f"tippecanoe failed: {err}")
+            joined = Path(tmp) / "outlines.pmtiles"
+            j = subprocess.run(["tile-join", "-q", "-f", "--no-tile-size-limit", "-o", str(joined), *map(str, parts)],
+                               capture_output=True, text=True, check=False)
+            if j.returncode:
+                raise RuntimeError(f"tile-join failed: {j.stderr}")
+            for old in cache_dir.glob("outlines-*.pmtiles"):
+                old.unlink()
+            shutil.move(joined, cached)
+    shutil.copyfile(cached, dst)
+    note = "" if TIPPECANOE_PIN in version else f" (CI pins {TIPPECANOE_PIN})"
+    print(f"tiles: {dst.name} {dst.stat().st_size / 1e6:.1f} MB, z0-12, {version}{note}", file=sys.stderr)
+    return dst
+# One target per station. CI runs exactly `make check`.
+.PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
+
+check: lint test validate build          ## the required CI check (offline, < 2 min)
+
+lint:
+	uv run ruff check src tests
+
+test:
+	uv run pytest -q
+
+validate:                                ## every record and outline against its schema
+	uv run osd validate
+
+build:                                   ## build/catalog/*.json, outlines.pmtiles (tippecanoe) + site/data/
+	uv run osd build
+	mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
+	ls site/data | grep -vx files.txt > site/data/files.txt   # the map reads optional files from this list
+
+check-full: build                        ## the whole STAC tree, every Item (OSD-D18; verify workflow on main, not the gate)
+	uv run python -c "import sys; from pathlib import Path; from osd import stac; ok, m = stac.validate(Path('site/data/stac/catalog.json')); print(len(m), 'STAC objects', 'valid' if ok else 'INVALID'); sys.exit(not ok)"
+
+verify:                                  ## network: reach origins, record levels (not part of `check`)
+	uv run osd verify
+
+site: build                              ## serve the map locally
+	python3 -m http.server --directory site 8765
+
+site-deps:                               ## Playwright and Chromium for the site test (not part of `check`)
+	npm install --no-audit --no-fund
+	npx playwright install chromium
+
+site-test: build                         ## Playwright against the local site (not part of `check` yet)
+	npm run --silent site-test
+
+shot: build                              ## desktop and phone screenshots into build/shots/
+	mkdir -p build/shots
+	node tools/shot.mjs build/shots
+
+clean:
+	rm -rf build site/data
+import json
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture
+def tmp_records(tmp_path: Path):
+    """A records dir with one valid record; tests mutate it."""
+    d = tmp_path / "records" / "acme"
+    d.mkdir(parents=True)
+    (d / "demo.yaml").write_text(
+        "id: acme/demo\ntitle: Demo set\n"
+        "publisher: {name: Acme, url: https://acme.example, country: NL}\n"
+        "origin: {url: https://acme.example/demo, access: anonymous}\n"
+        "licence: {name: CC BY 4.0, spdx: CC-BY-4.0, redistribution: allowed, attribution: required}\n"
+        "kinds: [seismic-3d]\nregion: {country: NL}\nlisted_by: [community]\nadded: 2026-10-23\n"
+    )
+    return tmp_path / "records"
+
+
+@pytest.fixture
+def tmp_outlines(tmp_path: Path):
+    d = tmp_path / "outlines"
+    d.mkdir()
+    (d / "acme__demo.geojson").write_text(json.dumps({
+        "type": "FeatureCollection", "licence": "CC BY 4.0",
+        "inputs": {"demo-3d": {"url": "https://acme.example/demo.geojson", "sha256": "0" * 64}}, "features": [{
+        "type": "Feature",
+        "properties": {"record_id": "acme/demo", "kind": "survey-3d", "name": "Demo 3D",
+                       "approximate": False, "source": "publisher shapefile",
+                       "feature_id": "acme/demo#demo-3d", "input": "demo-3d"},
+        "geometry": {"type": "Polygon", "coordinates": [[[4, 54], [5, 54], [5, 55], [4, 55], [4, 54]]]},
+    }]}))
+    return d
+# --- the published tree: real records, staged as `make build` stages it -------------------------
+
+@pytest.fixture(scope="module")
+def staged(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("staged")
+    vdir = tmp / "verification"
+    vdir.mkdir()
+    (vdir / "equinor__volve.json").write_text(json.dumps(
+        {"record_id": "equinor/volve", "checked_at": "2026-10-23T12:00:00+00:00", "tool_version": "t",
+         "level": "L2", "checks": [], "files": [
+             {"path": "Volve_Well_logs.zip", "url": "https://example.org/Volve_Well_logs.zip",
+              "bytes": 1234, "sha256": SHA}]}))
+    (vdir / "nlog__nlog.json").write_text(json.dumps(
+        {"record_id": "nlog/nlog", "checked_at": "2026-10-23T12:00:00+00:00", "tool_version": "t",
+         "level": "L1", "checks": []}))
+    catalog = tmp / "build" / "catalog"
+    build(catalog, vdir)
+    site_data = tmp / "site" / "data"
+    shutil.copytree(catalog, site_data, dirs_exist_ok=True)   # the Makefile's `cp -R build/catalog/.`
+    return site_data
+
+
+def test_makefile_copies_catalog_recursively():
+    recipe = re.search(r"^build:.*?\n((?:\t.*\n)+)", (ROOT / "Makefile").read_text(), re.MULTILINE).group(1)
+    assert "cp -R build/catalog/. site/data/" in recipe
+
+import collections
+import json
+import os
+import shutil
+from pathlib import Path
+
+import pytest
+
+from osd.build import build, write_tiles
+from osd.records import load_records
+
+
+def test_build_joins_records_outlines_and_levels(tmp_path):
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    (vdir / "equinor__volve.json").write_text(json.dumps(
+        {"record_id": "equinor/volve", "checked_at": "2026-10-23T12:00:00+00:00",
+         "tool_version": "t", "level": "L1", "checks": []}))
+    out = tmp_path / "catalog"
+    n = build(out, vdir)
+    assert n["records"] == len(load_records())
+    recs = {r["id"]: r for r in json.loads((out / "records.json").read_text())["records"]}
+    assert recs["equinor/volve"]["level"] == "L1"
+    assert recs["nlog/nlog"]["level"] == "L0"
+    fc = json.loads((out / "outlines.geojson").read_text())
+    volve = [f for f in fc["features"] if f["properties"]["record_id"] == "equinor/volve"]
+    assert volve and volve[0]["properties"]["level"] == "L1"
+    assert volve[0]["properties"]["licence"] == "Equinor Open Data Licence"
+    cols = json.loads((out / "collections.json").read_text())["collections"]
+    assert any(c["license"] == "CC-BY-SA-4.0" for c in cols)
+
+
+# E15: tiles. A minimal PMTiles v3 and Mapbox Vector Tile reader, enough to count features and read
+# their properties at one zoom; geometry is skipped.
+
+_needs_tippecanoe = pytest.mark.skipif(not (shutil.which("tippecanoe") or os.environ.get("CI")),
+                                       reason="tippecanoe not installed (CI installs it)")
+
+
+@_needs_tippecanoe
+def test_tiles_hold_every_feature_with_its_properties_at_max_zoom(tmp_path):
+    out = tmp_path / "catalog"
+    build(out)  # the real catalogue, as `make build` writes it; tiling is cached by content
+    tiles = write_tiles(out)
+    assert tiles is not None, "tippecanoe must be installed where CI is set"
+    want = {}
+    for f in json.loads((out / "outlines.geojson").read_text())["features"]:
+        want[_identity(f["properties"])] = f["properties"]
+    assert len(want) == len(json.loads((out / "outlines.geojson").read_text())["features"]), "identities are unique"
+    seen = {}
+    for tile in _tiles_at(tiles, 12):
+        for layer, props in _features(tile):
+            assert layer == "outlines"
+            seen.setdefault(_identity(props), props)
+    def by_kind(d):
+        return collections.Counter(p["kind"] for p in d.values())
+    print("features at z12 per kind:", dict(by_kind(seen)), "geojson:", dict(by_kind(want)))
+    assert by_kind(seen) == by_kind(want)
+    assert seen.keys() == want.keys()
+    for k, p in want.items():  # tippecanoe writes arrays as JSON text; MVT has no array value
+        got = {a: json.loads(v) if isinstance(p.get(a), list) else v for a, v in seen[k].items()}
+        assert got == p, k
+
+
+def test_build_without_tippecanoe_prints_the_notice_and_writes_no_tiles(tmp_path, monkeypatch, capsys):
+    out = tmp_path / "catalog"
+    build(out)
+    (out / "outlines.pmtiles").write_bytes(b"stale")
+    monkeypatch.setenv("PATH", str(tmp_path))  # no tippecanoe on it
+    assert write_tiles(out, cache_dir=tmp_path / "tiles") is None
+    assert "notice: tippecanoe not found" in capsys.readouterr().err
+    assert not (out / "outlines.pmtiles").exists()
+    assert (out / "outlines.geojson").exists()
+
+
+# E09: snapshot identity. records.json `catalog` names the commits and a digest of the records array.
+
+FIDELITY = os.path.join(os.path.dirname(__file__), "fixtures", "fidelity")
+SRC, VER = "1" * 40, "2" * 40
+
+
+    "geus/deep-subsurface-data": "origin-reachable: HTTP 502 from "
+                                 "https://eng.geus.dk/products-services-facilities/data-and-maps/subsurface-data-denmark",
+    "sodir/factpages": "sample, not the whole dataset: 3 of 3 selected files hashed (1732088 bytes); 48 entries listed",
+    "nopims/poseidon": "1 features derived from 1 inputs, every input sha256 equal to the stored bytes (min_features 1)",
+    "opm/norne": "2 of 2 inputs converted to kinds well-log, grid",
+    "equinor/volve": "never verified",
+}
+
+
+def test_site_fixture_verifications_validate():
+    from osd.verify import _validator
+    for p in sorted(SITE_VDIR.glob("*.json")):
+        _validator().validate(json.loads(p.read_text()))
+
+
+def test_records_json_reason_is_the_status_reason(tmp_path):
+    # mutation: build.py formats its own sentence (the E23 l2_reason copied in) -> L2 and up differ, red
+    from osd.cli import status_lines
+    vdir = tmp_path / "verification"
+    shutil.copytree(SITE_VDIR, vdir)
+    (vdir / "opm__norne.json").write_text(json.dumps(L4))
+    build(tmp_path / "catalog", vdir)
+    built = json.loads((tmp_path / "catalog" / "records.json").read_text())
+    recs, why = {r["id"]: r for r in built["records"]}, built["reasons"]
+    status = dict(zip(recs, status_lines(vdir)[1:]))   # one line per record, in the same order
+    assert why.keys() == recs.keys()
+    for rid in recs:
+        assert f" {rid} " in status[rid] and why[rid] and status[rid].endswith(" " + why[rid]), rid
+    assert {rid: why[rid] for rid in WHY} == WHY
+    assert {recs[rid]["level"] for rid in WHY} == {"L0", "L1", "L2", "L3", "L4"}
+    assert recs["nm-ocd/oil-and-gas-wells"]["blocked_since"] and recs["equinor/volve"]["checked_at"] is None
+    assert "verification" not in schema("record.schema.json").schema["properties"]  # OSD-D11
+
+
+def test_stale_after_30_days():
+    assert not is_stale("2026-09-24T12:00:00+00:00", NOW)
+    assert is_stale("2026-09-22T12:00:00+00:00", NOW)
+    assert is_stale(None, NOW)
+
+
+def test_records_json_levels_equal_status_levels(tmp_path):
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    levels = {"equinor/volve": "L1", "sodir/factpages": "L2", "seg/open-data-wiki": "L0"}
+    for rid, lv in levels.items():
+        origin = {"reachability": "blocked", "blocked_since": "2026-10-20T00:00:00+00:00"} if lv == "L0" else {}
+        (vdir / (rid.replace("/", "__") + ".json")).write_text(json.dumps(
+            {"record_id": rid, "checked_at": "2026-08-01T00:00:00+00:00", "tool_version": "t",
+             "level": lv, "checks": [], "origin": origin}))
+    out = tmp_path / "catalog"
+    build(out, vdir, now=NOW)
+    published = {r["id"]: (r["level"], r["stale"], (r["blocked_since"] or "")[:10])
+                 for r in json.loads((out / "records.json").read_text())["records"]}
+    printed = {}
+    for line in status_lines(vdir, now=NOW)[1:]:
+        lv, rid, *_ = line.split()
+        m = re.search(r"blocked since (\S+)", line)
+        printed[rid] = (lv, "stale" in line, m.group(1) if m else "")
+    assert published == printed
+    assert published["sodir/factpages"] == ("L2", True, "")
+
+def test_build_writes_public_index_from_custody(tmp_path):
+    rec = load_record(paths.RECORDS_DIR / "opm" / "norne.yaml")
+    rule = mirror.load_rules()["opm/norne"]
+    files = {"norne/README": b"r" * 687}
+    s = mirror.LocalDirectory(tmp_path / "store", MIRROR)
+    net = Net(files={})
+    net.body = lambda url: files[url[len(ORIGIN):]]
+    v = verification("opm/norne", files, rule=rule)
+    mirror.put(rec, v, rule, s, net, now=NOW)
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    (vdir / "opm__norne.json").write_text(json.dumps(v))
+    out = tmp_path / "catalog"
+    build(out, vdir, mirror_dir=s.root)
+    index = json.loads((out / "mirror.json").read_text())
+    assert [(c["record_id"], c["path"]) for c in index["copies"]] == [("opm/norne", "norne/README")]
+    col = json.loads((out / "stac" / "opm--norne" / "collection.json").read_text())
+    assert col["assets"]["norne/README"]["alternate"]["mirror"]["href"] == index["copies"][0]["href"]
+
+
+def test_no_public_copy_without_a_valid_custody_document(tmp_path):
+    s = mirror.LocalDirectory(tmp_path / "store", (tmp_path / "store").as_uri())   # file:// is no public href
+    assert mf.problems({k: v for k, v in doc.items() if k != "metadata"}) != []
+    bad = copy.deepcopy(doc)
+    del bad["metadata"]["catalog"]["records_digest"]
+    assert mf.problems(bad) != []
+
+
+def test_manifest_without_snapshot_stays_v1(tmp_path):
+    """A records.json written before E09 (no `catalog`) still gives the manifest it gave."""
+    doc = mf.from_catalog(["acme/alpha"], catalogue(tmp_path, "https://f.example"), now=NOW)
+    assert doc["format"] == "osd.manifest/1" and "metadata" not in doc
+
+
+def test_norne_manifest_3(tmp_path):
+    """The real-record case: Norne's record, with the verification E07 recorded for it."""
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    shutil.copy(ROOT / "tests" / "fixtures" / "mirror" / "verification-2-norne.json", vdir / "opm__norne.json")
+    out = tmp_path / "catalog"
+    build(out, vdir, now=NOW, mirror_dir=tmp_path / "no-mirror", source_commit="1" * 40, verification_commit=None)
+    doc = mf.from_catalog(["opm/norne"], out, now=NOW)
+    assert doc["format"] == "osd.manifest/3"
+    assert doc["metadata"]["catalog"] == json.loads((out / "records.json").read_text())["catalog"]
+    assert doc["metadata"]["catalog"]["verification_commit"] is None
+    (e,) = doc["entries"]
+    norne = yaml.safe_load((ROOT / "records" / "opm" / "norne.yaml").read_text())
+    assert e["licence"] == norne["licence"] and "statement" not in e["licence"]
+    assert e["assets"]["norne/NORNE_ATW2013.DATA"]["file:checksum"] == (
+        "1220f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080")
+    assert "item_id" not in e
+    m = mf.read(mf.write(doc, tmp_path / "norne.manifest.json"))
+    assert m.catalog.records_digest == doc["metadata"]["catalog"]["records_digest"]
+
+
+@pytest.mark.parametrize("rid", RIGHTS_IDS)
+def test_static_manifest_3_fixtures_equal_what_osd_manifest_writes(tmp_path, rid):
+    """Ophiolite E127 reads tests/fixtures/fidelity/manifest-*.json by path (pinned to a commit):
+    each must stay exactly what `osd manifest <rid>` writes from the fixture catalogue."""
+    out = tmp_path / "catalog"
+    build(out, FIDELITY / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror",
+          records_dir=FIDELITY / "records", source_commit="1" * 40, verification_commit="2" * 40)
+    written = mf.write(mf.from_catalog([rid], out, now=NOW), tmp_path / "manifest.json")
+    committed = FIDELITY / f"manifest-{rid.split('/')[1]}.json"
+    assert json.loads(committed.read_text()) == json.loads(written.read_text()), (
+        f"{committed.name} drifted from osd manifest; regenerate it and tell E127 the new pin")
+    assert mf.read(committed).catalog == mf.Catalog(**json.loads((FIDELITY / "fidelity.json").read_text())["catalog"])
+
+"""how.html's three cards run as written, against a local server instead of the live site.
+
+Offline: the catalogue is built into a temporary directory and served on 127.0.0.1.
+"""
+
+import html
+import json
+import re
+import shutil
+import subprocess
+import sys
+import threading
+import urllib.request
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+import pytest
+
+from osd.build import build
+
+ROOT = Path(__file__).resolve().parents[2]
+LIVE = "https://opensubsurfacedata.org/"
+
+
+def snippets():
+    page = (ROOT / "site" / "how.html").read_text()
+    found = re.findall(r'<pre data-snippet="(\w+)">(.*?)</pre>', page, re.DOTALL)
+    return [(kind, html.unescape(body)) for kind, body in found]
+
+
+@pytest.fixture(scope="module")
+def site(tmp_path_factory):
+    root = tmp_path_factory.mktemp("site")
+    for f in ("index.html", "how.html", "app.js", "style.css"):
+        shutil.copy(ROOT / "site" / f, root / f)
+    build(root / "data", tmp_path_factory.mktemp("verification"))
+    handler = partial(type("Quiet", (SimpleHTTPRequestHandler,), {"log_message": lambda *a: None}),
+                      directory=str(root))
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    yield f"http://127.0.0.1:{server.server_port}/"
+    server.shutdown()
+
+
+def test_how_page_has_the_three_cards():
+    kinds = [k for k, _ in snippets()]
+    assert kinds == ["url", "python", "python"]
+    assert all(LIVE in body for _, body in snippets())
+
+
+@pytest.mark.parametrize("i", range(3))
+def test_snippet_runs_as_written(site, i):
+    kind, body = snippets()[i]
+    body = body.replace(LIVE, site)
+    if kind == "url":
+        fc = json.load(urllib.request.urlopen(body.strip()))
+        assert fc["type"] == "FeatureCollection" and fc["features"]
+        assert all("record_id" in f["properties"] for f in fc["features"])
+    else:
+        run = subprocess.run([sys.executable, "-c", body], check=False, capture_output=True, text=True, timeout=30)
+        assert run.returncode == 0, run.stderr
+        assert run.stdout.strip() and not run.stdout.startswith("0 ")
+
+**Preferring local specs over web**
+codex
+The Context’s repeated builds and indented STAC links are present in the code. Two design issues need attention: the proposed fixture would combine tests that use different verification inputs, and the tile fix claims only the check workflow even though Pages pins its own tippecanoe version. I’m checking the paging contract and the E29 handoff next.
+exec
+/bin/bash -lc "cat docs/program/charters/E15-tiles-for-the-registers.md docs/program/charters/E18-items-carry-their-own-dates.md docs/program/charters/E29-outlines-from-the-map-services.md; nl -ba .github/workflows/pages.yml | head -65; nl -ba .github/workflows/ci.yml | head -55; rg -n 'feature_id|record_id|\\.name|outlines|kind' site/app.js | tail -55; rg -n 'arcgis|bcer|virginia|utah|nd-dmr|sgc' src/osd/outlines.py outlines/rules.yaml records; rg -n 'tippecanoe|known red' docs/program/HANDOFF.md docs/program/evidence/e18/registers.md; git status --short" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+## E15 Tiles for the registers — QUEUED · Surface · no strategy, no Codex round
+
+Authority: OSD-D16 (register outlines up to 8 MB until a tiling lane); E05 as merged (the page
+prefers `data/outlines.pmtiles` when `files.txt` lists it); `docs/ARCHITECTURE.md` (PMTiles).
+
+**Outcome.** Opening the map on a phone connection no longer downloads the register outlines whole:
+the page loads tiles for the viewport, and every feature still carries the same properties and
+`feature_id` as `outlines.geojson`.
+
+**Context today (verified 23 Oct, main after PR #7).** `outlines/sodir__factpages.geojson` is
+4.3 MB and `outlines/nlog__nlog.geojson` 2.6 MB; `make build` concatenates all outlines into
+`build/catalog/outlines.geojson`, which the page fetches whole. E05 added the `pmtiles` protocol
+and the `files.txt` probe but nothing writes a PMTiles file. `tippecanoe` is not installed in CI.
+
+**The design the lane must map to.**
+1. `make build` writes `build/catalog/outlines.pmtiles` from `outlines.geojson` with `tippecanoe`
+   (pinned version, installed in the `check` workflow from the official release or a pinned apt
+   package; the build skips tiling with a visible notice when the binary is absent, so `make check`
+   stays offline-capable locally). Zoom range 0 to 12, point features kept at every zoom with
+   clustering left to the page, polygons simplified by tippecanoe only below zoom 8.
+2. The page uses the tiles for the extents, surveys and wells layers when present and falls back to
+   the GeoJSON otherwise; the list, search and detail panel keep reading `records.json` and
+   `outlines.geojson` metadata (ids and names), not the tiles.
+3. `feature_id` is the tile feature id; a Playwright test opens `#q=sodir`, clicks a wellbore and
+   gets the same detail title as the GeoJSON path.
+
+**Acceptance.**
+- With tiles present, the page's network log on load shows no request for `outlines.geojson`
+  larger than the metadata fetch (Playwright, offline, asserts the transferred bytes under 1 MB
+  before any pan).
+- The 10,000-wellbore performance test from E05 passes unchanged on the tile path.
+- Tile feature count per layer equals the GeoJSON feature count at the maximum zoom (test using
+  the `pmtiles` CLI or a Python reader).
+- `make check` without `tippecanoe` prints the notice and passes.
+
+**Out of scope.** Changes to outline files or schemas; STAC (E04).
+
+**Ownership and dependencies.** Coding lane; paths `Makefile` (build target), `src/osd/build.py`
+(tiling call only), `.github/workflows/ci.yml` and `pages.yml` (tippecanoe install step, announced),
+`site/app.js`, `tests/site/**`, `tests/test_build.py` (tile count test). Depends on E03 (merged).
+Runs in parallel with E04 (disjoint paths except `src/osd/build.py`: E15 adds one call at the end of
+`build()`; E04 adds `stac.py` and one call; the second to merge rebases).
+
+**Evidence to inspect.** The network-log assertion; the count test; a phone screenshot.
+## E18 Items carry their own dates — QUEUED · Kernel · strategy at lane open · Codex round done 23 Oct (REWORK, dispositions below; no second round) · follow-on of E03 and E04
+
+Authority: OSD-D14 (Items need a period), OSD-D11 (record versus tool boundary), OSD-D12 and
+OSD-D16 (derived outlines are committed and name their inputs); E16 charter line assigning
+per-feature dates to the outline side; E16 finding in `docs/program/HANDOFF.md` (register Items carry
+the collection's period).
+
+**Outcome.** A STAC client filtering the catalogue by time gets the wellbores drilled and the
+surveys shot in that window, not every feature of a register: each Item of a register collection
+carries the feature's own start and end as the publisher's service states them, normalised to
+RFC 3339, with the raw value kept and the provenance of each bound marked; an Item falls back to
+the collection's period only when the feature states nothing usable, and every Item interval lies
+inside its Collection's extent.
+
+**Context today (verified 23 Oct, main after PR #16).** `src/osd/stac.py` passes the record's
+period to every Item (`_item`, both timestamps). The outline extractor emits identifiers, name,
+kind and geometry only (`src/osd/outlines/extractors.py`); `rules.yaml` `propertyName` lists select
+exactly those fields, so no date reaches an outline today. Outlines are committed files regenerated
+by `osd verify --outlines` (`--outline-inputs` derives without writing); the build reads the
+committed files. `schema/stac-osd.json` forbids unknown `osd:` members; `schema/outline.schema.json`
+closes `inputs`. The gate validates a sample of Items (OSD-D18), `make check-full` the whole tree.
+External prerequisites, to verify at lane open against the live services, not facts: Sodir
+wellbore and survey date fields (E16 evidence names `Entry_year` and `Entered_date`; completion and
+survey start/end field names unknown), NLOG `START_DATE_DRILLING` (five `1800-01-01` values that
+E16 called "likely a placeholder") and an end-date field if one exists.
+
+**The design the lane must map to.**
+1. Rules select dates: for each register source `rules.yaml` gains `period_fields: {start, end}`
+   naming service properties, and those names are added to that source's `propertyName` request
+   list; an injected-transport test asserts the request carries them. `period_placeholders` per
+   source lists values treated as absent (NLOG `1800-01-01` only if the lane confirms it on the
+   live service; otherwise none).
+2. Outlines carry them: the extractor writes `osd:period_start_raw` and `osd:period_end_raw`
+   (the service's strings, verbatim) and the normalised `osd:period_start` / `osd:period_end`
+   (RFC 3339 UTC instants: a date becomes `T00:00:00Z` for a start and `T23:59:59Z` for an end; a
+   timestamp without zone is read as UTC; anything else is invalid and the normalised member is
+   omitted). outline/3 (`$id` bumped; outline/2 files still validate under their own schema in the
+   compatibility test) admits these four members and names the date fields in `inputs`. The two
+   register outline files are regenerated with `--outlines`, their diffs reviewed and committed
+   (OSD-D12).
+3. Items: both bounds from the feature when both normalise and start ≤ end
+   (`osd:period_source: feature`); feature start with the collection's end when the end is absent
+   and start ≤ collection end (`osd:period_source: feature-start,collection-end`); otherwise the
+   collection's period (`osd:period_source: collection`). `schema/stac-osd.json` gains the member
+   with that closed enum (`$id` bumped, old files still validate).
+4. Containment guard: an offline test asserts every Item interval lies within its Collection's
+   extent for the fixture and, in `make check-full`, for the whole tree. If a real register fails
+   it, that register keeps the collection period in this lane and the finding goes to a records
+   lane (the Collection period is E16's, records-owned); the PR says which.
+5. Collection extents stay the record's `period`; the PR reports per register: Items with own
+   dates, mixed, fallback; min and max feature dates against the collection period; named Item
+   examples before and after.
+
+**Acceptance.**
+- Injected-transport test: the WFS request for each register includes the date fields; removing
+  them from `propertyName` fails it.
+- Fixture features (distinct fixture collection period, 1990–2000): dated → own bounds, exact
+  RFC 3339 strings asserted per named feature id; undated → collection bounds and `collection`;
+  placeholder → treated as undated; reversed → collection and `collection`; open end → feature
+  start plus collection end and the mixed provenance; start after the collection end with no end
+  → collection; malformed string → raw kept, normalised omitted, collection used; timestamp without
+  zone → read as UTC.
+- Containment test green on the fixture; `make check-full` containment on the tree.
+- Compatibility: outline/2 fixture files and STAC files without `osd:period_source` validate under
+  their own schemas; the schema map carries both versions.
+- Mutations against the unchanged suite: placeholder rule dropped; fallback dropped; reversed
+  accepted; dates read from the record instead of the feature; raw not kept; mixed provenance
+  mislabelled `feature`; containment guard dropped → each red.
+- After merge: the published Sodir and NLOG trees have the named example Items with the asserted
+  bounds (post-publication check in HANDOFF).
+
+**Out of scope.** Collection periods (E16, records); Items for records without outlines; records.
+
+**Stop rules.** A register whose service exposes no per-feature dates keeps the collection period;
+the lane says so and does not scrape pages.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/outlines/rules.yaml`,
+`src/osd/outlines/extractors.py`, `src/osd/outlines/*.py`, `src/osd/stac.py`, `src/osd/verify.py`
+(only if the outline writer needs the date fields passed), `schema/outline.schema.json` (outline/3),
+`schema/stac-osd.json` (`osd:period_source`; shared with E19's access enum: second to merge
+rebases), `schema/stac/schema-map.json`, `records/outlines/sodir--factpages.geojson` and
+`records/outlines/nlog--nlog.geojson` (or wherever the committed register outlines live; name at
+lane open), `tests/test_outlines.py`, `tests/test_stac.py`, `tests/fixtures/outlines/**`,
+`docs/program/evidence/e18/**`. Depends on E03, E04, E16 (merged).
+
+**Evidence to inspect.** The per-register counts; two named Items before and after; the
+containment result; the mutation list; the outline diff summary.
+
+**Dispositions of the Codex round (23 Oct).** Accepted: context corrected (call path, extractor
+emits fixed fields, propertyName lists, field names and the 1800 placeholder are prerequisites not
+facts, no generated tree in the checkout); schemas claimed and versioned (outline/3, stac-osd
+`$id`), schema map and compatibility tests; the committed register outlines claimed and regenerated
+with `--outlines`; date fields added to the requests with an injected-transport test; normalisation
+and invalid handling defined, raw kept; open-end and mixed provenance defined with a validity rule;
+containment guard added with deferral to a records lane; acceptance rewritten with exact instants
+on named ids, distinct fixture period, post-publication check, and mutations for each guard; E18
+named a follow-on of E03/E04. Refuted: none.
+## E29 Outlines from the registers' map services — QUEUED · Kernel · strategy at lane open · Codex round done 23 Oct (REWORK, dispositions below; no second round)
+
+Authority: owner direction 23 Oct 2026 (levels on the map are real; L3 means the outlines were
+read from the data); E03 (outline extractor, record `inputs`, outline/2 and /3, the WFS format,
+the stored hit count rule), E16 design 2 (a register's own coverage period, as the publisher
+states it), E18 (`period_fields`, date normalisation and provenance, Items carry their own dates),
+E15 (tiles), E23 (the ArcGIS listing reader; exports stop at the layer's `maxRecordCount`, kept as
+`partial_exports`); OSD-D18; AGENTS.md schema-change rule; `docs/ENGINEERING.md`.
+
+**Outcome.** Registers that publish an ArcGIS map service show their wells and surveys on the map
+as points and outlines read from the service itself; their records reach L3; and where the record
+carries the register's publisher-stated period, its STAC Collection holds one Item per feature
+with the dates the service states.
+
+**Context today (verified 23 Oct, main 7d86017; Codex-checked).** Five records carry outline
+`inputs` (`records/sodir/factpages.yaml:25`, `nlog/nlog.yaml:22`, `nopims/poseidon.yaml:23`,
+`nzpam/kerry-3d.yaml:21`, `nzpam/parihaka.yaml:22`). `src/osd/outlines/` reads `format: wfs`
+(GeoJSON pages, `__init__.py:115-132`); the WFS count check (`extractors.py:150-155`) runs only
+when a hits part with a parseable `numberMatched` exists; field rules live in `rules.yaml:28-83`;
+`osd verify --outline-inputs` compares committed outlines with today's inputs
+(`verify.yml:40`) and never writes outlines (`--outlines` does); a refused input fails
+`outline-derived` (`__init__.py:250-251`). `schema/record.schema.json:104` limits
+`inputs[].format` to today's values, so `arcgis` needs record/5 (record/4 landed with E26,
+PR #34). `src/osd/stac.py:163-165` emits no Items for a record without `period`. Thirteen records
+list an ArcGIS layer (`samples.yaml:19,20,43,50,51,56,58,61,63,64,76,77,78`), counts as observed on
+23 Oct: nzpam/petroleum-wells 1,302; nzpam/seismic-surveys-2d 990; wa-demirs/petroleum-wells
+4,371; sgudds/register-geotermalnych-vrtov 307; va-energy/gas-oil-wells 8,605; nd-dmr/wells
+44,018; bcer/well-surface-holes-permitted, sgc/banco-informacion-petrolera-pozos and
+ut-dogm/oil-gas-wells (totals not recorded); sk-mer/vertical-wells 119,595; sk-mer/drill-core
+104,754; pgi/cbdg-boreholes 334,145; cgs/vrtna-prozkoumanost 746,789. Of the nine candidates,
+six have no `period` (both NZP&M, SGUDDS, Virginia, North Dakota, BCER). Verify on main after
+E24 (run 39981701762) took 40 minutes under the 60-minute job timeout (`verify.yml:15`).
+Live counts, pagination support and run time are observations to re-establish on the day.
+
+**The design the lane must map to.**
+1. record/5: `inputs[].format` gains `arcgis`; record/4 frozen under `tests/fixtures/schema/`, one
+   fixed fixture set validates under both, every stored record validates under record/5; the PR
+   title names the schema change.
+2. `format: arcgis` in `src/osd/outlines/`: read the layer description (`?f=json`); refuse the
+   input unless `supportsPagination` is true and an `objectIdField` is named; page with
+   `orderByFields=<objectIdField> ASC`, `resultOffset`, `resultRecordCount=maxRecordCount`,
+   `outFields=*`, native spatial reference (no `outSR`); the response's `spatialReference.wkid`
+   must match the record's declared `crs` else refuse; `f=geojson` when `supportedQueryFormats`
+   lists it, else `f=json` converted (point, multipoint, polyline with several paths, polygon
+   with holes and several exteriors per Esri ring orientation); a feature with null geometry is
+   listed in `unplaced`. Identity: object ids must be unique across pages and their number must
+   equal `returnCountOnly=true` on the day; a duplicate, a missing page, a page error or a count
+   mismatch refuses the input. Coordinates are transformed from the declared `crs` exactly as the
+   WFS path does today. Levels are recomputed from today's checks: a refused input fails
+   `outline-derived`, and a record that was L3 is demoted if its input is refused today.
+3. Dates: the fields `rules.yaml` names per input (E18 `period_fields`); epoch milliseconds to
+   RFC 3339 UTC, the raw value kept in `osd:period_*_raw`; E18's provenance rules unchanged
+   (`feature` when the feature states dates, else the existing fallbacks; `stac.py:109-118`).
+4. Budget: an input is read in full or refused; the four layers above 50,000 features (SK MER x2,
+   PGI, CGS) are not given inputs this lane. The duration proof is one all-record dispatch of
+   `verify.yml` on the branch; it must finish under 60 minutes and `make check-full` must pass on
+   its outputs. The lane adds inputs in order of size (SGUDDS, NZP&M x2, WA DEMIRS, Virginia,
+   BCER, SGC, UT DOGM, North Dakota) and stops adding when the dispatch passes 50 minutes; the
+   remaining ones are deferred with the measured time, no infrastructure proposal.
+5. Records, exact edits, these nine and no others: `nzpam/petroleum-wells`,
+   `nzpam/seismic-surveys-2d`, `wa-demirs/petroleum-wells`, `sgudds/register-geotermalnych-vrtov`,
+   `va-energy/gas-oil-wells`, `nd-dmr/wells`, `bcer/well-surface-holes-permitted`,
+   `sgc/banco-informacion-petrolera-pozos`, `ut-dogm/oil-gas-wells`: `inputs` (name, the layer
+   URL without a query, `format: arcgis`, `crs` and `stated` from the service description), and
+   `period` for the six without one where the register's page or service description states its
+   coverage (E16 design 2; the publisher's sentence in `notes`); a register that states none keeps
+   no period and no Items, said in the PR. Outlines for these records are generated with
+   `--outlines`, reviewed, committed under `outlines/`, then verified with `--outline-inputs`.
+6. Site: nothing new; tiles (E15) carry the points. One phone-width screenshot of a new register
+   is evidence.
+
+**Acceptance.**
+- Fixture ArcGIS server (injected responses, offline), per input: pages reassemble the layer with
+  the exact object-id set; duplicates, a missing page, a page error, a count mismatch, missing
+  pagination support, a wkid mismatch each refuse; `f=json` conversion of a point, a two-path
+  polyline, a polygon with a hole and a two-exterior polygon matches GeoJSON fixtures; epoch-ms
+  dates match given RFC 3339 strings with distinct feature and collection dates so a fallback
+  cannot hide a broken conversion. Mutations, one per guard: count check removed; duplicate check
+  removed; page error swallowed; cap ignored; wkid check removed; hole dropped; date field
+  dropped; off-by-a-day conversion.
+- STAC fixture: for one fixture record with a period, the Item id set equals the object-id set and
+  named Items carry exact dates and `osd:period_source: feature`; suppressing the Items fails.
+- Live: at least four of the nine records at L3 on the branch dispatch with their feature counts
+  stated (the expected count is the day's `returnCountOnly`), or per-record outage evidence
+  (HTTP status and time) for those that are not; universal refusal is a failed lane.
+- The all-record branch dispatch finishes under 60 minutes, `make check-full` passes on its
+  outputs; both stated in the PR with the run id.
+- Record diffs show only `inputs` and, where added, `period` and the `notes` sentence.
+
+**Out of scope.** Layers above 50,000 features; WFS or other formats; the verifier's ArcGIS
+listing reader; Collection extents; any site code; any infrastructure change (ENGINEERING.md:28).
+
+**Stop rules.** If no new input fits under the 60-minute dispatch, the lane ships the fixture
+work, the schema and the record `inputs` behind refusal (no outlines), records the measured
+times per input, and defers the rest; no charter for infrastructure is proposed by this lane.
+
+**Ownership and dependencies.** Coding lane; paths `schema/record.schema.json` (record/5),
+`tests/fixtures/schema/record-4.schema.json` (new), `tests/test_schema.py` (compatibility
+additions), `tests/test_outlines.py` (its `$id` lines and additions), `src/osd/outlines/**`,
+`src/osd/verify.py` (outline input dispatch only, if needed), `tests/fixtures/outlines/**`,
+`outlines/**` for the nine records, the nine records in design 5, `docs/program/evidence/e29/**`.
+Depends on E03, E18, E23, E25, E26 (merged). E28 (periods) holds no record of these nine.
+
+**Evidence to inspect.** The fixture tests and the eight mutations; the dispatch run id, its
+duration and `check-full`; the record diffs; one screenshot.
+
+**Dispositions of the Codex round (23 Oct).** Accepted: thirteen ArcGIS records, nine candidates
+named exactly; record/5 for `inputs[].format` with frozen record/4 and compatibility tests; the
+period prerequisite resolved inside the lane (E16 design 2 register periods for the six records,
+publisher-stated, else no Items and said so); identity contract (objectIdField, ordered paging,
+duplicates and count both checked, refusal when pagination is unsupported); native CRS with a
+wkid check and the existing transform; geometry and date conversion specified with provenance per
+E18; "keeps its level" replaced by recomputation and demotion; acceptance requires named live
+successes with counts, exact Item id sets and dates in fixtures, an all-record branch dispatch
+with `make check-full`, eight mutations, and the `--outlines` derivation step; the truncation
+sentence corrected to `maxRecordCount`; the stop rule records limits and defers, proposing no
+infrastructure. Refuted: none.
+     1	# Publish the site from main. Continuous: every merge is a release. No version numbers,
+     2	# no qualification step; the check on the pull request was the proof.
+     3	# Levels come from the `verification-results` branch the verify workflow writes (OSD-D5).
+     4	name: pages
+     5	on:
+     6	  push:
+     7	    branches: [main]
+     8	  workflow_dispatch:
+     9	permissions: { contents: read, pages: write, id-token: write }
+    10	concurrency: { group: pages, cancel-in-progress: true }
+    11	jobs:
+    12	  publish:
+    13	    runs-on: ubuntu-24.04
+    14	    timeout-minutes: 10
+    15	    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    16	    steps:
+    17	      - uses: actions/checkout@v4
+    18	        with: { fetch-depth: 0 }
+    19	      - uses: astral-sh/setup-uv@v3
+    20	        with: { python-version: "3.12" }
+    21	      - run: uv sync
+    22	      - name: latest verification results
+    23	        run: |
+    24	          if git ls-remote --exit-code origin verification-results >/dev/null; then
+    25	            git fetch -q origin verification-results
+    26	            mkdir -p build/verification
+    27	            git archive origin/verification-results | tar -x -C build/verification
+    28	            echo "OSD_VERIFICATION_COMMIT=$(git rev-parse origin/verification-results)" >> "$GITHUB_ENV"   # records.json catalog (E09)
+    29	          fi
+    30	      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+    31	        run: |
+    32	          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+    33	          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+    34	          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
+    35	      - run: make build
+    36	      - uses: actions/configure-pages@v5
+    37	      - uses: actions/upload-pages-artifact@v3
+    38	        with: { path: site }
+    39	      - id: deploy
+    40	        uses: actions/deploy-pages@v4
+     1	# The one required check. Offline, under two minutes, GitHub-hosted. Nothing else gates a merge.
+     2	name: check
+     3	on:
+     4	  pull_request:
+     5	  push:
+     6	    branches: [main]
+     7	concurrency:
+     8	  group: check-${{ github.ref }}
+     9	  cancel-in-progress: true
+    10	jobs:
+    11	  check:
+    12	    runs-on: ubuntu-24.04
+    13	    timeout-minutes: 10
+    14	    steps:
+    15	      - uses: actions/checkout@v4
+    16	      - uses: astral-sh/setup-uv@v3
+    17	        with: { python-version: "3.12" }
+    18	      - run: uv sync --frozen || uv sync
+    19	      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+    20	        run: |
+    21	          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+    22	          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+    23	          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
+    24	      - run: make check
+    25	      - name: site smoke (every data file the page fetches exists and parses)
+    26	        run: |
+    27	          test -s site/data/records.json && test -s site/data/outlines.geojson
+    28	          python3 -c "import json;json.load(open('site/data/records.json'));json.load(open('site/data/outlines.geojson'))"
+    29	      - uses: actions/setup-node@v4
+    30	        with: { node-version: "22", cache: npm }
+    31	      - name: site test (Playwright, offline; E05)
+    32	        timeout-minutes: 4
+    33	        run: |
+    34	          npm ci --no-audit --no-fund
+    35	          npx playwright install --only-shell chromium   # the runner image has Chromium's system libraries; --with-deps stalls on apt
+    36	          make site-test
+    37	      - uses: actions/upload-artifact@v4
+    38	        if: github.ref == 'refs/heads/main'
+    39	        with: { name: site, path: site, retention-days: 7 }
+2:   outlines.pmtiles when the build wrote it, else outlines.geojson; wellbores.geojson if present).
+18:  const tiles = has('outlines.pmtiles') && await new Promise(ok => {
+21:  }) && new pmtiles.PMTiles(base + 'data/outlines.pmtiles');
+27:  const outlines = pmtilesMode ? null : await (await fetch('data/outlines.geojson')).json();
+29:  // tiles loaded so far (below CLUSTER_BELOW_ZOOM every tile keeps every point), keyed by feature_id.
+33:    : (outlines ? outlines.features.filter(f => f.properties.kind === 'wellbore' && f.geometry.type === 'Point') : []);
+46:      return { type: 'Feature', properties: { record_id: r.id, kind: 'dataset-extent', name: r.title,
+47:        approximate: true, level: r.level, title: r.title, publisher: r.publisher.name, kinds: r.kinds },
+56:  const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null, pick: null,
+58:  const state = { ...DEFAULTS, kinds: new Set() };
+62:    state.kinds = new Set((h.get('k') || '').split(',').filter(Boolean));
+78:    if (state.kinds.size) h.set('k', [...state.kinds].sort().join(','));
+108:  const allKinds = [...new Set(records.flatMap(r => r.kinds))].sort();
+125:    if (state.kinds.size && !r.kinds.some(k => state.kinds.has(k))) return false;
+127:      const hay = [r.title, r.publisher.name, r.region && r.region.basin, r.region && r.region.country, r.id].join(' ').toLowerCase();
+142:    const idFilter = ['in', ['get', 'record_id'], ['literal', ids]];
+151:    map.setFilter('picked-line', ['in', ['get', 'record_id'], ['literal', state.pick || []]]);
+157:      features: points.filter(f => idSet.has(f.properties.record_id) && (state.approx || !f.properties.approximate)) });
+161:  // outlines are two line layers each.
+162:  const SURVEY = ['in', ['get', 'kind'], ['literal', ['survey-3d', 'survey-2d']]];
+163:  const FIELD = ['in', ['get', 'kind'], ['literal', ['field', 'block']]];
+166:  const WELL = ['all', ['==', ['get', 'kind'], 'wellbore'], ['==', ['geometry-type'], 'Point']];
+173:    // Outlines: PMTiles (source-layer "outlines", same properties as the GeoJSON) when the build
+174:    // wrote data/outlines.pmtiles, else the one GeoJSON.
+175:    // feature_id is the tile feature id (promoteId), as it is the GeoJSON feature's identity.
+176:    map.addSource('outlines', pmtilesMode
+177:      ? { type: 'vector', url: 'pmtiles://' + base + 'data/outlines.pmtiles', promoteId: { outlines: 'feature_id' } }
+178:      : { type: 'geojson', data: outlines });
+179:    const src = pmtilesMode ? { source: 'outlines', 'source-layer': 'outlines' } : { source: 'outlines' };
+185:    map.addLayer({ id: 'picked-line', type: 'line', source: 'extents', filter: ['in', ['get', 'record_id'], ['literal', []]], paint: { 'line-color': '#ffffff', 'line-width': 2.5 } });
+206:      map.on('sourcedata', e => { if (e.sourceId === 'outlines' && e.tile) fresh = true; });
+211:        for (const f of map.querySourceFeatures('outlines', { sourceLayer: 'outlines', filter: WELL })) {
+213:          if (!tileWells.has(p.feature_id)) tileWells.set(p.feature_id, { type: 'Feature', geometry: f.geometry,
+214:            properties: { record_id: p.record_id, kind: p.kind, name: p.name, approximate: p.approximate, feature_id: p.feature_id } });
+221:      map.on('click', l, e => state.pick ? tick(e.features[0].properties.record_id) : select(e.features[0].properties.record_id));
+238:  const kindsEl = document.getElementById('kinds');
+241:    const c = document.createElement('span'); c.className = 'chip'; c.textContent = k; c.dataset.kind = k;
+242:    c.onclick = () => { state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k); syncControls(); applyFilters(); };
+243:    kindsEl.appendChild(c); chips[k] = c;
+257:    for (const k of allKinds) chips[k].classList.toggle('on', state.kinds.has(k));
+274:      li.innerHTML = `${box}<span class="badges">${levelBadge(r)}</span><span class="t">${esc(r.title)}<span class="p">${esc(r.publisher.name)}${span(r) ? `<span class="yr">${esc(yearsLabel(r))}</span>` : ''}</span></span>`;
+293:    const geo = base + 'data/outlines.geojson';
+302:        <dt>Publisher</dt><dd><a href="${esc(r.publisher.url)}" target="_blank" rel="noopener">${esc(r.publisher.name)}</a></dd>
+304:        <dt>Licence</dt><dd>${esc(r.licence.name)}${r.licence.spdx ? ' (' + esc(r.licence.spdx) + ')' : ''}<br>redistribution ${esc(r.licence.redistribution)}, attribution ${esc(r.licence.attribution)}</dd>
+305:        <dt>Holds</dt><dd>${r.kinds.map(esc).join(', ')}</dd>
+311:        <div class="card"><b>Open in QGIS</b>Layer → Add Layer → Vector, protocol HTTP, this address; filter on record_id.<code>${esc(geo)}</code></div>
+314:mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id)}"]</code></div>
+336:  const licenceLabel = l => l.spdx || l.name;
+350:    const e = { collection_id: collectionId(r.id), record_id: r.id, title: r.title, origin_url: r.origin.url,
+407:        <div class="lic">${esc(l.name)}${l.spdx ? ' (' + esc(l.spdx) + ')' : ''} · attribution ${esc(l.attribution)} · ${sa}</div>
+rg: src/osd/outlines.py: No such file or directory (os error 2)
+rg: outlines/rules.yaml: No such file or directory (os error 2)
+records/inp-mz/actividade-de-pesquisa-e-producao.yaml:12:  manifest_url: https://services3.arcgis.com/GwpN7CU0VUHlIXMI/arcgis/rest/services/Actividades_de_Pesquisa/FeatureServer/0?f=json
+records/inp-mz/actividade-de-pesquisa-e-producao.yaml:13:  notes: "The page links the web map https://inp.maps.arcgis.com/apps/webappviewer/index.html?id=cc077e6fdf204ef794dd2d9c810ec765; layers 'Poços' (255 features on 23 Oct 2026), 'Sismica 2D', 'Sismica 3D' in https://services3.arcgis.com/GwpN7CU0VUHlIXMI/arcgis/rest/services/Actividades_de_Pesquisa/FeatureServer (query only)."
+records/cgs/vrtna-prozkoumanost.yaml:12:  manifest_url: https://mapy.geology.cz/arcgis/rest/services/Prozkoumanost/Vrtna_prozkoumanost/MapServer/1?f=json
+records/sgc/banco-informacion-petrolera-pozos.yaml:1:id: sgc/banco-informacion-petrolera-pozos
+records/sgc/banco-informacion-petrolera-pozos.yaml:5:publisher: {name: Servicio Geológico Colombiano (Dirección Técnica de Hidrocarburos), url: https://www2.sgc.gov.co, country: CO}
+records/sgc/banco-informacion-petrolera-pozos.yaml:7:  url: https://datos-sgcolombiano.opendata.arcgis.com/datasets/55f871d861624b9996e865349ef67253_0
+records/sgc/banco-informacion-petrolera-pozos.yaml:9:  manifest_url: https://services1.arcgis.com/Og2nrTKe5bptW02d/arcgis/rest/services/Banco_de_Informaci%C3%B3n_Petrolera_Pozos/FeatureServer/0
+records/doe-gdr/utah-forge-well-58-32-logs.yaml:1:id: doe-gdr/utah-forge-well-58-32-logs
+records/ut-dogm/oil-gas-wells.yaml:5:publisher: {name: "Utah Division of Oil, Gas and Mining (with the Utah Geospatial Resource Center)", url: https://ogm.utah.gov, country: US}
+records/ut-dogm/oil-gas-wells.yaml:7:  url: https://gis.utah.gov/products/sgid/energy/oil-gas-wells/
+records/ut-dogm/oil-gas-wells.yaml:9:  manifest_url: https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0
+records/ut-dogm/oil-gas-wells.yaml:10:  notes: "Stewards: UGRC & DNR-OGM. Download via opendata.gis.utah.gov (item 791fefa310184331ae6e863062eaeb04, owner OGMGIS_utahDNR); paths in item b78e58f6b9024a33b51faace255f6130. The DOGM data centre oilgas.ogm.utah.gov timed out on 23 Oct 2026."
+records/ut-dogm/oil-gas-wells.yaml:14:  url: https://gis.utah.gov/documentation/policy/license/
+records/ut-dogm/oil-gas-wells.yaml:21:  - "UGRC licenses its data CC BY 4.0 'unless otherwise stated', except 'external data hosted by other organizations and included in the SGID by reference'; this layer is hosted by the utahDNR organization, so the licence is not inferred."
+records/odnr/oil-and-gas-well-database.yaml:17:  url: https://www.arcgis.com/home/item.html?id=e03ec46046af49c49d879ab9be07f980
+records/calgem/wellstar-oil-and-gas-wells.yaml:13:  notes: "Data.CA.gov entry of the California Department of Conservation; downloads from https://gis-cnra.hub.arcgis.com/datasets/cadoc::wellstar-oil-and-gas-wells, service https://gis.conservation.ca.gov/server/rest/services/WellSTAR/Wells/MapServer/0. www.conservation.ca.gov timed out from this host on 23 Oct 2026 (twice). Its CSV, SHP, GeoJSON and KML resources are ArcGIS Hub downloads."
+records/doe-gdr/utah-forge-3d-gravity.yaml:1:id: doe-gdr/utah-forge-3d-gravity
+records/doe-gdr/utah-forge-seismic-reflection.yaml:1:id: doe-gdr/utah-forge-seismic-reflection
+records/sztfh/seismic-and-well-log-databases.yaml:29:  - "map.hugeo.hu robots.txt disallows /arcgis/, so no service listing is named. bbox is Hungary, approximate."
+records/pa-dep/oil-and-gas-well-locations.yaml:9:  url: https://newdata-padep-1.opendata.arcgis.com/datasets/4300a4d66be4497f8c228bbbeb2401c2
+records/pa-dep/oil-and-gas-well-locations.yaml:15:  url: https://newdata-padep-1.opendata.arcgis.com/datasets/4300a4d66be4497f8c228bbbeb2401c2
+records/nm-ocd/oil-and-gas-wells.yaml:10:  url: https://ocd-hub-nm-emnrd.hub.arcgis.com/datasets/387f397ebf164c7aa6a752aac7d22b17
+records/nm-ocd/oil-and-gas-wells.yaml:12:  notes: "Feature service https://gis.emnrd.nm.gov/arcgis/rest/services/OCDView/Wells_Public/FeatureServer. OCD also offers publicly available documents and files on an anonymous FTP server and well imaging (https://www.emnrd.nm.gov/ocd/ocd-data/)."
+records/nm-ocd/oil-and-gas-wells.yaml:16:  url: https://ocd-hub-nm-emnrd.hub.arcgis.com/datasets/387f397ebf164c7aa6a752aac7d22b17
+records/fl-dep/oil-gas-permit-database.yaml:13:  notes: "The page links OG_WELLS_WEBSITE_4.xlsx (703,015 bytes on 23 Oct 2026). A map layer of 1,478 permitted wells is at https://ca.dep.state.fl.us/arcgis/rest/services/OpenData/OIL_WELLS/MapServer/0."
+records/fl-dep/oil-gas-permit-database.yaml:17:  url: https://www.arcgis.com/home/item.html?id=b63958cdd6ff4c679a2086d6994ef183
+records/nysdec/oil-gas-and-other-regulated-wells.yaml:13:  notes: "Feature service https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Oil_Gas_and_Other_Regulated_Wells/FeatureServer (\"Service layer is updated daily\"); DEC well search http://www.dec.ny.gov/cfmx/extapps/GasOil/."
+records/nysdec/oil-gas-and-other-regulated-wells.yaml:17:  url: https://www.arcgis.com/home/item.html?id=b7a08a1be2c141dd9d432b737da608ed
+records/sk-mer/vertical-wells.yaml:12:  manifest_url: https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/0?f=json
+records/sk-mer/drill-core.yaml:11:  manifest_url: https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/2?f=json
+records/cnloer/data-information-hub.yaml:10:  notes: "The geoscience page points to the ArcGIS hub https://home-cnlopb.hub.arcgis.com/; further information on request to information@cnlopb.ca. Formerly the C-NLOPB."
+records/sgudds/register-geotermalnych-vrtov.yaml:12:  manifest_url: https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2?f=json
+records/al-ogb/wells.yaml:12:  notes: "The GIS page offers wells.zip (3,562,207 bytes on 23 Oct 2026, the manifest_url) and the bottomhole, bottomhole-line and directional-borehole shapefiles. The Wells layer of the Board's online map is https://gis.ogb.state.al.us/arcgis/rest/services/OGB/OGBOnlineMap/MapServer/0 (16,235 features)."
+records/va-energy/gas-oil-wells.yaml:7:publisher: {name: "Virginia Department of Energy, Division of Gas and Oil", url: https://energy.virginia.gov, country: US}
+records/va-energy/gas-oil-wells.yaml:9:  url: https://energy.virginia.gov/gas-oil/GasOil.shtml
+records/va-energy/gas-oil-wells.yaml:11:  manifest_url: https://energy.virginia.gov/gis/rest/services/DGO/DGO_wells/MapServer/0?f=json
+records/va-energy/gas-oil-wells.yaml:12:  notes: "Layer 0 of the DGO/DGO_wells map service (8,605 features on 23 Oct 2026); the page's map is https://vadmme.maps.arcgis.com/apps/instant/lookup/index.html?appid=32bf460d0f1f411fa9afe7ca34009557."
+records/bcer/well-surface-holes-permitted.yaml:1:id: bcer/well-surface-holes-permitted
+records/bcer/well-surface-holes-permitted.yaml:9:  url: https://data-bc-er.opendata.arcgis.com/datasets/657b609ee3314adf91da5ab86d42cda7_0
+records/bcer/well-surface-holes-permitted.yaml:11:  manifest_url: https://geoweb-ags.bc-er.ca/arcgis/rest/services/PASR/PASR_WELL_SURFACE_STATE_PT/MapServer/0?f=json
+records/pgi/cbdg-boreholes.yaml:9:  manifest_url: https://cbdgmapa.pgi.gov.pl/arcgis/rest/services/cbdg_otwory/MapServer/0?f=json
+records/staatsolie/open-door-data-offering.yaml:11:  url: https://geoportal-staatsolie.hub.arcgis.com/pages/open-door-offering
+records/staatsolie/open-door-data-offering.yaml:13:  notes: "Free location shapefiles (wells 7 KB, 2D seismic lines 1,611 KB, 3D surveys, Open-Door sectors, offshore blocks) on https://geoportal-staatsolie.hub.arcgis.com/pages/downloadables. Cart links go to geoportalstore.com (robots.txt disallows all). The Hub robots.txt asks for Crawl-delay: 60."
+records/staatsolie/open-door-data-offering.yaml:17:  url: https://geoportal-staatsolie.hub.arcgis.com/pages/open-door-offering
+records/nd-dmr/wells.yaml:1:id: nd-dmr/wells
+docs/program/HANDOFF.md:31:- E15 tiles merged (PR #10, main 2904db0): the page loads `data/outlines.pmtiles` for the viewport (about 0.6 MB on load instead of 13.5 MB of GeoJSON); tippecanoe runs in `check` and `pages`. The E05 performance test now runs on the GeoJSON path with its synthetic set alone (budget unchanged).
+docs/program/HANDOFF.md:33:- E18 rulings (23 Oct): `build.py` one line granted (the map layer carries no `osd:period_*`; dates live in the outline files and the STAC Items; tiles stay 60.9 MB). Known red for a later tiles lane: tippecanoe 2.49 wrote wrong attribute values into tiles when the outline features carried the extra date members (publisher_id shown as a date, another feature's raw start), confirmed with tippecanoe-decode; cause not understood, worth testing with `--no-tile-size-limit`/attribute-type flags or a newer tippecanoe before any lane adds properties to the map layer. Sodir dates are M/D/YYYY with optional 12-hour time (rules name the format); NLOG `1800-01-01` is not a placeholder (same shape as 1828 boreholes); NLOG 3D surveys state only a release date and keep the collection period.
+docs/program/HANDOFF.md:102:the known reds above. Nothing else; the charter is the authority.
+docs/program/evidence/e18/registers.md:41:With the date members in the map layer, tippecanoe 2.49 wrote three wrong values into z12 tiles
+docs/program/evidence/e18/registers.md:43:`osd:period_start_raw` `1955-05-20` for `3/2/2006`; seen with `tippecanoe-decode` too) and
+docs/program/evidence/e18/registers.md:53:The two decoded features are kept under `tippecanoe/` for a later tiles lane.
+?? docs/program/charters/E32-registers-with-a-hundred-thousand-wells-CODEX-REVIEW.log
+
+web search: 
+web search: https://raw.githubusercontent.com/radiantearth/stac-spec/v1.0.0/catalog-spec/catalog-spec.md
+**Verifying script context counts**
+exec
+/bin/bash -lc "python - <<'PY'
+import subprocess,json,collections
+files=subprocess.check_output(['git','ls-tree','-r','--name-only','HEAD','outlines']).decode().splitlines()
+counts={f:len(json.loads(subprocess.check_output(['git','show','HEAD:'+f]))['features']) for f in files if f.endswith('.geojson')}
+print('HEAD outline features:',sum(counts.values()),'files:',len(counts));print(counts)
+PY
+nl -ba site/app.js | sed -n '275,325p;435,500p'; nl -ba src/osd/outlines/rules.yaml | tail -28; nl -ba schema/record.schema.json | sed -n '90,110p'; cat records/{va-energy/gas-oil-wells,bcer/well-surface-holes-permitted,sgc/banco-informacion-petrolera-pozos,ut-dogm/oil-gas-wells,nd-dmr/wells}.yaml; nl -ba src/osd/stac.py | sed -n '222,285p'; nl -ba .github/workflows/pages.yml | sed -n '27,52p'; nl -ba .github/workflows/ci.yml | sed -n '15,42p'; rg -n 'build\\(' tests --glob '*.py'; rg -n 'get\\(\"rel\"|\\[\"rel\"\\]|items/|collection.json' src/osd/manifest.py" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+/bin/bash: line 1: python: command not found
+   275	      li.onclick = e => { if (state.pick) { e.preventDefault(); tick(id); } else select(id, true); };
+   276	      ul.appendChild(li);
+   277	    }
+   278	  }
+   279	
+   280	  // "23 Oct 2026": the day the verifier established the level, in UTC as checked_at states it.
+   281	  const day = s => new Date(s).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+   282	
+   283	  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+   284	
+   285	  function closeDetail() { $('detail').hidden = true; state.sel = null; renderList(visibleIds()); writeHash(); }
+   286	
+   287	  function select(id, fly) {
+   288	    if (state.pick) return;
+   289	    state.sel = id; const r = byId[id];
+   290	    renderList(visibleIds());
+   291	    writeHash();
+   292	    const d = $('detail'); d.hidden = false;
+   293	    const geo = base + 'data/outlines.geojson';
+   294	    const issues = (r.known_issues || []).map(x => `<li>${esc(x)}</li>`).join('');
+   295	    d.innerHTML = `
+   296	      <span class="close" title="close">✕</span>
+   297	      <h3><span class="title">${esc(r.title)}</span> ${levelBadge(r)}</h3>
+   298	      <div style="color:var(--muted)">${esc(r.summary || '')}</div>
+   299	      <dl>
+   300	        <dt>Why this level</dt><dd class="why"><span class="reason">${esc(r.reason || 'never verified')}</span>${r.checked_at
+   301	          ? `<br><span class="checked">checked ${esc(day(r.checked_at))}</span>${isStale(r) ? ` (stale: older than ${STALE_DAYS} days)` : ''}` : ''}</dd>
+   302	        <dt>Publisher</dt><dd><a href="${esc(r.publisher.url)}" target="_blank" rel="noopener">${esc(r.publisher.name)}</a></dd>
+   303	        <dt>Origin</dt><dd><a href="${esc(r.origin.url)}" target="_blank" rel="noopener">${esc(r.origin.url)}</a> (${esc(r.origin.access)})</dd>
+   304	        <dt>Licence</dt><dd>${esc(r.licence.name)}${r.licence.spdx ? ' (' + esc(r.licence.spdx) + ')' : ''}<br>redistribution ${esc(r.licence.redistribution)}, attribution ${esc(r.licence.attribution)}</dd>
+   305	        <dt>Holds</dt><dd>${r.kinds.map(esc).join(', ')}</dd>
+   306	        <dt>When</dt><dd class="when">${r.period ? esc(`${r.period.start || 'start of record'} to ${r.period.end || 'today'}`) + (r.period.stated ? '<br>' + esc(r.period.stated) : '') : 'not stated by the publisher'}</dd>
+   307	        <dt>Region</dt><dd>${esc([r.region && r.region.basin, r.region && r.region.country].filter(Boolean).join(', ') || '—')}</dd>
+   308	      </dl>
+   309	      ${issues ? `<div><b>Known issues</b><ul>${issues}</ul></div>` : ''}
+   310	      <div class="cards">
+   311	        <div class="card"><b>Open in QGIS</b>Layer → Add Layer → Vector, protocol HTTP, this address; filter on record_id.<code>${esc(geo)}</code></div>
+   312	        <div class="card"><b>Read in Python</b><code>import json, urllib.request
+   313	fc = json.load(urllib.request.urlopen("${esc(geo)}"))
+   314	mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id)}"]</code></div>
+   315	        <div class="card"><b>Get the data</b>Follow the origin link above, or press Select above the list, tick datasets and download a manifest for osd get.</div>
+   316	      </div>
+   317	      <p class="how"><a href="how.html">What the levels mean, and these three cards explained</a></p>`;
+   318	    d.querySelector('.close').onclick = closeDetail;
+   319	    if (fly && r.region && r.region.bbox) map.fitBounds(r.region.bbox, { padding: 60, maxZoom: 9, duration: 700 });
+   320	  }
+   321	
+   322	  // ---- Select mode (E06 slice 2). Deletable: this block, the `pick` hash key, #pickmode, #basket,
+   323	  // the picked-line layer and the tick() calls. The file it writes is osd.manifest/1 as
+   324	  // src/osd/manifest.py writes it for a Collection selection (schema/manifest.schema.json), or /4 with
+   325	  // the catalogue snapshot when an entry is sold or states terms (E19); the site test checks the two
+   435	  // A pasted or edited hash in the same tab applies too.
+   436	  window.addEventListener('hashchange', () => {
+   437	    const v = readHash(); syncControls(); applyFilters(); renderBasket();
+   438	    if (state.sel && !state.pick) select(state.sel, !v); else $('detail').hidden = true;
+   439	    if (v) map.jumpTo(v);
+   440	  });
+   441	
+   442	  syncControls();
+   443	  applyFilters();
+   444	  renderBasket();
+   445	  if (state.sel && !state.pick) select(state.sel, !view);
+   446	})();
+    76	      extractor: register-wfs
+    77	      kind: survey-3d
+    78	      id: SIGNAL_COLLECTION_ID
+    79	      name: SURVEY_ID
+    80	      # no period_fields: the layer's only date is DATE_RELEASE, not when the survey was shot
+    81	      page_size: 1000
+    82	      params: {outputFormat: application/json, propertyName: "SIGNAL_COLLECTION_ID,SURVEY_ID,GEOMETRY",
+    83	               sortBy: SIGNAL_COLLECTION_ID}
+    84	
+    85	nopims/poseidon:
+    86	  min_features: 1
+    87	  inputs:
+    88	    full-stack-agc:
+    89	      extractor: segy-hull
+    90	      kind: survey-3d
+    91	      x_field: cdp-x
+    92	      y_field: cdp-y
+    93	      scalar_field: scalar_apply_coords
+    94	
+    95	nzpam/parihaka:
+    96	  min_features: 1
+    97	  inputs:
+    98	    survey-extent: {extractor: publisher-file, kind: survey-3d}
+    99	
+   100	nzpam/kerry-3d:
+   101	  min_features: 1
+   102	  inputs:
+   103	    survey-extent: {extractor: publisher-file, kind: survey-3d}
+    90	    },
+    91	    "osdu": {
+    92	      "type": "object", "additionalProperties": false,
+    93	      "properties": {"reference_id": {"type": "string"}, "notes": {"type": "string"}},
+    94	      "description": "Identifiers in the OSDU reference data where the same dataset is carried."
+    95	    },
+    96	    "inputs": {
+    97	      "type": "array", "minItems": 1,
+    98	      "description": "The publisher's own addresses for the geometry of this dataset (register services, files, stores), each with the CRS and units as the publisher states them. Extraction rules are tool configuration (src/osd/outlines/rules.yaml, OSD-D11), never fields here.",
+    99	      "items": {
+   100	        "type": "object", "additionalProperties": false, "required": ["name", "url", "format"],
+   101	        "properties": {
+   102	          "name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Unique within the record; the key of its rule in rules.yaml."},
+   103	          "url": {"type": "string", "format": "uri", "description": "As the publisher serves it, e.g. a WFS GetFeature request for one layer, a file, or a store prefix."},
+   104	          "format": {"type": "string", "enum": ["wfs", "csv", "segy", "mdio", "geojson", "html-geojson"],
+   105	                     "description": "html-geojson: a page that carries a GeoJSON geometry the publisher labels as the extent."},
+   106	          "crs": {"type": "string", "pattern": "^EPSG:[0-9]+$", "description": "The CRS the publisher declares for the coordinates. Absent means not declared: the input is refused, never guessed."},
+   107	          "units": {"type": "string", "enum": ["m", "ft", "ftUS", "degree"], "description": "Coordinate units when the publisher states them outside the data."},
+   108	          "stated": {"type": "string", "maxLength": 300, "description": "Where and how the publisher states the CRS and units, verbatim where short."}
+   109	        }
+   110	      }
+id: va-energy/gas-oil-wells
+title: Gas & Oil Wells (Virginia Division of Gas and Oil)
+summary: >-
+  "Gas wells in Virginia, also includes inspector areas": the Division of Gas and Oil's map service
+  of active wells, pending wells, pending well modifications, facility permits and permitted undrilled
+  wells, with file number, elevation, company, farm, completion dates and total depth.
+publisher: {name: "Virginia Department of Energy, Division of Gas and Oil", url: https://energy.virginia.gov, country: US}
+origin:
+  url: https://energy.virginia.gov/gas-oil/GasOil.shtml
+  access: anonymous
+  manifest_url: https://energy.virginia.gov/gis/rest/services/DGO/DGO_wells/MapServer/0?f=json
+  notes: "Layer 0 of the DGO/DGO_wells map service (8,605 features on 23 Oct 2026); the page's map is https://vadmme.maps.arcgis.com/apps/instant/lookup/index.html?appid=32bf460d0f1f411fa9afe7ca34009557."
+licence:
+  name: No licence stated (service copyright text 'VA DMME')
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers]
+region: {country: US, basin: Appalachian Basin (southwest Virginia), bbox: [-83.68, 36.54, -81.5, 37.55]}
+listed_by: [publisher]
+known_issues:
+  - "The layer and its export answered HTTP 500 several times on 23 Oct 2026 (16:11-16:12 UTC) before answering normally."
+  - "bbox is the southwest Virginia gas counties, approximate."
+added: 2026-10-23
+id: bcer/well-surface-holes-permitted
+title: Well Surface Hole (Permitted)
+summary: >-
+  Non-confidential information about the surface location of every permitted well in British
+  Columbia from the BC Energy Regulator, with a status view giving the current status of the
+  surface hole. Data is updated nightly.
+publisher: {name: BC Energy Regulator (BCER), url: https://www.bc-er.ca, country: CA}
+origin:
+  url: https://data-bc-er.opendata.arcgis.com/datasets/657b609ee3314adf91da5ab86d42cda7_0
+  access: anonymous
+  manifest_url: https://geoweb-ags.bc-er.ca/arcgis/rest/services/PASR/PASR_WELL_SURFACE_STATE_PT/MapServer/0?f=json
+  notes: "BCER GIS Open Data Portal, linked from https://www.bc-er.ca/data-reports/data-centre/ (Data Centre name: Well Surface Hole Locations (Permitted) [BCOGC-44513]). The REST layer serves EPSG:3005."
+licence:
+  name: BC Energy Regulator Open Data Licence
+  spdx: null
+  url: https://www.bc-er.ca/files/gis/BCER-Open-Data-Licence.pdf
+  redistribution: allowed
+  attribution: required
+  statement: "Contains information licenced under the BC Energy Regulator Open Data Licence"
+kinds: [wellbore-headers]
+region: {country: CA, basin: British Columbia, bbox: [-134.1905, 47.9913, -110.8406, 60.1147], crs: "EPSG:3005"}
+listed_by: [publisher]
+known_issues:
+  - "The licence depends on the channel: the same layer on the BC Data Catalogue is Access Only under BC copyright, and the BCER Data Centre downloads (iris.bcogc.ca) carry terms that say they may not be reproduced or redistributed. This record is the open data portal item."
+  - "bbox is the extent stated in the publisher's ArcGIS item; its east edge (-110.84) lies east of British Columbia."
+added: 2026-10-23
+id: sgc/banco-informacion-petrolera-pozos
+title: "Banco de Información Petrolera: Pozos"
+summary: >-
+  Wells of the Colombian Petroleum Information Bank (EPIS), with field, contract, start and end dates, deviation type, final status and Lahee classification; about 25,000 wells as a feature service with CSV, shapefile, GeoJSON and KML downloads.
+publisher: {name: Servicio Geológico Colombiano (Dirección Técnica de Hidrocarburos), url: https://www2.sgc.gov.co, country: CO}
+origin:
+  url: https://datos-sgcolombiano.opendata.arcgis.com/datasets/55f871d861624b9996e865349ef67253_0
+  access: anonymous
+  manifest_url: https://services1.arcgis.com/Og2nrTKe5bptW02d/arcgis/rest/services/Banco_de_Informaci%C3%B3n_Petrolera_Pozos/FeatureServer/0
+  notes: Also listed on datos.gov.co as https://www.datos.gov.co/d/4dai-7crq.
+licence:
+  name: Creative Commons Reconocimiento 4.0 Internacional
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: CO, bbox: [-81.68, 0.23, -68.02, 14.87]}
+listed_by: [publisher]
+known_issues:
+  - "www.anh.gov.co and epis.anh.gov.co did not connect from this host on 23 Oct 2026; the SGC open data hub answers."
+period:
+  start: "2022-09-13"
+  end: "2022-09-13"
+  stated: "SGC open data hub DCAT-US feed entry for Banco de Información Petrolera: Pozos: issued 2022-09-13 (ArcGIS item created same timestamp)."
+added: 2026-10-23
+id: ut-dogm/oil-gas-wells
+title: Utah Oil Gas Wells
+summary: >-
+  Surface location of oil and gas wells from the Utah Department of Natural Resources, Division of Oil, Gas and Mining, updated nightly in the State Geographic Information Database (SGID): API code, well and company name, field, elevation, lease, well type and status, total cumulative oil, gas and water, with companion well-path and bottom-hole layers.
+publisher: {name: "Utah Division of Oil, Gas and Mining (with the Utah Geospatial Resource Center)", url: https://ogm.utah.gov, country: US}
+origin:
+  url: https://gis.utah.gov/products/sgid/energy/oil-gas-wells/
+  access: anonymous
+  manifest_url: https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0
+  notes: "Stewards: UGRC & DNR-OGM. Download via opendata.gis.utah.gov (item 791fefa310184331ae6e863062eaeb04, owner OGMGIS_utahDNR); paths in item b78e58f6b9024a33b51faace255f6130. The DOGM data centre oilgas.ogm.utah.gov timed out on 23 Oct 2026."
+licence:
+  name: Not stated for this layer (UGRC's CC BY 4.0 policy excludes data hosted by other organizations; the ArcGIS item has no licence text)
+  spdx: null
+  url: https://gis.utah.gov/documentation/policy/license/
+  redistribution: unknown
+  attribution: unknown
+kinds: [wellbore-headers, wellbore-paths, production]
+region: {country: US, basin: "Utah (Uinta, Paradox and others)", bbox: [-114.03, 37.00, -109.04, 41.99]}
+listed_by: [publisher]
+known_issues:
+  - "UGRC licenses its data CC BY 4.0 'unless otherwise stated', except 'external data hosted by other organizations and included in the SGID by reference'; this layer is hosted by the utahDNR organization, so the licence is not inferred."
+  - "production is cumulative per well only."
+period:
+  start: "1891"
+  end: "2026-10-23"
+  stated: "Earliest OrigComplDate in the publisher's own FeatureServer layer (outStatistics min) is 1891-12-26; SGID page states 'Last update · Nightly'; no start stated in prose"
+added: 2026-10-23
+id: nd-dmr/wells
+title: North Dakota oil and gas wells (OGD_Wells, DMR public GIS) and the well data subscription
+summary: >-
+  The Oil and Gas Division's well layer "Contains Lat/Long data and footage descriptions (legal
+  description), as well as operator information, type/status, NDIC File number and other oil and gas
+  related information." Scout tickets (log tops, completions, tests, production, DST recoveries, core
+  photographs), well files and "More than 100,600 digital and image logs ... for over 18,650 wells"
+  are sold by subscription.
+publisher: {name: "North Dakota Industrial Commission, Department of Mineral Resources, Oil and Gas Division", url: https://www.dmr.nd.gov/oilgas/, country: US}
+origin:
+  url: https://www.dmr.nd.gov/oilgas/subscriptionservice.asp
+  access: purchase
+  manifest_url: https://gis.dmr.nd.gov/dmrpublicservices/rest/services/Wells/FeatureServer/0?f=json
+  notes: "The well layer is free (44,018 features on 23 Oct 2026, 2000 per query); the subscription covers the well index, scout tickets, well files and logs. The same GIS server has Seismic3D, Seismic2D, Directional_Well_Bore and Horizontal_Well_Bore services."
+licence:
+  name: Legal Disclaimer (NDIC Oil and Gas Division)
+  spdx: null
+  url: https://www.dmr.nd.gov/oilgas/disclaimer.asp
+  redistribution: unknown
+  attribution: unknown
+  terms:
+    stated: "As of January 1, 2026, our Basic Subscription rate is $100/year and our Premium Subscription rate is $500/year."
+kinds: [wellbore-headers, tops, wellbore-logs, core, pressure, production, reports]
+region: {country: US, basin: Williston Basin (North Dakota), bbox: [-104.05, 45.93, -96.55, 49.0]}
+listed_by: [publisher]
+known_issues:
+  - "Only the well locations and headers are free; the other kinds are subscription products."
+  - "The disclaimer disowns accuracy and states no licence."
+  - "bbox is the State of North Dakota, approximate."
+added: 2026-10-23
+   222	
+   223	def validate(path: Path, recursive: bool = True, schema_config: Path = SCHEMA_MAP) -> tuple[bool, list]:
+   224	    """stac-validator over a local file or tree, against the bundled schemas only."""
+   225	    from stac_validator.utilities import fetch_and_parse_schema
+   226	    from stac_validator.validate import StacValidate
+   227	
+   228	    fetch_and_parse_schema.cache_clear()   # a schema map change must not reuse a cached schema
+   229	    v = StacValidate(str(path), recursive=recursive, schema_config=str(schema_config))
+   230	    ok = v.run()
+   231	    messages = list(v.message)
+   232	    if recursive and path.is_file() and json.loads(path.read_text()).get("type") == "Catalog":
+   233	        messages += [{"path": problem, "valid_stac": False, "error_type": "containment",
+   234	                      "error_message": problem} for problem in containment_problems(path.parent)]
+   235	    return ok and all(m.get("valid_stac") for m in messages), messages
+   236	
+   237	
+   238	def containment_problems(root: Path) -> list[str]:
+   239	    """Every Item whose interval is not inside its Collection's temporal extent (E18)."""
+   240	    out = []
+   241	    for col_path in sorted(root.glob("*/collection.json")):
+   242	        [[lo, hi]] = json.loads(col_path.read_text())["extent"]["temporal"]["interval"]
+   243	        for it in sorted((col_path.parent / "items").glob("*.json")):
+   244	            item = json.loads(it.read_text())
+   245	            p = item["properties"]
+   246	            start, end = p.get("start_datetime") or p.get("datetime"), p.get("end_datetime") or p.get("datetime")
+   247	            if (lo and (start is None or start < lo)) or (hi and (end is None or end > hi)):
+   248	                out.append(f"{item['id']}: {start} to {end} is outside its Collection's {lo} to {hi}")
+   249	    return out
+   250	
+   251	
+   252	def _links(path: Path) -> list[dict]:
+   253	    return json.loads(path.read_text()).get("links", [])
+   254	
+   255	
+   256	def link_problems(root: Path) -> list[str]:
+   257	    """Every relative link in the tree points at a file that exists."""
+   258	    out = []
+   259	    for p in sorted(root.rglob("*.json")):
+   260	        for link in _links(p):
+   261	            href = link["href"]
+   262	            if "://" not in href and not (p.parent / href).resolve().is_file():
+   263	                out.append(f"{p.relative_to(root)}: {link['rel']} -> {href} does not exist")
+   264	    return out
+   265	
+   266	
+   267	def reachable(catalog: Path) -> dict[str, set[str]]:
+   268	    """Collection and Item ids a client reaches from the root by child and item links."""
+   269	    out: dict[str, set[str]] = {"collections": set(), "items": set()}
+   270	    todo, seen = [catalog.resolve()], set()
+   271	    while todo:
+   272	        p = todo.pop()
+   273	        if p in seen:
+   274	            continue
+   275	        seen.add(p)
+   276	        doc = json.loads(p.read_text())
+   277	        if doc["type"] == "Collection":
+   278	            out["collections"].add(doc["id"])
+   279	        elif doc["type"] == "Feature":
+   280	            out["items"].add(doc["id"])
+   281	        todo += [(p.parent / x["href"]).resolve() for x in doc.get("links", [])
+   282	                 if x["rel"] in ("child", "item")]
+   283	    return out
+    27	            git archive origin/verification-results | tar -x -C build/verification
+    28	            echo "OSD_VERIFICATION_COMMIT=$(git rev-parse origin/verification-results)" >> "$GITHUB_ENV"   # records.json catalog (E09)
+    29	          fi
+    30	      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+    31	        run: |
+    32	          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+    33	          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+    34	          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
+    35	      - run: make build
+    36	      - uses: actions/configure-pages@v5
+    37	      - uses: actions/upload-pages-artifact@v3
+    38	        with: { path: site }
+    39	      - id: deploy
+    40	        uses: actions/deploy-pages@v4
+    15	      - uses: actions/checkout@v4
+    16	      - uses: astral-sh/setup-uv@v3
+    17	        with: { python-version: "3.12" }
+    18	      - run: uv sync --frozen || uv sync
+    19	      - name: tippecanoe 2.49.0 (Ubuntu 24.04 package, pinned by hash; E15 tiles)
+    20	        run: |
+    21	          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.49.0-1build1_amd64.deb
+    22	          echo "0ab1c2f65e9f836b9097de0864de32016f4a8e0226ed10822c7eb12391983308  /tmp/tippecanoe.deb" | sha256sum -c
+    23	          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
+    24	      - run: make check
+    25	      - name: site smoke (every data file the page fetches exists and parses)
+    26	        run: |
+    27	          test -s site/data/records.json && test -s site/data/outlines.geojson
+    28	          python3 -c "import json;json.load(open('site/data/records.json'));json.load(open('site/data/outlines.geojson'))"
+    29	      - uses: actions/setup-node@v4
+    30	        with: { node-version: "22", cache: npm }
+    31	      - name: site test (Playwright, offline; E05)
+    32	        timeout-minutes: 4
+    33	        run: |
+    34	          npm ci --no-audit --no-fund
+    35	          npx playwright install --only-shell chromium   # the runner image has Chromium's system libraries; --with-deps stalls on apt
+    36	          make site-test
+    37	      - uses: actions/upload-artifact@v4
+    38	        if: github.ref == 'refs/heads/main'
+    39	        with: { name: site, path: site, retention-days: 7 }
+tests/test_manifest.py:446:    build(out, FIDELITY / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror",
+tests/test_manifest.py:548:    build(out, vdir, now=NOW, mirror_dir=tmp_path / "no-mirror", source_commit="1" * 40, verification_commit=None)
+tests/test_manifest.py:568:    build(out, FIDELITY / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror",
+tests/test_manifest.py:586:    build(out, tmp_path / "verification", now=NOW, mirror_dir=tmp_path / "no-mirror", records_dir=VOCAB,
+tests/site/test_how_snippets.py:37:    build(root / "data", tmp_path_factory.mktemp("verification"))
+tests/test_mirror.py:469:    build(out, vdir, mirror_dir=s.root)
+tests/test_verify.py:369:    build(out, vdir, now=NOW)
+tests/test_stac.py:101:    build(catalog, vdir)
+tests/test_stac.py:267:def test_duplicate_feature_id_fails_build(tmp_path):
+tests/test_build.py:20:    n = build(out, vdir)
+tests/test_build.py:157:    build(out)  # the real catalogue, as `make build` writes it; tiling is cached by content
+tests/test_build.py:181:    build(out)
+tests/test_build.py:196:def _fixture_build(tmp_path, name="catalog", now=None, vdir=None, records_dir=None):
+tests/test_build.py:200:    build(out, Path(vdir or os.path.join(FIDELITY, "verification")),
+tests/test_build.py:208:    doc = _fixture_build(tmp_path)
+tests/test_build.py:218:    a = _fixture_build(tmp_path, "a", now=datetime(2026, 10, 23, 12, tzinfo=UTC))
+tests/test_build.py:219:    b = _fixture_build(tmp_path, "b", now=datetime(2026, 10, 23, 12, 5, tzinfo=UTC))
+tests/test_build.py:225:    base = _fixture_build(tmp_path, "base")["catalog"]["records_digest"]
+tests/test_build.py:230:    edited = _fixture_build(tmp_path, "edited", records_dir=recs)["catalog"]["records_digest"]
+tests/test_build.py:235:    reverified = _fixture_build(tmp_path, "reverified", vdir=vdir)["catalog"]["records_digest"]
+tests/test_build.py:247:    doc = _fixture_build(tmp_path, records_dir=recs)
+tests/test_build.py:296:    build(tmp_path / "catalog", vdir)
+tests/test_fidelity.py:28:    build(out, vdir, now=NOW, mirror_dir=tmp_path / "no-mirror", records_dir=FIDELITY / "records",
+tests/test_fidelity.py:258:    build(tmp_path / "before", vdir, **kw)
+tests/test_fidelity.py:261:    build(tmp_path / "after", vdir, **kw)
+215:        return json.loads((stac_dir / collection_id(rid) / "collection.json").read_text())
+241:                        for x in col["links"] if x["rel"] == "item"}
+
+**Confirming task relevance**
+exec
+/bin/bash -lc "python3 - <<'PY'
+import subprocess,json
+files=subprocess.check_output(['git','ls-tree','-r','--name-only','HEAD','outlines']).decode().splitlines()
+counts={f:len(json.loads(subprocess.check_output(['git','show','HEAD:'+f]))['features']) for f in files if f.endswith('.geojson')}
+print('HEAD outline features:',sum(counts.values()),'files:',len(counts)); print('real outlines:',{f:n for f,n in counts.items() if n>1})
+PY
+nl -ba site/app.js | sed -n '85,110p;165,195p;395,430p'; nl -ba src/osd/manifest.py | sed -n '228,250p'; nl -ba docs/program/evidence/e18/registers.md | sed -n '38,55p'; nl -ba docs/program/charters/E29-outlines-from-the-map-services.md | sed -n '53,75p'; rg --files docs/program/evidence | rg 'e29|e32'; nl -ba docs/ENGINEERING.md | sed -n '26,50p'; git rev-parse HEAD" in /home/epic/src/open-subsurface-data
+ succeeded in 100ms:
+HEAD outline features: 18436 files: 8
+real outlines: {'outlines/nlog__nlog.geojson': 7220, 'outlines/sodir__factpages.geojson': 11210}
+    85	    if (state.pick) h.set('pick', state.pick.join(','));
+    86	    if (map.loaded() || moved) {
+    87	      const c = map.getCenter();
+    88	      h.set('map', `${map.getZoom().toFixed(2)}/${c.lat.toFixed(4)}/${c.lng.toFixed(4)}`);
+    89	    }
+    90	    const s = h.toString().replace(/%2F/g, '/').replace(/%2C/g, ',');
+    91	    history.replaceState(null, '', s ? '#' + s : location.pathname + location.search);
+    92	  }
+    93	
+    94	  const view = readHash();
+    95	  let moved = !!view;
+    96	
+    97	  if (pmtilesMode) {
+    98	    const protocol = new pmtiles.Protocol(); protocol.add(tiles); // reuses the header already read
+    99	    maplibregl.addProtocol('pmtiles', protocol.tile);
+   100	  }
+   101	  const map = new maplibregl.Map({
+   102	    container: 'map', style: BASEMAP,
+   103	    center: view ? view.center : [5, 55], zoom: view ? view.zoom : 3.2, attributionControl: { compact: false }
+   104	  });
+   105	  window.osdMap = map; // for the site test and the console; not an API
+   106	  map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
+   107	
+   108	  const allKinds = [...new Set(records.flatMap(r => r.kinds))].sort();
+   109	
+   110	  // Period (E21): the publisher's stated interval, by year. Only a start runs to today; only an end
+   165	  const PLACEHOLDER = ['==', ['get', 'approximate'], true];
+   166	  const WELL = ['all', ['==', ['get', 'kind'], 'wellbore'], ['==', ['geometry-type'], 'Point']];
+   167	  const LAYER_BASE = {
+   168	    'surveys-fill': SURVEY, 'surveys-line': ['all', SURVEY, DERIVED], 'surveys-dash': ['all', SURVEY, PLACEHOLDER],
+   169	    'fields-fill': FIELD, 'fields-line': ['all', FIELD, DERIVED], 'fields-dash': ['all', FIELD, PLACEHOLDER],
+   170	  };
+   171	
+   172	  map.on('load', () => {
+   173	    // Outlines: PMTiles (source-layer "outlines", same properties as the GeoJSON) when the build
+   174	    // wrote data/outlines.pmtiles, else the one GeoJSON.
+   175	    // feature_id is the tile feature id (promoteId), as it is the GeoJSON feature's identity.
+   176	    map.addSource('outlines', pmtilesMode
+   177	      ? { type: 'vector', url: 'pmtiles://' + base + 'data/outlines.pmtiles', promoteId: { outlines: 'feature_id' } }
+   178	      : { type: 'geojson', data: outlines });
+   179	    const src = pmtilesMode ? { source: 'outlines', 'source-layer': 'outlines' } : { source: 'outlines' };
+   180	    map.addSource('extents', { type: 'geojson', data: extents });
+   181	    map.addSource('wells', { type: 'geojson', data: { type: 'FeatureCollection', features: wellPoints },
+   182	      cluster: true, clusterMaxZoom: CLUSTER_BELOW_ZOOM - 1, clusterRadius: 40 });
+   183	    map.addLayer({ id: 'extents-fill', type: 'fill', source: 'extents', paint: { 'fill-color': '#6ea8fe', 'fill-opacity': 0.06 } });
+   184	    map.addLayer({ id: 'extents-line', type: 'line', source: 'extents', paint: { 'line-color': '#6ea8fe', 'line-width': 1, 'line-dasharray': [3, 3], 'line-opacity': 0.7 } });
+   185	    map.addLayer({ id: 'picked-line', type: 'line', source: 'extents', filter: ['in', ['get', 'record_id'], ['literal', []]], paint: { 'line-color': '#ffffff', 'line-width': 2.5 } });
+   186	    map.addLayer({ id: 'fields-fill', type: 'fill', ...src, filter: LAYER_BASE['fields-fill'], paint: { 'fill-color': '#e5484d', 'fill-opacity': 0.18 } });
+   187	    map.addLayer({ id: 'fields-line', type: 'line', ...src, filter: LAYER_BASE['fields-line'], paint: { 'line-color': '#e5484d', 'line-width': 2 } });
+   188	    map.addLayer({ id: 'fields-dash', type: 'line', ...src, filter: LAYER_BASE['fields-dash'], paint: { 'line-color': '#e5484d', 'line-width': 2, 'line-dasharray': [2, 2] } });
+   189	    map.addLayer({ id: 'surveys-fill', type: 'fill', ...src, filter: LAYER_BASE['surveys-fill'], paint: { 'fill-color': '#f2a93b', 'fill-opacity': 0.2 } });
+   190	    map.addLayer({ id: 'surveys-line', type: 'line', ...src, filter: LAYER_BASE['surveys-line'], paint: { 'line-color': '#f2a93b', 'line-width': 2 } });
+   191	    map.addLayer({ id: 'surveys-dash', type: 'line', ...src, filter: LAYER_BASE['surveys-dash'], paint: { 'line-color': '#f2a93b', 'line-width': 2, 'line-dasharray': [2, 2] } });
+   192	    map.addLayer({ id: 'wells-cluster', type: 'circle', source: 'wells', filter: ['has', 'point_count'],
+   193	      paint: { 'circle-color': '#3dd68c', 'circle-opacity': 0.85, 'circle-stroke-color': '#0f1419', 'circle-stroke-width': 1,
+   194	        'circle-radius': ['step', ['get', 'point_count'], 10, 50, 14, 500, 19, 5000, 25] } });
+   195	    if (map.getStyle().glyphs) map.addLayer({ id: 'wells-count', type: 'symbol', source: 'wells', filter: ['has', 'point_count'],
+   395	    $('pickmode').textContent = on ? 'Done' : 'Select';
+   396	    $('pickmode').classList.toggle('on', on);
+   397	    if (!on) return;
+   398	    if (!state.pick.length) {
+   399	      b.innerHTML = `<h2>Selected (0)</h2><p class="hint">Tick datasets in the list or on the map. The download is a manifest: <code>osd get osd.manifest.json --dest data</code> fetches the files and checks their sha256.</p>`;
+   400	      return;
+   401	    }
+   402	    const items = state.pick.map(id => {
+   403	      const r = byId[id], l = r.licence;
+   404	      const sa = l.share_alike === true ? `share-alike: derived work must carry ${esc(licenceLabel(l))}`
+   405	        : l.share_alike === false ? 'share-alike: no' : 'share-alike: not stated';
+   406	      return `<li data-id="${esc(id)}"><b>${esc(r.title)}</b> <span class="x" title="remove">✕</span>
+   407	        <div class="lic">${esc(l.name)}${l.spdx ? ' (' + esc(l.spdx) + ')' : ''} · attribution ${esc(l.attribution)} · ${sa}</div>
+   408	        ${l.terms ? `<div class="lic terms">terms, as the record states them: ${esc(l.terms.stated)}</div>` : ''}
+   409	        ${l.statement ? `<blockquote class="stmt">${esc(l.statement)}</blockquote>` : '<div class="stmt none">No attribution statement stated by the publisher in the record.</div>'}
+   410	        <div class="files" data-files="${esc(id)}">files: …</div></li>`;
+   411	    }).join('');
+   412	    const shared = {};
+   413	    for (const id of state.pick) if (byId[id].licence.share_alike === true) {
+   414	      const k = licenceLabel(byId[id].licence); shared[k] = (shared[k] || 0) + 1;
+   415	    }
+   416	    const saLines = Object.entries(shared).sort().map(([lic, n]) =>
+   417	      `<p class="sa">${n} item${n > 1 ? 's' : ''} require${n === 1 ? 's' : ''} derived work to carry ${esc(lic)}.</p>`).join('');
+   418	    b.innerHTML = `<h2>Selected (${state.pick.length})</h2><ul>${items}</ul>
+   419	      ${saLines || '<p class="sa none">No selected item states share-alike.</p>'}
+   420	      <div class="actions"><button id="download" type="button">Download osd.manifest.json</button>
+   421	      <p class="hint">Then <code>osd get osd.manifest.json --dest data</code>: fetches the files, checks each sha256, writes ATTRIBUTION.md. Files are the ones the verifier sampled, not the whole dataset.</p></div>`;
+   422	    b.querySelectorAll('li .x').forEach(x => x.onclick = () => tick(x.closest('li').dataset.id));
+   423	    $('download').onclick = download;
+   424	    loadCollections().then(cols => {
+   425	      for (const el of b.querySelectorAll('[data-files]')) {
+   426	        const id = el.dataset.files, r = byId[id], n = Object.keys((cols[collectionId(id)] || {}).assets || {}).length;
+   427	        el.textContent = n ? `${n} file${n > 1 ? 's' : ''} with the verifier's sha256 (a sample)` : `to-do: ${whyNoFiles(r)}`;
+   428	        el.classList.toggle('todo', !n);
+   429	      }
+   430	    });
+   228	            else:
+   229	                e["unresolved"] = _no_assets_reason(rec)
+   230	            entries.append(e)
+   231	        selection = "collections"
+   232	    else:
+   233	        outlines = json.loads((catalog_dir / "outlines.geojson").read_text())["features"]
+   234	        known = {f["id"]: f["properties"]["record_id"] for f in outlines if "id" in f}
+   235	        for fid in dict.fromkeys(features):
+   236	            rid = known.get(fid)
+   237	            if rid is None:
+   238	                raise ManifestError(f"'{fid}' is not a feature id in {catalog_dir / 'outlines.geojson'}")
+   239	            rec, col = recs[rid], collection(rid)
+   240	            item_ids = {json.loads((stac_dir / collection_id(rid) / x["href"]).read_text())["id"]
+   241	                        for x in col["links"] if x["rel"] == "item"}
+   242	            e = _entry(rec)
+   243	            has_item = fid in item_ids
+   244	            e.update(item_id=fid if has_item else None, feature_id=fid, assets={})
+   245	            e["unresolved"] = (
+   246	                "STAC Items carry no assets: the files the catalogue knows belong to the Collection "
+   247	                f"{e['collection_id']}, not to this feature; select the Collection to fetch them"
+   248	                if has_item else
+   249	                f"no STAC Item for this feature (the record states no period); it belongs to the "
+   250	                f"Collection {e['collection_id']}")
+    38	
+    39	## Tiles
+    40	
+    41	With the date members in the map layer, tippecanoe 2.49 wrote three wrong values into z12 tiles
+    42	(`nlog/nlog#WAS-17` publisher_id `2012-12-24`; `sodir/factpages#wellbore/5250`
+    43	`osd:period_start_raw` `1955-05-20` for `3/2/2006`; seen with `tippecanoe-decode` too) and
+    44	`test_tiles_hold_every_feature_with_its_properties_at_max_zoom` went red. `build()` leaves the
+    45	`osd:period_*` members out of `outlines.geojson`/`outlines.pmtiles` (the map does not read
+    46	them); the tiles are then the same 60.9 MB as on main and the test is green.
+    47	
+    48	## Post-publication check (after merge, verify on main)
+    49	
+    50	`curl -s https://opensubsurfacedata.org/data/stac/<file>` for each file in the named table
+    51	shows the "After" bounds and source.
+    52	
+    53	The two decoded features are kept under `tippecanoe/` for a later tiles lane.
+    53	   (`feature` when the feature states dates, else the existing fallbacks; `stac.py:109-118`).
+    54	4. Budget: an input is read in full or refused; the four layers above 50,000 features (SK MER x2,
+    55	   PGI, CGS) are not given inputs this lane. The duration proof is one all-record dispatch of
+    56	   `verify.yml` on the branch; it must finish under 60 minutes and `make check-full` must pass on
+    57	   its outputs. The lane adds inputs in order of size (SGUDDS, NZP&M x2, WA DEMIRS, Virginia,
+    58	   BCER, SGC, UT DOGM, North Dakota) and stops adding when the dispatch passes 50 minutes; the
+    59	   remaining ones are deferred with the measured time, no infrastructure proposal.
+    60	5. Records, exact edits, these nine and no others: `nzpam/petroleum-wells`,
+    61	   `nzpam/seismic-surveys-2d`, `wa-demirs/petroleum-wells`, `sgudds/register-geotermalnych-vrtov`,
+    62	   `va-energy/gas-oil-wells`, `nd-dmr/wells`, `bcer/well-surface-holes-permitted`,
+    63	   `sgc/banco-informacion-petrolera-pozos`, `ut-dogm/oil-gas-wells`: `inputs` (name, the layer
+    64	   URL without a query, `format: arcgis`, `crs` and `stated` from the service description), and
+    65	   `period` for the six without one where the register's page or service description states its
+    66	   coverage (E16 design 2; the publisher's sentence in `notes`); a register that states none keeps
+    67	   no period and no Items, said in the PR. Outlines for these records are generated with
+    68	   `--outlines`, reviewed, committed under `outlines/`, then verified with `--outline-inputs`.
+    69	6. Site: nothing new; tiles (E15) carry the points. One phone-width screenshot of a new register
+    70	   is evidence.
+    71	
+    72	**Acceptance.**
+    73	- Fixture ArcGIS server (injected responses, offline), per input: pages reassemble the layer with
+    74	  the exact object-id set; duplicates, a missing page, a page error, a count mismatch, missing
+    75	  pagination support, a wkid mismatch each refuse; `f=json` conversion of a point, a two-path
+    26	| Merge trains, then a merge queue | 8 workers gave 10× activity for 2–3× merges; merges per worker-day fell from 5.6 to 0.3 at 18 workers | Squash merge on a green check; at most 2 coding lanes plus 1 records lane |
+    27	| Nightly releases, release pinning, qualification | A night took 1 h 50 min at best, ARM64 70 min on the critical path; per-lane qualification 45 min serial | Every merge to main publishes the site; no version numbers |
+    28	| Hardening lanes and a growing item list | 87 hardening merges against about 10 epic slices in a week; the list grew 150 → 217 | Defects under 50 lines ride on the next lane; a red main is reverted, not hardened |
+    29	| Committed conformance results, locks, worker-check cron | Three lanes lost 30–45 min each on a dead lock; a queue stopped for an hour on a docs-only deadline | Nothing is committed that a job can regenerate; no locks; no cron |
+    30	| Multiple Codex rounds, 4-revision caps | 2–4 h of a worker per round | One round for a kernel charter; none for surface or records |
+    31	| Dispatch per commit group | Worth it for a 27-minute C++ build | A 2-minute check runs on every push; nothing to batch |
+    32	| ccache, proven-tree skip, CI spend caps | Needed for a 27-minute C++ build | Irrelevant at Python-and-static scale; revisit above 10 min per check |
+    33	
+    34	## The gate
+    35	
+    36	`make check` = ruff + pytest + schema validation + build, offline. It is the only required
+    37	status. Network verification (`verify` workflow) comments on pull requests and never blocks: a
+    38	publisher's outage is a finding, not a red gate. The site publishes from main on every merge.
+    39	
+    40	## Proof bar by class
+    41	
+    42	- **Kernel** (schemas, verifier, build, manifest, bridge): tests for every acceptance line, a
+    43	  mutation shown to fail for every guard, one Codex round on the charter. Strategy at lane open,
+    44	  at most two pages.
+    45	- **Surface** (site, docs, records): `make check` green and a screenshot or the verify comment.
+    46	  No strategy document; the charter's acceptance list is the brief.
+    47	- **Records**: the verify comment shows the level; a human checks the licence fields against
+    48	  the publisher's page. Same-day merge.
+    49	
+    50	## Roles
+f1f05ae2756a1d89d3e8b17ea88755a4f11c130f
+
+**Verifying item compatibility counts**
+codex
+**1. Verdict: REWORK** — the charter permits a paging layout that existing consumers cannot traverse, a tile change that breaks the site contract, and a weaker gate than repository policy.
+
+Verified against HEAD `f1f05ae2756a1d89d3e8b17ea88755a4f11c130f`. No files modified. References below are repository-relative; E32 references mean the reviewed charter.
+
+**2. Factual errors and Context verification**
+
+- Confirmed: nine real-catalogue build call sites across the six named modules; 18,436 committed outline features; indented Collection item links (`src/osd/stac.py:193`, `:206`); tippecanoe 2.49 pin (`src/osd/build.py:125`); E18 corruption workaround (`src/osd/build.py:91`, `docs/program/evidence/e18/registers.md:41`).
+- E32:15 overstates Item emission: a period alone is insufficient; each feature also needs `feature_id` (`src/osd/stac.py:163`). Consequently, **178,056 Item files from 177,895 features** cannot describe this writer’s output. Distinguish Items from total STAC JSON objects.
+- E32:16–22 timings, E29 feature totals, ND/UT corruption examples, and projected publication sizes are branch measurements, **not verified HEAD facts**. HEAD contains eight outline files and no E29 outline implementation; the cited E29 measurement evidence is not present here. Supply the measured commit, commands, and run/artifact references.
+- E32:22–23 is an unfulfilled dependency assumption: HEAD’s format enum excludes ArcGIS (`schema/record.schema.json:104`), and its rules end with the existing five datasets (`src/osd/outlines/rules.yaml:103`). E29 explicitly permits missing periods and deferred inputs (`E29-outlines-from-the-map-services.md:54`, `:65`); merging E29 does not guarantee all five are ready.
+- E32:73 names nonexistent `.github/workflows/check.yml`; installation is in `.github/workflows/ci.yml:19` and independently in `pages.yml:30`.
+
+**3. Design objections and concrete alternatives**
+
+- **Gate budget:** E32:28/50 allows three minutes; `Makefile:4`, AGENTS.md, and ENGINEERING’s gate policy require two. Retain the two-minute threshold and measure the `make check` step separately from workflow setup.
+- **Shared fixture:** these builds consume different verification/custody inputs (`tests/test_build.py:15`, `tests/test_stac.py:91`, `tests/test_mirror.py:469`). Copying already-built output cannot test a changed input’s join. Share one full-catalogue integration build; retain small isolated builds for behavior tests.
+- **Paging contract:** arbitrary `next` link pages do not establish interoperable static traversal. Current traversal follows only `child`/`item` (`src/osd/stac.py:281`). Use standard child Catalog shards with item links, validated by an ordinary recursive client walk; preserve Item collection identity. [STAC 1.0 Catalog specification](https://raw.githubusercontent.com/radiantearth/stac-spec/v1.0.0/catalog-spec/catalog-spec.md).
+- **Retrieval compatibility:** sharding removes direct Collection item links, but manifest selection reads only those links (`src/osd/manifest.py:240`). Claim that consumer and test a feature on a later shard retains its `item_id`.
+- **Tile contract:** replacing string IDs and removing string attributes breaks kind filters, promoted identity, and record lookup (`site/app.js:166`, `:177`, `:289`). Prefer a corrected encoder preserving properties; otherwise explicitly claim the site adapter and its existing journey tests.
+- **Production encoder:** changing only the check installation leaves Pages publishing with 2.49 (`pages.yml:30`). Pin the same corrected version in both existing workflows.
+- **Schema ownership:** `schema/stac/**` contains standards contracts, not permission to redefine STAC to accept bespoke pages. Use valid standard objects; any project schema change needs the required version bump and old-file compatibility test.
+
+**4. Acceptance loopholes and ineffective mutations**
+
+- E32:51: a spy scoped to one consumer can still count one after fixture scope becomes function-local. Exercise multiple consumers and assert the aggregate session count.
+- E32:54: counting Items permits duplicates replacing missing IDs. Compare the exact expected ID set and reject duplicate visits.
+- E32:55: “paging removed → size red” is incompatible with the explicitly allowed compact, unpaged design. Deleting continuation links also makes files smaller. Test missing continuation/shard links against reachability and completeness.
+- E32:57: IDs can remain correct while names, kinds, or geometry are corrupted; omission can pass a loop over surviving features. Require exact identity coverage and identity-to-geometry/property correspondence.
+- E32:59: outage exceptions can excuse all five registers. Require successful evidence before claiming the five-register outcome; outage-only results remain partial.
+- E32:61 requires only a size table, not the stated size ceiling/headroom. Require a bound on the complete staged site, including duplicated Collection links in `collections.json` (`src/osd/build.py:117`).
+- Layout changes can bypass containment checks: they scan only `*/collection.json` and sibling `items/*.json` (`src/osd/stac.py:241`). Put an invalid dated Item in a later shard and require `check-full` to fail.
+
+**5. Scope overlap**
+
+- E29 already owns all nine records, rules, and generated outlines (`E29-outlines-from-the-map-services.md:60`). Require an explicit merged handoff naming the five deferred outputs and their period readiness.
+- Numeric tile IDs/string removal reopens E15’s same-properties contract and site ownership (`E15-tiles-for-the-registers.md:6`, `:33`); it cannot remain a build-only change.
+- A “detail panel of one well” adds feature-level behavior: today `select()` displays the dataset title (`site/app.js:287`). Specify the existing dataset panel after clicking a well, or explicitly authorize that surface expansion.
+tokens used
+58,164
+**1. Verdict: REWORK** — the charter permits a paging layout that existing consumers cannot traverse, a tile change that breaks the site contract, and a weaker gate than repository policy.
+
+Verified against HEAD `f1f05ae2756a1d89d3e8b17ea88755a4f11c130f`. No files modified. References below are repository-relative; E32 references mean the reviewed charter.
+
+**2. Factual errors and Context verification**
+
+- Confirmed: nine real-catalogue build call sites across the six named modules; 18,436 committed outline features; indented Collection item links (`src/osd/stac.py:193`, `:206`); tippecanoe 2.49 pin (`src/osd/build.py:125`); E18 corruption workaround (`src/osd/build.py:91`, `docs/program/evidence/e18/registers.md:41`).
+- E32:15 overstates Item emission: a period alone is insufficient; each feature also needs `feature_id` (`src/osd/stac.py:163`). Consequently, **178,056 Item files from 177,895 features** cannot describe this writer’s output. Distinguish Items from total STAC JSON objects.
+- E32:16–22 timings, E29 feature totals, ND/UT corruption examples, and projected publication sizes are branch measurements, **not verified HEAD facts**. HEAD contains eight outline files and no E29 outline implementation; the cited E29 measurement evidence is not present here. Supply the measured commit, commands, and run/artifact references.
+- E32:22–23 is an unfulfilled dependency assumption: HEAD’s format enum excludes ArcGIS (`schema/record.schema.json:104`), and its rules end with the existing five datasets (`src/osd/outlines/rules.yaml:103`). E29 explicitly permits missing periods and deferred inputs (`E29-outlines-from-the-map-services.md:54`, `:65`); merging E29 does not guarantee all five are ready.
+- E32:73 names nonexistent `.github/workflows/check.yml`; installation is in `.github/workflows/ci.yml:19` and independently in `pages.yml:30`.
+
+**3. Design objections and concrete alternatives**
+
+- **Gate budget:** E32:28/50 allows three minutes; `Makefile:4`, AGENTS.md, and ENGINEERING’s gate policy require two. Retain the two-minute threshold and measure the `make check` step separately from workflow setup.
+- **Shared fixture:** these builds consume different verification/custody inputs (`tests/test_build.py:15`, `tests/test_stac.py:91`, `tests/test_mirror.py:469`). Copying already-built output cannot test a changed input’s join. Share one full-catalogue integration build; retain small isolated builds for behavior tests.
+- **Paging contract:** arbitrary `next` link pages do not establish interoperable static traversal. Current traversal follows only `child`/`item` (`src/osd/stac.py:281`). Use standard child Catalog shards with item links, validated by an ordinary recursive client walk; preserve Item collection identity. [STAC 1.0 Catalog specification](https://raw.githubusercontent.com/radiantearth/stac-spec/v1.0.0/catalog-spec/catalog-spec.md).
+- **Retrieval compatibility:** sharding removes direct Collection item links, but manifest selection reads only those links (`src/osd/manifest.py:240`). Claim that consumer and test a feature on a later shard retains its `item_id`.
+- **Tile contract:** replacing string IDs and removing string attributes breaks kind filters, promoted identity, and record lookup (`site/app.js:166`, `:177`, `:289`). Prefer a corrected encoder preserving properties; otherwise explicitly claim the site adapter and its existing journey tests.
+- **Production encoder:** changing only the check installation leaves Pages publishing with 2.49 (`pages.yml:30`). Pin the same corrected version in both existing workflows.
+- **Schema ownership:** `schema/stac/**` contains standards contracts, not permission to redefine STAC to accept bespoke pages. Use valid standard objects; any project schema change needs the required version bump and old-file compatibility test.
+
+**4. Acceptance loopholes and ineffective mutations**
+
+- E32:51: a spy scoped to one consumer can still count one after fixture scope becomes function-local. Exercise multiple consumers and assert the aggregate session count.
+- E32:54: counting Items permits duplicates replacing missing IDs. Compare the exact expected ID set and reject duplicate visits.
+- E32:55: “paging removed → size red” is incompatible with the explicitly allowed compact, unpaged design. Deleting continuation links also makes files smaller. Test missing continuation/shard links against reachability and completeness.
+- E32:57: IDs can remain correct while names, kinds, or geometry are corrupted; omission can pass a loop over surviving features. Require exact identity coverage and identity-to-geometry/property correspondence.
+- E32:59: outage exceptions can excuse all five registers. Require successful evidence before claiming the five-register outcome; outage-only results remain partial.
+- E32:61 requires only a size table, not the stated size ceiling/headroom. Require a bound on the complete staged site, including duplicated Collection links in `collections.json` (`src/osd/build.py:117`).
+- Layout changes can bypass containment checks: they scan only `*/collection.json` and sibling `items/*.json` (`src/osd/stac.py:241`). Put an invalid dated Item in a later shard and require `check-full` to fail.
+
+**5. Scope overlap**
+
+- E29 already owns all nine records, rules, and generated outlines (`E29-outlines-from-the-map-services.md:60`). Require an explicit merged handoff naming the five deferred outputs and their period readiness.
+- Numeric tile IDs/string removal reopens E15’s same-properties contract and site ownership (`E15-tiles-for-the-registers.md:6`, `:33`); it cannot remain a build-only change.
+- A “detail panel of one well” adds feature-level behavior: today `select()` displays the dataset title (`site/app.js:287`). Specify the existing dataset panel after clicking a well, or explicitly authorize that surface expansion.
