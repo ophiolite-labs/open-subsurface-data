@@ -1,0 +1,23 @@
+id: geus/deep-subsurface-data
+title: Danish Deep Subsurface Data Portal
+summary: >-
+  GEUS' portal for released deep boreholes and geophysical surveys (2D and 3D) collected in connection with oil and gas exploration and production in Denmark. Borehole data (reports, logs, spliced logs, digital core photos) and processed 3D seismic can be downloaded free of charge; 2D processings are added as GEUS prepares them.
+publisher: {name: Geological Survey of Denmark and Greenland (GEUS), url: https://eng.geus.dk, country: DK}
+origin:
+  url: https://eng.geus.dk/products-services-facilities/data-and-maps/subsurface-data-denmark
+  access: anonymous
+  notes: "The map portal itself is https://data.geus.dk/geusmap/?mapname=oil_and_gas&lang=en. Field (pre-stack) data, CSEM, gravity and magnetic surveys are on request for a handling fee. The Frisbee webshop closed in October 2023."
+licence:
+  name: Betingelser for brug af gratis danske undergrundsdata fra GEUS's hjemmeside (GEUS terms of 19 Sep 2023)
+  spdx: null
+  url: https://data.geus.dk/ugdata2d3d/terms_20230919.pdf
+  redistribution: restricted
+  attribution: required
+kinds: [wellbore-headers, wellbore-logs, core, reports, seismic-2d, seismic-3d, source-list]
+region: {country: DK, basin: Danish onshore and North Sea, bbox: [3.0, 54.5, 15.5, 58.0]}
+listed_by: [publisher]
+known_issues:
+  - "Terms 2.2: the user may 'in specific cases' make the data available to others free of charge and must tell them GEUS' rights apply; GEUS keeps all rights. Read here as restricted redistribution."
+  - "https://data.geus.dk/ugdata2d3d/ answers 403 to an automated request (23 Oct 2026); the terms PDF in that path answers 200."
+  - "bbox is approximate (Danish land area and Danish North Sea sector); the page states no extent."
+added: 2026-10-23

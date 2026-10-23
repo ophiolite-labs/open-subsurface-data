@@ -1,0 +1,22 @@
+id: gfz/ktb-data
+title: Data from the German Continental Deep Drilling Project (KTB)
+summary: >-
+  Digital access to data and publications of the KTB project in northeastern Bavaria: borehole measurements, lithological descriptions of cores and cuttings, geochemistry, petrophysics and rock mechanics from the KTB pilot hole (VB) and main hole (HB), ordered by discipline, well and working group.
+publisher: {name: GFZ Helmholtz Centre for Geosciences (GFZ Data Services), url: https://www.gfz.de, country: DE}
+origin:
+  url: https://dataservices.gfz.de/10.5880/gfz.ktb.top/data-from-the-german-continental-deep-drilling
+  access: anonymous
+  notes: DOI 10.5880/gfz.ktb.top. The publication states the data are served from the original KTB site, https://data.icdp-online.org/sites/ktb/welcome.html.
+licence:
+  name: Creative Commons Attribution 4.0 International
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-logs, core, geochemistry, reports]
+region: {country: DE, basin: "Bohemian Massif (Oberpfalz, Windischeschenbach)", bbox: [12.10, 49.80, 12.14, 49.83]}
+listed_by: [publisher]
+known_issues:
+  - "The data host data.icdp-online.org timed out on 23 Oct 2026 (connection timeout, 40 s); the GFZ landing page answers 200."
+  - "bbox is a small box around the two stated well points (49.815 N, 12.1205 E and 49.8153 N, 12.118 E)."
+added: 2026-10-23
