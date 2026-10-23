@@ -21,6 +21,8 @@ Screenshot for a surface lane (Playwright from the Ophiolite web tree):
 
 ## 23 Oct, afternoon (supervisor)
 
+E02 merged (PR #3, 37c010c), verify dispatched on main: 3 at L2, 17 at L1, SEG wiki blocked. E05 merged (PR #2, 6c232cf): the required `check` job now also runs the offline Playwright site tests (about 30 s). E03 (osd-e03), E08 (osd-e08) and E13 (osd-e13, records) in lane.
+
 Codex round (OSD-D8) run on E02, E03 and E04 charters with `tools/review-charter.sh`; all three REWORK.
 E02's review is dispositioned by its lane in the charter before its PR. E03 and E04 charters were
 rewritten by the supervisor against the findings (dispositions at the end of each charter); the
@@ -30,6 +32,8 @@ need time); OSD-D9 revised (blocked awards no level). E02's claim lost the recor
 gained `src/osd/verifier/**`. Record schema bumps (record/2: `inputs`, `period`) are E03's and E04's.
 
 ## Known reds and baselines (23 Oct)
+
+- A `pages` run cancelled by its concurrency group (`cancel-in-progress: true`) shows as failed in the run list; the later run deploys. Check the newest run and the site, not the red mark.
 
 - SEG wiki answers HTTP 403 to this host for any user agent (Cloudflare). Not dead; see OSD-D9.
 - NOPIMS page answers 403 from this host. Same class.
