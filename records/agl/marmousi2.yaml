@@ -1,0 +1,23 @@
+id: agl/marmousi2
+title: Marmousi2 elastic model and synthetic data
+summary: >-
+  The Marmousi2 elastic model from the Allied Geophysical Laboratories (University of Houston): P-wave, S-wave and density models in SEG-Y, layer properties and horizons, and processed synthetic data (NMO stacks, Kirchhoff pre- and post-stack time and depth migrations) with the 2004 thesis by Gary Martin.
+publisher: {name: "Allied Geophysical Laboratories, University of Houston", url: https://www.agl.uh.edu, country: US}
+origin:
+  url: https://www.agl.uh.edu/downloads/downloads.htm
+  access: anonymous
+  notes: "Modeled (pre-stack) data on request to the AGL. Directory listing at https://www.agl.uh.edu/downloads/."
+licence:
+  name: No licence stated on the AGL download page
+  spdx: null
+  url: https://www.agl.uh.edu/downloads/downloads.htm
+  redistribution: unknown
+  attribution: unknown
+kinds: [seismic-2d, reservoir-model, horizons, reports]
+region: {country: US, basin: "Synthetic (Marmousi geology, Cuanza Basin, Angola)"}
+listed_by: [publisher]
+notes: "synthetic"
+known_issues:
+  - "Synthetic data; region.country is the publisher's country because the schema requires one."
+  - "The SEG wiki page 'AGL Elastic Marmousi' reportedly states a CC BY 4.0 release by the authors; it answers 403 to automated requests from this host (blocked for automated requests since 23 Oct 2026, OSD-D9), so the licence is left unknown."
+added: 2026-10-23

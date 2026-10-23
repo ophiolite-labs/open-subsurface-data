@@ -1,0 +1,23 @@
+id: anp/bdep
+title: Banco de Dados de Exploração e Produção (BDEP)
+summary: >-
+  ANP's exploration and production database for the Brazilian sedimentary basins, run by the Superintendência de Dados Técnicos. Public (non-exclusive) technical data are open to anyone as paying occasional or associated clients, or free to non-profit research institutions; onshore public data (REATE) and a selection of offshore post-stack data (PROMAR) are free.
+publisher: {name: "Agência Nacional do Petróleo, Gás Natural e Biocombustíveis (ANP)", url: https://www.gov.br/anp, country: BR}
+origin:
+  url: https://www.gov.br/anp/pt-br/assuntos/exploracao-e-producao-de-oleo-e-gas/dados-tecnicos/acesso-aos-dados-tecnicos
+  access: request
+  notes: "Free onshore data (wells, 2D and 3D seismic, non-seismic and geochemistry) download from https://reate.cprm.gov.br/anp/; pre-stack data by form to helpdesk@anp.gov.br."
+licence:
+  name: Termo de Adesão para acesso aos dados públicos do BDEP (and Resolução ANP nº 889/2022)
+  spdx: null
+  url: https://www.gov.br/anp/pt-br/assuntos/exploracao-e-producao-de-oleo-e-gas/dados-tecnicos/arquivos-acesso-aos-dados-tecnicos/termo-adesao.pdf
+  redistribution: forbidden
+  attribution: unknown
+kinds: [wellbore-logs, seismic-2d, seismic-3d, geochemistry, reports, source-list]
+region: {country: BR, basin: Brazilian sedimentary basins, bbox: [-74.0, -34.0, -28.8, 5.3]}
+listed_by: [publisher]
+known_issues:
+  - "The Termo de Adesão obliges the data user 'não disponibilizar a terceiros os dados' except where ANP resolutions allow; Resolução 889/2022 (atosoficiais.com.br) answered 403 to an automated request on 23 Oct 2026, so its exceptions were not read."
+  - "The free REATE portal states no licence of its own."
+  - "bbox is approximate (Brazil including offshore basins)."
+added: 2026-10-23
