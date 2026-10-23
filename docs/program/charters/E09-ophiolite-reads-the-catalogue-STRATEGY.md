@@ -2,7 +2,7 @@
 
 Charter: `E09-ophiolite-reads-the-catalogue.md` (Codex round dispositioned at its end). Base: main
 0c6e019. Claim row E09 in `CLAIMS.md`. This half defines the interface the Ophiolite half consumes
-(manifest/3 `metadata.catalog`, fidelity/1) and the L4 rule; it never touches Ophiolite code. Open
+(the OSD manifest file's `metadata.catalog`, manifest/3, and fidelity/1) and the L4 rule; it never touches Ophiolite code. Open
 questions for the supervisor: `~/.local/share/osd-program/inbox/e09.md`.
 
 ## Shape
@@ -12,7 +12,8 @@ records/*.yaml + build/verification/*.json
    └─▶ osd build ─▶ records.json {catalog: {source_commit, verification_commit, built_at, records_digest}}
                       records_digest = sha256(canonical JSON of the records array: sorted keys, "," ":", UTF-8)
    └─▶ osd manifest ─▶ osd.manifest/3 {metadata: {catalog}} (copied whole; /1 and /2 when records.json has none)
-         └─▶ Ophiolite intake lands files, writes fidelity/1 {format, catalog, record, inputs[]}
+         └─▶ Ophiolite lands the files (Ophiolite's provenance record, E127), exports fidelity/1
+               {format, catalog, record, inputs[]}
                └─▶ osd verify <id> --fidelity-from F [--vdir V --catalog C]   (offline)
                      own L1–L3 checks kept verbatim; canonical-conversion derived from F, or `fail` + reason
                      level = level_from_checks(checks)  ─▶ verification/3 written back (schema unchanged)

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/fidelity/1",
+  "title": "Fidelity record, version 1 (osd.fidelity/1)",
+  "description": "What a workspace did with the files of one catalogue record: per input file, which canonical output it became, with which converter, and which inputs did not convert. Written by Ophiolite from Ophiolite's provenance record (E127), read by `osd verify <id> --fidelity-from`. The catalogue derives its own `canonical-conversion` check from it and never takes a level or any other check from it; nothing else is admitted here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "catalog", "record", "inputs"],
+  "properties": {
+    "format": {"const": "osd.fidelity/1"},
+    "catalog": {"$ref": "#/$defs/catalog"},
+    "record": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$",
+               "description": "The catalogue record id (manifest entry `record_id`)"},
+    "inputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/input"},
+               "description": "One result per landed file; the catalogue awards L4 only when every file of its latest verification has one"}
+  },
+  "$defs": {
+    "catalog": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_commit", "verification_commit", "built_at", "records_digest"],
+      "description": "The catalogue snapshot, copied whole from records.json `catalog` (manifest/3 `metadata.catalog`). records_digest is the sha256 of the records array as canonical JSON: keys sorted, separators ',' and ':', UTF-8, no escaping of non-ASCII",
+      "properties": {
+        "source_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$", "description": "Commit of the repository the catalogue was built from; null outside git"},
+        "verification_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$", "description": "Commit of the verification-results branch the levels came from; null when the build was not told"},
+        "built_at": {"type": "string", "format": "date-time"},
+        "records_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "input": {
+      "type": "object", "additionalProperties": false, "required": ["sha256", "name", "result"],
+      "properties": {
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Of the landed bytes; must be a file of the catalogue's latest verification"},
+        "name": {"type": "string", "minLength": 1, "description": "The manifest asset key the file landed as"},
+        "result": {"enum": ["converted", "partial", "failed", "skipped"]},
+        "output": {"$ref": "#/$defs/output"},
+        "representative": {"type": "array", "items": {"$ref": "#/$defs/value"},
+                           "description": "A few values a person can compare with the source (a curve's first sample, a header field)"},
+        "reason": {"type": "string", "minLength": 1, "maxLength": 300, "description": "Required for partial and failed"}
+      },
+      "allOf": [
+        {"if": {"properties": {"result": {"enum": ["converted", "partial"]}}}, "then": {"required": ["output"]}},
+        {"if": {"properties": {"result": {"enum": ["partial", "failed"]}}}, "then": {"required": ["reason"]}}
+      ]
+    },
+    "output": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "id", "converter", "version"],
+      "properties": {
+        "kind": {"type": "string", "minLength": 1, "description": "The workspace's canonical kind (Ophiolite kind registry, E55)"},
+        "id": {"type": "string", "minLength": 1, "description": "The workspace item the input became"},
+        "converter": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1}
+      }
+    },
+    "value": {
+      "type": "object", "additionalProperties": false, "required": ["field", "value"],
+      "properties": {
+        "field": {"type": "string", "minLength": 1},
+        "value": {"type": ["number", "string"]},
+        "unit": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

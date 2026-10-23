@@ -1,8 +1,11 @@
 """Verification: what our tools can establish about a record today.
 
 L1 (origin reachable), L2 (sample files checksummed, licence text captured) and L3 (outlines
-derived from the data, E03: see osd.outlines) are implemented. L4 (canonical conversion) is a
-chartered epic; its check is declared here with outcome "skip" so the ladder stays stable.
+derived from the data, E03: see osd.outlines) are established by the network run. L4 (canonical
+conversion, E09) comes from a fidelity/1 record a workspace wrote: `apply_fidelity` derives the
+`canonical-conversion` check from it against the latest verification and the catalogue snapshot,
+keeps the record's own L1-L3 checks verbatim and recomputes the level with `level_from_checks`.
+A network run writes the check as "skip"; the fidelity, now older than it, must be exported again.
 
 Reachability is one of four closed, exclusive classes, decided on the final response:
   blocked  HTTP 403 or 429, or a challenge page at any status: a separate observation that awards
@@ -39,7 +42,7 @@ from pathlib import Path
 from urllib.parse import quote, urljoin, urlsplit
 
 import yaml
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
 from . import __version__, outlines, paths
 from .records import load_outline, load_records
@@ -57,6 +60,8 @@ LICENCE_BYTES = 8 * 1024**2
 LICENCE_TEXT_CHARS = 100_000  # stored with its hash in the results store
 PAUSE_S = 2.0
 STALE_DAYS = 30
+NO_FIDELITY = "no fidelity record (osd verify <id> --fidelity-from)"
+COVERAGE = re.compile(r"^(\d+) of (\d+) inputs converted")
 CHALLENGE_MARKERS = (b"cf-chl", b"challenge-platform", b"Just a moment...",
                      b"Attention Required! | Cloudflare", b"_Incapsula_Resource")
 
@@ -491,7 +496,7 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
                        "detail": f"{len(outline.get('features', []))} features"})
         o, d = outlines.check(rec, outline, outline_rule, stored or {}, refused)
         checks.append({"name": "outline-derived", "level": "L3", "outcome": o, "detail": d[:500]})
-    checks.append({"name": "canonical-conversion", "level": "L4", "outcome": "skip", "detail": "E09"})
+    checks.append({"name": "canonical-conversion", "level": "L4", "outcome": "skip", "detail": NO_FIDELITY})
 
     return {
         "record_id": rec["id"],
@@ -507,6 +512,99 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
 @cache
 def _validator() -> Draft202012Validator:
     return Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text()))
+
+
+# --- L4: the fidelity record (E09) ---------------------------------------------------------------
+
+@cache
+def _fidelity_validator() -> Draft202012Validator:
+    return Draft202012Validator(json.loads((paths.SCHEMA_DIR / "fidelity.schema.json").read_text()),
+                                format_checker=FormatChecker())
+
+
+def fidelity_problems(doc: dict) -> list[str]:
+    return [f"{'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}"
+            for e in sorted(_fidelity_validator().iter_errors(doc), key=lambda e: list(map(str, e.absolute_path)))]
+
+
+def _when(stamp: str) -> datetime:
+    return datetime.fromisoformat(stamp)
+
+
+def _rejections(rid: str, doc: dict, v: dict, catalog: dict | None) -> list[str]:
+    """Why this fidelity record is no evidence for `rid` today, named one by one; schema problems
+    only when nothing named applies (a named guard is never hidden behind the schema)."""
+    inputs = doc.get("inputs")
+    if inputs == []:
+        return ["the fidelity record lists no inputs"]
+    inputs = [i for i in inputs if isinstance(i, dict)] if isinstance(inputs, list) else []
+    snap = doc.get("catalog") if isinstance(doc.get("catalog"), dict) else {}
+    out = []
+    if doc.get("record") != rid:
+        out.append(f"the fidelity record names record {doc.get('record')}, not {rid}")
+    if catalog is None:
+        out.append("the catalogue has no snapshot identity (records.json without `catalog`): run osd build")
+    elif snap.get("records_digest") != catalog["records_digest"]:
+        out.append(f"records_digest {str(snap.get('records_digest'))[:12]}… is not the current catalogue's "
+                   f"{catalog['records_digest'][:12]}…: the fidelity is for another snapshot")
+    try:
+        if _when(snap["built_at"]) < _when(v["checked_at"]):
+            out.append(f"its snapshot (built {snap['built_at']}) is older than the latest verification "
+                       f"(checked {v['checked_at']})")
+    except (KeyError, TypeError, ValueError):
+        pass   # the schema names a missing or malformed built_at
+    files = {f["sha256"]: f["path"] for f in v.get("files", [])}
+    for i in inputs:
+        if i.get("sha256") not in files:
+            out.append(f"input {i.get('name')} ({str(i.get('sha256'))[:12]}…) is not a file of the latest verification")
+    results = {i.get("sha256") for i in inputs}
+    missing = [p for sha, p in files.items() if sha not in results]
+    if missing:
+        out.append(f"{len(missing)} of {len(files)} files of the latest verification have no result: {', '.join(missing)}")
+    for i in inputs:
+        if i.get("result") in ("partial", "failed") and not i.get("reason"):
+            out.append(f"input {i.get('name')} is {i['result']} without a reason")
+    if not any(i.get("result") == "converted" for i in inputs):
+        out.append("no input converted")
+    return out or [f"not an osd.fidelity/1 record: {p}" for p in fidelity_problems(doc)]
+
+
+def apply_fidelity(rid: str, doc: dict, verification: dict | None, catalog: dict | None) -> tuple[dict | None, list[str]]:
+    """The latest verification with its `canonical-conversion` check derived from a fidelity/1 record,
+    and why it gives no L4 (empty when it does). A rejected record makes the check `fail` with the
+    reasons; an accepted one makes it `pass` with "n of m inputs converted", n the inputs converted
+    and m the files of the verification. Nothing else is taken from the file: the other checks stay
+    as the catalogue's tools wrote them and the level is level_from_checks over them."""
+    if verification is None:
+        return None, [f"no verification for {rid}: run osd verify {rid} first"]
+    reasons = _rejections(rid, doc, verification, catalog)
+    if reasons:
+        check = {"name": "canonical-conversion", "level": "L4", "outcome": "fail",
+                 "detail": ("fidelity rejected: " + "; ".join(reasons))[:500]}
+    else:
+        done = [i for i in doc["inputs"] if i["result"] == "converted"]
+        kinds = sorted({i["output"]["kind"] for i in done})
+        check = {"name": "canonical-conversion", "level": "L4", "outcome": "pass",
+                 "detail": (f"{len(done)} of {len(verification.get('files', []))} inputs converted to kinds "
+                            f"{', '.join(kinds)}; fidelity/1 for snapshot {doc['catalog']['records_digest'][:12]}… "
+                            f"built {doc['catalog']['built_at']}")[:500]}
+    checks = [check if c["name"] == "canonical-conversion" else c for c in verification["checks"]]
+    if check not in checks:
+        checks.append(check)
+    out = dict(verification, checks=checks, level=level_from_checks(checks))
+    if not reasons and out["level"] != "L4":
+        reasons = [f"L4 needs the catalogue's own L1-L3: its own checks reach {out['level']}"]
+    return out, reasons
+
+
+def conversion_coverage(v: dict | None) -> str | None:
+    """"n of m converted" for a verification at L4, else None (osd status prints it beside the level)."""
+    if not v or v.get("level") != "L4":
+        return None
+    for c in v["checks"]:
+        if c["name"] == "canonical-conversion" and c["outcome"] == "pass" and (m := COVERAGE.match(c.get("detail", ""))):
+            return f"{m.group(1)} of {m.group(2)} converted"
+    return None
 
 
 def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, outline_path: Path,

@@ -1,0 +1,63 @@
+{
+  "format": "osd.fidelity/1",
+  "catalog": {
+    "source_commit": "1111111111111111111111111111111111111111",
+    "verification_commit": "2222222222222222222222222222222222222222",
+    "built_at": "2026-10-23T12:00:00Z",
+    "records_digest": "0aa23aa46181ee776770dd02b7d5acdaaedfbc36904160ae53e42b119d43b4a5"
+  },
+  "record": "acme/two-wells",
+  "inputs": [
+    {
+      "sha256": "172d963522d1df1bdbaffac11a85eb11fe3fcc32fe7f005959e63042d6202830",
+      "name": "well-a.las",
+      "result": "converted",
+      "output": {
+        "kind": "well-log",
+        "id": "synthetic-item-well-a",
+        "converter": "las-reader",
+        "version": "2026.10.63"
+      },
+      "representative": [
+        {
+          "field": "WELL",
+          "value": "SYNTH A-1",
+          "unit": null
+        },
+        {
+          "field": "GR@1000.0",
+          "value": 45.1,
+          "unit": "GAPI"
+        },
+        {
+          "field": "RHOB@1000.0",
+          "value": 2.31,
+          "unit": "G/CC"
+        }
+      ]
+    },
+    {
+      "sha256": "be341779f2c0a7f799ab94f84ccf709c82553875dec59caca097b4058c06bc31",
+      "name": "well-b.las",
+      "result": "converted",
+      "output": {
+        "kind": "well-log",
+        "id": "synthetic-item-well-b",
+        "converter": "las-reader",
+        "version": "2026.10.63"
+      },
+      "representative": [
+        {
+          "field": "WELL",
+          "value": "SYNTH B-2",
+          "unit": null
+        },
+        {
+          "field": "GR@1500.0",
+          "value": 88.2,
+          "unit": "GAPI"
+        }
+      ]
+    }
+  ]
+}
