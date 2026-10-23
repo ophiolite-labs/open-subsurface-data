@@ -28,4 +28,5 @@ period:
   start: "2024-12-20"
   end: "2026-03-23"
   stated: "GitHub releases: 24.4.0 published 2024-12-20, 25.0.0 on 2025-05-20, 26.0.0 on 2026-03-23; the deck title reads 'Synthetic reservoir simulation model Drogon (2020)'"
+notes: "No bbox: a synthetic model of a fictitious field."
 added: 2026-10-23

@@ -26,4 +26,5 @@ known_issues:
   - "The data are viewed in the Data Room in Ilidža; copies are on request, after approval and payment. No files are online, so no manifest_url."
   - "'The Zavod reserves the right to deny or revoke already issued approvals to access the Geodata in the Data Room at any time.'"
   - "bbox is Bosnia and Herzegovina, approximate."
+notes: "No period stated: the Data Room page gives no dates."
 added: 2026-10-23

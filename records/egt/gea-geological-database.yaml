@@ -24,4 +24,5 @@ known_issues:
   - "The licence applies CC BY 4.0 with priority conditions: name the licensor, the data and its age or extract date when publishing. It names EGT's spatial data; the GEA API page does not repeat it."
   - "No manifest_url: the API answers JSON records, not a list of files; the Survey's WFS host (maps.egt.ee) answered robots.txt with HTTP 503 on 23 Oct 2026."
   - "bbox is Estonia, approximate."
+notes: "No period stated: the services page and the GEA API give no period, and the API offers no date range query."
 added: 2026-10-23
