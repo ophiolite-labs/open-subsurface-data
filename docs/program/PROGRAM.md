@@ -25,7 +25,7 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 16 | E16 Periods from the publishers | Records | MERGED (PR #11, 23 Oct; main fa13d75; 53 of 68 records with a period, 18,432 Items; OSD-D18 gate sample) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
 | 17 | E17 Records, fourth twenty (Africa, Middle East, Asia, Canada, open seismic and model sets) | Records | MERGED (PR #15, 23 Oct; main 98eb254; 92 records, 9 new countries) | E16 | The map lists at least 85 datasets on six continents |
 | 18 | E18 Items carry their own dates | Kernel | IN LANE (osd-e18, 23 Oct; charter reworked after its Codex round) | E03, E04, E16 | Time filters in a STAC client return the wellbores and surveys of that window, not a whole register |
-| 19 | E19 Vocabulary from the records lanes (potential fields, purchase, licence terms) | Kernel (small) | IN LANE (osd-e19, 23 Oct; charter reworked after its Codex round) | E17 | Records can say gravity/magnetics, sold data and time-limited terms as the publisher states them |
+| 19 | E19 Vocabulary from the records lanes (potential fields, purchase, licence terms) | Kernel (small) | MERGED (PR #18, 23 Oct; main ae7a812; record/3, manifest/4, stac-osd v2) | E17 | Records can say gravity/magnetics, sold data and time-limited terms as the publisher states them |
 | 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
 
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
