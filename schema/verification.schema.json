@@ -33,7 +33,8 @@
         "content_type": {"type": "string"},
         "elapsed_ms": {"type": "integer"},
         "reachability": {"type": "string", "enum": ["ok", "blocked", "moved", "dead"],
-                         "description": "v2. ok: 2xx/3xx; blocked: 403/429 or a challenge page, not dead; moved: final host differs; dead: 404/410, DNS failure, timeout or 5xx after one retry"}
+                         "description": "v2. blocked: 403/429 or a challenge page, awards no level (OSD-D9); ok: 2xx/3xx on the origin host; moved: 2xx/3xx on another host; dead: anything else (timeouts, refused connections and 5xx after one retry)"},
+        "blocked_since": {"type": "string", "format": "date-time", "description": "v2. First check of the current unbroken blocked run"}
       }
     },
     "files": {
@@ -43,6 +44,7 @@
         "properties": {"path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
       }
     },
-    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"}
   }
 }

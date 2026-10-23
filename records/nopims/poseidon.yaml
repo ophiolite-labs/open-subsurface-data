@@ -14,7 +14,6 @@ licence:
   url: https://creativecommons.org/licenses/by/4.0/
   redistribution: allowed
   attribution: required
-verification: {sample: {files: ["*/.zattrs", "*/.zgroup"]}}
 kinds: [seismic-3d, wellbore-logs, wellbore-headers]
 region: {country: AU, basin: Browse Basin, bbox: [122.4, -13.6, 123.6, -12.4]}
 listed_by: [seg-wiki]

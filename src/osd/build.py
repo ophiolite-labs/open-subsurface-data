@@ -2,7 +2,8 @@
 
 Outputs (build/catalog/):
   records.json    every record, joined with its latest verification level, the date it was
-                   established and `stale` when that date is over 30 days old (or absent)
+                   established, `stale` when that date is over 30 days old (or absent) and
+                   `blocked_since` while the origin refuses this runner (OSD-D9)
   outlines.geojson one FeatureCollection, every feature joined with record title, kinds,
                    licence and level so the map needs no second lookup
   collections.json STAC-shaped collections, one per record (full STAC validity is E04)
@@ -35,7 +36,8 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         v = latest_verification(rid, vdir)
         level = v["level"] if v else "L0"
         checked = v["checked_at"] if v else None
-        joined = dict(rec, level=level, checked_at=checked, stale=is_stale(checked, now))
+        blocked = (v or {}).get("origin", {}).get("blocked_since")
+        joined = dict(rec, level=level, checked_at=checked, stale=is_stale(checked, now), blocked_since=blocked)
         records_out.append(joined)
         op = paths.outline_path(rid)
         if op.exists():

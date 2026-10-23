@@ -1,0 +1,7 @@
+# Verifier sampling policy (OSD-D11): tool configuration, never a record field.
+# Keyed by record id; the record must declare origin.manifest_url. Each value lists shell globs
+# matched against every entry of that listing, as listed or as an absolute URL. Matching files
+# are hashed for L2, at most 2 GB per run across all records.
+sodir/factpages: ["*rs:Format=CSV*"]          # the CSV export of the exploration wellbore table
+opm/norne: ["*.DATA"]                          # the simulation deck
+nopims/poseidon: ["*/.zattrs", "*/.zgroup"]    # MDIO metadata objects, a few hundred bytes

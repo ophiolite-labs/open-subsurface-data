@@ -17,7 +17,6 @@ licence:
   redistribution: allowed
   attribution: required
   statement: "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by the Norwegian Offshore Directorate"
-verification: {sample: {files: ["*rs:Format=CSV*"]}}
 kinds: [wellbore-headers, wellbore-paths, tops, production, source-list]
 region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0]}
 listed_by: [publisher]

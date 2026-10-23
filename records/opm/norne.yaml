@@ -14,7 +14,6 @@ licence:
   redistribution: allowed
   attribution: required
   share_alike: true
-verification: {sample: {files: ["*.DATA"]}}
 kinds: [reservoir-model]
 region: {country: "NO", basin: Norwegian Sea (Halten Terrace), bbox: [7.9, 65.9, 8.4, 66.2]}
 listed_by: [community]

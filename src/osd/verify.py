@@ -4,9 +4,15 @@ L1 (origin reachable) and L2 (sample files checksummed, licence text captured) a
 L3 (outlines derived from the data) and L4 (canonical conversion) are chartered epics; their
 checks are declared here with outcome "skip" so the level ladder and its records are stable.
 
-Reachability is one of four closed classes: ok, blocked (403/429 or a challenge page: not dead,
-L1 passes with a detail), moved (final host differs: passes with a hint), dead (404/410, DNS
-failure, timeout or 5xx after one retry).
+Reachability is one of four closed, exclusive classes, decided on the final response:
+  blocked  HTTP 403 or 429, or a challenge page at any status: a separate observation that awards
+           no level (OSD-D9); `blocked_since` keeps the first date of an unbroken blocked run
+  ok       2xx/3xx with the origin's host
+  moved    2xx/3xx on another host: passes, the detail suggests a record update
+  dead     anything else: status 0 (DNS, timeout, refused), 401, 404, 410, other 4xx, 5xx;
+           timeouts, refused connections and 5xx are retried once first
+Sampling policy (which listed files L2 hashes) is tool configuration in verifier/samples.yaml,
+keyed by record id, never a record field (OSD-D11).
 
 The network is injected twice: a Fetcher probes an origin (first 16 KB), an Opener streams a
 body in chunks and raises FetchError. Tests pass fakes, so the required CI check stays offline.
@@ -27,12 +33,18 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from fnmatch import fnmatchcase
+from functools import cache
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import quote, urljoin, urlsplit
 
+import yaml
+from jsonschema import Draft202012Validator
+
 from . import __version__, paths
 from .records import load_outline, load_records
+
+SAMPLES_PATH = Path(__file__).parent / "verifier" / "samples.yaml"
 
 LEVELS = ["L0", "L1", "L2", "L3", "L4"]
 USER_AGENT = ("open-subsurface-data-verifier/" + __version__
@@ -42,6 +54,7 @@ CHUNK = 1 << 20
 RUN_BYTE_BUDGET = 2 * 1024**3  # charter: never hash more than 2 GB per run
 LISTING_BYTES = 32 * 1024**2
 LICENCE_BYTES = 8 * 1024**2
+LICENCE_TEXT_CHARS = 100_000  # stored with its hash in the results store
 PAUSE_S = 2.0
 STALE_DAYS = 30
 CHALLENGE_MARKERS = (b"cf-chl", b"challenge-platform", b"Just a moment...",
@@ -302,16 +315,19 @@ class _Robots:
         return self.hosts[key].can_fetch(USER_AGENT, url)
 
 
-def check_files(rec: dict, opener: Opener, budget: ByteBudget) -> tuple[dict, list[dict]]:
+def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str]]:
+    return yaml.safe_load(path.read_text()) or {}
+
+
+def check_files(rec: dict, sample: list[str] | None, opener: Opener, budget: ByteBudget) -> tuple[dict, list[dict]]:
     def check(outcome: str, detail: str) -> dict:
         return {"name": "files-checksummed", "level": "L2", "outcome": outcome, "detail": detail[:500]}
 
     manifest = rec["origin"].get("manifest_url")
-    sample = rec.get("verification", {}).get("sample", {}).get("files") or []
     if not manifest:
         return check("skip", "no origin.manifest_url"), []
     if not sample:
-        return check("skip", "no verification.sample allow-list"), []
+        return check("skip", "no sample for this record in verifier/samples.yaml"), []
     robots = _Robots(opener)
     if not robots.allowed(manifest):
         return check("skip", f"robots.txt disallows the listing {manifest}"), []
@@ -327,7 +343,7 @@ def check_files(rec: dict, opener: Opener, budget: ByteBudget) -> tuple[dict, li
             picked.append(e)
             seen.add(e.url)
     if not picked:
-        return check("fail", f"no file in the listing ({len(entries)} entries) matches verification.sample"), []
+        return check("fail", f"no entry of the listing ({len(entries)} entries) matches the sample"), []
     files: list[dict] = []
     notes: list[str] = []
     for i, e in enumerate(picked):
@@ -348,7 +364,8 @@ def check_files(rec: dict, opener: Opener, budget: ByteBudget) -> tuple[dict, li
     if not files:
         return check("skip", "; ".join(notes) or "nothing hashed"), files
     total = sum(f["bytes"] for f in files)
-    return check("pass", "; ".join([f"{len(files)} files, {total} bytes hashed", *notes])), files
+    coverage = f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed ({total} bytes); {len(entries)} entries listed"
+    return check("pass", "; ".join([coverage, *notes])), files
 
 
 class _Text(HTMLParser):
@@ -380,27 +397,27 @@ def licence_text(body: bytes) -> str:
     return " ".join(text.split())
 
 
-def check_licence(rec: dict, opener: Opener, previous: dict | None) -> tuple[dict, str | None]:
+def check_licence(rec: dict, opener: Opener, previous: dict | None) -> tuple[dict, str | None, str | None]:
     def check(outcome: str, detail: str) -> dict:
         return {"name": "licence-text-captured", "level": "L2", "outcome": outcome, "detail": detail[:500]}
 
     url = rec["licence"].get("url")
     if not url:
-        return check("skip", "no licence.url"), None
+        return check("skip", "no licence.url"), None, None
     try:
         body = _read(opener(url), LICENCE_BYTES)
     except FetchError as e:
-        return check("fail", f"blocked from this runner ({e})" if e.status in (403, 429) else str(e)), None
+        return check("fail", f"blocked from this runner ({e})" if e.status in (403, 429) else str(e)), None, None
     if _challenge(body):
-        return check("fail", f"blocked from this runner (challenge page at {url})"), None
-    text = licence_text(body)
+        return check("fail", f"blocked from this runner (challenge page at {url})"), None, None
+    text = licence_text(body)[:LICENCE_TEXT_CHARS]
     if not text:
-        return check("fail", f"no text at {url}"), None
+        return check("fail", f"no text at {url}"), None, None
     sha = hashlib.sha256(text.encode()).hexdigest()
     before = (previous or {}).get("licence_text_sha256")
     if before and before != sha:
-        return check("pass", f"licence text changed since {previous['checked_at'][:10]}"), sha
-    return check("pass", f"{len(text)} characters captured from {url}"), sha
+        return check("pass", f"licence text changed since {previous['checked_at'][:10]}"), sha, text
+    return check("pass", f"{len(text)} characters captured from {url}"), sha, text
 
 
 # --- the record ------------------------------------------------------------------------------
@@ -424,31 +441,37 @@ def is_stale(checked_at: str | None, now: datetime | None = None) -> bool:
 
 def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime | None = None,
                   opener: Opener | None = None, previous: dict | None = None,
-                  budget: ByteBudget | None = None) -> dict:
+                  budget: ByteBudget | None = None, sample: list[str] | None = None) -> dict:
     checks: list[dict] = []
     extra: dict = {}
 
+    stamp = (now or datetime.now(UTC)).isoformat(timespec="seconds")
     url = rec["origin"]["url"]
     f = probe(url, fetch)
     reach, detail = classify(f, url)
     origin = {"http_status": f.status, "final_url": f.final_url, "content_type": f.content_type[:100],
               "elapsed_ms": f.elapsed_ms, "reachability": reach}
-    checks.append({"name": "origin-reachable", "level": "L1", "outcome": "fail" if reach == "dead" else "pass",
-                   "detail": detail[:500]})
+    if reach == "blocked":
+        before = (previous or {}).get("origin", {})
+        origin["blocked_since"] = before.get("blocked_since", stamp) if before.get("reachability") == "blocked" else stamp
+        detail = f"{detail}; blocked since {origin['blocked_since'][:10]}"
+    outcome = {"ok": "pass", "moved": "pass", "blocked": "skip", "dead": "fail"}[reach]
+    checks.append({"name": "origin-reachable", "level": "L1", "outcome": outcome, "detail": detail[:500]})
 
     if opener is None or reach == "dead":
         why = "origin not reachable" if reach == "dead" else "no opener (offline run)"
         checks.append({"name": "files-checksummed", "level": "L2", "outcome": "skip", "detail": why})
         checks.append({"name": "licence-text-captured", "level": "L2", "outcome": "skip", "detail": why})
     else:
-        c, files = check_files(rec, opener, budget or ByteBudget())
+        c, files = check_files(rec, sample, opener, budget or ByteBudget())
         checks.append(c)
         if files:
             extra["files"] = files
-        c, sha = check_licence(rec, opener, previous)
+        c, sha, text = check_licence(rec, opener, previous)
         checks.append(c)
         if sha:
             extra["licence_text_sha256"] = sha
+            extra["licence_text"] = text
 
     if outline is None:
         checks.append({"name": "outline-present", "level": "L3", "outcome": "fail",
@@ -464,7 +487,7 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
 
     return {
         "record_id": rec["id"],
-        "checked_at": (now or datetime.now(UTC)).isoformat(timespec="seconds"),
+        "checked_at": stamp,
         "tool_version": __version__,
         "level": level_from_checks(checks),
         "checks": checks,
@@ -473,12 +496,18 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
     }
 
 
+@cache
+def _validator() -> Draft202012Validator:
+    return Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text()))
+
+
 def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
                out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None) -> list[dict]:
     """Defaults are the network, paced; tests inject both and are not paced."""
     if fetch is None and opener is None:
         fetch, opener = paced(http_fetch, http_open, Pacer())
     recs = load_records()
+    samples = load_samples()
     out_dir.mkdir(parents=True, exist_ok=True)
     budget = budget or ByteBudget()
     results = []
@@ -489,7 +518,9 @@ def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opene
         outline = load_outline(op) if op.exists() else None
         out = out_dir / (rid.replace("/", "__") + ".json")
         previous = json.loads(out.read_text()) if out.exists() else None
-        v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget)
+        v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
+                          sample=samples.get(rid))
+        _validator().validate(v)  # never write a record the schema refuses
         out.write_text(json.dumps(v, indent=2) + "\n")
         results.append(v)
     return results

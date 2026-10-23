@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/record/2",
-  "title": "Open Subsurface Data record, version 2",
+  "$id": "https://open-subsurface-data.org/schema/record/1",
+  "title": "Open Subsurface Data record, version 1",
   "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here.",
   "type": "object",
   "additionalProperties": false,
@@ -80,19 +80,6 @@
       "type": "object", "additionalProperties": false,
       "properties": {"reference_id": {"type": "string"}, "notes": {"type": "string"}},
       "description": "Identifiers in the OSDU reference data where the same dataset is carried."
-    },
-    "verification": {
-      "type": "object", "additionalProperties": false,
-      "description": "v2. What the publisher's listing offers for a verifier to sample; never a result.",
-      "properties": {
-        "sample": {
-          "type": "object", "additionalProperties": false, "required": ["files"],
-          "properties": {
-            "files": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1},
-                      "description": "Shell globs matched against each entry of origin.manifest_url, as listed or as an absolute URL; matching files are hashed (at most 2 GB per run)."}
-          }
-        }
-      }
     },
     "known_issues": {"type": "array", "items": {"type": "string", "maxLength": 300}},
     "notes": {"type": "string", "maxLength": 1200},

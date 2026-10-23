@@ -40,12 +40,14 @@ def cmd_build(_: argparse.Namespace) -> int:
 
 def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = None) -> list[str]:
     """The levels `osd build` publishes, read from the same verification directory."""
-    lines = [f"{'level':5} {'id':36} {'checked':16} {'access':12} {'redistribution':14} kinds"]
+    lines = [f"{'level':5} {'id':36} {'checked':36} {'access':12} {'redistribution':14} kinds"]
     for rid, r in load_records().items():
         v = build_mod.latest_verification(rid, vdir)
         lv, checked = (v["level"], v["checked_at"]) if v else ("L0", None)
         when = (checked or "never")[:10] + (" stale" if is_stale(checked, now) else "")
-        lines.append(f"{lv:5} {rid:36} {when:16} {r['origin']['access']:12} "
+        blocked = (v or {}).get("origin", {}).get("blocked_since")
+        when += f" blocked since {blocked[:10]}" if blocked else ""
+        lines.append(f"{lv:5} {rid:36} {when:36} {r['origin']['access']:12} "
                      f"{r['licence']['redistribution']:14} {','.join(r['kinds'])}")
     return lines
 
