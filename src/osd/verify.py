@@ -1,8 +1,8 @@
 """Verification: what our tools can establish about a record today.
 
-L1 (origin reachable) and L2 (sample files checksummed, licence text captured) are implemented.
-L3 (outlines derived from the data) and L4 (canonical conversion) are chartered epics; their
-checks are declared here with outcome "skip" so the level ladder and its records are stable.
+L1 (origin reachable), L2 (sample files checksummed, licence text captured) and L3 (outlines
+derived from the data, E03: see osd.outlines) are implemented. L4 (canonical conversion) is a
+chartered epic; its check is declared here with outcome "skip" so the ladder stays stable.
 
 Reachability is one of four closed, exclusive classes, decided on the final response:
   blocked  HTTP 403 or 429, or a challenge page at any status: a separate observation that awards
@@ -41,7 +41,7 @@ from urllib.parse import quote, urljoin, urlsplit
 import yaml
 from jsonschema import Draft202012Validator
 
-from . import __version__, paths
+from . import __version__, outlines, paths
 from .records import load_outline, load_records
 
 SAMPLES_PATH = Path(__file__).parent / "verifier" / "samples.yaml"
@@ -441,7 +441,9 @@ def is_stale(checked_at: str | None, now: datetime | None = None) -> bool:
 
 def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime | None = None,
                   opener: Opener | None = None, previous: dict | None = None,
-                  budget: ByteBudget | None = None, sample: list[str] | None = None) -> dict:
+                  budget: ByteBudget | None = None, sample: list[str] | None = None,
+                  outline_rule: dict | None = None, stored: dict[str, str] | None = None,
+                  refused: str | None = None) -> dict:
     checks: list[dict] = []
     extra: dict = {}
 
@@ -477,12 +479,10 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
         checks.append({"name": "outline-present", "level": "L3", "outcome": "fail",
                        "detail": "no outlines file"})
     else:
-        approx = [x for x in outline.get("features", []) if x["properties"].get("approximate")]
         checks.append({"name": "outline-present", "level": "L3", "outcome": "pass",
                        "detail": f"{len(outline.get('features', []))} features"})
-        checks.append({"name": "outline-derived", "level": "L3",
-                       "outcome": "fail" if approx else "skip",
-                       "detail": f"{len(approx)} approximate features" if approx else "E03"})
+        o, d = outlines.check(rec, outline, outline_rule, stored or {}, refused)
+        checks.append({"name": "outline-derived", "level": "L3", "outcome": o, "detail": d[:500]})
     checks.append({"name": "canonical-conversion", "level": "L4", "outcome": "skip", "detail": "E09"})
 
     return {
@@ -501,25 +501,43 @@ def _validator() -> Draft202012Validator:
     return Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text()))
 
 
+def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, outline_path: Path) -> str | None:
+    """`--outlines`: fetch the record's inputs, derive, rewrite the committed file; the reason if refused."""
+    try:
+        outlines.fetch_inputs(rec, rules, opener, inputs_dir)
+        outlines.write_outline(outlines.derive(rec, rules, inputs_dir), outline_path)
+    except outlines.Refused as e:
+        return str(e)
+    return None
+
+
 def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
-               out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None) -> list[dict]:
-    """Defaults are the network, paced; tests inject both and are not paced."""
+               out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None,
+               derive: bool = False, inputs_dir: Path = outlines.INPUTS_DIR,
+               outlines_dir: Path = paths.OUTLINES_DIR) -> list[dict]:
+    """Defaults are the network, paced; tests inject both and are not paced. `derive` (osd verify
+    --outlines) refetches the inputs of records that have outline rules and rewrites their outlines."""
     if fetch is None and opener is None:
         fetch, opener = paced(http_fetch, http_open, Pacer())
     recs = load_records()
     samples = load_samples()
+    rules = outlines.load_rules()
     out_dir.mkdir(parents=True, exist_ok=True)
     budget = budget or ByteBudget()
     results = []
     for rid, rec in recs.items():
         if ids and rid not in ids:
             continue
-        op = paths.outline_path(rid)
+        op = outlines_dir / (rid.replace("/", "__") + ".geojson")
+        refused = None
+        if derive and opener is not None and rid in rules:
+            refused = derive_outline(rec, rules, opener, inputs_dir, op)
         outline = load_outline(op) if op.exists() else None
         out = out_dir / (rid.replace("/", "__") + ".json")
         previous = json.loads(out.read_text()) if out.exists() else None
         v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
-                          sample=samples.get(rid))
+                          sample=samples.get(rid), outline_rule=rules.get(rid),
+                          stored=outlines.stored_inputs(rid, inputs_dir), refused=refused)
         _validator().validate(v)  # never write a record the schema refuses
         out.write_text(json.dumps(v, indent=2) + "\n")
         results.append(v)

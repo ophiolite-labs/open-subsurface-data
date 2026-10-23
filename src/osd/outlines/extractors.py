@@ -1,0 +1,275 @@
+"""Extractors: pure functions from an input's stored parts to WGS84 features.
+
+Each takes (record input, input rule, parts) where parts is the ordered list of (name, bytes)
+the fetch stored, and returns features carrying geometry plus kind, name and the publisher's
+identifiers. derive() adds the identity every derived feature carries.
+"""
+
+from __future__ import annotations
+
+import csv
+import html
+import io
+import json
+import re
+import struct
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
+
+from .codecs import blosc_decode
+from .geometry import Refused, closed_ring, convex_hull, map_positions, to_wgs84
+
+GEOMETRY_TYPES = {"Point", "LineString", "Polygon", "MultiPolygon"}
+
+
+def _kind(rule: dict, props: dict) -> str:
+    k = rule["kind"]
+    if isinstance(k, str):
+        return k
+    return k.get("map", {}).get(str(props.get(k["field"])), k["default"])
+
+
+def _ident(rule: dict, props: dict) -> dict:
+    out = {}
+    for key in ("publisher_id", "uwi"):
+        field = rule.get("id" if key == "publisher_id" else "uwi")
+        if field and props.get(field) not in (None, ""):
+            out[key] = str(props[field])
+    if "publisher_id" not in out and "uwi" not in out:
+        raise Refused(f"a feature has no {rule.get('id')!r} and no {rule.get('uwi')!r}: no identity")
+    name = props.get(rule.get("name", ""))
+    out["name"] = str(name if name not in (None, "") else out.get("publisher_id") or out["uwi"])
+    return out
+
+
+def _epsg(name: str) -> str | None:
+    m = re.search(r"EPSG:+(\d+)$", name or "")
+    return f"EPSG:{m.group(1)}" if m else None
+
+
+def _keep(rule: dict, props: dict) -> bool:
+    return all(str(props.get(k)) == str(v) for k, v in (rule.get("keep") or {}).items())
+
+
+def _features(rec_input: dict, rule: dict, collections: list[dict]) -> list[dict]:
+    f = to_wgs84(rec_input.get("crs"), rec_input.get("units"))
+    out = []
+    for fc in collections:
+        served = _epsg(((fc.get("crs") or {}).get("properties") or {}).get("name", ""))
+        if served and served != rec_input.get("crs"):
+            raise Refused(f"{rec_input['name']}: the response declares {served}, the record {rec_input.get('crs')}")
+        for feat in fc.get("features") or []:
+            props = feat.get("properties") or {}
+            if not _keep(rule, props):
+                continue
+            g = feat.get("geometry") or {}
+            if g.get("type") not in GEOMETRY_TYPES or not g.get("coordinates"):
+                raise Refused(f"{rec_input['name']}: a feature has geometry {g.get('type')!r}")
+            out.append({"kind": _kind(rule, props), **_ident(rule, props),
+                        "geometry": {"type": g["type"], "coordinates": map_positions(g["coordinates"], f)}})
+    return out
+
+
+def register_wfs(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+    """GeoJSON pages of a WFS GetFeature; a stored hit count must equal the features served."""
+    pages = [json.loads(b) for n, b in parts if n.startswith("page-")]
+    served = sum(len(p.get("features") or []) for p in pages)
+    hits = dict(parts).get("hits")
+    if hits is not None:
+        m = re.search(rb'numberMatched="(\d+)"', hits)
+        if m and int(m.group(1)) != served:
+            raise Refused(f"{rec_input['name']}: the service counts {int(m.group(1))} features, the pages "
+                          f"served {served}")
+    if not served:
+        raise Refused(f"{rec_input['name']}: empty response")
+    return _features(rec_input, rule, pages)
+
+
+def register_csv(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+    """A register table with one row per wellbore and its coordinate columns named in the rule."""
+    text = parts[0][1].decode(rule.get("encoding", "utf-8-sig"))
+    rows = list(csv.DictReader(io.StringIO(text), delimiter=rule.get("delimiter", ",")))
+    if not rows:
+        raise Refused(f"{rec_input['name']}: empty response")
+    feats = []
+    for i, row in enumerate(rows):
+        try:
+            x, y = float(row[rule["x"]]), float(row[rule["y"]])
+        except (KeyError, TypeError, ValueError):
+            raise Refused(f"{rec_input['name']}: row {i + 1} has no {rule['x']}/{rule['y']} coordinate") from None
+        feats.append({"type": "Feature", "properties": row, "geometry": {"type": "Point", "coordinates": [x, y]}})
+    return _features(rec_input, rule, [{"features": feats}])
+
+
+class _Extent(HTMLParser):
+    """The data-extent of the element inside the one marked property="locn:geometry"."""
+
+    def __init__(self):
+        super().__init__()
+        self.depth, self.extent, self.title, self._in_title = 0, None, "", False
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "title":
+            self._in_title = True
+        if self.depth:
+            self.depth += 1
+            if self.extent is None and a.get("data-extent"):
+                self.extent = a["data-extent"]
+        elif a.get("property") == "locn:geometry":
+            self.depth = 1
+
+    def handle_endtag(self, tag):
+        self._in_title = self._in_title and tag != "title"
+        if self.depth:
+            self.depth -= 1
+
+    def handle_data(self, data):
+        if self._in_title:
+            self.title += data
+
+
+def publisher_file(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+    """A GeoJSON file, or the GeoJSON extent a publisher's page labels as the dataset's geometry."""
+    body = parts[0][1]
+    if rec_input["format"] == "geojson":
+        fc = json.loads(body)
+        if not fc.get("features"):
+            raise Refused(f"{rec_input['name']}: empty response")
+        return _features(rec_input, rule, [fc])
+    p = _Extent()
+    p.feed(body.decode("utf-8", "replace"))
+    if not p.extent:
+        raise Refused(f"{rec_input['name']}: the page carries no locn:geometry extent")
+    g = json.loads(html.unescape(p.extent))
+    props = {"id": urlsplit(rec_input["url"]).path.rstrip("/").rsplit("/", 1)[-1],
+             "name": " ".join(p.title.split(" - ")[0].split())}
+    rule = {**rule, "id": "id", "name": "name"}
+    return _features(rec_input, rule, [{"features": [{"properties": props, "geometry": g}]}])
+
+
+# --- trace headers: SEG-Y files and MDIO stores -------------------------------------------------
+
+def _scaled(v: int, scalar: int) -> float:
+    """SEG-Y coordinate scalar: negative divides, positive multiplies, zero is one."""
+    return v / -scalar if scalar < 0 else v * scalar if scalar > 0 else float(v)
+
+
+SEGY_UNITS = {1: "m", 2: "ft"}
+STRUCT = {"i1": "b", "u1": "B", "i2": "h", "u2": "H", "i4": "i", "u4": "I", "i8": "q", "u8": "Q",
+          "f4": "f", "f8": "d"}
+SEGY_SAMPLE_BYTES = {1: 4, 2: 4, 3: 2, 5: 4, 6: 8, 8: 1, 9: 8, 10: 4, 11: 2, 12: 8, 16: 1}
+
+
+def segy_positions(rule: dict, data: bytes) -> tuple[list[tuple[float, float]], str | None]:
+    """Every live trace's (x, y) from the header bytes the rule names (1-based, SEG-Y rev 1)."""
+    if len(data) < 3600:
+        raise Refused("SEG-Y shorter than its file headers")
+    samples, fmt = struct.unpack_from(">H", data, 3220)[0], struct.unpack_from(">H", data, 3224)[0]
+    if fmt not in SEGY_SAMPLE_BYTES:
+        raise Refused(f"SEG-Y sample format code {fmt} not known")
+    if struct.unpack_from(">h", data, 3504)[0] != 0:
+        raise Refused("SEG-Y extended textual headers not read by this extractor")
+    units = SEGY_UNITS.get(struct.unpack_from(">H", data, 3254)[0])
+    size = 240 + samples * SEGY_SAMPLE_BYTES[fmt]
+    # SEG-Y rev 1 defaults: CDP X at 181, CDP Y at 185, coordinate scalar at 71
+    xb, yb, sb = rule.get("x_byte", 181) - 1, rule.get("y_byte", 185) - 1, rule.get("scalar_byte", 71) - 1
+    pts = []
+    for off in range(3600, len(data) - 239, size):
+        if struct.unpack_from(">h", data, off + 28)[0] == 2:  # trace identification code: dead
+            continue
+        s = struct.unpack_from(">h", data, off + sb)[0]
+        pts.append((_scaled(struct.unpack_from(">i", data, off + xb)[0], s),
+                    _scaled(struct.unpack_from(">i", data, off + yb)[0], s)))
+    if not pts:
+        raise Refused("empty response: no live trace")
+    return pts, units
+
+
+def _zarray(meta: dict, name: str) -> dict:
+    a = meta.get(f"{name}/.zarray")
+    if not a:
+        raise Refused(f"MDIO store has no {name} array")
+    comp = a.get("compressor") or {}
+    if comp and (comp.get("id"), comp.get("cname")) != ("blosc", "lz4"):
+        raise Refused(f"MDIO {name}: compressor {comp.get('id')}/{comp.get('cname')} not read")
+    return a
+
+
+def _chunk(parts: dict, name: str, a: dict) -> bytes:
+    raw = parts.get(name)
+    if raw is None:
+        raise Refused(f"MDIO chunk {name} was not fetched")
+    return blosc_decode(raw) if a.get("compressor") else raw
+
+
+def mdio_grid_hull(parts: dict) -> list[tuple[int, int]]:
+    """Hull of the live traces in (inline index, crossline index) from trace_mask."""
+    meta = json.loads(parts[".zmetadata"])["metadata"]
+    a = _zarray(meta, "trace_mask")
+    (ni, nx), (ci, cx) = a["shape"], a["chunks"]
+    pts = []
+    for bi in range(-(-ni // ci)):
+        for bx in range(-(-nx // cx)):
+            m = _chunk(parts, f"trace_mask/{bi}/{bx}", a)
+            for r in range(min(ci, ni - bi * ci)):
+                row = m[r * cx:r * cx + min(cx, nx - bx * cx)]
+                lo = row.find(1)
+                if lo >= 0:
+                    hi = row.rfind(1)
+                    pts += [(bi * ci + r, bx * cx + lo), (bi * ci + r, bx * cx + hi)]
+    if not pts:
+        raise Refused("empty response: trace_mask has no live trace")
+    return convex_hull(pts)
+
+
+def mdio_header_chunks(parts: dict) -> list[str]:
+    meta = json.loads(parts[".zmetadata"])["metadata"]
+    ci, cx = _zarray(meta, "headers")["chunks"]
+    return sorted({f"headers/{i // ci}/{x // cx}" for i, x in mdio_grid_hull(parts)})
+
+
+def mdio_positions(rule: dict, parts: dict) -> tuple[list[tuple[float, float]], str | None, str | None]:
+    meta = json.loads(parts[".zmetadata"])["metadata"]
+    a = _zarray(meta, "headers")
+    ci, cx = a["chunks"]
+    fields, size = {}, 0
+    for fname, ftype in a["dtype"]:
+        fmt = (">" if ftype[0] == ">" else "<") + STRUCT[ftype[1:]]
+        fields[fname] = (size, fmt)
+        size += struct.calcsize(fmt)
+    want = (rule["x_field"], rule["y_field"], rule["scalar_field"])
+    if any(w not in fields for w in want):
+        raise Refused(f"MDIO headers lack one of {want}")
+    decoded, pts = {}, []
+    for i, x in mdio_grid_hull(parts):
+        name = f"headers/{i // ci}/{x // cx}"
+        if name not in decoded:
+            decoded[name] = _chunk(parts, name, a)
+        at = ((i % ci) * cx + x % cx) * size
+        xv, yv, sv = (struct.unpack_from(fields[w][1], decoded[name], at + fields[w][0])[0] for w in want)
+        pts.append((_scaled(xv, sv), _scaled(yv, sv)))
+    units = ((meta.get(f"{rule['x_field']}/.zattrs") or {}).get("unitsV1") or {}).get("length")
+    name = (meta.get(".zattrs") or {}).get("name")
+    return pts, units, name
+
+
+def segy_hull(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+    """The convex hull of every live trace's coordinates, from SEG-Y headers or an MDIO store."""
+    if rec_input["format"] == "mdio":
+        pts, units, survey = mdio_positions(rule, dict(parts))
+    else:
+        pts, units = segy_positions(rule, parts[0][1])
+        survey = None
+    units = units or rec_input.get("units")
+    if units is None:
+        raise Refused(f"{rec_input['name']}: coordinate units not declared (data nor record)")
+    f = to_wgs84(rec_input.get("crs"), units)
+    ring = closed_ring([f(x, y) for x, y in convex_hull(pts)])
+    ident = {"publisher_id": survey} if survey else {}
+    return [{"kind": rule["kind"], "name": survey or rec_input["name"], **ident,
+             "geometry": {"type": "Polygon", "coordinates": [ring]}}]
+
+
+EXTRACTORS = {"register-wfs": register_wfs, "register-csv": register_csv,
+              "segy-hull": segy_hull, "publisher-file": publisher_file}

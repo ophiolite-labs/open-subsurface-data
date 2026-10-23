@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html><head><title>KERRY-3D : PR1556 - KERRY-3D : PR1556 - Survey - Geodata Catalogue</title></head><body><table>
+<tr>
+                    <th scope="row" class="dataset-label">
+                        Survey Extents in GeoJSON
+                    </th>
+                    <td class="dataset-details"  property="locn:geometry">
+                        
+
+    
+    <div class="dataset-map" data-module="dataset-map" data-module-map-container-id="dataset-map-container-spatial" data-extent="{&#34;type&#34;:&#34;Polygon&#34;,&#34;coordinates&#34;:[[[174.21363352076921,-39.67770986473279],[174.19814993379029,-39.67770813128589],[174.18266637834714,-39.677704330349862],[174.16718285591762,-39.677698461750033],[174.15169936798071,-39.677690525311938],[174.13621591601662,-39.677680520861301],[174.12073250150678,-39.677668448224068],[174.10524912593382,-39.677654307226376],[174.08976579078157,-39.677638097694562],[174.08961349941231,-39.773279948074212],[174.06821114601078,-39.773256020153902],[174.04680887157215,-39.773228137979387],[174.04658488780001,-39.862173779309444],[174.04635855939404,-39.951118243606608],[174.06782740033637,-39.951142078274856],[174.08929631061901,-39.951161932258536],[174.08920642262362,-39.992804629080069],[174.11799082168216,-39.99282694470871],[174.14677532717334,-39.992842106198935],[174.17555992961533,-39.992850114798443],[174.20434461953866,-39.992850971757868],[174.20436949877262,-39.795973784089433],[174.21362914051386,-39.795961357147725],[174.21363352076921,-39.67770986473279]]]}" data-module-site_url="&#34;https://geodata.nzpam.govt.nz/&#34;" data-module-map_config="{&#34;type&#34;: &#34;custom&#34;, &#34;custom.url&#34;: &#34;https://tile.openstreetmap.org/{z}/{x}/{y}.png&#34;, &#34;attribution&#34;: &#34;Map tiles by &lt;a href=\&#34;http://mapbox.com\&#34;&gt;MapBox&lt;/a&gt;, under &lt;a href=\&#34;http://creativecommons.org/licenses/by/3.0\&#34;&gt;CC BY 3.0&lt;/a&gt;. Data by &lt;a href=\&#34;http://openstreetmap.org\&#34;&gt;OpenStreetMap&lt;/a&gt;, under &lt;a href=\&#34;http://creativecommons.org/licenses/by-sa/3.0\&#34;&gt;CC BY SA&lt;/a&gt;.&#34;}">
+        <div id="dataset-map-container-spatial" class="dataset-map-container"></div>
+    </div>
+    
+    
+
+                    </td>
+                </tr>
+</table></body></html>

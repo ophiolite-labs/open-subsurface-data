@@ -1,0 +1,73 @@
+# Outline extraction rules (OSD-D11): tool configuration, never a record field.
+# Keyed by record id, then by the name of an input the record declares. min_features is the
+# count the last reviewed run produced; outline-derived fails below it (a shrinking register is
+# a finding). Record ids absent here keep their placeholder outline and are reported in E03.
+#
+# register-wfs: id/uwi/name are property names; kind is a literal or {field, map, default};
+#   keep filters features by property; params are added to every page request; hits: true
+#   compares the service's numberMatched with the features served.
+# segy-hull: x_byte/y_byte/scalar_byte (SEG-Y, 1-based) or x_field/y_field/scalar_field (MDIO).
+# publisher-file: GeoJSON, or the locn:geometry extent of a publisher's page.
+
+sodir/factpages:
+  min_features: 1
+  inputs:
+    wellbores:
+      extractor: register-wfs
+      kind: wellbore
+      id: NPDID_wellbore
+      name: Wellbore_name
+      page_size: 1000
+      params: {outputFormat: GEOJSON, propertyName: "Wellbore_name,NPDID_wellbore,SHAPE"}
+    seismic-finished: &sodir-seismic
+      extractor: register-wfs
+      kind: {field: Sub_type, map: {"2D": survey-2d}, default: survey-3d}
+      id: NPDID_for_survey
+      name: Survey_name
+      keep: {Net_or_gross: net}   # every survey has one net area; 634 also have a gross area incl. turns
+      page_size: 1000
+      params: {outputFormat: GEOJSON, propertyName: "Survey_name,NPDID_for_survey,Sub_type,Net_or_gross,SHAPE"}
+    seismic-ongoing: *sodir-seismic
+    seismic-paused: *sodir-seismic
+    # planned, pending and cancelled surveys hold no data and are not outlined
+
+nlog/nlog:
+  min_features: 1
+  inputs:
+    boreholes:
+      extractor: register-wfs
+      kind: wellbore
+      id: BOREHOLE_CODE
+      uwi: UWI
+      name: BOREHOLE_NAME
+      page_size: 1000
+      params: {outputFormat: application/json, propertyName: "BOREHOLE_CODE,BOREHOLE_NAME,UWI,GEOMETRY",
+               sortBy: BOREHOLE_CODE}
+    surveys-3d:
+      extractor: register-wfs
+      kind: survey-3d
+      id: SIGNAL_COLLECTION_ID
+      name: SURVEY_ID
+      page_size: 1000
+      params: {outputFormat: application/json, propertyName: "SIGNAL_COLLECTION_ID,SURVEY_ID,GEOMETRY",
+               sortBy: SIGNAL_COLLECTION_ID}
+
+nopims/poseidon:
+  min_features: 1
+  inputs:
+    full-stack-agc:
+      extractor: segy-hull
+      kind: survey-3d
+      x_field: cdp-x
+      y_field: cdp-y
+      scalar_field: scalar_apply_coords
+
+nzpam/parihaka:
+  min_features: 1
+  inputs:
+    survey-extent: {extractor: publisher-file, kind: survey-3d}
+
+nzpam/kerry-3d:
+  min_features: 1
+  inputs:
+    survey-extent: {extractor: publisher-file, kind: survey-3d}
