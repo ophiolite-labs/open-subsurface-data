@@ -9,6 +9,7 @@ publisher: {name: "New York State Department of Environmental Conservation, Divi
 origin:
   url: https://data.ny.gov/Energy-Environment/Oil-Gas-Other-Regulated-Wells-Beginning-1860/szye-wmt3
   access: anonymous
+  manifest_url: https://data.ny.gov/api/views/szye-wmt3.json
   notes: "Feature service https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/Oil_Gas_and_Other_Regulated_Wells/FeatureServer (\"Service layer is updated daily\"); DEC well search http://www.dec.ny.gov/cfmx/extapps/GasOil/."
 licence:
   name: "NYS DEC data terms on the wells layer (\"Secondary Distribution of the data is not allowed\")"

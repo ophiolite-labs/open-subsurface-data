@@ -6,7 +6,8 @@ publisher: {name: British Geological Survey, url: https://www.bgs.ac.uk, country
 origin:
   url: https://www.bgs.ac.uk/datasets/boreholes-index/
   access: anonymous
-  notes: Also served as OGC API Features, WMS (Boreholes theme) and through GeoIndex.
+  manifest_url: https://www.bgs.ac.uk/download/single-onshore-borehole-index-sobi-dataset/?wpdmdl=125849
+  notes: "Also served as OGC API Features, WMS (Boreholes theme) and through GeoIndex. The download page https://www.bgs.ac.uk/download/single-onshore-borehole-index-sobi-dataset/ (75.58 MB, updated 16 Oct 2026) serves sobi-borehole.zip at the manifest_url."
 licence:
   name: Open Government Licence (BGS)
   spdx: OGL-UK-3.0

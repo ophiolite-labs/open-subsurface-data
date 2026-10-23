@@ -9,7 +9,8 @@ publisher: {name: Federal Office of Topography swisstopo, url: https://www.swiss
 origin:
   url: https://opendata.swiss/en/dataset/tiefe-bohrungen
   access: anonymous
-  notes: "Resources on the catalogue page: WMS and WMTS layer ch.swisstopo.geologie-bohrungen_tiefer_500, the geo.admin.ch REST API, the map.geo.admin.ch preview and a download. Landing page https://www.swisstopo.admin.ch/de/landesgeologie."
+  manifest_url: https://data.geo.admin.ch/api/stac/v1/collections/ch.swisstopo.geologie-bohrungen_tiefer_500/items/geologie-bohrungen_tiefer_500
+  notes: "Resources on the catalogue page: WMS and WMTS layer ch.swisstopo.geologie-bohrungen_tiefer_500, the geo.admin.ch REST API, the map.geo.admin.ch preview and a download. Landing page https://www.swisstopo.admin.ch/de/landesgeologie. The catalogue's download is the STAC item on data.geo.admin.ch (the manifest_url), which names a File Geodatabase zip, a GeoPackage (EPSG:2056) and a shapefile zip."
 licence:
   name: "opendata.swiss terms of use: Open use. Must provide the source."
   spdx: null
