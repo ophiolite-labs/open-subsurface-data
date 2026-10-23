@@ -122,7 +122,7 @@ def test_osd_new_fails_validation_only_on_the_human_fields(tmp_path):
         "licence/redistribution: None is not of type 'string'",
         "licence/redistribution: None is not one of ['allowed', 'restricted', 'forbidden', 'unknown']",
         "origin/access: None is not of type 'string'",
-        "origin/access: None is not one of ['anonymous', 'registration', 'api', 'request']",
+        "origin/access: None is not one of ['anonymous', 'registration', 'api', 'request', 'purchase']",
         "publisher/name: None is not of type 'string'",
     ]
 
