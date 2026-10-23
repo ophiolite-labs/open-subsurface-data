@@ -111,22 +111,32 @@ test('10,000 wellbores cluster at zoom 5 and the frame after moveend arrives und
   assert.ok(seen.clusters + seen.singles < 500, 'points are grouped, not drawn one by one');
   assert.ok(seen.points > N * 0.9, `most of the ${N} points are on screen`);
 
-  await browser.startTracing(page, { path: join(OUT, 'pan-trace.json'), screenshots: false });
-  const frames = [];
-  for (const [dx, dy] of [[300, 0], [0, 200], [-300, 0], [0, -200], [250, 150]]) {
-    frames.push(await page.evaluate(([dx, dy]) => new Promise(ok => {
-      const m = window.osdMap;
+  const pans = () => page.evaluate(async () => {
+    const m = window.osdMap, out = [];
+    for (const [dx, dy] of [[300, 0], [0, 200], [-300, 0], [0, -200], [250, 150]]) out.push(await new Promise(ok => {
       m.once('moveend', () => { const t0 = performance.now(); requestAnimationFrame(() => ok(performance.now() - t0)); });
       m.panBy([dx, dy], { duration: 400 });
-    }), [dx, dy]));
-  }
+    }));
+    return out;
+  });
+  const median = fs => [...fs].sort((a, b) => a - b)[Math.floor(fs.length / 2)];
+  const ms = fs => fs.map(f => f.toFixed(1)).join(', ');
+  await browser.startTracing(page, { path: join(OUT, 'pan-trace.json'), screenshots: false });
+  const frames = await pans();
   await browser.stopTracing();
-  console.log('# 10k wellbores at zoom 5:', JSON.stringify(seen), 'frame after moveend (ms):', frames.map(f => f.toFixed(1)).join(', '));
   await page.screenshot({ path: join(OUT, 'clusters-10k.png') });
-  // Median of the five pans: one outlier on a shared runner (110 ms on 23 Oct with four frames under 98 ms)
-  // is scheduler noise, not a regression; a real regression moves the median. Budget unchanged (E05).
-  const median = [...frames].sort((a, b) => a - b)[Math.floor(frames.length / 2)];
-  assert.ok(median < 100, `median frame after moveend ${median.toFixed(1)} ms (frames ${frames.map(f => f.toFixed(1)).join(', ')})`);
+  // Runner speed, measured on the same page: the same five pans with the wells source emptied, so the
+  // frame holds the base map, extents and swiftshader's fill but none of the 10,000 points. The budget is
+  // 100 ms on a machine whose reference frame is REF_MS (this host, 23 Oct) and grows only in proportion
+  // when the runner's reference frame is slower; the points' share of the frame is held to the same bound.
+  await page.evaluate(() => new Promise(ok => { window.osdMap.getSource('wells').setData({ type: 'FeatureCollection', features: [] }); window.osdMap.once('idle', ok); }));
+  const ref = await pans();
+  const BUDGET = 100, REF_MS = 30;
+  const budget = BUDGET * Math.max(1, median(ref) / REF_MS);
+  console.log('# 10k wellbores at zoom 5:', JSON.stringify(seen), `frame after moveend (ms): ${ms(frames)}; reference without the points: ${ms(ref)}; budget ${budget.toFixed(1)} ms`);
+  // Median of the five pans: one outlier on a shared runner is scheduler noise, not a regression; a real
+  // regression moves the median (E05). A uniformly slow runner moves the reference too (PR #35, #36).
+  assert.ok(median(frames) < budget, `median frame after moveend ${median(frames).toFixed(1)} ms over ${budget.toFixed(1)} ms (frames ${ms(frames)}; reference ${ms(ref)})`);
   assert.deepEqual(errors, []);
   await context.close();
 });
@@ -565,7 +575,9 @@ test('why: each reason class shows the verifier\'s sentence and the date it was 
   const byId = Object.fromEntries(body.records.map(r => [r.id, r]));
   const { context, page, errors } = await open('sel=equinor/volve', { routes: withWhy });
   for (const [id, want] of Object.entries(CLASSES)) {
-    await page.evaluate(id => { location.hash = 'sel=' + id; }, id);
+    // a click in the list selects directly; a hash written while the previous fly-to ends can be
+    // replaced by that fly's own moveend before hashchange runs (slow runners, PR #36)
+    await page.locator(`#list li[data-id="${id}"]`).click();
     await page.waitForFunction(t => document.querySelector('#detail h3 .title')?.textContent === t, byId[id].title);
     const got = await whyOf(page);
     assert.equal(await page.locator('#detail dt', { hasText: /^Why this level$/ }).count(), 1, id);
@@ -584,7 +596,7 @@ test('why: a blocked record shows the OSD-D20 sentence and no level badge, in th
   assert.deepEqual(got.badges, ['blocked since 2026-10-21']);
   assert.equal(await page.locator('#list li[data-id="nm-ocd/oil-and-gas-wells"] .lvl').count(), 0);
   assert.equal(await page.locator('#list li[data-id="nm-ocd/oil-and-gas-wells"] .blocked').innerText(), 'blocked since 2026-10-21');
-  await page.evaluate(() => { location.hash = 'sel=sodir/factpages'; });
+  await page.locator('#list li[data-id="sodir/factpages"]').click();
   await page.waitForFunction(() => /^sample/.test(document.querySelector('#detail dd.why .reason').textContent));
   assert.deepEqual((await whyOf(page)).badges, ['L2']);
   assert.deepEqual(errors, []);
