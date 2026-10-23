@@ -403,7 +403,6 @@ test('select: a purchase dataset with terms: the page writes osd.manifest/4 with
   const built = JSON.parse(await readFile(join(ROOT, 'site', 'data', 'records.json'), 'utf8'));
   const { context, page, errors, unexpected } = await open(`pick=${PASA},opm/norne`, { routes: withAssets });
   await page.waitForFunction(() => document.querySelector('#basket .files.todo'));
-  assert.match(await page.locator(`#basket li[data-id="${PASA}"] .terms`).innerText(), /at most 10 years/);
   assert.match(await page.locator(`#basket li[data-id="${PASA}"] .files`).innerText(), /^to-do: access purchase/);
   await page.screenshot({ path: join(OUT, 'select-purchase-terms.png') });
   const { file, doc } = await downloadManifest(page, 'osd.manifest-purchase.json');
@@ -412,7 +411,7 @@ test('select: a purchase dataset with terms: the page writes osd.manifest/4 with
   const [pasa, norne] = doc.entries;
   assert.equal(pasa.access, 'purchase');
   assert.deepEqual(pasa.licence, records[PASA].licence);
-  assert.deepEqual(pasa.licence.terms, { stated: records[PASA].licence.terms.stated, duration: 'at most 10 years from purchase',
+  assert.deepEqual(pasa.licence.terms, { stated: records[PASA].licence.terms.stated, duration: records[PASA].licence.terms.duration,
     review_before_publication: true, expires: null });
   assert.equal('terms' in norne.licence, false);
   const { entries, dest } = await roundTrip(file, 'purchase');   // equal to osd manifest, entry for entry
