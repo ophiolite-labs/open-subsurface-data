@@ -1,0 +1,30 @@
+id: boem/ogor-a-well-production
+title: Oil and Gas Operations Reports - Part A (OGOR-A) Well Production 1996-Current
+summary: >-
+  BOEM Data Center production files: OGOR-A well production for the Gulf of America OCS, one
+  fixed-width and one delimited zip per year from 1996 to the current year ("Well Production
+  Information Available for June 2026" in the 2026 file). The production pages also give lease and
+  operator rankings, OGOR-B and OGOR-C files and online queries.
+publisher: {name: Bureau of Ocean Energy Management (BOEM), url: https://www.boem.gov, country: US}
+origin:
+  url: https://www.data.boem.gov/Main/OGOR-A.aspx
+  access: anonymous
+  manifest_url: https://www.data.boem.gov/Main/OGOR-A.aspx
+  notes: "The page links 62 zips under /Production/Files/ (ogoradelimit.zip for the current year, 632,057 bytes on 23 Oct 2026, dated 10/15/2026; ogora<year>delimit.zip and ...fixed.zip back to 1996). The production overview is https://www.data.boem.gov/Main/Production.aspx."
+licence:
+  name: BOEM Data Center disclaimer
+  spdx: null
+  url: https://www.data.boem.gov/Main/HtmlPage.aspx?page=Disclaimer
+  redistribution: unknown
+  attribution: unknown
+kinds: [production]
+region: {country: US, basin: "Gulf of America Outer Continental Shelf"}
+listed_by: [publisher]
+known_issues:
+  - "Disclaimer: 'Some errors may exist in this data'; the page states no licence or reuse terms."
+  - "No bbox: the page names the Gulf of America but states no extent."
+period:
+  start: "1996"
+  end: "2026-06"
+  stated: "Page title 'Well Production 1996-Current'; the 2026 file: 'Well Production Information Available for June 2026' (last updated 10/15/2026)"
+added: 2026-10-23

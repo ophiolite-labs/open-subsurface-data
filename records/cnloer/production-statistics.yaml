@@ -1,0 +1,31 @@
+id: cnloer/production-statistics
+title: Statistical Information (Resource Management, Exploration, Safety and Environment Statistics)
+summary: >-
+  C-NLOER's statistical information for the Canada-Newfoundland and Labrador offshore area: monthly
+  production graphs and production summaries by well for the Hebron, Hibernia, North Amethyst, Terra
+  Nova and White Rose fields, total offshore production, geophysical activity summaries (1996 to 2025)
+  and cumulative seismic, survey, gravity and magnetics data acquired per year.
+publisher: {name: Canada-Newfoundland and Labrador Offshore Energy Regulator (C-NLOER), url: https://www.cnloer.ca, country: CA}
+origin:
+  url: https://www.cnloer.ca/information/statistics/
+  access: anonymous
+  manifest_url: https://www.cnloer.ca/information/statistics/
+  notes: "The page links PDFs on www.cnloer.ca and the former www.cnlopb.ca host: total offshore production off_prod-1.pdf (377,030 bytes on 23 Oct 2026), per-field monthly oil files (Hibernia from hib_oil_1997.pdf) and yearly production summaries by well (from 2002 for Hibernia, Terra Nova and North Amethyst). Formerly the C-NLOPB."
+licence:
+  name: C-NLOER website copyright notice
+  spdx: null
+  url: https://www.cnloer.ca/disclaimer/
+  redistribution: forbidden
+  attribution: unknown
+kinds: [production, reports]
+region: {country: CA, basin: Newfoundland and Labrador offshore (Jeanne d'Arc Basin fields)}
+listed_by: [publisher]
+known_issues:
+  - "Copyright: 'Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications.' 'Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited.'"
+  - "Older files stay on the former http://www.cnlopb.ca host."
+  - "No bbox: the page names fields, not an extent."
+period:
+  start: "1997"
+  end: "2026"
+  stated: "Hibernia monthly oil production files hib_oil_1997.pdf to hib_oil_2026.pdf; production summaries by well 2002 to 2026"
+added: 2026-10-23

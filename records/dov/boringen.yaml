@@ -1,0 +1,29 @@
+id: dov/boringen
+title: Boringen (DOV boreholes, WFS layer dov-pub:Boringen)
+summary: >-
+  The Databank Ondergrond Vlaanderen (DOV) boreholes: "In de DOV-databank is elke waarneming van
+  grondlagen een boring." Each borehole carries its number, depth, start date, municipality, driller,
+  purpose, method and which descriptions exist (lithology, formal and informal stratigraphy,
+  hydrogeological stratigraphy, geotechnical coding), with a link to its record sheet and borehole report.
+publisher: {name: Databank Ondergrond Vlaanderen (DOV), url: https://www.dov.vlaanderen.be, country: BE}
+origin:
+  url: https://www.dov.vlaanderen.be/page/boringen
+  access: anonymous
+  manifest_url: "https://www.dov.vlaanderen.be/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=dov-pub:Boringen&count=1000&outputFormat=application/json"
+  notes: "The DOV services page names the WFS https://www.dov.vlaanderen.be/geoserver/wfs as a download service 'door iedereen' to use. The manifest_url is a GetFeature of the first 1,000 of 188,507 boreholes (numberMatched on 23 Oct 2026), 1,099,736 bytes, Content-Disposition inline; filename=Boringen.json. The DOV-Verkenner and pydov are the publisher's other routes to the same data."
+licence:
+  name: Modellicentie voor gratis hergebruik (Vlaamse overheid), per the DOV services terms of use
+  spdx: null
+  url: https://www.dov.vlaanderen.be/page/gebruiksvoorwaarden-dov-services
+  redistribution: allowed
+  attribution: unknown
+kinds: [wellbore-headers, reports]
+region: {country: BE, basin: Flanders, crs: "EPSG:31370 (Belgian Lambert 72)"}
+listed_by: [publisher]
+known_issues:
+  - "Terms: 'Voor de gebruiksvoorwaarden op de DOV-data wordt verder verwezen naar de modellicentie voor gratis hergebruik. Onder deze licentie doet de instantie geen afstand van haar intellectuele rechten, maar mag de data voor eender welk doel hergebruikt worden, gratis en onder minimale restricties.'"
+  - "The terms page also says to read the access and use conditions in each dataset's metadata."
+  - "No bbox: the pages name Flanders but state no extent."
+  - "Many boreholes are surface observations: 'In de databank staan er dan ook verschillende boringen met een diepte van 0 meter.'"
+notes: "No period stated."
+added: 2026-10-23

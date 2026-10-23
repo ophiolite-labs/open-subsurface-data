@@ -19,14 +19,20 @@ ar-energia/produccion-por-pozo: ["*/listado-de-pozos-cargados-por-empresas-opera
 ar-energia/trayectorias-vaca-muerta: ["*/trayectorias-de-pozo-vaca-muerta.csv"]   # datos.gob.ar dataset page (46 links): the trajectory CSV (not the zip); size not read
 bcer/well-surface-holes-permitted: ["*"]          # ArcGIS layer: one geojson export of at most maxRecordCount (2000) features
 bgs/single-onshore-borehole-index: ["*"]   # WPDM download: application/zip, attachment sobi-borehole.zip (a file by its headers); 75.58 MB as the page states, no length sent
+boem/ogor-a-well-production: ["*/Production/Files/ogoradelimit.zip"]   # page links 62 zips (1996 to the current year); the current year's delimited file, 632,057 bytes
+boem/paleontologic-data: ["*/Paleo/Files/gepaldmp_all.zip"]   # page links three zips and five PDFs; all releasable paleo reports, 3,209,217 bytes
+boem/well-data: ["*/Well/Files/5010delimit.zip"]   # page links 14 PDFs and 12 zips; the delimited Borehole file, 3,994,558 bytes (robots.txt has no group for *)
 calgem/wellstar-oil-and-gas-wells: ["*/ef53080fdf894761858dd1728610b9a0/csv?layers=0"]   # data.ca.gov entry page: the Hub CSV download (302 to hub.arcgis.com, text/csv attachment, Last-Modified 2 Jul 2026, no length)
 cgs/vrtna-prozkoumanost: ["*"]   # ArcGIS layer 1: one geojson export of at most 3000 of 746,789 features (kept as partial), 2,669,877 bytes
 cnloer/data-information-hub: ["*/expdwts.xlsx"]   # page links spreadsheets; the exploration wells table, 146,789 bytes
+cnloer/production-statistics: ["*/wp-content/uploads/off_prod-1.pdf"]   # page links ~300 PDFs; total offshore production, 377,030 bytes
 cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
 cpc/onshore-well-locations: {file: true, sample: ["*"]}   # the bare CSV of six onshore wells, under 1 KB (data.gov.tw); content type not read (www3.cpc.com.tw timed out 23 Oct)
+dov/boringen: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=Boringen.json), first 1,000 of 188,507 features, 1,099,736 bytes
 equinor/drogon: ["DROGON_HIST.DATA"]   # GitHub contents API of eclipse/model: the history deck, 6,010 bytes
 fl-dep/oil-gas-permit-database: ["*.xlsx"]   # page links one spreadsheet: OG_WELLS_WEBSITE_4.xlsx, 703,015 bytes
 force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip?download=1"]   # Zenodo record page: the LAS zip, 169,785,172 bytes
+geozs/kataster-raziskovalnih-vrtin: ["*"]   # the bare VRTINE.zip the eGeologija record names (application/x-zip-compressed: a file by its headers), 2,823,170 bytes
 gsmma/hydrogeological-drilling-database: {file: true, sample: ["*"]}   # the bare CSV data.gov.tw names; content type and size not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-core-stations-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the core station table; not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-seismic-lines-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the seismic line table; not read (Cloudflare 403 text/html, 23 Oct)
