@@ -1,0 +1,27 @@
+id: marum/bremen-core-repository
+title: Bremen Core Repository (BCR), Scientific Ocean Drilling Programs
+summary: >-
+  One of three IODP core repositories, operated at the University of Bremen: DSDP, ODP and IODP
+  cores from the Atlantic Ocean, Mediterranean, Black and Baltic Seas and Arctic Ocean, more than
+  193 km of deep-sea cores from 107 expeditions in around 300,000 boxes. Scientists request samples
+  from any leg or expedition.
+publisher: {name: "MARUM – Center for Marine Environmental Sciences, University of Bremen", url: https://www.marum.de, country: DE}
+origin:
+  url: https://www.marum.de/en/Bremen-Core-Collection-Scientific-Ocean-Drilling-Programs.html
+  access: request
+  notes: "Samples and data are requested through the Sample, Data and Research Request Manager (https://web.iodp.tamu.edu/SDRM/#/). Leg and expedition list at https://www.marum.de/en/Cores-at-the-BCR.html. The curatorial interface xdis.marum.de timed out on 23 Oct 2026."
+licence:
+  name: Scientific Ocean Drilling Programs Sample, Data, and Obligations Policy (effective 2024-10-01)
+  spdx: null
+  url: https://www.iodp.org/docs/iodp-future/1241-sample-data-and-obligations-policy/file
+  redistribution: unknown
+  attribution: unknown
+kinds: [core]
+region: {basin: "Atlantic Ocean, Mediterranean, Black and Baltic Seas, Arctic Ocean"}
+size: {stated: "more than 193 km of deep-sea cores from 107 expeditions in around 300,000 boxes"}
+listed_by: [community]
+known_issues:
+  - "The policy governs requests for samples and data and a one-year moratorium; it grants no redistribution terms for curatorial data."
+  - "Several oceans; no region country or bbox."
+  - "Physical archive: the record lists the cores, not files."
+added: 2026-10-23

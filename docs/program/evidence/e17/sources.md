@@ -175,3 +175,34 @@ E13 and E14.
 - Page: <https://www.isapp2.com/optimization-challenge.html>: "To get acces, please register via a request to one of the contact persons found on the support page"
 - Licence: <https://www.isapp2.com/optimization-challenge/optimization-challenge-download-files.html>: "(c) 2017 TNO, The Hague, the Netherlands. All copyrights and other intellectual property rights reserved. ... You may redistribute the files for your own purposes, however all references to TNO in the file headers should be maintained as is and the files must remain unchanged."
 - Period: <https://www.isapp2.com/optimization-challenge/timeline.html>: "February 2017: Launch of Olympus optimization challenge."
+
+## tudelft/egg-model
+
+- Page: <https://doi.org/10.4121/uuid:916c86cd-3558-4672-829a-105c62985ab2> → <https://data.4tu.nl/articles/_/12707642/1>: TCP timeout from this host (unreachable), also the site root.
+- DataCite <https://api.datacite.org/dois/10.4121/uuid:916c86cd-3558-4672-829a-105c62985ab2>:
+  - "The 'Egg Model' is a synthetic reservoir model consisting of an ensemble of 101 relatively small three-dimensional realizations of a channelized reservoir produced under water flooding conditions with eight water injectors and four producers."
+  - rights "4TU General Terms of Use", rightsUri <https://doi.org/10.4121/resource:terms_of_use> (unreadable: same host). Recorded `unknown`.
+  - dates [{date: 2013-11-12, dateType: Issued}]
+- Synthetic: no extent.
+
+## beg/stratton-3d
+
+- Page: <https://store.beg.utexas.edu/publications/seminars-and-workshops/sw0003>: "Publication Year 1994 Keywords 3-D Seismic , Fluvial Systems , Stratton Field , Well Logs Publication Code SW0003 Series Seminars and Workshops Publisher Bureau of Economic Geology"; "(Digital Version) ... $40.00"
+- Licence: none on the store page. Recorded `unknown`.
+- SEG wiki Stratton page and the open.source.geoscience bucket: 403 (blocked).
+
+## marum/bremen-core-repository
+
+- Page: <https://www.marum.de/en/Bremen-Core-Collection-Scientific-Ocean-Drilling-Programs.html>
+  - "The Bremen Core Repository - BCR, for International Ocean Drilling Programme (IODP³), International Ocean Discovery Program (IODP), Integrated Ocean Drilling Program (IODP), Ocean Drilling Program (ODP), and Deep Sea Drilling Project (DSDP) cores from the Atlantic Ocean, Mediterranean, Black and Baltic Seas and Arctic Ocean is operated at University of Bremen"
+  - "BCR presently contains more than 193 km of deep-sea cores from 107 expeditions in around 300,000 boxes"
+- Policy: <https://www.iodp.org/docs/iodp-future/1241-sample-data-and-obligations-policy/file>: "Requests for samples and data, including non-destructive analyses, must be made through official repository channels using the Sample, Data and Research Request Manager (SDRM) website"; "Expedition samples and data are held under a one-year moratorium". No redistribution terms; recorded `unknown`.
+- Extent: several oceans, none stated as a box. Period: none stated for the holdings.
+
+## Not recorded (seismic and model sets)
+
+- SEG: SEAM Phase I, Viking Graben line 12, SEG/EAGE salt and overthrust models: seg.org and wiki.seg.org answer 403 (blocked, OSD-D9). The Zenodo Overthrust upload says "Only uploading here to get a DOI": a third-party copy, not the publisher.
+- Marmousi (1988, IFP): no publisher page; copies only on mirrors.
+- PUNQ-S3: every Imperial College address 404 or redirects home (dead).
+- Brugge: no TNO or SPE page offers the files.
+- BEG West Waha and Worsham-Bayer (SW0008, licence not stated): held back for the `unknown` limit.

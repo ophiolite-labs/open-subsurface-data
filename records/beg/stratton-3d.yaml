@@ -1,0 +1,28 @@
+id: beg/stratton-3d
+title: "3-D Seismic and Well Log Data Set: Fluvial Reservoir Systems--Stratton Field"
+summary: >-
+  Bureau of Economic Geology publication SW0003 in the Seminars and Workshops series (Levey,
+  Hardage, Edson and Pendleton, 1994): a 3D seismic and well log data set from Stratton Field,
+  South Texas, for the study of fluvial reservoir systems.
+publisher: {name: "Bureau of Economic Geology, The University of Texas at Austin", url: https://www.beg.utexas.edu, country: US}
+origin:
+  url: https://store.beg.utexas.edu/publications/seminars-and-workshops/sw0003
+  access: request
+  notes: "Sold on the BEG store: \"(Digital Version) ... $40.00\". A free copy is said to be on the SEG open data wiki and its S3 bucket; both answered 403 on 23 Oct 2026 (blocked), so its terms are not recorded here."
+licence:
+  name: Not stated on the store page
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds: [seismic-3d, wellbore-logs]
+region: {country: US, basin: "Stratton Field (South Texas)"}
+listed_by: [community]
+known_issues:
+  - "Want: access is a purchase; the vocabulary has no such value and request is the nearest."
+  - "No extent stated; no bbox."
+  - "Old addresses https://www.beg.utexas.edu/research/programs/stratton and https://store.beg.utexas.edu/cd-rom-sets/2120-sw0003.html answer 404."
+period:
+  start: "1994"
+  end: "1994"
+  stated: "Store page: \"Publication Year 1994 ... Publication Code SW0003 Series Seminars and Workshops Publisher Bureau of Economic Geology\" (release)"
+added: 2026-10-23
