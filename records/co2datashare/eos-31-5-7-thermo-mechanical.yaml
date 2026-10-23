@@ -17,12 +17,10 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [core]
-region: {country: "NO", basin: "North Sea (Horda Platform, Aurora/EL 001)"}
+region: {country: "NO", basin: "North Sea (Horda Platform, Aurora/EL 001)", bbox: [3.4184, 60.551, 3.4684, 60.601]}
 size: {bytes_estimate: 132120576, stated: "Figures and photos ZIP 63.5 MiB, Excel data ZIP 63 MiB"}
 listed_by: [publisher]
-notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Credit to Northern Lights JV DA and a link to the terms are required. Same licence as the part I set (co2datashare/eos-31-5-7-rock-mechanics)."
-known_issues:
-  - "No bbox: the portal states one point (Longitude 3.4434, Latitude 60.576), not an extent."
+notes: "Licence based on CC BY 4.0 with two changes: the licensed material may not be sold, and it covers all data whether or not protected by copyright. Credit to Northern Lights JV DA and a link to the terms are required. Same licence as the part I set (co2datashare/eos-31-5-7-rock-mechanics). bbox is a small box (about 0.05°) around the one point the portal states (Longitude 3.4434, Latitude 60.576), approximate."
 period:
   start: "2020-06-12"
   end: "2023-05-01"

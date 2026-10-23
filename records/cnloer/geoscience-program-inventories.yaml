@@ -18,12 +18,15 @@ licence:
   redistribution: forbidden
   attribution: unknown
 kinds: [source-list, reports]
-region: {country: CA, basin: Newfoundland and Labrador offshore}
+region: {country: CA, basin: Newfoundland and Labrador offshore, bbox: [-64.4, 43.4, -47.75, 61.0]}
 listed_by: [publisher]
 known_issues:
   - "Copyright: 'Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications.' 'Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited.'"
   - "The page says 'This information can now be found on the Data and Information Hub' (https://home-cnlopb.hub.arcgis.com/); the hub's search API listed no items on 23 Oct 2026."
   - "The inventories list programs and reports; the page does not link the reports themselves."
-  - "No bbox: the inventories name regions, not an extent."
-  - "No period: the page states none."
+notes: "Period from the program year in each Geological Program Inventory title; the Data Release Date column runs to scheduled releases in 2039 and is not used. bbox is the extent of the Board's eight Land Tenure Regions (its 'Land Tenure Regions_View' feature service), approximate."
+period:
+  start: "1965"
+  end: "2025"
+  stated: "foageol.xlsx ('Geological Programs, as of December 2025'): program years in the titles run from 1965 (8631-A004-001E, Amoco core hole study) to 2025 (54220-020-022 and -023, Memorial University)"
 added: 2026-10-23

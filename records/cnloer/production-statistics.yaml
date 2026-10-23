@@ -18,14 +18,14 @@ licence:
   redistribution: forbidden
   attribution: unknown
 kinds: [production, reports]
-region: {country: CA, basin: Newfoundland and Labrador offshore (Jeanne d'Arc Basin fields)}
+region: {country: CA, basin: Newfoundland and Labrador offshore (Jeanne d'Arc Basin fields), bbox: [-64.4, 43.4, -47.75, 61.0]}
 listed_by: [publisher]
 known_issues:
   - "Copyright: 'Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications.' 'Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited.'"
   - "Older files stay on the former http://www.cnlopb.ca host."
-  - "No bbox: the page names fields, not an extent."
 period:
   start: "1997"
   end: "2026"
   stated: "Hibernia monthly oil production files hib_oil_1997.pdf to hib_oil_2026.pdf; production summaries by well 2002 to 2026"
+notes: "bbox is the extent of the Board's eight Land Tenure Regions (its 'Land Tenure Regions_View' feature service), approximate."
 added: 2026-10-23

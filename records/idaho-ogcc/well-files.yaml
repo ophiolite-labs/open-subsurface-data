@@ -22,5 +22,9 @@ known_issues:
   - "'Some documents included on the OGCC website have been marked “confidential” by the person submitting the document'; the OGCC posts them where they are 'subject to public disclosure under the Idaho Oil and Gas Conservation Act ... and the Idaho Public Records Act'."
   - "Data Explorer: 'the Department makes no warranties as to the completeness, accuracy, reliability or sustainability of the data'."
   - "No bbox: the page names counties, not an extent."
-notes: "No period: the LAS zip is 'for wells drilled 2007 and later'; the page states no end."
+notes: "Period: the OGCC files cover wells drilled from 2007 ('prior to 2007' are on the Idaho Geological Survey site); the page states no end, so the live list ends on the read date."
+period:
+  start: "2007"
+  end: "2026-10-23"
+  stated: "Well Files page: 'LAS files for wells drilled 2007 and later'; 'Information for oil and gas wells drilled in Idaho prior to 2007 can be found on the Idaho Geological Survey website'; a live list, no end stated, so to today"
 added: 2026-10-23

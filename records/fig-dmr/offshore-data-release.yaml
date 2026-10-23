@@ -17,11 +17,10 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [seismic-2d, seismic-3d, reports]
-region: {country: FK, basin: "North Falkland Basin, South Falkland Basin, Falkland Plateau Basin"}
+region: {country: FK, basin: "North Falkland Basin, South Falkland Basin, Falkland Plateau Basin", bbox: [-63.6, -56.3, -52.4, -47.6]}
 listed_by: [publisher]
 known_issues:
   - "'The decision to release data is made by FIG/ the Governor and only once the data are greater than 5.5 years old (or greater than 10 years in the case of seismic data acquired under exclusive licence arrangements)'. Academic use is 'for research and teaching purposes only'."
   - "The page says 'seismic data' without naming 2D or 3D; the kinds are the seismic kinds the licences could hold, not a stated inventory."
-  - "No bbox: the page names the basins but states no extent."
-notes: "No period stated."
+notes: "No period stated. bbox is the Falkland Islands Designated Area read from the graticule of the DMR map 'Falkland Islands: Offshore Exploration Areas' (November 2023), approximate."
 added: 2026-10-23

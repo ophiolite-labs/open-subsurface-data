@@ -16,11 +16,14 @@ licence:
   redistribution: forbidden
   attribution: unknown
 kinds: [geochemistry]
-region: {country: CA, basin: Newfoundland and Labrador offshore}
+region: {country: CA, basin: Newfoundland and Labrador offshore, bbox: [-64.4, 43.4, -47.75, 61.0]}
 listed_by: [publisher]
 known_issues:
   - "Copyright: 'Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications.' 'Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited.'"
   - "The page says 'This information can now be found on the Data and Information Hub' (https://home-cnlopb.hub.arcgis.com/); the hub's search API listed no items on 23 Oct 2026."
-  - "No bbox: the inventory lists wells, not an extent."
-  - "No period: the page and file state no dates for the samples."
+notes: "Period is the Spud column of the inventory (drilling dates of the sampled wells). bbox is the extent of the Board's eight Land Tenure Regions (its 'Land Tenure Regions_View' feature service), approximate."
+period:
+  start: "1966-08-16"
+  end: "2020-07-07"
+  stated: "foasourcerock.xlsx ('Released Source Rock Information - December 2025'), Spud column over 324 wells: earliest Grand Falls H-09 1966-08-16, latest Cambriol G-92 2020-07-07"
 added: 2026-10-23

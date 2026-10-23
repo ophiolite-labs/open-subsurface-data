@@ -19,11 +19,10 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [wellbore-headers, wellbore-paths, time-depth, reports]
-region: {country: US, basin: "Gulf of America Outer Continental Shelf", crs: "NAD 1927 (GOA coordinate values)"}
+region: {country: US, basin: "Gulf of America Outer Continental Shelf", bbox: [-97.21, 23.82, -81.14, 30.25], crs: "NAD 1927 (GOA coordinate values)"}
 listed_by: [publisher]
 known_issues:
   - "Disclaimer: 'This accessible computer data is from a working database which is derived by entering data from documents submitted to the Federal Government from oil companies, other Government Agencies, and/or the public. Some errors may exist in this data'. The page states no licence or reuse terms."
-  - "No bbox: the page names the Gulf of America OCS but states no extent."
   - "Directional surveys: 'BSEE transitioned to a PPDM data model for directional survey storage and management on July 25-26, 2020'; bottom hole locations are now 'calculated from the directional survey associated with the well'."
-notes: "No period stated for the borehole file as a whole; the well test PDFs run from 1975 to present."
+notes: "No period stated for the borehole file as a whole; the well test PDFs run from 1975 to present. bbox is the extent of BOEM's three Gulf planning areas (GOA_Layers map service, layer 8 'BOEM Oil and Gas Planning Areas'), approximate."
 added: 2026-10-23
