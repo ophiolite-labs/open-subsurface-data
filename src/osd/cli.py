@@ -67,7 +67,9 @@ def cmd_verify(a: argparse.Namespace) -> int:
         o = v["origin"]
         l2 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L2")
         l3 = "; ".join(f"{c['name']}: {c['outcome']} ({c.get('detail', '')})" for c in v["checks"] if c["level"] == "L3")
-        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}; {l2}; {l3})")
+        l1 = next((c.get("detail", "") for c in v["checks"] if c["name"] == "origin-reachable"), "")
+        print(f"  {v['level']}  {v['record_id']}  (origin {o.get('reachability')} HTTP {o.get('http_status')}: {l1}; "
+              f"{l2}; {l3})")
     print(f"{len(results)} verified -> {paths.VERIFICATION_DIR}")
     return 0
 
@@ -98,12 +100,17 @@ def terms_note(rec: dict, now: datetime | None = None) -> str:
 
 
 def l2_reason(v: dict | None) -> str:
-    """Why a record is below L2 (E23): the detail of its first L2 check that did not pass, else of
-    the first check below L2 that did not pass; empty at L2 and above."""
+    """Why a record is below L2 (E23): for a blocked origin the origin check's detail (H1), else the
+    detail of its first L2 check that did not pass, else of the first check below L2 that did not
+    pass; empty at L2 and above."""
     if v is None:
         return "never verified"
     if LEVELS.index(v["level"]) >= LEVELS.index("L2"):
         return ""
+    if v.get("origin", {}).get("reachability") == "blocked":  # H1: how, e.g. "answers a browser, not the verifier"
+        for c in v["checks"]:
+            if c["name"] == "origin-reachable":
+                return f"{c['name']}: {c.get('detail') or c['outcome']}"
     for levels in (("L2",), ("L1",)):
         for c in v["checks"]:
             if c["level"] in levels and c["outcome"] != "pass":

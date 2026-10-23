@@ -15,13 +15,18 @@ Reachability is one of four closed, exclusive classes, decided on the final resp
   moved    2xx/3xx on another host: passes, the detail suggests a record update
   dead     anything else: status 0 (DNS, timeout, refused), 401, 404, 410, other 4xx, 5xx;
            timeouts, refused connections and 5xx are retried once first
+A terminal 404, 410 or 5xx is asked once more, paced, with a browser's user agent (OSD-D20, H1): if
+that answers 2xx after redirects the publisher hides from the verifier, and the origin is `blocked`
+("answers a browser, not the verifier"), not dead. That request's body is never read; the browser
+agent reaches no listing, licence page or file.
 Sampling policy (which listed files L2 hashes) is tool configuration in verifier/samples.yaml,
 keyed by record id, never a record field (OSD-D11). Listings are read by shape (osd.verifier.listings,
 E23); a publisher's stated checksum is computed from the same stream beside SHA-256 and compared, and
 an export the server truncated is kept apart from `files` as a partial export.
 
-The network is injected twice: a Fetcher probes an origin (first 16 KB), an Opener streams a
-body in chunks and raises FetchError. Tests pass fakes, so the required CI check stays offline.
+The network is injected three times: a Fetcher probes an origin (first 16 KB), an Opener streams a
+body in chunks and raises FetchError, a BrowserProbe answers (status, final URL) for the browser
+agent. Tests pass fakes, so the required CI check stays offline.
 """
 
 from __future__ import annotations
@@ -55,6 +60,10 @@ SAMPLES_PATH = Path(__file__).parent / "verifier" / "samples.yaml"
 LEVELS = ["L0", "L1", "L2", "L3", "L4"]
 USER_AGENT = ("open-subsurface-data-verifier/" + __version__
               + " (+https://github.com/ophiolite-labs/open-subsurface-data)")
+# OSD-D20: a desktop browser's agent, for one request about an origin whose body is never read
+BROWSER_USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/130.0.0.0 Safari/537.36")
+BROWSER_RETRY = frozenset({404, 410})  # and every 5xx: the answers a hiding publisher gives the verifier
 PROBE_BYTES = 16384
 CHUNK = 1 << 20
 RUN_BYTE_BUDGET = 2 * 1024**3  # charter: never hash more than 2 GB per run
@@ -89,6 +98,7 @@ class FetchError(Exception):
 
 Fetcher = Callable[[str], Fetched]
 Opener = Callable[[str], Iterable[bytes]]
+BrowserProbe = Callable[[str], tuple[int, str]]  # (status after redirects, final URL); 0 for no answer
 
 
 # --- network (only used outside tests) ---------------------------------------------------
@@ -119,6 +129,19 @@ def http_fetch(url: str, timeout: float = 20.0) -> Fetched:
         return Fetched(e.code, url, e.headers.get("Content-Type", "") if e.headers else "", ms(), body)
     except (urllib.error.URLError, TimeoutError, OSError) as e:
         return Fetched(0, url, "", ms(), error=_error_kind(e))
+
+
+def http_browser_probe(url: str, timeout: float = 20.0) -> tuple[int, str]:
+    """GET with the browser agent; the response, an error response included, is closed unread."""
+    req = urllib.request.Request(url, headers={"User-Agent": BROWSER_USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.status, resp.geturl()
+    except urllib.error.HTTPError as e:
+        e.close()
+        return e.code, e.filename or url
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return 0, url
 
 
 class _Body:
@@ -189,6 +212,16 @@ def paced(fetch: Fetcher, opener: Opener, pacer: Pacer) -> tuple[Fetcher, Opener
     return f, _Paced
 
 
+def paced_probe(browser_probe: BrowserProbe, pacer: Pacer) -> BrowserProbe:
+    def b(url: str) -> tuple[int, str]:
+        pacer.wait(url)
+        try:
+            return browser_probe(url)
+        finally:
+            pacer.done(url)
+    return b
+
+
 # --- L1 ------------------------------------------------------------------------------------
 
 def _challenge(body: bytes) -> bool:
@@ -217,6 +250,17 @@ def classify(f: Fetched, url: str) -> tuple[str, str]:
                              f"origin.url is due")
         return "ok", f"HTTP {f.status} from {f.final_url}"
     return "dead", (f"HTTP {f.status} from {f.final_url}" if f.status else f"{f.error or 'error'} at {url}")
+
+
+def hides(f: Fetched, url: str, browser_probe: BrowserProbe | None) -> str | None:
+    """OSD-D20: after a terminal dead 404, 410 or 5xx, the detail of a `blocked` origin when the same
+    URL answers a browser agent 2xx; None otherwise (no probe, other answers, the browser refused)."""
+    if browser_probe is None or not (f.status in BROWSER_RETRY or f.status >= 500):
+        return None
+    status, _ = browser_probe(url)
+    if not 200 <= status < 300:
+        return None
+    return f"answers a browser, not the verifier (HTTP {f.status} to osd-verifier, HTTP {status} to a browser agent)"
 
 
 # --- L2 ------------------------------------------------------------------------------------
@@ -506,7 +550,8 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
                   opener: Opener | None = None, previous: dict | None = None,
                   budget: ByteBudget | None = None, sample: list[str] | None = None,
                   outline_rule: dict | None = None, stored: dict[str, str] | None = None,
-                  refused: str | None = None, mirror_rule: list[str] | None = None) -> dict:
+                  refused: str | None = None, mirror_rule: list[str] | None = None,
+                  browser_probe: BrowserProbe | None = None) -> dict:
     checks: list[dict] = []
     extra: dict = {}
 
@@ -514,6 +559,8 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
     url = rec["origin"]["url"]
     f = probe(url, fetch)
     reach, detail = classify(f, url)
+    if reach == "dead" and (browser := hides(f, url, browser_probe)):
+        reach, detail = "blocked", browser
     origin = {"http_status": f.status, "final_url": f.final_url, "content_type": f.content_type[:100],
               "elapsed_ms": f.elapsed_ms, "reachability": reach}
     if reach == "blocked":
@@ -682,12 +729,14 @@ def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, out
 def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
                out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None,
                derive: bool = False, fetch_inputs: bool = False, inputs_dir: Path = outlines.INPUTS_DIR,
-               outlines_dir: Path = paths.OUTLINES_DIR) -> list[dict]:
+               outlines_dir: Path = paths.OUTLINES_DIR, browser_probe: BrowserProbe | None = None) -> list[dict]:
     """Defaults are the network, paced; tests inject both and are not paced. `derive` (osd verify
     --outlines) refetches the inputs of records that have outline rules and rewrites their outlines;
     `fetch_inputs` (--outline-inputs) refetches them and checks the committed outlines against them."""
     if fetch is None and opener is None:
-        fetch, opener = paced(http_fetch, http_open, Pacer())
+        pacer = Pacer()
+        fetch, opener = paced(http_fetch, http_open, pacer)
+        browser_probe = browser_probe or paced_probe(http_browser_probe, pacer)
     recs = load_records()
     samples = load_samples()
     from .mirror import load_rules
@@ -709,7 +758,7 @@ def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opene
         v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
                           sample=samples.get(rid), outline_rule=rules.get(rid),
                           stored=outlines.stored_inputs(rid, inputs_dir), refused=refused,
-                          mirror_rule=mirror_rules.get(rid))
+                          mirror_rule=mirror_rules.get(rid), browser_probe=browser_probe)
         _validator().validate(v)  # never write a record the schema refuses
         out.write_text(json.dumps(v, indent=2) + "\n")
         results.append(v)

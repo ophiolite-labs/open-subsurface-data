@@ -1,9 +1,11 @@
 import copy
 import gzip
 import hashlib
+import io
 import json
 import re
 import subprocess
+import urllib.error
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -11,18 +13,25 @@ from jsonschema import Draft202012Validator, ValidationError
 
 from osd import paths
 from osd.build import build
+from osd.cli import main as cli_main
 from osd.cli import status_lines
 from osd.records import load_record, load_records
 from osd.verifier.listings import ListingError, read_listing, stated_checksum
 from osd.verify import (
+    BROWSER_USER_AGENT,
     USER_AGENT,
     ByteBudget,
     Fetched,
     FetchError,
     Pacer,
+    http_browser_probe,
+    http_fetch,
+    http_open,
     is_stale,
     level_from_checks,
     load_samples,
+    paced,
+    paced_probe,
     verify_all,
     verify_record,
 )
@@ -831,3 +840,190 @@ def test_partial_exports_stay_out_of_files():
         s.validate({**base, "files": [{**f, "partial": True}]})
     with pytest.raises(ValidationError):
         s.validate({**base, "partial_exports": [f]})
+
+
+# --- H1: publishers that hide from the verifier (OSD-D20) ---------------------------------------
+
+ORIGIN = REC["origin"]["url"]
+HIDDEN = "answers a browser, not the verifier (HTTP {} to osd-verifier, HTTP {} to a browser agent)"
+
+
+class Browser:
+    """A fake browser probe: one answer, every URL asked recorded."""
+
+    def __init__(self, status=200, final=None):
+        self.status, self.final, self.calls = status, final, []
+
+    def __call__(self, url):
+        self.calls.append(url)
+        return self.status, self.final or url
+
+
+def test_503_then_200_is_L1_without_browser_probe():
+    # mutation: the browser asked before the retry (on the first 5xx) -> a browser call recorded
+    b, f = Browser(), Counting(Fetched(503, ORIGIN, "", 5), Fetched(200, ORIGIN, "text/html", 5))
+    v = verify_record(REC, f, None, now=NOW, browser_probe=b)
+    assert (v["level"], v["origin"]["reachability"], f.calls, b.calls) == ("L1", "ok", 2, [])
+
+
+@pytest.mark.parametrize("status", [404, 410, 500, 503])
+def test_terminal_dead_answering_a_browser_is_blocked(status):
+    # mutation: the browser's answer not consulted -> dead, an origin-dead issue for a live publisher
+    b, f = Browser(200), Counting(Fetched(status, ORIGIN, "text/html", 5))
+    v = verify_record(REC, f, None, now=NOW, browser_probe=b)
+    c = outcome(v, "origin-reachable")
+    assert (f.calls, b.calls) == (2 if status >= 500 else 1, [ORIGIN])  # after the retry, once
+    assert (v["origin"]["reachability"], v["level"], c["outcome"]) == ("blocked", "L0", "skip")
+    assert v["origin"]["http_status"] == status  # the verifier's answer; the browser's is in the detail
+    assert c["detail"] == HIDDEN.format(status, 200) + "; blocked since 2026-10-23"
+
+
+@pytest.mark.parametrize("answer,reach", [
+    (Fetched(401, ORIGIN, "", 5), "dead"),
+    (Fetched(400, ORIGIN, "", 5), "dead"),
+    (Fetched(0, ORIGIN, "", 20000, error="timeout"), "dead"),
+    (Fetched(0, ORIGIN, "", 3, error="dns"), "dead"),
+    (Fetched(403, ORIGIN, "text/html", 5), "blocked"),
+    (Fetched(429, ORIGIN, "text/html", 5), "blocked"),
+    (Fetched(200, ORIGIN, "text/html", 5), "ok"),
+    (Fetched(302, ORIGIN, "text/html", 5), "ok"),
+], ids=["401", "400", "timeout", "dns", "403", "429", "200", "302"])
+def test_browser_probe_only_after_404_410_5xx(answer, reach):
+    # mutation: the browser asked after every dead answer -> 401, 400, timeout and dns call it
+    b = Browser(200)
+    v = verify_record(REC, Counting(answer), None, now=NOW, browser_probe=b)
+    assert (b.calls, v["origin"]["reachability"]) == ([], reach)
+    assert "answers a browser" not in outcome(v, "origin-reachable")["detail"]
+
+
+@pytest.mark.parametrize("answer", [0, 404, 403, 301, 500], ids=["no-answer", "404", "403", "301", "500"])
+def test_browser_failure_leaves_dead(answer):
+    # mutation: any browser answer below 400 accepted -> an unfollowed 301 calls the origin blocked
+    b = Browser(answer)
+    v = verify_record(REC, Counting(Fetched(404, ORIGIN, "", 5)), None, now=NOW, browser_probe=b)
+    c = outcome(v, "origin-reachable")
+    assert b.calls == [ORIGIN]
+    assert (v["origin"]["reachability"], v["level"], c["outcome"], c["detail"]) == (
+        "dead", "L0", "fail", f"HTTP 404 from {ORIGIN}")
+
+
+def test_browser_redirect_to_2xx_counts():
+    # mutation: the browser's final URL required on the origin's host -> a redirected 200 left dead
+    b = Browser(200, "https://www.elsewhere.example/landing?x=1")
+    v = verify_record(REC, Counting(Fetched(410, ORIGIN, "", 5)), None, now=NOW, browser_probe=b)
+    assert v["origin"]["reachability"] == "blocked"
+    assert outcome(v, "origin-reachable")["detail"].startswith(HIDDEN.format(410, 200))
+
+
+def test_challenge_after_404_is_blocked_without_browser_probe():
+    # mutation: the browser asked before the challenge test -> the challenge detail replaced
+    b = Browser(200)
+    v = verify_record(REC, Counting(Fetched(404, ORIGIN, "text/html", 5, body=CHALLENGE)), None, now=NOW,
+                      browser_probe=b)
+    assert (b.calls, v["origin"]["reachability"]) == ([], "blocked")
+    assert outcome(v, "origin-reachable")["detail"].startswith(
+        f"blocked from this runner (challenge page, HTTP 404 from {ORIGIN})")
+
+
+class Unread:
+    """A response (or an error's body) whose read raises: proof that nobody read it."""
+
+    def __init__(self, status=200, url=ORIGIN, data=None):
+        self.status, self.url, self.data, self.closed = status, url, data, False
+        self.headers = {"Content-Type": "text/html"}
+
+    def geturl(self):
+        return self.url
+
+    def read(self, *_):
+        if self.data is None:
+            raise AssertionError("the browser probe read a body")
+        out, self.data = self.data, b""
+        return out
+
+    def close(self):
+        self.closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self.close()
+
+
+def test_browser_probe_never_reads_a_body(monkeypatch):
+    # mutation: the probe reads its response (resp.read()) -> AssertionError from the body
+    sent, answers = [], iter([
+        Unread(200, "https://elsewhere.example/landing"),
+        urllib.error.HTTPError(ORIGIN, 404, "Not Found", {}, Unread()),
+        urllib.error.URLError(TimeoutError("timed out"))])
+
+    def urlopen(req, timeout=None):
+        sent.append((req.full_url, req.get_header("User-agent")))
+        a = next(answers)
+        if isinstance(a, Exception):
+            raise a
+        return a
+
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    assert http_browser_probe(ORIGIN) == (200, "https://elsewhere.example/landing")
+    assert http_browser_probe(ORIGIN) == (404, ORIGIN)
+    assert http_browser_probe(ORIGIN) == (0, ORIGIN)
+    assert sent == [(ORIGIN, BROWSER_USER_AGENT)] * 3
+
+
+def test_browser_agent_only_on_the_origin_request(tmp_path, monkeypatch):
+    # mutation: the opener (listings, licence, files) sends BROWSER_USER_AGENT -> the log shows it
+    rec = l2_fixture(tmp_path)
+    log = []
+
+    def urlopen(req, timeout=None):
+        url, agent = req.full_url, req.get_header("User-agent")
+        log.append((url, agent))
+        if url == ORIGIN:
+            if agent == BROWSER_USER_AGENT:
+                return Unread(200, url)
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, io.BytesIO(b"not here"))
+        p = tmp_path / url[len(BASE):].split("?")[0]
+        if not url.startswith(BASE) or not p.is_file():
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, io.BytesIO(b""))
+        return Unread(200, url, p.read_bytes())
+
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    v = verify_record(rec, http_fetch, None, now=NOW, opener=http_open, sample=SAMPLE,
+                      browser_probe=http_browser_probe)
+    assert v["origin"]["reachability"] == "blocked"
+    assert [u for u, a in log if a == BROWSER_USER_AGENT] == [ORIGIN]
+    assert {a for u, a in log if (u, a) != (ORIGIN, BROWSER_USER_AGENT)} == {USER_AGENT}
+    read = [u for u, _ in log]
+    assert BASE + "index.json" in read and BASE + "licence.html" in read and BASE + "data/a.sgy" in read
+
+
+def test_browser_probe_is_paced():
+    # mutation: the browser probe unpaced -> no pause after the verifier's own request to the host
+    t, slept = [100.0], []
+    pacer = Pacer(clock=lambda: t[0], sleep=lambda s: (slept.append(s), t.__setitem__(0, t[0] + s)))
+    fetch, _ = paced(lambda u: Fetched(404, u, "", 5), lambda u: iter([]), pacer)
+    v = verify_record(REC, fetch, None, now=NOW, browser_probe=paced_probe(lambda u: (200, u), pacer))
+    assert v["origin"]["reachability"] == "blocked" and slept == [pytest.approx(2.0)]
+
+
+def hidden_result():
+    return verify_record(REC, Counting(Fetched(404, ORIGIN, "", 5)), None, now=NOW, browser_probe=Browser(200))
+
+
+def test_cli_verify_prints_the_origin_detail(monkeypatch, capsys):
+    # mutation: the origin check's detail dropped from the verify line -> only "HTTP 404" printed
+    monkeypatch.setattr("osd.cli.verify_all", lambda **_: [hidden_result()])
+    assert cli_main(["verify"]) == 0
+    line = capsys.readouterr().out.splitlines()[0]
+    assert line.startswith(f"  L0  {REC['id']}  (origin blocked HTTP 404: {HIDDEN.format(404, 200)}")
+
+
+def test_status_reason_names_why_blocked(tmp_path):
+    # mutation: the blocked branch removed from l2_reason -> the reason names an L2 skip instead
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    (vdir / (REC["id"].replace("/", "__") + ".json")).write_text(json.dumps(hidden_result()))
+    (line,) = [x for x in status_lines(vdir, now=NOW) if x.split()[1] == REC["id"]]
+    assert line.endswith(f"origin-reachable: {HIDDEN.format(404, 200)}; blocked since 2026-10-23")
