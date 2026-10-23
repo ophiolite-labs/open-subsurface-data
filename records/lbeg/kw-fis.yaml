@@ -1,0 +1,24 @@
+id: lbeg/kw-fis
+title: Hydrocarbons Information System (KW-FIS) on the NIBIS map server
+summary: >-
+  LBEG's Hydrocarbons Information System covers Lower Saxony and the entire federal territory including the German North Sea and Baltic Sea: header data for more than 30,000 hydrocarbon and other deep wells, deviation data, check-shot and VSP time-depth data for around 2650 wells, 2D and 3D reflection seismic survey locations, gravimetry and oil and gas fields.
+publisher: {name: "Landesamt für Bergbau, Energie und Geologie (LBEG)", url: https://www.lbeg.niedersachsen.de, country: DE}
+origin:
+  url: https://www.lbeg.niedersachsen.de/energie_rohstoffe/erdoel_und_erdgas/fachinformationssystem/kohlenwasserstoff-fachinformationssystem-kw-fis-670.html
+  access: anonymous
+  notes: "The open part is the NIBIS map server theme https://nibis.lbeg.de/cardomap3/?TH=BOHRKW|2DSEI|1450.542 (layers 'Tiefbohrungen (KW)', '2D - Seismik', '3D - Seismik', marked exportable). Deviation and check-shot data are described on the page but not offered for download there."
+licence:
+  name: Creative Commons CC-BY 4.0 (NIBIS Kartenserver Nutzungsbedingungen, open data)
+  spdx: CC-BY-4.0
+  url: https://nibis.lbeg.de/cardomap3/content.aspx?method=CopyRight,UsageConstraints,ApplicationContent
+  redistribution: allowed
+  attribution: required
+  statement: "NIBIS® Kartenserver (<year of download>): <theme, and which data were changed>. - Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover."
+kinds: [wellbore-headers]
+region: {country: DE, basin: "Germany incl. North Sea and Baltic Sea (North German Basin, Upper Rhine Graben, Molasse Basin)", bbox: [3.35, 47.27, 15.04, 55.92]}
+listed_by: [publisher]
+known_issues:
+  - "Terms: copyright stays with the rights holders named in the copyright or metadata of each theme; the topographic base maps may be used only together with the NIBIS data."
+  - "bbox is Germany with its North Sea and Baltic sectors, approximate."
+  - "nibis.lbeg.de root answers 401; the cardomap3 viewer and the terms page answer 200."
+added: 2026-10-23

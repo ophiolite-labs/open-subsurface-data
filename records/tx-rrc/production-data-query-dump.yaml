@@ -1,0 +1,22 @@
+id: tx-rrc/production-data-query-dump
+title: Production Data Query Dump (Railroad Commission of Texas)
+summary: >-
+  Dump of the data behind the RRC Production Data Query: lease-level oil and gas production reported to the Railroad Commission of Texas from 1993 to current.
+publisher: {name: Railroad Commission of Texas, url: https://www.rrc.texas.gov, country: US}
+origin:
+  url: https://www.rrc.texas.gov/resource-center/research/data-sets-available-for-download/
+  access: anonymous
+  notes: "Listed under 'Production Data' on the free data sets page; the download is a link on mft.rrc.texas.gov with a user manual beside it."
+licence:
+  name: RRC website disclaimer (permission to copy and distribute for noncommercial use, content unaltered)
+  spdx: null
+  url: https://www.rrc.texas.gov/site-policies/
+  redistribution: restricted
+  attribution: not-required
+kinds: [production]
+region: {country: US, basin: "Texas (all districts)", bbox: [-106.65, 25.84, -93.51, 36.50]}
+listed_by: [publisher]
+known_issues:
+  - "Site policy permits copying and distribution for noncommercial use only, content unaltered. Hence restricted."
+  - "bbox is the State of Texas, approximate; the page states no extent."
+added: 2026-10-23
