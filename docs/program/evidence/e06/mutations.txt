@@ -1,0 +1,20 @@
+FAILS | schema: licence not required | -k drop_licence | 1 failed, 35 deselected in 0.19s
+FAILS | schema: href without the credential guard | -k signed_query | 1 failed, 35 deselected in 0.19s
+FAILS | schema: href allows userinfo | -k userinfo | 1 failed, 35 deselected in 0.23s
+FAILS | schema: empty assets without unresolved | -k no_unresolved | 1 failed, 35 deselected in 0.20s
+FAILS | schema: asset keys may climb | -k escaping_key | 1 failed, 35 deselected in 0.22s
+FAILS | reader: any multihash accepted | -k test_read_refuses | 1 failed, 35 deselected in 0.18s
+FAILS | manifest: Item entries copy Collection assets | -k test_item_selection | 1 failed, 35 deselected in 0.21s
+FAILS | manifest: mixed selection allowed | -k test_mixed | 1 failed, 35 deselected in 0.44s
+FAILS | manifest: share_alike defaults to false | -k test_licence_copied_whole | 1 failed, 35 deselected in 0.20s
+FAILS | manifest: known_issues dropped | -k test_known_issues | 1 failed, 35 deselected in 0.19s
+FAILS | get: rename before comparing | -k test_get_corrupt_byte | 1 failed, 35 deselected in 0.27s
+FAILS | get: run continues after a mismatch | -k test_get_corrupt_byte | 1 failed, 35 deselected in 0.27s
+FAILS | get: checksum-free reported verified | -k test_get_without_checksum | 1 failed, 35 deselected in 0.26s
+FAILS | get: size not compared | -k test_get_size_mismatch | 1 failed, 35 deselected in 0.26s
+FAILS | get: existing file skipped without rehash | -k test_rerun_repairs | 1 failed, 35 deselected in 0.25s
+FAILS | get: no containment check | -k test_get_refuses_escaping | 1 failed, 33 deselected in 0.20s
+FAILS | get: duplicate targets allowed | -k test_get_refuses_duplicate | 1 failed, 35 deselected in 0.21s
+FAILS | get: 401/403 as origin-dead | -k test_get_401 | 1 failed, 35 deselected in 0.27s
+FAILS | get: record title written as the statement | -k test_attribution_missing_statement | 1 failed, 35 deselected in 0.23s
+FAILS | get: share-alike summary dropped | -k test_cli_get_summary | 1 failed, 35 deselected in 0.28s

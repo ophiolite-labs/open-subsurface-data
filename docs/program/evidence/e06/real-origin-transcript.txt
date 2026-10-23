@@ -1,0 +1,43 @@
+$ uv run osd manifest opm/norne nopims/poseidon terranubis/f3-demo-2020 --catalog <osd build over verification-results 65b4d88> -o manifest.json
+wrote manifest.json: 3 collections, 7 assets, 1 to-do
+$ uv run osd get manifest.json --dest retrieved
+  verified      opm--norne/norne/NORNE_ATW2013.DATA  (12129 bytes)
+  verified      nopims--poseidon/far_stack.mdio/.zattrs  (240 bytes)
+  verified      nopims--poseidon/far_stack.mdio/.zgroup  (24 bytes)
+  verified      nopims--poseidon/far_stack.mdio/cdp-x/.zattrs  (120 bytes)
+  verified      nopims--poseidon/far_stack.mdio/cdp-y/.zattrs  (120 bytes)
+  verified      nopims--poseidon/far_stack.mdio/crossline/.zattrs  (56 bytes)
+  verified      nopims--poseidon/far_stack.mdio/headers/.zattrs  (119 bytes)
+  to-do         terranubis--f3-demo-2020: access registration: sign in or ask at the origin page; no file address is published to us -> https://terranubis.com/datainfo/F3-Demo-2020
+7 verified
+1 item requires derived work to carry CC-BY-SA-3.0
+1 item requires derived work to carry ODbL-1.0
+2 items: the files the verifier sampled, not the whole dataset
+attribution -> retrieved/ATTRIBUTION.md
+exit 0
+$ uv run osd get manifest.json --dest retrieved   # rerun: every file rehashed on disk, nothing requested
+  verified      opm--norne/norne/NORNE_ATW2013.DATA  (already on disk)
+  verified      nopims--poseidon/far_stack.mdio/.zattrs  (already on disk)
+  verified      nopims--poseidon/far_stack.mdio/.zgroup  (already on disk)
+  verified      nopims--poseidon/far_stack.mdio/cdp-x/.zattrs  (already on disk)
+  verified      nopims--poseidon/far_stack.mdio/cdp-y/.zattrs  (already on disk)
+  verified      nopims--poseidon/far_stack.mdio/crossline/.zattrs  (already on disk)
+  verified      nopims--poseidon/far_stack.mdio/headers/.zattrs  (already on disk)
+  to-do         terranubis--f3-demo-2020: access registration: sign in or ask at the origin page; no file address is published to us -> https://terranubis.com/datainfo/F3-Demo-2020
+7 verified
+1 item requires derived work to carry CC-BY-SA-3.0
+1 item requires derived work to carry ODbL-1.0
+2 items: the files the verifier sampled, not the whole dataset
+attribution -> retrieved/ATTRIBUTION.md
+exit 0
+$ find retrieved -type f | sort
+retrieved/ATTRIBUTION.md
+retrieved/nopims--poseidon/far_stack.mdio/cdp-x/.zattrs
+retrieved/nopims--poseidon/far_stack.mdio/cdp-y/.zattrs
+retrieved/nopims--poseidon/far_stack.mdio/crossline/.zattrs
+retrieved/nopims--poseidon/far_stack.mdio/headers/.zattrs
+retrieved/nopims--poseidon/far_stack.mdio/.zattrs
+retrieved/nopims--poseidon/far_stack.mdio/.zgroup
+retrieved/opm--norne/norne/NORNE_ATW2013.DATA
+$ sha256sum retrieved/opm--norne/norne/NORNE_ATW2013.DATA
+f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080  retrieved/opm--norne/norne/NORNE_ATW2013.DATA

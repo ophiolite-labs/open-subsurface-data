@@ -1,0 +1,135 @@
+{
+  "format": "osd.manifest/1",
+  "created": "2026-10-23T10:59:54Z",
+  "catalog_url": "https://opensubsurfacedata.org/data/stac/catalog.json",
+  "selection": "collections",
+  "entries": [
+    {
+      "collection_id": "opm--norne",
+      "record_id": "opm/norne",
+      "title": "Norne field simulation case (OPM data)",
+      "origin_url": "https://github.com/OPM/opm-data",
+      "access": "anonymous",
+      "licence": {
+        "name": "Open Database License 1.0 (decks); Database Contents License 1.0 (data)",
+        "spdx": "ODbL-1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": true
+      },
+      "known_issues": [
+        "README adds: git history contains proprietary decks (now removed) where usage restrictions may apply.",
+        "NTNU's own Norne hosting is no longer the source; OPM is the live home (search result, not opened on the NTNU side).",
+        "share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+      ],
+      "assets": {
+        "norne/NORNE_ATW2013.DATA": {
+          "href": "https://raw.githubusercontent.com/OPM/opm-data/master/norne/NORNE_ATW2013.DATA",
+          "title": "norne/NORNE_ATW2013.DATA",
+          "roles": [
+            "data"
+          ],
+          "file:size": 12129,
+          "file:checksum": "1220f346c910f68a80b41ee54606bd434dc9e2993fffa7a2469235f396c2c0a9e080"
+        }
+      },
+      "coverage": "sampled"
+    },
+    {
+      "collection_id": "nopims--poseidon",
+      "record_id": "nopims/poseidon",
+      "title": "Poseidon 3D (Browse Basin)",
+      "origin_url": "https://registry.opendata.aws/tgs-opendata-poseidon",
+      "access": "anonymous",
+      "licence": {
+        "name": "CC BY 4.0 (as the TGS Open Data page states)",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistribution": "allowed",
+        "attribution": "required"
+      },
+      "known_issues": [
+        "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the TGS Open Data page on the AWS Registry of Open Data (opened 23 Oct 2026; CC BY 4.0, MDIO, public S3 bucket). Original survey: Geoscience Australia / ConocoPhillips via NOPIMS.",
+        "Licence to be confirmed against the NOPIMS terms page by the verifier (L2)."
+      ],
+      "assets": {
+        "far_stack.mdio/.zattrs": {
+          "href": "https://tgs-opendata-poseidon.s3.amazonaws.com/far_stack.mdio/.zattrs",
+          "title": "far_stack.mdio/.zattrs",
+          "roles": [
+            "data"
+          ],
+          "file:size": 240,
+          "file:checksum": "1220256118b2d4c5b28b657cf1f991abd5e2e31550b8d8f0d0c2133ab44a0067dbdd"
+        },
+        "far_stack.mdio/.zgroup": {
+          "href": "https://tgs-opendata-poseidon.s3.amazonaws.com/far_stack.mdio/.zgroup",
+          "title": "far_stack.mdio/.zgroup",
+          "roles": [
+            "data"
+          ],
+          "file:size": 24,
+          "file:checksum": "12202383746e67b4bcc2762b3f100f06c3fa2d5f149ab5a8e5da5d33521464a01959"
+        },
+        "far_stack.mdio/cdp-x/.zattrs": {
+          "href": "https://tgs-opendata-poseidon.s3.amazonaws.com/far_stack.mdio/cdp-x/.zattrs",
+          "title": "far_stack.mdio/cdp-x/.zattrs",
+          "roles": [
+            "data"
+          ],
+          "file:size": 120,
+          "file:checksum": "1220b417449712c1cfd9289d3b5aadfda16b29698f6d1cdb70e13fdab10c96de6c8f"
+        },
+        "far_stack.mdio/cdp-y/.zattrs": {
+          "href": "https://tgs-opendata-poseidon.s3.amazonaws.com/far_stack.mdio/cdp-y/.zattrs",
+          "title": "far_stack.mdio/cdp-y/.zattrs",
+          "roles": [
+            "data"
+          ],
+          "file:size": 120,
+          "file:checksum": "1220b417449712c1cfd9289d3b5aadfda16b29698f6d1cdb70e13fdab10c96de6c8f"
+        },
+        "far_stack.mdio/crossline/.zattrs": {
+          "href": "https://tgs-opendata-poseidon.s3.amazonaws.com/far_stack.mdio/crossline/.zattrs",
+          "title": "far_stack.mdio/crossline/.zattrs",
+          "roles": [
+            "data"
+          ],
+          "file:size": 56,
+          "file:checksum": "1220e5ec32cf9c910825df799bc117502a8a6218dbeaf4934c6301619f06d7677339"
+        },
+        "far_stack.mdio/headers/.zattrs": {
+          "href": "https://tgs-opendata-poseidon.s3.amazonaws.com/far_stack.mdio/headers/.zattrs",
+          "title": "far_stack.mdio/headers/.zattrs",
+          "roles": [
+            "data"
+          ],
+          "file:size": 119,
+          "file:checksum": "122027fe982acd06ac24649e79ee1667a4a682bc51f664f2f4514e0d685f4d160fec"
+        }
+      },
+      "coverage": "sampled"
+    },
+    {
+      "collection_id": "terranubis--f3-demo-2020",
+      "record_id": "terranubis/f3-demo-2020",
+      "title": "F3 Demo 2020 (Dutch North Sea)",
+      "origin_url": "https://terranubis.com/datainfo/F3-Demo-2020",
+      "access": "registration",
+      "licence": {
+        "name": "Creative Commons 3.0 (the page links the BY-SA 3.0 deed)",
+        "spdx": "CC-BY-SA-3.0",
+        "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": true
+      },
+      "known_issues": [
+        "Publisher replaced F3-Demo-2020 with F3 Demo 2023 on 12 June 2023; /datainfo/F3-Demo-2020 now serves the 2023 page (7.6 GB, 4.5 GB download), whose licence label links the BY-SA 3.0 deed. Licence fields corrected from the earlier BY-SA 4.0 entry to what the page states."
+      ],
+      "assets": {},
+      "unresolved": "access registration: sign in or ask at the origin page; no file address is published to us"
+    }
+  ]
+}
