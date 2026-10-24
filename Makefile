@@ -1,7 +1,9 @@
 # One target per station. CI runs exactly `make check`.
 .PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
 
-check: lint test validate build          ## the required CI check (offline, < 2 min)
+check:                                   ## the required CI check (offline, < 2 min)
+	$(MAKE) lint
+	$(MAKE) -j3 --output-sync=target test validate build   # side by side (E36): the build's tiling is the long one
 
 lint:
 	uv run ruff check src tests
