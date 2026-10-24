@@ -1,0 +1,21 @@
+{
+  "record_id": "alpha/one",
+  "checked_at": "2026-10-20T06:00:00+00:00",
+  "tool_version": "0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "fail",
+      "detail": "HTTP 404 at https://alpha.example/data"
+    }
+  ],
+  "origin": {
+    "http_status": 404,
+    "final_url": "https://alpha.example/data",
+    "content_type": "text/html",
+    "elapsed_ms": 5,
+    "reachability": "dead"
+  }
+}

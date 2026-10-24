@@ -1,0 +1,9 @@
+id: delta/four
+title: delta/four
+publisher: {name: delta, url: https://delta.example}
+origin: {url: https://delta.example/data, access: anonymous}
+licence: {name: CC BY 4.0, redistribution: allowed, attribution: required}
+kinds: [wells]
+region: {}
+listed_by: [community]
+added: 2026-10-23

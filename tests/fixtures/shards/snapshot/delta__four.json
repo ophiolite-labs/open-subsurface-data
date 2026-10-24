@@ -1,0 +1,21 @@
+{
+  "record_id": "delta/four",
+  "checked_at": "2026-10-20T06:00:00+00:00",
+  "tool_version": "0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 at https://delta.example/data"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://delta.example/data",
+    "content_type": "text/html",
+    "elapsed_ms": 5,
+    "reachability": "ok"
+  }
+}
