@@ -1,0 +1,55 @@
+{
+  "record_id": "bgs/single-onshore-borehole-index",
+  "checked_at": "2026-10-24T04:40:06+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.bgs.ac.uk/datasets/boreholes-index/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (79254547 bytes); 1 entries listed; the manifest_url is the file itself"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "6236 characters captured from https://www.bgs.ac.uk/bgs-intellectual-property-rights/open-government-licence/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.bgs.ac.uk/datasets/boreholes-index/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1221,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "single-onshore-borehole-index-sobi-dataset",
+      "url": "https://www.bgs.ac.uk/download/single-onshore-borehole-index-sobi-dataset/?wpdmdl=125849",
+      "bytes": 79254547,
+      "sha256": "12e41a3438394207a8443fe8b5b46e533479c7519b904904a3db6ff00d1a3d42"
+    }
+  ],
+  "licence_text_sha256": "5fd9ce8d6ca9550ae469a039e7fb311b9ea616781090b69f25a1641dbacc9f50",
+  "licence_text": "Skip to Content News and events BGS Shop Hosted sites Skip to Content Search Button About BGS Overview Our work Who we work with Government and policy Science briefing papers Our history Environmental policy and sustainability strategy How we use drones Accreditations Our team Staff profiles Senior Management Board BGS Board Science Advisory Committee Equality, diversity and inclusion at BGS Organisational structure Our data and services General public Business services Business development Government and agencies OpenGeoscience Academics and researchers Climate change and geohazards Digital data licensing and resellers GeoReports and online shop BGS Forecasting services Our facilities Science facilities BGS Library Conference facilities BGS Geology Shop BGS GeoSchool UK Geoenergy Observatories National Geoscience Data Centre National Geological Repository Working with us Careers at BGS Job vacancies Working at BGS Equality, diversity and inclusion at BGS Pay and benefits Work experience Contact us Offices and locations Customer feedback BGS Press Office BGS Intellectual Property Rights Freedom of information act Subscribe to our newsletter Frequently asked questions Research Overview Explore our research projects Publications BGS University Funding Initiative Environmental change Environmental geochemistry laboratories Environmental modelling Groundwater research Medical geology Sea floor: marine geoscience Sea floor: scientific ocean drilling Soils and landscapes Urban geoscience Decarbonisation Mineral resource security and flows Geodisposal: radioactive waste Critical raw materials Geothermal energy Hydrocarbon systems Energy storage Carbon capture and storage Fluid and Rock Processes Laboratory Cluster Rock Volume Characterisation Laboratory Cluster UK Geoenergy Observatories Multi-hazards Volcanology Earthquakes and seismology research Geomagnetism Geodesy and Earth observation Shallow geophysics Landslides research Coasts and estuaries geohazards Shallow geohazards Digital geoscience Digital lab Hazard and resilience modelling 3D visualisation systems Product development Citizen science Data National Geoscience International geoscience International geoscience research and development International commissioned research Science facilities Environmental geochemistry laboratories Fluid and Rock Processes Laboratory Cluster Engineering and Geotechnical Capability Rock Volume Characterisation Laboratory Cluster Geophysical observatories Data Data search Data product search Open data Data catalogues Climate change and geohazards Map viewers BGS Geology Viewer GeoIndex (onshore) GeoIndex (offshore) UK Soil Observatory BGS maps portal Technologies Software Web services and APIs Web map services (WMS) Databases Geotechnical data services Collaborations Information hub Digital data licensing and resellers Publications Data collections Dictionaries BGS maps portal Scanned records Photographs and images Borehole records Digital data licensing and resellers Digital data product development National Geological Repository Accessing the NGR material collections NGR tour Donations and loans of materials collections Palaeontology and biostratigraphy collections Borehole core collections NGR hydrocarbons (well samples) database National Geoscience Data Centre Deposit data with NGDC Accessing data \u2013 NGDC NGDC citing data Archives Discovering Geology Overview Rocks and minerals Geological processes Landforms Relief Weathering Erosion Deposition Discovering Geology: climate change What causes the Earth\u2019s climate to change? Impacts of climate change The carbon story The greenhouse effect Understanding carbon capture and storage What are we doing about climate change? Earth hazards Earthquakes Understanding landslides Volcanoes Understanding sinkholes and karst Fossils and geological time Geological timechart Fossils Maps and resources Climate change through time Earth hazards resources Energy resources Fossils and geological time resources Maps Rock observation resources Postcard geology Public engagement events Search Search Clear Search Button Quick links Climate change Multiple hazards Decarbonisation ... Home \u00bb BGS Intellectual Property Rights \u00bb Open Government Licence Open Government Licence Share this article Facebook Twitter Pinterest WhatsApp Email Copy Link You are encouraged to use and re-use the Information that is available under this licence freely and flexibly, with only a few conditions. These data are delivered under the Open Government Licence , subject to the following acknowledgement accompanying the reproduced BGS materials: \u2018Contains British Geological Survey materials \u00a9 UKRI [year]\u2019 If you require further information, wish to report a problem with the data or have suggestions as to how we can improve our service, please contact BGS Enquiries . You may also be interested in BGS Intellectual Property Rights Our intention is to balance the safe retention and control of national geoscience databases and geological information, with the need to release information openly. Show more Digital data licensing and resellers Providing a wide range of licences for the use and utilisation of our information products by for those interested in an information product and the Open Government Licence is not applicable. Show more Was this page helpful? Yes No Close Button How can we make this section better?* What did you like about this page? How can we make this section better? * Submit Please select a reason* Please select a reason * Select reason Didn't answer my question Too confusing Links are broken/Doesn't work How can we make this section better?* How can we make this section better? * Submit Cookies policy This website uses cookies to improve your experience. We\u2019ll assume you\u2019re okay with this, but you can opt out if you wish. More information . Accept Remind me later Useful links About BGS News and events Contact us Press office Accessibility Job vacancies Policies & legal Privacy policy Cookies policy Terms of use Freedom of information (FOI) Intellectual property rights Join the BGS Newsletter Keep up to date with all the latest research, products and events news. Register \u00a9 UKRI 2026 Twitter Facebook Youtube LinkedIn"
+}

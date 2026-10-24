@@ -1,0 +1,53 @@
+{
+  "record_id": "idaho-ogcc/well-files",
+  "checked_at": "2026-10-24T04:40:22+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://ogcc.idaho.gov/well-files/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (36017299 bytes); 71 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://ogcc.idaho.gov/well-files/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1202,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://gis1.idl.idaho.gov/FileServer/oilgas/welldata/LASFiles.zip",
+      "url": "https://gis1.idl.idaho.gov/FileServer/oilgas/welldata/LASFiles.zip",
+      "bytes": 36017299,
+      "sha256": "d1b0b675a16ffe4e028e56a5eddb625760f028c3015350958fc2eb3db833be0f"
+    }
+  ]
+}

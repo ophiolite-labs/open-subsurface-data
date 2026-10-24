@@ -1,0 +1,55 @@
+{
+  "record_id": "meei/historical-oil-and-gas-production",
+  "checked_at": "2026-10-24T04:42:12+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.energy.gov.tt/data/historical-oil-and-gas-production-data/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (95552 bytes); 106 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4109 characters captured from https://www.energy.gov.tt/help/terms-of-use/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.energy.gov.tt/data/historical-oil-and-gas-production-data/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 2455,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "http://www.energy.gov.tt/wp-content/uploads/2019/11/Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx",
+      "url": "http://www.energy.gov.tt/wp-content/uploads/2019/11/Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx",
+      "bytes": 95552,
+      "sha256": "1a62e923190718d4e0f966fd00d924db5b9a798e879374feed954bc1bec0827d"
+    }
+  ],
+  "licence_text_sha256": "476779409ccc47b2fb2eb2364241e754f36b7aa7698485255b9aca95d193fe81",
+  "licence_text": "x Search for: Ministry of Energy and Energy Industries Home Contact Us Site Map Print A- A A+ Main menu Skip to content Home About Us GORTT Policy Context Our Roles and Functions The Organisation Minister of Energy and Energy Industries Minister in the Ministry of Energy and Energy Industries Permanent Secretary Divisions Units Structure History Background Former Ministers of Energy Milestones Freedom of Information Companies Shareholding List Our Business Natural Gas Master Plan 2014-2024 Carbon Capture Utilization and Storage (CCUS) Oil and Gas LNG & Petrochemicals LNG Petrochemicals Electric Power Alternative Energy Renewable Energy Compressed Natural Gas (CNG) Aggregates Economic Minerals Quarrying Ports and Industrial Estates Environmental Management National Oil Spill Contingency Plan Services Applications Licence Registers Guidelines Sale of Maps Sale of Data For Investors Public Procurement 2025 Deep Water Competitive Bidding Round-Closed 2021 DEEP WATER COMPETITIVE BID ROUND-CLOSED 2022 Onshore and Nearshore Competitive Bid Round- CLOSED Trinidad and Tobago Shallow Water Competitive Bidding Round 2023/2024- CLOSED Legislation Tax Incentive Forms Policies Local Content Fiscal Regime Tax Laws Fiscal Incentives Model Contracts Statement of Royalty Forms for Crude OIl and Natural Gas Won and Saved TTEITI Memberships Gas Exporting Countries Forum (GECF) Latin American Energy Organization (OLADE) OLADE 2015 Energy Program Training World Energy Council (WEC) Community of Latin American and Caribbean States (CELAC) CBO Archives Publications Data Energy Data Center Historical Oil and Gas Production Data Media Gallery Media Releases Speeches News articles Energy Matters Newsletter Photo Gallery GECF 2018 Presentations Vacancies Quicklinks MEEI Mission and Vision Application Forms Legislation and Tax Laws Carbon Capture Utilization and Storage (CCUS ) Public Procurement 2025 Deep Water Bid Round Help Terms of Use Users are expected to observe the following guidelines for acceptable use of this website: Disclaimer Neither the Government of Trinidad and Tobago nor any of its officers, acting through its agency, the Ministry of Energy and Energy Industries, is liable for any claim(s) arising from the use of the material at this site or from the unauthorized use of this service . Intended Uses Malicious use is prohibited. Users are forbidden to infiltrate this or any other computer system and damage or alter existing software or hardware components at this site . Use of the content of this site for lawful purposes is allowed. Limited copying of material based on the definition of \u201cFair Use\u201d as described in Web Law FAQ is acceptable. For all purposes \u2013 commercial and otherwise \u2013 ONLY the statistics found at this website can be reproduced in its entirety, with an acknowledgement of the source of the data. Relevant information can also be extracted from the rest of the content of the site and used TO INFORM original reports, papers and articles. Direct quotations from speeches and reports must be treated as such and the source/s acknowledged . Graphics at this site are the sole property of the MEEi and copying of such materials is strictly forbidden . User Code of Conduct Users are expected to observe the laws of Trinidad and Tobago on Copyright and Intellectual Property and international ethical standards governing the use of the Internet and the Web as described in Web Law FAQ . This website and its resources are not to be used : to publish any obscene or indecent materials to conduct the personal business of staff as a propaganda tool by anyone as a medium to air dissatisfaction and grievances by any officer . Use of the Ministry\u2019s logo, the official seal of the organization, by its staff, will require prior permission from the Head of the Department . All information to be published at this website will require prior approval of the Head of the Department or from person(s) authorized by that officer . Facebook Twitter LinkedIn \ufeff Copyright \u00a9 2026 Ministry of Energy and Energy Industries. Home Contact Us Site Map Privacy Policy Terms of Use"
+}

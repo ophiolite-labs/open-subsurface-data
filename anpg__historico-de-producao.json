@@ -1,0 +1,55 @@
+{
+  "record_id": "anpg/historico-de-producao",
+  "checked_at": "2026-10-24T04:40:03+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://www.anpg.co.ao/producao/historico"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (29783 bytes); 1 entries listed; the manifest_url is the file itself"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "3849 characters captured from https://www.anpg.co.ao/termos"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://www.anpg.co.ao/producao/historico",
+    "content_type": "text/html",
+    "elapsed_ms": 216,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "production-historical",
+      "url": "https://www.anpg.co.ao/api/production-historical",
+      "bytes": 29783,
+      "sha256": "130ecfa7c541941962c61fc93f53642972b14197d04dfc4ae1089beecedbfe1e"
+    }
+  ],
+  "licence_text_sha256": "dc0e154a8f6cf8e01a7a6e3d50b12477752ab58a3cc8c612a553d8fe9ee30bd2",
+  "licence_text": "<!-- GTI ANPG 2026 --> <!doctype html> <html lang=\"pt-AO\"> <head> <!-- Google Tag Manager --> <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-K78JKT8P');</script> <!-- End Google Tag Manager --> <meta charset=\"UTF-8\" /> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /> <link rel=\"icon\" type=\"image/x-icon\" href=\"/favicon.ico?v=2\" /> <link rel=\"icon\" type=\"image/png\" href=\"/favicon.png?v=2\" /> <link rel=\"shortcut icon\" href=\"/favicon.ico?v=2\" /> <link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png?v=2\" /> <title>ANPG - Ag\u00eancia Nacional de Petr\u00f3leo, G\u00e1s e Biocombust\u00edveis de Angola</title> <meta name=\"description\" content=\"A Ag\u00eancia Nacional de Petr\u00f3leo, G\u00e1s e Biocombust\u00edveis de Angola (ANPG) \u00e9 a entidade reguladora do sector petrol\u00edfero angolano. Descubra oportunidades de investimento e dados do sector energ\u00e9tico.\" /> <meta name=\"author\" content=\"ANPG Angola\" /> <meta name=\"keywords\" content=\"ANPG, Angola, petr\u00f3leo, g\u00e1s, biocombust\u00edveis, energia, investimento, regula\u00e7\u00e3o\" /> <meta property=\"og:title\" content=\"ANPG - Ag\u00eancia Nacional de Petr\u00f3leo, G\u00e1s e Biocombust\u00edveis\" /> <meta property=\"og:description\" content=\"Potenciando o futuro energ\u00e9tico de Angola. Descubra oportunidades de investimento no sector petrol\u00edfero.\" /> <meta property=\"og:type\" content=\"website\" /> <meta property=\"og:site_name\" content=\"ANPG Angola\" /> <meta property=\"og:image\" content=\"https://dev.anpg.co.ao/og-image.php\" /> <meta property=\"og:url\" content=\"https://dev.anpg.co.ao/\" /> <meta name=\"twitter:card\" content=\"summary_large_image\" /> <meta name=\"twitter:title\" content=\"ANPG - Ag\u00eancia Nacional de Petr\u00f3leo, G\u00e1s e Biocombust\u00edveis\" /> <meta name=\"twitter:description\" content=\"Potenciando o futuro energ\u00e9tico de Angola.\" /> <meta name=\"twitter:image\" content=\"https://dev.anpg.co.ao/og-image.php\" /> <link rel=\"canonical\" href=\"https://dev.anpg.co.ao\" /> <!-- Structured data: Organization --> <script type=\"application/ld+json\"> { \"@context\": \"https://schema.org\", \"@type\": \"GovernmentOrganization\", \"name\": \"Ag\u00eancia Nacional de Petr\u00f3leo, G\u00e1s e Biocombust\u00edveis\", \"alternateName\": \"ANPG\", \"url\": \"https://dev.anpg.co.ao\", \"logo\": \"https://dev.anpg.co.ao/favicon.png\", \"description\": \"A Ag\u00eancia Nacional de Petr\u00f3leo, G\u00e1s e Biocombust\u00edveis de Angola (ANPG) \u00e9 a entidade reguladora do sector petrol\u00edfero angolano, respons\u00e1vel pela concess\u00e3o e gest\u00e3o dos recursos petrol\u00edferos.\", \"address\": { \"@type\": \"PostalAddress\", \"streetAddress\": \"Edif\u00edcio Torres do Carmo, Torre 2, Rua Lopes de Lima\", \"addressLocality\": \"Luanda\", \"addressCountry\": \"AO\" }, \"sameAs\": [ \"https://www.linkedin.com/company/anpg-angola\", \"https://www.facebook.com/ANPGAngola\" ] } </script> <script type=\"module\" crossorigin src=\"/assets/index-CC_2OU-E.js\"></script> <link rel=\"modulepreload\" crossorigin href=\"/assets/react-vendor-Bj9LQV-u.js\"> <link rel=\"modulepreload\" crossorigin href=\"/assets/data-vendor-BRYI0K8G.js\"> <link rel=\"modulepreload\" crossorigin href=\"/assets/charts-vendor-Cs07Jtv5.js\"> <link rel=\"modulepreload\" crossorigin href=\"/assets/motion-vendor-DMc3mo8t.js\"> <link rel=\"modulepreload\" crossorigin href=\"/assets/i18n-vendor-BSIZ7LIS.js\"> <link rel=\"stylesheet\" crossorigin href=\"/assets/index-BgaFUJ4y.css\"> </head> <body> <!-- Google Tag Manager (noscript) --> <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-K78JKT8P\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript> <!-- End Google Tag Manager (noscript) --> <div id=\"root\"></div> </body> <!-- ANPG DEVTEAM - 21/10/2026, 12:23:03 --> </html>"
+}

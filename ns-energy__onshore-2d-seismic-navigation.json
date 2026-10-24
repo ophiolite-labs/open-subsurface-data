@@ -1,0 +1,55 @@
+{
+  "record_id": "ns-energy/onshore-2d-seismic-navigation",
+  "checked_at": "2026-10-24T04:41:08+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://novascotia.ca/onshore-atlas/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (1954295 bytes); 73 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1798 characters captured from https://novascotia.ca/onshore-atlas/docs/Disclaimer(16).txt"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://novascotia.ca/onshore-atlas/",
+    "content_type": "text/html; Charset=utf-8",
+    "elapsed_ms": 173,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "docs/NSDOE%20Open%20File%20Report%202017-11%20-%20Navigation%20data%20for%202D%20seismic%20lines%2C%20onshore%20Nova%20Scotia%20-%20Part%202%20-%20Cumberland%20region.zip",
+      "url": "https://novascotia.ca/onshore-atlas/docs/NSDOE%20Open%20File%20Report%202017-11%20-%20Navigation%20data%20for%202D%20seismic%20lines%2C%20onshore%20Nova%20Scotia%20-%20Part%202%20-%20Cumberland%20region.zip",
+      "bytes": 1954295,
+      "sha256": "5155677597ec3fc6f7e341283e44f03243d802553ec4198662a73b3bbff15810"
+    }
+  ],
+  "licence_text_sha256": "bb269eb5ae85c47170a07e44af206589a04fe96ed32388a22d1cf5993e3b7ac7",
+  "licence_text": "Open File Reference: NSDOE Open File Report 2017-11: Navigation data for 2D seismic lines, onshore Nova Scotia Disclaimer: This Open File Report was prepared by a Department of the Government of the Province of Nova Scotia. Neither the Government of Nova Scotia nor any Department thereof nor any of their employees makes any warranty, expressed or implied, or assumes any legal liability or responsibility for the accuracy, completeness, or usefulness of any information, apparatus, product, or process disclosed in this report or represents that its use would not infringe privately owned rights. Reference therein to any specifical commercial product, process, or service by trade name, trademark, manufacturer, or otherwise does not constitute or imply its endorsement, recommendation, or favoring by the Province of Nova Scotia or any agency thereof. Although all data, text, references, and software published with this report have been used by the Government of the Province of Nova Scotia, no warranty, expressed or implied, is made by the Government of the Province of Nova Scotia as to the accuracy of the data and related materials and (or) the functioning of software. The act of distribution shall not constitute any such warranty, and no responsibility is assumed by the Province of Nova Scotia in the use of these reports, data, software or related materials. Information contained with this electronic publication is considered public information and may be distributed or copied, but may not copyrighted. We request that Public re-use of these materials bear a Nova Scotia Department of Energy byline/photo/image credit line. Suggested Citation: Bianco, E., 2017, Navigation data for 2D seismic lines, onshore Nova Scotia. Nova Scotia Department of Energy Open File Report 2017-10."
+}

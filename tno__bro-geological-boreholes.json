@@ -1,0 +1,55 @@
+{
+  "record_id": "tno/bro-geological-boreholes",
+  "checked_at": "2026-10-24T04:41:44+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.pdok.nl/introductie/-/article/bro-geologisch-booronderzoek-bhr-g-"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (158920704 bytes); 1 entries listed; the manifest_url is the file itself"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5853 characters captured from https://data.overheid.nl/dataset/84003-bro---geologisch-booronderzoek--bhr-g--as-is"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.pdok.nl/introductie/-/article/bro-geologisch-booronderzoek-bhr-g-",
+    "content_type": "text/html;charset=UTF-8",
+    "elapsed_ms": 798,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "brobhrgvolledigeset.gpkg",
+      "url": "https://service.pdok.nl/tno/bro-geologisch-booronderzoek/atom/downloads/brobhrgvolledigeset.gpkg",
+      "bytes": 158920704,
+      "sha256": "0397c29343901055ccdf1e81337d93c3bbd6c741c30d39b286ff298180839b99"
+    }
+  ],
+  "licence_text_sha256": "1c3c9e4b74c18e82ef60591367d6ba5b97c91d91d4eaaa6a6c49f9220af3cba3",
+  "licence_text": "Direct naar content Open data van de Overheid Menu Primaire navigatie Andere sites binnen Overheid.nl Home Data Impact Communities Actueel Support Gebruikersmenu Gebruikersmenu Dataset aanmelden Opties: Inloggen Taalkeuze Opties: English Nederlands Andere sites binnen Overheid.nl Berichten over uw Buurt Zoals vergunningen, bouwplannen en lokale regelgeving Rondom uw woonadres Rondom een zelfgekozen adres Dienstverlening Zoals belastingen, uitkeringen en subsidies. Naar dienstverlening Beleid & regelgeving Offici\u00eble publicaties van de overheid. Naar beleid & regelgeving Contactgegevens overheden Adressen en contactpersonen van overheidsorganisaties. Naar overheidsorganisaties Terug naar alle datasets Categorie Alles Communities Datasets Dataverzoeken Dataservices Groepen Nieuwsberichten Organisaties Support pagina's Toepassingen Zoeken Categorie Alles Communities Datasets Dataverzoeken Dataservices Groepen Nieuwsberichten Organisaties Support pagina's Toepassingen Zoeken Dataset BRO - Geologisch booronderzoek (BHR-G) as-is Permanente link kopi\u00ebren Gekopi\u00eberd https://data.overheid.nl/dataset/99aa6e39-ba8c-46b6-bd56-7ea6d26dd8cb Status Beschikbaar Data eigenaar Nederlandse Organisatie voor toegepast-natuurwetenschappelijk onderzoek TNO (Overig) Bijgewerkt 19-08-2026 Licentie CC-0 (1.0) Thema Bodem Toegang Publiek Metadata Download (XML/RDF) Informatie Databronnen Beschrijving Eigenaar Hergebruik Relaties Metadata Feedback Beschrijving Eigenaar Hergebruik Relaties Metadata Feedback Is dit niet de dataset die u zoekt? Klik dan op de knop \"Hulp bij zoeken\". Hulp bij zoeken Feedback Positief: 0 Negatief: 0 Opmerkingen: 0 Login om uw feedback te delen Beschrijving Standaard Deze dataset is gepubliceerd in overeenstemming met een erkende standaard. Sluiten Deze dataset bevat de gegevens over geologische booronderzoeken welke in de BRO (Basisregistratie Ondergrond) zijn opgenomen. Het betreft booronderzoeken tot een diepte van 500 meter met een enkele uitzondering welke dieper is. De dataset wordt in zijn geheel uitgeleverd en is niet geharmoniseerd naar een INSPIRE thema. In veel gevallen bestaat het geologisch booronderzoek uit niet meer dan een boormonsterprofiel. Dit betreft een beschrijving van de opeenvolgende lagen aan de hand van zintuigelijke waarnemingen van de boormonsters. In sommige gevallen omvat het booronderzoek ook de resultaten van boormonsteranalyses welke kunnen bestaan uit bepalingen van verschillende aspecten. Voor meer informatie raadpleeg www.basisregistratieondergrond.nl HVD Hoogwaardige dataset - EU bhr-g bodemonderzoek bodemprofiel boormonsteranalyse boormonsterbeschrijving booronderzoek boorprofiel geologie grondonderzoek hydrologie Hoogwaardige dataset - EU Categorie: Aardobservatie en milieu Eigenaar Gegevens van de aanbieder Data eigenaar: Nederlandse Organisatie voor toegepast-natuurwetenschappelijk onderzoek TNO (Overig) Contactpunt Afdeling: TNO Geologische Dienst Nederland Website: https://www.basisregistratieondergrond.nl E-mailadres: support@broservicedesk.nl Publicatie Publicerende organisatie: Nederlandse Organisatie voor toegepast-natuurwetenschappelijk onderzoek TNO (Overig) Bron catalogus: https://nationaalgeoregister.nl Hergebruik Toegang: Publiek Status van de dataset: Beschikbaar Licentie en voorwaarden Licentie: CC-0 (1.0) Relaties Vergelijkbare datasets BRO - Geologisch booronderzoek (BHR-G) INSPIRE geharmoniseerd - Geologie BRO - Bodemkundig booronderzoek (BHR-P) as-is BRO - Geotechnisch booronderzoek (BHR-GT) as-is BRO - Bodemkundig booronderzoek (BHR-P) INSPIRE geharmoniseerd - Geologie BRO - Bodemkundig booronderzoek (BHR-P) INSPIRE geharmoniseerd - Bodem BRO - Geotechnisch booronderzoek (BHR-GT) INSPIRE geharmoniseerd - Geologie Hydrogeologische deelgebieden 2000 Oppervlaktegeologie, Geologische kaart as-is Oppervlaktegeologie, Geologische kaart onder INSPIRE BRO - Digitaal Geologisch Model (DGM) as-is Metadata Taalinstellingen Taal dataset Nederlands Taal van de metadata Nederlands Identificatie Primaire identificatie van deze dataset https://nationaalgeoregister.nl/geonetwork?uuid=2bae2c5e-02a3-4979-ac74-5f3f37b16bc1 Let op: Mogelijk werkt deze link niet in een browser, probeer in dit geval: https://nationaalgeoregister.nl/geonetwork/srv/metadata/2bae2c5e-02a3-4979-ac74-5f3f37b16bc1 Feedback Geen feedback gevonden. Webservices (2) Documentatie (1) Feedback Webservices (2) Documentatie (1) Feedback Is dit niet de dataset die u zoekt? Klik dan op de knop \"Hulp bij zoeken\". Hulp bij zoeken Feedback Positief: 0 Negatief: 0 Opmerkingen: 0 Login om uw feedback te delen Webservices BRO BHR-G kenset - WMS OGC:WMS CC-0 (1.0) https://service.pdok.nl/tno/bro-geologisch-booronderzoek/wms/v1_0?Service=WMS&Request=GetCapabilities accessPoint BRO BHR-G ObjectSet - ATOM (GPKG) ATOM CC-0 (1.0) https://service.pdok.nl/tno/bro-geologisch-booronderzoek/atom/index.xml accessPoint Documentatie Standaard waar de data aan voldoet http://data.europa.eu/eli/reg_impl/2023/138/oj Feedback Geen feedback gevonden. \u00d7 Meld je aan voor ons gebruikersonderzoek Wil je meedoen aan een online interview over data.overheid.nl? Laat je gegevens achter, dan nemen we binnenkort contact met je op. Achternaam Verplicht veld E-mail Verplicht veld In welke mate maak je gebruik van data.overheid.nl? Verplicht veld Nog nooit gebruikt Enkele keren gebruikt Regelmatig gebruikt Vaak gebruikt Leave this field blank Dank voor het aanmelden voor het gebruikersonderzoek Bedankt! We nemen contact op als je geselecteerd bent. Ingevulde gegevens gebruiken we alleen om contact op te nemen over dit gebruikersonderzoek. Lees meer in onze privacyverklaring . Over deze website Contact Support Privacy en cookies Toegankelijkheid Sitemap RSS Feed Overheid.nl Linked Data Overheid PUC Open Data MijnOverheid.nl Rijksoverheid.nl Ondernemersplein Werkenbijdeoverheid.nl"
+}

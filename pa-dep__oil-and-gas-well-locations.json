@@ -1,0 +1,46 @@
+{
+  "record_id": "pa-dep/oil-and-gas-well-locations",
+  "checked_at": "2026-10-24T04:41:39+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "skip",
+      "detail": "answers a browser, not the verifier (HTTP 404 to osd-verifier, HTTP 200 to a browser agent); blocked since 2026-10-23"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "licence page https://newdata-padep-1.opendata.arcgis.com/datasets/4300a4d66be4497f8c228bbbeb2401c2 answered HTTP 404"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 404,
+    "final_url": "https://newdata-padep-1.opendata.arcgis.com/datasets/4300a4d66be4497f8c228bbbeb2401c2",
+    "content_type": "text/plain; charset=utf-8",
+    "elapsed_ms": 269,
+    "reachability": "blocked",
+    "blocked_since": "2026-10-23T15:50:21+00:00"
+  }
+}

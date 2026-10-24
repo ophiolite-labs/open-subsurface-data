@@ -1,0 +1,46 @@
+{
+  "record_id": "nm-ocd/oil-and-gas-wells",
+  "checked_at": "2026-10-24T04:52:55+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "skip",
+      "detail": "answers a browser, not the verifier (HTTP 404 to osd-verifier, HTTP 200 to a browser agent); blocked since 2026-10-23"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "licence page https://ocd-hub-nm-emnrd.hub.arcgis.com/datasets/387f397ebf164c7aa6a752aac7d22b17 answered HTTP 404"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 404,
+    "final_url": "https://ocd-hub-nm-emnrd.hub.arcgis.com/datasets/387f397ebf164c7aa6a752aac7d22b17",
+    "content_type": "text/plain; charset=utf-8",
+    "elapsed_ms": 241,
+    "reachability": "blocked",
+    "blocked_since": "2026-10-23T15:48:17+00:00"
+  }
+}

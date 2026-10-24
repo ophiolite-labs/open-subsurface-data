@@ -1,0 +1,47 @@
+{
+  "record_id": "cnr-igg/geothopica-bdng",
+  "checked_at": "2026-10-24T04:41:04+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://geothopica.igg.cnr.it/index.php/it/geothopica2-0"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5629 characters captured from https://geothopica.igg.cnr.it/index.php/it/termini-dutilizzo"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://geothopica.igg.cnr.it/index.php/it/geothopica2-0",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 926,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "c31fda57c27a20c581d13087fb09fdb47ab90431b67d878d0f8a273ca19061c3",
+  "licence_text": "\u00d7 Home Cos\u2019\u00e8 la geotermia Chi siamo Geotermia nel CNR Progetti In-formazione e Policy Crediti & Link Contattaci Login Seleziona la tua lingua Home Cos\u2019\u00e8 la geotermia Chi siamo Geotermia nel CNR Progetti In-formazione e Policy Crediti & Link Contattaci Login Termini utilizzo NOTE LEGALI Premesse Di seguito sono riportate le note legali che regolano l\u2019accesso e l\u2019utilizzo del Sito. Il contenuto delle presenti note legali potr\u00e0 essere modificato in qualsiasi momento e senza preavviso. L\u2019utente \u00e8 pertanto invitato a prendere regolarmente visione dell\u2019ultima versione aggiornata delle stesse, disponibile e permanentemente accessibile al link \u201cNote legali\u201d riportato nella sezione del Sito denominata \"Guida al sito\". Contenuto del Sito Il portale GeoThopica \u00e8 stato realizzato allo scopo di facilitare l'accesso pubblico alle informazioni inerenti la geotermia, ed ha, pertanto, un carattere principalmente divulgativo. Inoltre il portale mette a disposizione il patrimonio di dati in formato aperto e utilizzabile da programmi informatici, al fine di aumentare la trasparenza, abilitare la nascita di nuovi servizi per cittadini e incentivare le imprese allo sviluppo di nuovi servizi. Copyright Copyright: \u00a9 Istituto di Geoscienze e Georisorse (CNR), 2023 I testi, le fotografie, la grafica e i materiali audiovisivi presenti su questo sito sono protetti ai sensi delle normative vigenti sul diritto d'autore, sui brevetti e sulla propriet\u00e0 intellettuale. I marchi e le denominazioni di enti, organismi e ditte menzionati nel sito appartengono ai rispettivi proprietari o titolari e possono essere protetti da brevetti e/o copyright concessi o registrati dalle autorit\u00e0 preposte. Salvo diverse indicazioni, i dati, i documenti e i servizi pubblicati sul presente portale sono messi a disposizione con licenza Creative Commons Attribution 4.0 International (CC BY 4.0), il cui testo integrale \u00e8 disponibile all'indirizzo https://creativecommons.org/licenses/by/4.0/legalcode.it Questo significa che, ove non diversamente specificato, il contenuto del portale GeoThopica \u00e8 liberamente riutilizzabile con il solo vincolo di citazione della fonte e - ove possibile - riportato l'indirizzo web della pagina originale. I testi presenti sul portale sono liberamente utilizzabili per fini culturali e comunque non di lucro, a patto di citare chiaramente la fonte di provenienza, gli eventuali autori del testo, quando indicati, le date di redazione ed aggiornamento e l'URL relativa. La visualizzazione, il download e qualunque utilizzo dei dati pubblicati sul portale comporta l\u2019accettazione delle presenti note legali e delle condizioni della licenza con cui sono pubblicati. Utilizzo del sito: Clausola di esclusione della responsabilit\u00e0 Le informazioni e i dati presenti nel portale non hanno valore di ufficialit\u00e0 e non possono essere considerati validi in sede legale. Il CNR-IGG declina ogni qualsiasi responsabilit\u00e0 per eventuali danni causati a terzi derivanti da un uso improprio degli stessi. Inoltre, il portale \u00e8 stato attivato al fine di fornire un servizio continuativo, tuttavia non pu\u00f2 essere escluso che esso non sia soggetto a sospensioni o interruzioni, causate da attivit\u00e0 di manutenzione, guasti tecnici, inefficienza del sistema, o sovraccarichi. Il CNR-IGG declina ogni qualsiasi responsabilit\u00e0 per eventuali danni provocati a terzi a causa di tali eventuali disservizi. CNR-IGG si riserva il diritto di modificare i contenuti del sito (testi, immagini, dataset, geoservizi, ...) e delle note legali in qualsiasi momento e senza alcun preavviso. Nonostante si presti grande attenzione all\u2019esattezza delle informazioni pubblicate CNR-IGG non assume alcuna responsabilit\u00e0 per quanto riguarda i contenuti del portale che potrebbero non sempre essere esaurienti, completi, precisi o aggiornati. Le informazioni contenute nel Sito non costituiscono parere di tipo professionale o legale. CNR-IGG si riserva il diritto di inibire o proibire o sospendere, in qualsiasi momento e senza preavviso, l'accesso al presente Sito e ai relativi servizi. L\u2019utente si impegna a non abusare del servizio offerto ed a rinunciare ad un suo utilizzo per pratiche illegali. Qualsiasi segnalazione, suggerimento, errori o malfunzionamenti del portale, inesattezze od omissioni sui dataset \u00e8 quindi per noi prezioso e saremo grati di ogni indicazione vorrete fornirci all'indirizzo Questo indirizzo email \u00e8 protetto dagli spambots. \u00c8 necessario abilitare JavaScript per vederlo. Accesso a siti esterni collegati I collegamenti a siti esterni, indicati nel presente sito, sono forniti come semplice servizio agli utenti, con esclusione di ogni responsabilit\u00e0 sulla correttezza e sulla completezza dell\u2019insieme dei collegamenti indicati. L\u2019indicazione di dati presenti in dataset esterni non implica da parte del CNR-IGG alcun tipo di approvazione o condivisione di responsabilit\u00e0 in relazione alla legittimit\u00e0, alla completezza e alla correttezza delle informazioni contenute nei dataset indicati. Pertanto, della completezza e precisione delle informazioni ottenute dall\u2019utente tramite l\u2019accesso ai siti collegati sono da ritenersi responsabili i soggetti titolari dei siti ai quali si accede alle condizioni dagli stessi previste. Privacy Per tutto ci\u00f2 che riguarda la normativa in materia di protezione dei dati e utilizzo dei cookies, si rinvia alla privacy policy del sito. Contatti CNR - Consiglio Nazionale delle Ricerche IGG - Istituto di Geoscienze e Georisorse Via Moruzzi 1 56124 Pisa W : www.igg.cnr.it E : Nessun Iframes Copyright \u00a9 2022 CNR-IGG. All Rights Reserved. Termini d'utilizzo Privacy & Cookie Policy Powered By"
+}

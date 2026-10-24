@@ -1,0 +1,55 @@
+{
+  "record_id": "al-ogb/wells",
+  "checked_at": "2026-10-24T04:40:04+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.gsa.state.al.us/ogb/gisdata"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (3562455 bytes); 1 entries listed; the manifest_url is the file itself"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1538 characters captured from https://www.ogb.state.al.us/img/ogb/gis_constraints.txt"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.gsa.state.al.us/ogb/gisdata",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 290,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "wells.zip",
+      "url": "https://www.gsa.state.al.us/img/ogb/gis/wells.zip",
+      "bytes": 3562455,
+      "sha256": "f0dd1586b93859a695449e1ca11b0f416493548dc8ce48ebe8bf939314c9eca9"
+    }
+  ],
+  "licence_text_sha256": "97f7caad0714997200b3c54015be1240da1d14b920c8778381569317822076c8",
+  "licence_text": "Use_Constraints: Reproduction or redistribution of digital data sets or products derived therefrom to a third party organization or entity is expressly forbidden. None of these data shall be electronically duplicated on magnetic or optical media for use by others, in whole or in part, without permission of the State Oil & Gas Board of Alabama (OGB). Any hardcopies utilizing these data sets shall clearly indicate their source. If the user has modified the data in any way they are obligated to describe the types of modifications they have performed on the hardcopy map. User specifically agrees not to misrepresent these data sets, nor to imply that changes they made were approved by the OGB. The OGB should be acknowledged as the originator of the data. This data set is to be used as a primary reference source. This is public information and may be interpreted by organizations, agencies, units of government, or others based on needs; however, they are responsible for the appropriate application. Federal, State, or local regulatory bodies are not to reassign to the originators any authority for the decisions they make. Photographic or digital enlargement of these maps to scales greater than that at which they were originally delineated can cause misrepresentation of the data. If enlarged, the maps will not include the fine detail that would be appropriate for mapping at the large scale. Digital data files are periodically updated. Files are dated, and users are responsible for obtaining the latest version of the data."
+}

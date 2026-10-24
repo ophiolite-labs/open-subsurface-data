@@ -1,0 +1,45 @@
+{
+  "record_id": "va-energy/gas-oil-wells",
+  "checked_at": "2026-10-24T04:47:51+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "fail",
+      "detail": "connection at https://energy.virginia.gov/gas-oil/GasOil.shtml"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file; derivation refused: robots.txt disallows https://energy.virginia.gov/gis/rest/services/DGO/DGO_wells/MapServer/0?f=json"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 0,
+    "final_url": "https://energy.virginia.gov/gas-oil/GasOil.shtml",
+    "content_type": "",
+    "elapsed_ms": 47,
+    "reachability": "dead"
+  }
+}

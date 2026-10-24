@@ -1,0 +1,46 @@
+{
+  "record_id": "odnr/oil-and-gas-well-database",
+  "checked_at": "2026-10-24T04:43:16+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "skip",
+      "detail": "answers a browser, not the verifier (HTTP 404 to osd-verifier, HTTP 200 to a browser agent); blocked since 2026-10-23"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "no text at https://www.arcgis.com/home/item.html?id=e03ec46046af49c49d879ab9be07f980"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 404,
+    "final_url": "https://ohiodnr.gov/discover-and-learn/safety-conservation/about-ODNR/oil-gas/oil-gas-resources/featured-content-3",
+    "content_type": "text/html",
+    "elapsed_ms": 123,
+    "reachability": "blocked",
+    "blocked_since": "2026-10-23T15:50:01+00:00"
+  }
+}

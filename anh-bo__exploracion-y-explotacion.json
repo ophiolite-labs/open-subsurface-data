@@ -1,0 +1,53 @@
+{
+  "record_id": "anh-bo/exploracion-y-explotacion",
+  "checked_at": "2026-10-24T04:40:03+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.anh.gob.bo/w2026/contenido.php?s=10"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (2607508 bytes); 233 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.anh.gob.bo/w2026/contenido.php?s=10",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 2344,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "/InsideFiles/Documentos/Documentos_Id-592-220412-0757-0.pdf",
+      "url": "https://www.anh.gob.bo/InsideFiles/Documentos/Documentos_Id-592-220412-0757-0.pdf",
+      "bytes": 2607508,
+      "sha256": "df12f071c765054c16f9db35545223f9d0f4e9d0359cbb0d4820685183c18441"
+    }
+  ]
+}

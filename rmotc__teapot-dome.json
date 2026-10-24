@@ -1,0 +1,53 @@
+{
+  "record_id": "rmotc/teapot-dome",
+  "checked_at": "2026-10-24T04:53:35+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://edx.netl.doe.gov:443/user/login"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5984 characters captured from https://www.usa.gov/government-copyright"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "1 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "1 approximate features"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://edx.netl.doe.gov:443/user/login",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 102,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "23dc47d46955adcfe6185821ea89bffa92903f125f2ddf285780f1963e750b9b",
+  "licence_text": "Skip to main content An official website of the United States government Here's how you know Here's how you know Official websites use .gov A .gov website belongs to an official government organization in the United States. Secure .gov websites use HTTPS A lock ( Lock Locked padlock icon ) or https:// means you\u2019ve safely connected to the .gov website. Share sensitive information only on official, secure websites. Home Close Search 1-844-USAGOV1 Laws and legal issues Federal laws and regulations Research federal laws How laws are made Your government files through the Privacy Act Copyrighted government works Impeachment process Information Visit vote.gov to learn how to register to vote or to update your registration. Menu Call us at 1-844-USAGOV1 Search All topics and services The U.S. and its government Government benefits Immigration and U.S. citizenship Money and credit Travel Voting and elections Home Laws and legal issues Federal laws and regulations Copyrighted government works Laws and legal issues Request copies of vital records and ID cards Find a lawyer and affordable legal aid Family legal issues Prisons and prisoners Crime reporting, victim support, and crime statistics Authenticate an official document State attorneys general Federal laws and regulations Research federal laws How laws are made Your government files through the Privacy Act current page Copyrighted government works Impeachment process Federal, state, territory, county, and municipal courts Learn about copyright and federal government materials Text, images, and logos you see on federal websites may be subject to copyright or other restrictions. Learn the rules before using materials from government websites. Find U.S. government materials you can use The Library of Congress (LOC) has a special collection of federal government materials that are not subject to copyright protection. Find copyright-free images from the federal government. Search LOC\u2019s digital collections to find copyright-free books, newspapers, maps, music, films, and more . Restrictions on using U.S. government materials Not everything that appears on a federal government website is a government work. Government work is something created by a U.S. government officer or employee as part of their official duties. Content on federal websites may include protected intellectual property used with the right holder's permission. Check with the federal agency or program that manages the website to make sure the materials are not restricted before using them. This includes texts, trademarks, logos, or images. Publicity and privacy rights On federal websites, other people may have rights to the work itself or how people use it. This includes publicity or privacy rights under state law. These rights protect the interests of the person or people who may be the subject of the work. Endorsement, trademarks, and agency logos You cannot use government materials in a way that implies endorsement by a government agency, official, or employee. For example, you cannot use a photo in your advertisement of a government official wearing or using your product. You also cannot use federal government trademarks or federal government agency logos without permission. For example, in general, you cannot use an agency logo or trademark on your social media page to suggest endorsement or sponsorship by the agency. Attribution In some cases, agencies will have specific language that they request you include with the materials they allow you to use. In other cases, agencies may release copyright-protected materials under a Creative Commons \u201cCC-BY\u201d or similar license, which requires attribution for use. State and local government materials The U.S. government work designation does not apply to works of state and local governments. Those works may be protected by copyright. Contact your state or local government for more information about their copyrighted works. Copyright laws differ internationally U.S. copyright laws may not protect U.S. government works outside the country. But the work may be protected under the copyright laws of other jurisdictions when used in these jurisdictions. The U.S. government may assert copyright outside of the United States for U.S. government works. Learn more about U.S. government works and copyright law Copyright Law of the United States of America, Sections 101 and 105 \u2013 Read the section of the law that describes U.S. government works. U.S. Copyright Office Compendium, Section 313.6(C)(1)[PDF, 695KB] \u2013 Learn about \u201cworks of the U.S. government\u201d and exceptions. Frequently asked questions about copyright[PDF, 1.4MB] \u2013 Find answers to common questions about U.S. government works. Difference between patents, trademarks, service marks, and copyrights \u2013 Many people confuse copyrights with patents and trademarks. Learn about the different types of intellectual property and get examples of each. Visit the U.S. Copyright Office website to search copyright records and to register your work. LAST UPDATED: April 30, 2026 SHARE THIS PAGE: Have a question? Ask a real person any government-related question for free. They will get you the answer or let you know where to find it. Call USAGov Chat with USAGov Top Government information All topics and services Directory of U.S. government agencies and departments Branches of government About us About USAGov Report a website issue Website usage data For federal agencies Partner with us Read our blog USAGov Contact Center Ask USA.gov a question at 1-844-USAGOV1 (1-844-872-4681) USAGov is the official guide to government information and services An official website of the U.S. General Services Administration This website complies with Executive Order 14224 . English is the official language of the U.S. Government, and the English-language version of this website is the authoritative source for all federal information contained herein. Accessibility policy Privacy and security policies FOIA requests"
+}

@@ -1,0 +1,55 @@
+{
+  "record_id": "sgu/brunnar",
+  "checked_at": "2026-10-24T04:44:41+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.sgu.se/produkter-och-tjanster/geologiska-data/brunnar--geologiska-data/brunnar/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (232973938 bytes); 170 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5089 characters captured from https://www.sgu.se/produkter-och-tjanster/geologiska-data/om-geologiska-data/licensvillkor/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.sgu.se/produkter-och-tjanster/geologiska-data/brunnar--geologiska-data/brunnar/",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 654,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://resource.sgu.se/data/oppnadata/brunnar/brunnar.zip",
+      "url": "https://resource.sgu.se/data/oppnadata/brunnar/brunnar.zip",
+      "bytes": 232973938,
+      "sha256": "51b74eafc34deb4c8fb964bcf2a10695aa5219a6515eeef4fa66a648a370a331"
+    }
+  ],
+  "licence_text_sha256": "4335aba7c7c3d53f8b20585566b84677b1d2b713f49acab9f2164a019a00c664",
+  "licence_text": "G\u00e5 till sidans huvudinneh\u00e5ll Lyssna L\u00e4ttl\u00e4st In English Kontakta oss V\u00e5ra webbplatser SGU Start Mineraljakten Anv\u00e4ndarst\u00f6d f\u00f6r geologiska fr\u00e5gor Kartvisare GeoLagret Bergsstaten ITP308 S\u00f6k p\u00e5 sajten S\u00f6k Meny S\u00f6k Start Produkter och tj\u00e4nster Geologiska data Kartor Publikationer och rapporter Anv\u00e4ndarst\u00f6d f\u00f6r geologiska fr\u00e5gor Inrapporteringstj\u00e4nster SGU:s unders\u00f6kningsfartyg Uppdragsverksamhet Datav\u00e4rdskapen f\u00f6r grundvatten och milj\u00f6gifter S\u00f6ktj\u00e4nster och portaler Informationsmaterial Kundservice Grundvatten Grundvattenniv\u00e5er Brunnar och dricksvatten Vattenf\u00f6rvaltning \u00d6vervakning av grund\u00advattenkvalitet PFAS i grundvatten Vattenskyddsomr\u00e5den Vattenf\u00f6rs\u00f6rjningsplaner Bed\u00f6mningsgrunder f\u00f6r grundvatten Inmatning av grundvattenuppgifter Grundvatten och f\u00f6r\u00e4ndrat klimat Mineraln\u00e4ring Mineralinformation Mineralstatistik Svensk gruvn\u00e4ring S\u00e4rskilda markanv\u00e4ndningsintressen Metall- och mineral\u00e5tervinning Gruvor och milj\u00f6p\u00e5verkan Mineraln\u00e4ring och samh\u00e4lle Kritiska och strategiska r\u00e5varor Industrimineral Energimineral Konfliktmineral Mineraljakten Minerallagstiftning Berggrundsgeologisk kartl\u00e4ggning Geofysisk kartl\u00e4ggning Geokemisk kartl\u00e4ggning Samh\u00e4llsplanering Planering och markanv\u00e4ndning Bergmaterial f\u00f6r byggande Marin milj\u00f6 Risker Natur- och kulturv\u00e4rden F\u00f6rorenade omr\u00e5den Energi CCS \u2013 Koldioxidlagring Klimatf\u00f6r\u00e4ndringar Om geologi Jordklotets uppbyggnad Berg Mineral Jord Vatten Meteoriter Klimatf\u00f6r\u00e4ndringar Sev\u00e4rd geologi BetterGeo \u2013 Minecraft med geologi Geopraktisk - en jobbguide Geologiska namn i Sverige Geologisk ordlista Om SGU Verksamhet Nyheter Press och media SGU:s nyhetsbrev Organisation S\u00e5 styrs SGU Kontakta oss Lediga tj\u00e4nster Kung\u00f6relser Event Fr\u00e5gor och svar Upphandlingar Om webb\u00adplatsen Kontakta oss In English Start Produkter och tj\u00e4nster Geologiska data Om geologiska data Licensvillkor f\u00f6r SGU:s geologiska data Undersidor Geologiska data Berggrund Malmer och mineral Geofysik Grundvatten Brunnar Jordarter Samh\u00e4llsplanering Milj\u00f6\u00f6vervakning Geokemi Maringeologi Allm\u00e4nt geologi 3D-modeller Om geologiska data Licensvillkor f\u00f6r SGU:s geologiska data Dataformat S\u00e4rskilda v\u00e4rdefulla datam\u00e4ngder \u00d6ppna data Inspire-data Kartor Publikationer och rapporter Anv\u00e4ndarst\u00f6d f\u00f6r geologiska fr\u00e5gor, v\u00e4gledningar och handledningar Inrapporteringstj\u00e4nster Unders\u00f6kningsfartyg Uppdragsverksamhet Datav\u00e4rdskapen f\u00f6r grundvatten och milj\u00f6gifter S\u00f6ktj\u00e4nster och portaler Informationsmaterial Kundservice Licensvillkor f\u00f6r SGU:s geologiska data SGU:s geologiska data \u00e4r tillg\u00e4ngliga som \u00f6ppna data. \u00d6ppna data \u00e4r ben\u00e4mningen p\u00e5 information som \u00e4r fritt tillg\u00e4nglig och fri att anv\u00e4nda. SGU anser att anv\u00e4ndandet av myndighetens data fr\u00e4mjar s\u00e5v\u00e4l det egna arbetet som samh\u00e4llet i stort. Vi har sedan l\u00e4nge arbetat med att tillhandah\u00e5lla v\u00e5ra dataprodukter i enkla och kostnadsfria tj\u00e4nster, som till exempel v\u00e5ra kartvisare. Sedan tidigare har \u00e4ven m\u00e5nga av v\u00e5ra dataprodukter varit m\u00f6jliga att ladda ner som \u00f6ppna data. Fr\u00e5n den 9 juni 2024 \u00e4r nu alla geologiska data som SGU tillhandah\u00e5ller \u00f6ppna och tillg\u00e4ngliga f\u00f6r alla. \u00d6ppna data tillhandah\u00e5lls i \u00f6ppna format utan begr\u00e4nsande villkor. Du kanske vill bygga en applikation eller anv\u00e4nda informationen som beslutsunderlag i en process? SGU:s produkter \u00e4r under st\u00e4ndig utveckling och vi kommer \u00e4ven att f\u00f6rb\u00e4ttra informationen om hur man anv\u00e4nder v\u00e5ra data. Licenser \u00d6ppna data fr\u00e5n SGU har licensen Creative Commons Noll (CC0). CC0-licens inneb\u00e4r att data tillhandah\u00e5lls utan kostnad och kan anv\u00e4ndas och \u00e5teranv\u00e4ndas utan restriktioner. L\u00e4s om Creative Commons Noll Senast granskad 2024-05-11 Skriv ut Dela med andra: Facebook Twitter LinkedIn Dataformat Dataformat Geologiska data fr\u00e5n SGU f\u00f6rekommer i olika format. H\u00e4r f\u00e5r du veta mer om hur de fungerar. Mer information SGU:s kundservice Telefon: 018-17 90 00 m\u00e5n\u2013fre 9.30\u201311.30 E-post: kundservice@sgu.se Box 670, 751 28 Uppsala GeoLagret GeoLagret \u00e4r en tj\u00e4nst d\u00e4r du kan s\u00f6ka och ladda ner SGU:s kartor, rapporter och geologiska data. Andra webbplatser Creative Commons, erk\u00e4nnande 0 L\u00e4s vilka villkor som g\u00e4ller f\u00f6r Creative Commons, erk\u00e4nnande 0. Creative Commons, erk\u00e4nnande 4.0 L\u00e4s vilka villkor som g\u00e4ller f\u00f6r Creative Commons, erk\u00e4nnande 4.0. Nedre navigering undersidor Geologiska data Berggrund Malmer och mineral Geofysik Grundvatten Brunnar Jordarter Samh\u00e4llsplanering Milj\u00f6\u00f6vervakning Geokemi Maringeologi Allm\u00e4nt geologi 3D-modeller Om geologiska data Licensvillkor f\u00f6r SGU:s geologiska data Dataformat S\u00e4rskilda v\u00e4rdefulla datam\u00e4ngder \u00d6ppna data Inspire-data Kartor Publikationer och rapporter Anv\u00e4ndarst\u00f6d f\u00f6r geologiska fr\u00e5gor, v\u00e4gledningar och handledningar Inrapporteringstj\u00e4nster Unders\u00f6kningsfartyg Uppdragsverksamhet Datav\u00e4rdskapen f\u00f6r grundvatten och milj\u00f6gifter S\u00f6ktj\u00e4nster och portaler Informationsmaterial Kundservice Tel: 018-17 90 00 E-post: sgu@sgu.se Behandling av personuppgifter SGU:s tj\u00e4nst f\u00f6r visselbl\u00e5sning \u00d6versiktskarta Om webbplatsen Om webbkakor (cookies) Tillg\u00e4nglighets\u00adredog\u00f6relse Sociala medier SGU p\u00e5 Facebook SGU p\u00e5 LinkedIn SGU p\u00e5 YouTube SGU p\u00e5 Twitter Fler digitala kanaler Inneh\u00e5llet laddas in dynamiskt"
+}

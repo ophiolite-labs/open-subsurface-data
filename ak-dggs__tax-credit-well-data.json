@@ -1,0 +1,47 @@
+{
+  "record_id": "ak-dggs/tax-credit-well-data",
+  "checked_at": "2026-10-24T04:40:08+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://dggs.alaska.gov/gmc/seismic-order.html"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "robots.txt disallows the listing https://dggs.alaska.gov/webpubs/dggs/gmc/well_data/"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "7434 characters captured from https://dnr.alaska.gov/shared/notices/copyright.htm"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://dggs.alaska.gov/gmc/seismic-order.html",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 299,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "a6bd8bb364e686c46811b897b001eb0ef1a3e49d9159540cf674aaf4800c4b9c",
+  "licence_text": "Skip to content State of Alaska myAlaska Departments State Employees Statewide Links Back to Top State of Alaska Department of Natural Resources Search Toggle main menu visibility DNR Home About DNR FAQ - Frequently Asked Questions Public Information Center Contacts/Office Directory Jobs/Volunteer Opportunities Boards and Commissions Board of Agriculture Board of Forestry Community Forest Council Forest Stewardship Coordinating Committee Timber Jobs Task Force Tanana Valley State Forest Citizen's Advisory Committee Citizen's Advisory Commission on Federal Areas in Alaska Exxon Valdez Oil Spill Trustee Council Natural Resources Conservation & Development Board Historical Commission Boating Safety Advisory Council Outdoor Recreation Trail Advisory Board SNOWTRAC Committee State Park Advisory Boards/Councils Alaska Geospatial Council Seismic Hazards Safety Commission Geologic Mapping Advisory Board Minerals Commission Royalty Oil and Gas Development Advisory Board Tribal Relations Public Notices Divisions/Offices Divisions Agriculture Forestry & Fire Protection Geological and Geophysical Surveys Mining, Land and Water Division of Oil and Gas Parks and Outdoor Recreation Support Services Division Offices Commissioner's Office Public Information Center Boating Safety History and Archaeology State Historical Preservation Recorder's Office State Pipeline Coordinator's Section Mental Health Trust Land Office Project Management and Permitting Online Services Pay a DNR bill online Purchase land Apply for a burn permit Reserve a state park cabin Search recorded documents UCC Online Filing Search land case files and abstracts Search for land records More Online Services Newsroom News Releases Subscribe to News Releases Social Media Public Notices State of Alaska / Natural Resources Alaska Department of Natural Resources (DNR) Copyright Notice Subject to fair use, such as limited copying for purposes of scientific research or criticism, the unauthorized copying and posting of material contained within a department publication or web page to a non-DNR hard publication, web page or other electronic publication may constitute copyright infringement. A person seeking to copy material from a department web page or hard publication to a non-DNR web page or publication must first obtain permission from the department. Downloading of web materials for uses allowed under fair use, such as making a paper copy for subsequent reading is permitted without department authorization and approval, but republication is prohibited. The Alaska Department of Natural Resource's authority to claim copyright protection for its original works of authorship derives from (Alaska Statutes) AS 16.05.050(2), 16.05.050(8), and AS 44.99.400. Copyright protection begins automatically from the moment the work is created in fixed form and begins without any formality, process, or application. In keeping with changes in copyright law in 1987, the standard copyright notice (e.g., \"\u00a9 2000 Alaska Department of Natural Resources\") is not required to establish copyright, nevertheless, we have attempted to include a copyright notice on all of the department's web pages to inform users of DNR's copyright. Users of this website should not assume that pages, materials, or graphics found on this website without any copyright notice are unprotected and free to copy, as this may not be the case. If you are not sure whether the Fair Use provision of the Copyright Act would allow copying a needed item or material, request copies or copying permission from the department (specifically the DNR Commissioner or the appropriate division directors or webmasters) before using DNR materials. As an alternative to reposting our materials on other web sites we encourage the use of one or more of the following web techniques: (1) sites can link to our own pages containing those materials or information, (2) create coding such that a NEW browser window will open displaying our appropriate web page (A HREF=\" \" . . . target=\"_blank\" or target=\"_new\"), or (3) write to us and request that specific data or information that is currently not posted to our site be added to our site so links can be established to our original material on our site. For materials that we are unable to post immediately (for your site to link to), you may inquire about licensing those materials for posting to your own web site. The use of \"frames\" to reproduce/display our web pages/site on an external website is prohibited. When requesting permission to copy, republish, or reprint material from DNR, prepare a letter of request that includes the following: (1) explain the nature of the request (i.e., your intended use and its duration), and (2) include pertinent source information (e.g., year, volume, number, edition, pages or portions of a page, URL of the web page, and/or nature of the information or data) that clearly identifies the material. Review of your request may take some time. If you receive no immediate response, do not assume permission has or would have been granted. Contact DNR again and request a follow-up to your initial inquiry. Although DNR may grant license(s) to use any of its copyrighted materials, the department also reserves the right to revoke such authorization at any time, and use of our materials shall be discontinued immediately upon written notice from this department. Documents or materials specified above may not include the design or layout of this web site. Elements of this web site are protected by trade dress and other laws and may not be copied or imitated in whole or in part. No logo, graphic, sound, or image from DNR's web site may be copied, republished/reposted, or retransmitted unless expressly permitted by DNR. Alteration or Manipulation of Distributed Electronic Documents and Forms Documents distributed in an electronic manner (e.g., Adobe Acrobat documents - .pdf; PostScript files - .eps, .ps, .prn; word processing documents - .doc, .wp, .rtf, .txt; spreadsheet documents - .xls, .csv; or hypertext markup language - .htm, .html; etc.) are not to be altered or manipulated (largely or in part) and then republished or reposted through any medium without department approval. Non-approved alteration of our original materials beyond fair use under the Copyright Act and reposting or duplication of our electronic documents or files is expressly prohibited. Restricted Rights Legend Any software which is downloaded from our web server(s) for or on behalf of the United States of America, its agencies and/or instrumentalities (\"U.S. Government\"), is provided with Restricted Rights. Use, duplication, or disclosure by the U.S. Government is subject to restrictions as set forth in subparagraph (c)(1)(ii) of the Rights in Technical Data and Computer Software clause at DFARS 252.227-7013 or subparagraphs (c)(1) and (2) of the Commercial Computer Software - Restricted Rights at 48 CFR 52.227-19, as applicable. * Adobe Acrobat PDF files require a free viewer available directly from Adobe (various platform versions available). Accessibility Privacy Copyright System Status State of Alaska Department of Natural Resources 550 W. 7th Ave, Suite 1360 Anchorage, AK 99501-3557 Phone: (907) 269-8400 Fax: (907) 269-8901 TTY: Dial 711 or 800-770-8973 State of Alaska myAlaska Departments State Employees Copyright \u00a9 State of Alaska \u00b7 Department of Natural Resources \u00b7 Email the Webmaster"
+}

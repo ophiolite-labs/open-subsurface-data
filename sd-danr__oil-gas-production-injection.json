@@ -1,0 +1,55 @@
+{
+  "record_id": "sd-danr/oil-gas-production-injection",
+  "checked_at": "2026-10-24T04:41:47+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://danr.sd.gov/Environment/MineralsMining/OilGas/Data.aspx"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (14332260 bytes); 73 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "6418 characters captured from https://danr.sd.gov/Environment/MineralsMining/OilGas/Data.aspx"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://danr.sd.gov/Environment/MineralsMining/OilGas/Data.aspx",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 2343,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://sddenr.net/pubs/og/Oil_Gas_Production_All_Years.xlsx",
+      "url": "https://sddenr.net/pubs/og/Oil_Gas_Production_All_Years.xlsx",
+      "bytes": 14332260,
+      "sha256": "2c7c9513ba4183959704522c3baefefa8b42d56a1b1102ba4747349b5626b268"
+    }
+  ],
+  "licence_text_sha256": "553749e74bf8618bb4d83d0c0733221d8207aff58e5b7a7c056bd191b6533d80",
+  "licence_text": "South Dakota Department of Agriculture & Natural Resources SECRETARY'S OFFICE CONTACT US STATE FAIR PRESS AGRICULTURE & ENVIRONMENTAL SERVICES LIVESTOCK SERVICES INSPECTION, COMPLIANCE AIR QUALITY MINERALS, MINING, & SUPERFUND WASTE MANAGEMENT RESOURCE CONSERVATION & FORESTRY APIARY CONSERVATION FORESTRY PLANT INDUSTRY SPECIALTY CROP BLOCK GRANT WATERSHED PROTECTION FINANCE & TECHNICAL ASSISTANCE AGRICULTURAL MEDIATION CHECKOFF REMITTANCE ENVIRONMENTAL FUNDING GEOLOGICAL SURVEY (opens in new tab) OFFICE OF WATER DRINKING WATER WATER RIGHTS WATER QUALITY OPERATOR CERTIFICATION \u00d7 Oil & Gas IN SOUTH DAKOTA Our purpose is to implement the state oil and gas laws in a timely, efficient, and customer service oriented manner that will encourage exploration for and development of oil and gas; prevent waste; and protect correlative rights, water resources, the environment, and human health. Well Data Production/Injection Mapping Well Data Well data is now available through the South Dakota Geological Survey's Interactive Data Map and Online Database (for help entering search criteria, please click the help button on the search page). Oil and gas shapefile downloads available through the Oil and Gas Initiative! Click here to download a geodatabase with wells, recovery units, and field boundaries. Production and Injection Data Injection Data Monthly Injection Reports for Water, Air, and Gas Injection Wells (The following report is in a MS Excel Format) 1977 to Present Enhanced Recovery Unit specific injection is now available on the first, yellow tab of the spreadsheet. Production Data Monthly Production Reports for Oil & Gas Wells (The following report is in a MS Excel Format) 1950 to Present A key for the production spreadsheet can be found here . Enhanced Recovery Unit specific production is now available on the first, yellow tab of the spreadsheet. Production data for individual wells is also available through the online database and Interactive Data Map . (Click table for larger image) (Click table for larger image) (Click table for larger image) LEGAL DISCLAIMER The State of South Dakota (State) makes no claims, promises, or guarantees about the absolute accuracy, completeness, or adequacy of this data. The use of this data is limited to informational and educational purposes only. This data is provided as is and in no event or circumstance shall the State, nor any agency, employee or representative be liable for any damages or losses, including without limitation, damages resulting from lost profits or revenue, claims by third parties or any special, incidental, punitive or consequential damages, arising out of the use of this data. The State may make changes to information at any time to add, update, or correct the information provided. Any errors or omissions should be reported for investigation. Any person or entity that relies on information obtained from this system does so at his or her own risk. The State makes every effort to provide virus-free files, but does not guarantee uncorrupted files. South Dakota Oil and Gas Maps Oil and gas shapefile downloads available through the Oil and Gas Initiative ! Click here to download a geodatabase with wells, recovery units, and field boundaries. Maps and Charts Available for Purchase The South Dakota Stratigraphic Correlation Chart (Oil & Gas Investigation 3) depicts a chronostratigraphic classification for the geologic strata within the various geologic basins and areas in the state. The chart is available from the South Dakota Geological Survey. Stratigraphic Correlation Chart [ 40\" x 56\" ] - $15.00 How to Order: The maps are available by mail order (including key with well locations and data). The paper sizes and costs are listed with each map. To order, please contact the South Dakota Geological Survey at 605-677-5227 or complete the order form available on the Survey's Publications and Maps page. Other county maps showing oil and gas well, test hole, and permit locations are available upon request. The maps listed below are in Adobe Acrobat (PDF) format for viewing and printing. Click the map title to access the PDF. The maps are updated periodically. To view the PDF files you will need Adobe Acrobat Reader software. If you do not have the software, you can click on the link below to get a free copy. Map Title Map Size and Price South Dakota Statewide 42 inches x 52 inches, $15.00 Fall River County O&G Wells, Test Holes, and Fields 34 inches x 44 inches, $10.00 Harding County Oil and Gas Fields 36 inches x 48 inches, $15.00 Harding County Enhanced Recovery Units 36 inches x 48 inches, $15.00 Custer County Oil and Gas Wells and Test Holes 25 inches x 36 inches, $10.00 Meade County Oil and Gas Wells and Test Holes 46 inches x 54 inches, $15.00 Butte County Oil and Gas Wells and Test Holes 36 inches x 48 inches, $15.00 Perkins County Oil and Gas Wells and Test Holes 48 inches x 36 inches, $15.00 LEGAL DISCLAIMER The State of South Dakota (State) makes no claims, promises, or guarantees about the absolute accuracy, completeness, or adequacy of this data. The use of this data is limited to informational and educational purposes only. This data is provided as is and in no event or circumstance shall the State, nor any agency, employee or representative be liable for any damages or losses, including without limitation, damages resulting from lost profits or revenue, claims by third parties or any special, incidental, punitive or consequential damages, arising out of the use of this data. The State may make changes to information at any time to add, update, or correct the information provided. Any errors or omissions should be reported for investigation. Any person or entity that relies on information obtained from this system does so at his or her own risk. The State makes every effort to provide virus-free files, but does not guarantee uncorrupted files. Oil & Gas Resources Related Pages Oil & Gas Homepage Laws & Rules Data/Reports Permits/Forms Oil & Gas Cases Contact Us Department Secretary: Hunter Roberts 523 E Capitol Ave, Pierre, SD 57501-3182 605-773-5559 Email DANR DANR Links About DANR Contact Us State Fair Press Archived Documents Nondiscrimination Policy (PDF) DANR Intranet Site State Links State Home Page Request Public Records Disclaimer Accessibility Privacy Policy Follow Us Copyright \u00a9 2026 | State of South Dakota WHAT CAN WE HELP YOU FIND? \u00d7"
+}

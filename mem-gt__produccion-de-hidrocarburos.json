@@ -1,0 +1,53 @@
+{
+  "record_id": "mem-gt/produccion-de-hidrocarburos",
+  "checked_at": "2026-10-24T04:40:49+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://mem.gob.gt/que-hacemos/hidrocarburos/hidrocarburos-upstream/explotacion/produccion/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (53687 bytes); 178 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://mem.gob.gt/que-hacemos/hidrocarburos/hidrocarburos-upstream/explotacion/produccion/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1208,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://mem.gob.gt/wp-content/uploads/2025/07/PRODUCCION-DE-HIDROCARBUROS-2025.xlsx",
+      "url": "https://mem.gob.gt/wp-content/uploads/2025/07/PRODUCCION-DE-HIDROCARBUROS-2025.xlsx",
+      "bytes": 53687,
+      "sha256": "49dc49707759861cd14182219eab7957eaeaacf3bdd3758e93c2ebe2582e00da"
+    }
+  ]
+}

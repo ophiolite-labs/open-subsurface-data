@@ -1,0 +1,51 @@
+{
+  "record_id": "terranubis/f3-demo-2020",
+  "checked_at": "2026-10-24T04:46:09+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "fail",
+      "detail": "HTTP 502 from https://terranubis.com/datainfo/F3-Demo-2020"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "1 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "1 approximate features"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 502,
+    "final_url": "https://terranubis.com/datainfo/F3-Demo-2020",
+    "content_type": "text/html",
+    "elapsed_ms": 397,
+    "reachability": "dead"
+  }
+}

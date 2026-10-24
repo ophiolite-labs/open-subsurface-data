@@ -1,0 +1,53 @@
+{
+  "record_id": "nysdec/oil-gas-and-other-regulated-wells",
+  "checked_at": "2026-10-24T04:43:37+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://data.ny.gov/Energy-Environment/Oil-Gas-Other-Regulated-Wells-Beginning-1860/szye-wmt3"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (22629681 bytes); 1 entries listed; listing dated 2026-10-23"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "no text at https://www.arcgis.com/home/item.html?id=b7a08a1be2c141dd9d432b737da608ed"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://data.ny.gov/Energy-Environment/Oil-Gas-Other-Regulated-Wells-Beginning-1860/szye-wmt3",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 406,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "rows.csv",
+      "url": "https://data.ny.gov/api/views/szye-wmt3/rows.csv?accessType=DOWNLOAD",
+      "bytes": 22629681,
+      "sha256": "5f6745d29c15b156b97f973d5e295bd35051014510395e5193a1808be826064c"
+    }
+  ]
+}

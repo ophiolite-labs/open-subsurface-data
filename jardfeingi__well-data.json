@@ -1,0 +1,53 @@
+{
+  "record_id": "jardfeingi/well-data",
+  "checked_at": "2026-10-24T04:41:00+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://jf.fo/datur/boridatur/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (3204 bytes); 125 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://jf.fo/datur/boridatur/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 954,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://jf.fo/wp-content/uploads/2016/10/2015.08.24_FO_Offshore_Wells.zip",
+      "url": "https://jf.fo/wp-content/uploads/2016/10/2015.08.24_FO_Offshore_Wells.zip",
+      "bytes": 3204,
+      "sha256": "a466c2e0ad943d09f934b53b30874d329a5446c36086478b472bbece43ec68f5"
+    }
+  ]
+}

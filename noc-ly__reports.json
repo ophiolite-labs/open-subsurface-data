@@ -1,0 +1,53 @@
+{
+  "record_id": "noc-ly/reports",
+  "checked_at": "2026-10-24T04:41:27+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://noc.ly/reports/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (4712018 bytes); 83 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://noc.ly/reports/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 2904,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://noc.ly/wp-content/uploads/2026/07/NOC-SHORT-REPORT-OF-JUN-.pdf",
+      "url": "https://noc.ly/wp-content/uploads/2026/07/NOC-SHORT-REPORT-OF-JUN-.pdf",
+      "bytes": 4712018,
+      "sha256": "99fb1db38ad526215e41479d87f280699dae748b4cc7ef478ff9b5c7d0cd8d1f"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "record_id": "sgudds/register-geotermalnych-vrtov",
+  "checked_at": "2026-10-24T04:53:54+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "skip",
+      "detail": "blocked from this runner (HTTP 403, HTTP 403 from https://www.geology.sk/geoinfoportal/mapovy-portal/registre-geofondu/vrty/); blocked since 2026-10-23"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "whole layer checked (307 features, esri-json), not a downloadable file; stability unknown (the layer states no edit date)"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "blocked from this runner (HTTP 403 from https://www.geology.sk/licencie-a-citacie-2/)"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "307 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "307 features derived from 1 inputs, every input sha256 equal to the stored bytes (min_features 307)"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 403,
+    "final_url": "https://www.geology.sk/geoinfoportal/mapovy-portal/registre-geofondu/vrty/",
+    "content_type": "text/html; charset=iso-8859-1",
+    "elapsed_ms": 679,
+    "reachability": "blocked",
+    "blocked_since": "2026-10-23T16:31:40+00:00"
+  },
+  "layer_exports": [
+    {
+      "layer": "https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2",
+      "format": "esri-json",
+      "features": 307,
+      "count": 307,
+      "bytes": 337971,
+      "sha256": "ee4b13d182e3b245c5974f54fbb6d13528c7549a53599b992da9fd20ca44bb3c",
+      "edit_date_before": null,
+      "edit_date_after": null
+    }
+  ]
+}

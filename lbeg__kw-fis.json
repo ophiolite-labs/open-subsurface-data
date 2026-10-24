@@ -1,0 +1,47 @@
+{
+  "record_id": "lbeg/kw-fis",
+  "checked_at": "2026-10-24T04:41:42+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.lbeg.niedersachsen.de/energie_rohstoffe/erdoel_und_erdgas/fachinformationssystem/kohlenwasserstoff-fachinformationssystem-kw-fis-670.html"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5163 characters captured from https://nibis.lbeg.de/cardomap3/content.aspx?method=CopyRight,UsageConstraints,ApplicationContent"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.lbeg.niedersachsen.de/energie_rohstoffe/erdoel_und_erdgas/fachinformationssystem/kohlenwasserstoff-fachinformationssystem-kw-fis-670.html",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1202,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "03e5355fb1751711ad91aa95f907ab62865436b2da238fd8adc599daf54bbed8",
+  "licence_text": "NIBIS \u00ae Kartenserver Das Urheberrecht f\u00fcr die angezeigten, zum Download bereitgestellten oder druckbaren Daten verbleibt bei den jeweils (nach Thema unterschiedlich) im Copyright oder in den Metadaten benannten Rechteinhabern. Die im NIBIS-Kartenserver bereitgestellten Daten (offene Daten) k\u00f6nnen unter den Bedingungen der Lizenz \u201eCreative Commons\u201c (CC-BY 4.0)\u201c genutzt werden. Bei der Nutzung offener Daten ist die Lizenznehmerin oder der Lizenznehmer verpflichtet, bei jeder \u00f6ffentlichen Wiedergabe, Verbreitung oder Pr\u00e4sentation der Daten sowie bei jeder Ver\u00f6ffentlichung oder externen Nutzung, einer Bearbeitung oder Umgestaltung den folgenden deutlich sichtbaren Quellenvermerk anzubringen: NIBIS\u00ae Kartenserver (Jahr des Downloads, z.B. 2025): [ Thema der verwendeten Karte, ggf. Angabe, dass und welche Daten ver\u00e4ndert wurden ]. - Landesamt f\u00fcr Bergbau, Energie und Geologie (LBEG), Hannover. Der Quellenvermerk muss bei einer Internetpr\u00e4sentation nicht im unmittelbaren optischen Zusammenhang zur Datendarstellung eingebunden werden, wenn die Daten im Folgeprodukt nur einen untergeordneten Anteil haben und der Quellenvermerk das betreffende Kartenbild in nachteiliger Weise beeintr\u00e4chtigen w\u00fcrde. Es gen\u00fcgt in diesem Fall, den Quellenvermerk an anderer geeigneter Stelle, z. B. in unmittelbarem textlichen Zusammenhang, anzubringen. Die Nutzung der Topografischen Daten incl. der Luftbilder ist nur in Verbindung mit den Fachdaten des NIBIS\u00ae Kartenservers gestattet. Die alleinige Nutzung der Topografien macht eine Genehmigung notwendig. Bitte wenden Sie sich direkt an das betroffene Bundesland. Niedersachsen: Landesamtes f\u00fcr Geoinformation und Landentwicklung Niedersachsen (LGLN) Schleswig-Holstein: Landesamtes f\u00fcr Vermessung und Geoinformation Schleswig-Holstein (LVermGeoSH) Bremen: Landesamtes Geoinformation Bremen Hamburg: Landesbetrieb Geoinformation und Vermessung (LGV) Haftungsausschluss 1. Haftung f\u00fcr Links Soweit die Seiten des LBEG Links zu externen Websites Dritter enthalten, hat das LBEG auf deren Inhalt keinen Einfluss. Es \u00fcbernimmt f\u00fcr diese Links und fremden Inhalte keine Gew\u00e4hr. F\u00fcr die Inhalte der verlinkten Seiten ist ihr jeweiliger Anbieter oder Betreiber verantwortlich. Das LBEG stellte nach sorgf\u00e4ltiger Pr\u00fcfung der verlinkten Seiten zum Zeitpunkt der Verlinkung keine rechtswidrigen Inhalte fest. Eine stetige Kontrolle der Links und der verlinkten Seiten Dritter ist dem LBEG aber unzumutbar. Das LBEG l\u00f6scht betroffene Links unverz\u00fcglich, wenn Rechtsverletzungen mitgeteilt bzw. bekannt werden. 2.Haftung f\u00fcr Inhalte des Onlineangebotes (1) Als Diensteanbieter ist das LBEG gem\u00e4\u00df \u00a7 7 I TMG f\u00fcr eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Es erstellt Software, Daten und Informationen mit gr\u00f6\u00dfter Sorgfalt. Dennoch \u00fcbernimmt das LBEG hinsichtlich der Beschaffenheit keine Garantie f\u00fcr die Richtigkeit, Vollst\u00e4ndigkeit, Konsistenz und Genauigkeit dieser Produkte. Das LBEG \u00fcbernimmt insbesondere keine Haftung f\u00fcr Sch\u00e4den des Vertragspartners oder Dritter, die sich aus der Installation von Programmen oder der Anwendung von Daten und Informationen ergeben. (2) Nach \u00a7\u00a7 8 - 10 TMG ist das LBEG als Dienstanbieter nicht verpflichtet, \u00fcbermittelte oder gespeicherte fremde Informationen zu \u00fcberwachen oder nach Umst\u00e4nden zu forschen, die auf eine rechtswidrige T\u00e4tigkeit hinweisen. Soweit kann das LBEG insbesondere nicht wegen einer rechtswidrigen Handlung eines Nutzers auf Schadensersatz, Beseitigung oder Unterlassung einer Rechtsverletzung oder hinsichtlich der Kosten f\u00fcr die Geltendmachung und Durchsetzung dieser Anspr\u00fcche in Anspruch genommen werden. Die Verpflichtung zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleibt hiervon unber\u00fchrt. Eine Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis von einer konkreten Rechtsverletzung (und dem Ablauf einer angemessenen Reaktionsfrist) m\u00f6glich. Werden Rechtsverletzungen mitgeteilt, bzw. bekannt, entfernt das LBEG diese Inhalte unverz\u00fcglich. (3) Eine Haftung des LBEG f\u00fcr fahrl\u00e4ssige Pflichtverletzungen ist ausgeschlossen. Nicht ausgeschlossen, ist allerdings die Haftung f\u00fcr 1. Sch\u00e4den aus der Verletzung des Lebens, des K\u00f6rpers oder der Gesundheit, aufgrund einer fahrl\u00e4ssigen oder vors\u00e4tzlichen Pflichtverletzung durch das LBEG oder dessen Erf\u00fcllungsgehilfen, 2. andere Sch\u00e4den aufgrund grob fahrl\u00e4ssiger oder vors\u00e4tzlicher Pflichtverletzung durch das LBEG oder dessen Erf\u00fcllungsgehilfen. (4) Anspr\u00fcche gegen das LBEG verj\u00e4hren in einem Jahr, ausgenommen Anspr\u00fcche 1. wegen Sch\u00e4den aus der Verletzung des Lebens, des K\u00f6rpers oder der Gesundheit, 2. wegen Sch\u00e4den, aus grob fahrl\u00e4ssiger oder vors\u00e4tzlicher Pflichtverletzung des LBEG oder seiner Erf\u00fcllungsgehilfen, 3. nach dem Produkthaftungsgesetz, 4. wegen Garantien, 5. wegen der Verletzung von Kardinalpflichten. 3. Urheberrecht Das LBEG beachtet die Urheberrechte Dritter und kennzeichnet insbesondere Inhalte Dritter als solche. Bitte teilen Sie dem LBEG mit, wenn Sie dennoch eine Urheberrechtsverletzung feststellen! Das LBEG entfernt derartige Inhalte unverz\u00fcglich. Sie haben weitere Fragen? Schreiben Sie uns: E-Mail"
+}

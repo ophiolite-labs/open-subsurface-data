@@ -1,0 +1,53 @@
+{
+  "record_id": "nzpam/parihaka",
+  "checked_at": "2026-10-24T04:44:22+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://geodata.nzpam.govt.nz/survey/927165623"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "7601 characters captured from https://www.nzpam.govt.nz/about-us/copyright"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "1 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "derived from bytes that differ from the stored input https://geodata.nzpam.govt.nz/survey/927165623: rerun --outlines, review the diff"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://geodata.nzpam.govt.nz/survey/927165623",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 3518,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "3b2a6e7765c4763666a7b97c0a7a427446169a6744db5605e80778f712b08806",
+  "licence_text": "Skip to Search Skip to Main Content Skip to Primary Navigation Skip to Sibling Navigation Show/Hide search form Search website Search term Submit Search Menu Permits Permits Show/Hide sub-navigation Permits Online permitting system Show/Hide sub-navigation Manage your permits online Public search Minerals permits Show/Hide sub-navigation Types of permits Gold fossicking Apply for a new minerals permit Show/Hide sub-navigation Apply for a minerals prospecting permit Apply for a minerals exploration permit Apply for a minerals mining permit (Tier 1 or Tier 2) Apply for a minerals mining permit (Tier 3) or move from a Tier 2 to a Tier 3 mining permit Apply to change a minerals permit Show/Hide sub-navigation Minerals \u2013 Change a permit [APP-02] Minerals \u2013 Change of control [APP-06] Minerals \u2013 Consent to change operator or transfer interests [APP-04] Minerals \u2013 Amalgamate permits [APP-07] Minerals \u2013 Consent to a dealing [APP-05] Minerals \u2013 Surrender a permit [APP-03] Land available for applications Show/Hide sub-navigation Guidelines Minerals Permit Webmaps Minerals permit fees, royalties and the Energy Resources Levy Complying with your minerals permit Show/Hide sub-navigation Annual summary reports Show/Hide sub-navigation Example mine plans Annual review meetings (minerals) Technical reporting Pounamu Management Areas Mapping guidance for minerals permit applications Petroleum permits Show/Hide sub-navigation Types of permits Open market competitive process Show/Hide sub-navigation Applications under the open market competitive process Block Offer permit tender process Show/Hide sub-navigation Previous Block Offers Show/Hide sub-navigation Block Offer 2020 Show/Hide sub-navigation Release area map Invitation for Bids Consultation Block Offer 2019 Show/Hide sub-navigation Release area map Invitation for bids Consultation Block Offer 2018 Block Offer 2017 Block Offer 2016 Block Offer 2015 Block Offer 2014 Show/Hide sub-navigation Permit details and maps Block Offer 2013 Block Offer 2012 Prior to 2012 Apply for permits and manage current permits Show/Hide sub-navigation Petroleum Permit Webmaps Fees, Royalties and ERLs Complying with your petroleum permit Show/Hide sub-navigation Annual summary reports Annual review meetings (petroleum) Decommissioning of petroleum infrastructure and wells Show/Hide sub-navigation Financial capability and security for petroleum decommissioning Outgoing guarantees Exemptions and deferrals from decommissioning obligations Obligations and compliance Requesting a permit application fee refund Engaging with M\u0101ori Show/Hide sub-navigation Permit holder engagement with M\u0101ori Show/Hide sub-navigation Treaty settlement commitments Guidance on iwi engagement reports Iwi engagement review meetings MBIE consultation with iwi and hap\u016b Requests to exclude land Show/Hide sub-navigation Land excluded from our minerals and petroleum programmes Land proposed for exclusion from our minerals and petroleum programmes Permit contacts Timeframes for applications enabled by the Crown Minerals Amendment Act 2025 Glossary of terms Our performance against permit processing timeframes Maps and geoscience data Maps and geoscience data Show/Hide sub-navigation Maps and geoscience data Geodata Catalogue Show/Hide sub-navigation Geodata Catalogue User Guide Online Permitting System Petroleum Permit Webmaps Petroleum Exploration Data Pack Show/Hide sub-navigation Order a Petroleum Data Pack Minerals Permit Webmaps Minerals Exploration Data Pack Show/Hide sub-navigation Order a Minerals Data Pack The Core Store Show/Hide sub-navigation Core sampling terms and conditions NZ Mine Plans Permit Webmaps User Guide Using web services New Zealand's minerals and petroleum industry New Zealand's minerals and petroleum industry Show/Hide sub-navigation New Zealand's minerals and petroleum industry Crown Minerals Act law changes Show/Hide sub-navigation Fast-track approvals process Minerals Show/Hide sub-navigation Mineral resources potential Minerals permits and regulation through the lifecycle Phases of mineral exploration and production Show/Hide sub-navigation Prospecting Exploration Production Minerals statistics Show/Hide sub-navigation Annual minerals industry statistics and survey Annual return of industrial rocks and minerals output 2025 Coal Show/Hide sub-navigation Regional coal resources Operating coal mine production figures Show/Hide sub-navigation 2024 production figures 2023 production figures 2022 production figures 2021 production figures 2020 production figures 2019 production figures 2018 production figures 2017 production figures 2016 production figures 2015 production figures 2014 production figures 2013 production figures History of minerals and coal Minerals Strategy and Critical Minerals List Petroleum Show/Hide sub-navigation New Zealand's petroleum basins Phases of petroleum exploration and production Show/Hide sub-navigation Prospecting Exploration Production Petroleum statistics History of petroleum Mineral estate Value and benefits Developing our minerals sector Show/Hide sub-navigation The mineral potential of New Zealand report, 2024 Factsheets Webinars Subscribe to The Regulator's Update How we regulate How we regulate Show/Hide sub-navigation How we regulate Who we are and our role Overview of the minerals and petroleum regulatory environment Show/Hide sub-navigation Crown Minerals Act 1991 Programmes Show/Hide sub-navigation Summary of iwi and hap\u016b consultation on the Programmes Minerals regulators in New Zealand Petroleum regulators in New Zealand Local government Regulation tools Feedback, complaints and enquiries Contact the Compliance Team Contact us The Regulator's Update You are here: Home / Copyright / Share this page via social media LinkedIn Twitter Facebook Email this page Print this page About us Contact us News and media Subscribe to The Regulator\u2019s Update Purpose and role Careers Privacy Copyright Feedback, complaints and enquiries Contact the Compliance Team Transparency statement Copyright Material on this website is subject to Crown copyright protection unless otherwise indicated. The material currently on this website that is Crown copyright protected may be reproduced free of charge in any format without requiring specific permission. This is subject to it being reproduced accurately and not being used in a misleading context. Where the material is being published or issued to others, the source and copyright status must be acknowledged with a statement substantially like the one below: \"The above [image/text] is \u00a9Crown Copyright and has been reproduced with permission, from the New Zealand Petroleum and Minerals website at www.nzpam.govt.nz\" The permission to reproduce Crown copyright protected material does not extend to any material on this site that is identified as being the copyright of a third party. Authorisation to reproduce that material must be obtained from the copyright holders. Last updated: 6 September 2023 Find this helpful? Give us your feedback Share this page via social media LinkedIn Twitter Facebook Email this page Print this page \u00a9 2026 New Zealand Petroleum & Minerals New Zealand Petroleum and Minerals Permits Maps and geoscience data New Zealand's minerals and petroleum industry How we regulate Quicklinks Geodata Catalogue Online permitting system Petroleum Permit Webmaps Minerals Permit Webmaps The Core Store About us Purpose and role News and media Careers Contact us Follow NZP&M: LinkedIn Follow MBIE: LinkedIn Facebook Twitter / Te K\u0101wanatanga o Aotearoa Privacy Copyright Crown copyright \u00a9 2026"
+}

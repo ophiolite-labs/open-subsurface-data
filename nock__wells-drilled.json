@@ -1,0 +1,55 @@
+{
+  "record_id": "nock/wells-drilled",
+  "checked_at": "2026-10-24T04:41:29+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://nationaloil.co.ke/website_11ab3dee/wells-drilled/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (266101 bytes); 112 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "2215 characters captured from https://nationaloil.co.ke/website_11ab3dee/wells-drilled/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://nationaloil.co.ke/website_11ab3dee/wells-drilled/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 634,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "../pdf/Wells__Drilled.pdf",
+      "url": "https://nationaloil.co.ke/website_11ab3dee/pdf/Wells__Drilled.pdf",
+      "bytes": 266101,
+      "sha256": "0dc90e7b76e7be4aba771cfe0e8e3439a0ac796e99d5b4ae54a047c8fcaa50e3"
+    }
+  ],
+  "licence_text_sha256": "fbc68c773190340c90f7dbdba8047395d69752dcbccd1d01b8080ddc1ded96c9",
+  "licence_text": "Search for: MENU MENU About Us Who we are Board of Directors Management Team Quality Policy Statement Service Delivery Charter Fuel Card Login Careers Contact Us Upstream Oil & Gas Exploration Basins Structural Framework Map Opportunities for Oil Exploration Wells Drilled Geophysics Seismic Data Acquisition Downstream Mwananchi Distributor Requirements Retailer Application Fuel Card Login Downstream Operations Liquefied Petroleum Gas (LPG) Liquefied Petroleum Gas (LPG) LPG Distributors Wanted Gas Yetu Mwananchi Distributor Selection Criteria Gas Yetu \u2013 The Mwananchi Gas Project Gas Yetu FAQs Fuel Card Lubricants Our Lubricants Lubricant Periodicals Order Processing Procedures Procurement Active Tenders Awarded Tenders Public Procurement Laws List of Registered Suppliers 2021 -2022 Communication NOC inks Deal With GDC NOC Provides Hand Washing Units October Newsletter NOC Signs MOU for SupaGas Reticulation Quarter 3 Newsletter Corporate Social Responsibility Reporting Corruption Contact Us MENU MENU About Us Who we are Board of Directors Management Team Quality Policy Statement Service Delivery Charter Fuel Card Login Careers Contact Us Upstream Oil & Gas Exploration Basins Structural Framework Map Opportunities for Oil Exploration Wells Drilled Geophysics Seismic Data Acquisition Downstream Mwananchi Distributor Requirements Retailer Application Fuel Card Login Downstream Operations Liquefied Petroleum Gas (LPG) Liquefied Petroleum Gas (LPG) LPG Distributors Wanted Gas Yetu Mwananchi Distributor Selection Criteria Gas Yetu \u2013 The Mwananchi Gas Project Gas Yetu FAQs Fuel Card Lubricants Our Lubricants Lubricant Periodicals Order Processing Procedures Procurement Active Tenders Awarded Tenders Public Procurement Laws List of Registered Suppliers 2021 -2022 Communication NOC inks Deal With GDC NOC Provides Hand Washing Units October Newsletter NOC Signs MOU for SupaGas Reticulation Quarter 3 Newsletter Corporate Social Responsibility Reporting Corruption Contact Us Wells Drilled Wells Drilled Click here to have a clearer view of Wells drilled in Kenya Document Fuel Card Login Upstream Operations Downstream Operations A A A \u00a9 2026 National Oil Corporation of Kenya, Energizing Kenya"
+}

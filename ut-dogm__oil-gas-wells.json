@@ -1,0 +1,65 @@
+{
+  "record_id": "ut-dogm/oil-gas-wells",
+  "checked_at": "2026-10-24T04:45:26+00:00",
+  "tool_version": "0.1.0",
+  "level": "L3",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://gis.utah.gov/products/sgid/energy/oil-gas-wells/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "whole layer checked (40422 features, esri-json), not a downloadable file; edit date 2026-10-23T09:41:43+00:00 unchanged during paging; listing dated 2026-10-23"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4857 characters captured from https://gis.utah.gov/documentation/policy/license/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "40422 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "40422 features derived from 1 inputs, every input sha256 equal to the stored bytes (min_features 40422)"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://gis.utah.gov/products/sgid/energy/oil-gas-wells/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 133,
+    "reachability": "ok"
+  },
+  "layer_exports": [
+    {
+      "layer": "https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0",
+      "format": "esri-json",
+      "features": 40422,
+      "count": 40422,
+      "bytes": 46936130,
+      "sha256": "953bd802aadaad4d1d2a0d40deecb451f288598435c785bd1bb011fb578fe0d7",
+      "edit_date_before": 1792748503702,
+      "edit_date_after": 1792748503702
+    }
+  ],
+  "licence_text_sha256": "b9b6a1ab7a7cd37692c6103480986038b85a868fb083b708d3a9080e75ab4375",
+  "licence_text": "Search Close Scheduled maintenance of TURN GPS and NevadaGPS systems on Tuesday, October 20th, between 6:00 a.m. and 10:00 a.m. View status Data license and disclaimer policy Documentation Home Documentation Policy License Quick Links License Disclaimer The following applies to all services and content created or hosted by the Utah Geospatial Resource Center (UGRC), including SGID data hosted or aggregated by UGRC. There are two exceptions to our standard license and disclaimer: The high-resolution imagery from Google and Hexagon, which have their own license and attribution requirements . External data hosted by other organizations and included in the SGID by reference, which are subject to the licenses and disclaimers specified by their owners. License Unless otherwise stated in a dataset's metadata, UGRC licenses our data and services under a Creative Commons Attribution 4.0 International License . License attribution You should include appropriate attribution when using data or services provided by UGRC in your maps, web applications, or other content. This includes providing credit to UGRC and indicating if you made any changes to the data. We may consider exceptions to this requirement on a case-by-case basis. For referenced data hosted by other organizations (such as data from the Utah Geological Survey), please contact the owner for attribution guidelines. Detailed references in a paper or book should follow your particular style guide. Please include the last updated date if it is available in the metadata or the date you accessed/downloaded the data if not. For example, this is what it could look like in an MLA-esque format: State Geographic Information Datasource. Utah Address Points . (Feature class). Salt Lake City, UT: Utah Geospatial Resource Center, July 2021. Geospatial point data. 27 January 2024. https://gis.utah.gov/ products/ sgid/ location/ address-data/. Maps and web apps should include a reference to both UGRC and the SGID in the & \"Sources\" attribution: Data Sources: ESRI, US Census Bureau, UGRC SGID (data modified), ... Any data distributions (databases, web services, etc.) that contain SGID data must include credit to UGRC, a link to the CC BY 4.0 , opens in a new tab license, and a note of any changes made to the data. They should also include the disclaimer below and relevant metadata as outlined in our metadata policy . The dataset's description could include the following line: County boundary data derived from the UGRC SGID under the CC BY 4.0 license ( https://creativecommons.org/ licenses/ by/ 4.0/ ). Several new fields were calculated from US Census Bureau data. If you are using logos as part of your attribution, you can download our current logos in .png , .ai , and .psd formats from our media resources page. Disclaimer We created the following standard disclaimer for all hosted SGID data with input from the State Attorney General's office: The data, including but not limited to geographic data, tabular data, and analytical data, are provided \u201cas is\u201d and \u201cas available\u201d, with no guarantees relating to the availability, completeness, or accuracy of data, and without any express or implied warranties. These data are provided as a public service for informational purposes only. You are solely responsible for obtaining the proper evaluation of a location and associated data by a qualified professional. UGRC reserves the right to change, revise, suspend or discontinue published data and services without notice at any time. Neither UGRC nor the State of Utah are responsible for any misuse or misrepresentation of the data. UGRC and the State of Utah are not obligated to provide you with any maintenance or support. The user assumes the entire risk as to the quality and performance of the data. You agree to hold the State of Utah harmless for any claims, liability, costs, and damages relating to your use of the data. You agree that your sole remedy for any dissatisfaction or claims is to discontinue use of the data. We created this disclaimer with the hope that it could provide inspiration if you are looking for an example disclaimer. However, we are not lawyers. Please work with your own legal counsel before adopting a disclaimer. Any republished UGRC data should include this disclaimer in it's unmodified form. Connect with us Email us, opens in a new tab UGRC GitHub, opens in a new tab UGRC X, opens in a new tab UGRC Facebook, opens in a new tab Instagram UGRC YouTube, opens in a new tab UGRC RSS, opens in a new tab Utah Geospatial Resource Center 4315 South 2700 West Taylorsville, UT 84129 Helpful Links Content contributing guide Logos and media resources UGRC Policies GIS-related Utah statute Sign up for our newsletter Website Information Build: 5aa62ecb Edit this page Contributors Report an issue , opens in a new tab Third-party Notices"
+}

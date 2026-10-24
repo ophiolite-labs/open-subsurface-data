@@ -1,0 +1,45 @@
+{
+  "record_id": "miterd/sondeos-hidrocarburos",
+  "checked_at": "2026-10-24T04:42:48+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "fail",
+      "detail": "HTTP 503 from https://datos.gob.es/es/catalogo/e0dat0002-dominio-minero-de-hidrocarburos-y-sondeos-de-espana"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 503,
+    "final_url": "https://datos.gob.es/es/catalogo/e0dat0002-dominio-minero-de-hidrocarburos-y-sondeos-de-espana",
+    "content_type": "",
+    "elapsed_ms": 354,
+    "reachability": "dead"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "record_id": "nlog/nlog",
+  "checked_at": "2026-10-24T04:48:04+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.nlog.nl/en/data"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (56704710 bytes); 65 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "6153 characters captured from https://www.nlog.nl/en/disclaimer"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "7220 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "derived from bytes that differ from the stored input https://www.gdngeoservices.nl/geoserver/nlog/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=nlog:gdw_ng_smc_grid_utm: rerun --outlines, review the diff"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.nlog.nl/en/data",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 943,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://www.nlog.nl/sites/default/files/2026-09/thematische_data_boringen.zip",
+      "url": "https://www.nlog.nl/sites/default/files/2026-09/thematische_data_boringen.zip",
+      "bytes": 56704710,
+      "sha256": "fd90d756df002a42a86306e49a5b704877f1e2104aeb6c9c6a984fab31070a4b"
+    }
+  ],
+  "licence_text_sha256": "ae978b3f6c1bbc70381c90a7e45d9b723a1396646807361937e7df49d2d8e388",
+  "licence_text": "Skip to main content Skip to footer NLOG Dutch subsurface portal Menu collapsed Main navigation Home Data Boreholes Seismic data Production and injection data Fields Models, maps and datasets Dashboards Core collection Geological Survey Scientific Articles Activities Oil and gas Geothermal energy Subsurface storage Rock salt CO2 storage Legislation Legislation Administrative procedures Deliver data on the Intakeportal Licences Oil and gas licences Activity inventory Geothermal licences Omgevingsvergunningen mijnbouw Procedures licences Mining effects Public SHRA Groningen SDRA Geothermie & Integriteit afdichtend pakket Seismisch respons en beheerssysteem voor geothermie Subsidence Induced seismicity Knowledge base Disclaimer This disclaimer applies to the current website (http://www.nlog.nl), which is operated jointly by the Dutch Ministry of Infrastructure and the Environment, TNO-AGE, NLOG.NL and the TNO Advisory Group for Economic Affairs (part of the Netherlands Organisation for Applied Scientific Research \u2013 TNO). Any references to NLOG.NL on this site mean both the above cooperative venture and its individual participants. By using this site you agree to be bound by this disclaimer. Use Unauthorised or improper use of the website or its contents may constitute an infringement of intellectual property rights or of privacy, publication and/or communication regulations in their broadest sense. You are personally responsible for everything you forward from this site. It is not permitted to obstruct the site\u2019s normal functioning or to violate its integrity. This includes modifying its contents and hacking the site. NLOG.NL reserves the right to terminate or restrict access, for any reason whatsoever, to this website and to specific services offered on the site. Although NLOG.NL has exercised due care in seeking to ensure the accuracy of the information provided on this site, NLOG.NL does not accept any liability for data flaws. All the content is presented \u2018as is\u2019 and \u2018as available\u2019. Any decisions you may take on the basis of this information are for your own expense and risk. NLOG.NL does not guarantee this site\u2019s security. Although NLOG.NL will exercise due care in seeking to ensure that this site is free of viruses, it cannot guarantee this. NLOG.NL does not guarantee that this site will operate flawlessly or without interruption. Exclusion of liability On no account will the cooperative venture NLOG.NL, its individual participants, its managers or employees be held liable for any direct or indirect, intangible or consequential loss or damage, including any loss of profits or income or any forfeited contracts or orders, arising in any way from or related to, but not necessarily limited to: Defects, viruses or other hardware or software faults relating to access to or use of this website; Intercepting, changing or improper use of information sent to NLOG.NL or to you; This website\u2019s malfunctioning or unavailability; Misuse of this website; Loss of data; Downloading or use of software made available through this website, or claims by third parties relating to the use of this website. This exclusion of liability applies also if NLOG.NL has been informed of the possibility of such loss or damage. Intellectual property rights NLOG.NL does not claim any rights (except domain names, trademark rights, patents and other intellectual property rights) in respect of information provided on or through this website. Users are permitted to copy, to download and to disclose in any way, to distribute or to simplify the information provided on this website without the prior written permission of NLOG.NL or the lawful consent of the entitled party. Users are also permitted to copy, duplicate, process or edit the information and/or layout, provided NLOG.NL is quoted as the source. Information from third parties This website may contain hyperlinks to other websites not controlled by NLOG.NL. These hyperlinks have been included for your convenience. This does not imply, however, that the information, products or services offered via these links are recommended by NLOG.NL. Using these hyperlinks is completely at your own risk. NLOG.NL does not accept any responsibility or liability in respect of the content, use or availability of such websites. Use of software Software that can be downloaded from this website is subject to the applicable licence agreements. Unless stipulated otherwise in the applicable licence agreements, software is provided for the sole use of the end user and any additional copying, reproducing or redistributing of the software is explicitly forbidden. Any warranties in respect of software apply only insofar as explicitly stipulated in the applicable licence agreements. NLOG.NL emphatically rejects any other warranties, including warranties in respect of marketability or suitability for a specific purpose or any warranties that the software does not infringe any rights. Amendments of this disclaimer NLOG.NL may amend the provisions of this disclaimer. Amendments will be effective as soon as they are published on this website. NLOG.NL reserves the right to amend or close the website at its discretion at any time and without prior warning. NLOG.NL is not liable for the consequences of any such amendment or closure. Miscellaneous This disclaimer has been translated from Dutch. The Dutch-language version will prevail if the English translation contains any discrepancies or gives rise to any differences in interpretation. This website and the disclaimer are governed by Dutch law. Any disputes relating to this website or the disclaimer will be submitted to the competent court in The Hague for exclusive resolution. Personal data provided or gathered through or in connection with this website will be used solely in accordance with the conditions laid down in TNO\u2019s privacy statement. Any questions or complaints relating to this website must be addressed to NLOG.NL. Please contact us on support@geologicalsurvey.nl . Version: 9 August 2016 Image Service Contact FAQ Nederlands About this site Links Disclaimer Accessibility Privacy statement Cookies"
+}

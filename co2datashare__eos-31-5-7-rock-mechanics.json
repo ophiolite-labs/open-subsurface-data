@@ -1,0 +1,47 @@
+{
+  "record_id": "co2datashare/eos-31-5-7-rock-mechanics",
+  "checked_at": "2026-10-24T04:40:04+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://co2datashare.org/dataset/rock-mechanics-data-for-31-5-7-eos-well-core"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1459 characters captured from https://co2datashare.org/view/license/8ce3e4ab-3f67-467b-aff5-2385fd55c76a"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://co2datashare.org/dataset/rock-mechanics-data-for-31-5-7-eos-well-core",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 1054,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "7ec141ac3a90393f27edf73f4bcdde887dcc1869c5418dab865df7afd6288956",
+  "licence_text": "Skip to main content Log in Register Datasets Organizations About Search Datasets... License view page License information License name NORTHERN LIGHTS EOS 31/5-7 ROCK MECHANICAL DATA LICENSE Description You are free to: * Download and use the Licensed Material for non-commercial and commercial purposes * Create, produce and reproduce Adapted Material * Share the Licensed Material and/or the Adapted Material Under the following terms: * You may not sell the Licensed Material. * You must give Northern Lights JV DA credit, and provide a link to these terms and conditions, as well as a copyright notice if applicable. * You may not share Adapted Material under a license that prevents recipients from complying with these terms and conditions. * You shall not use the Licensed Material in a manner that appears misleading nor present the Licensed Material in a distorted or incorrect manner. This license is based on CC BY 4.0 license, two important changes are: * The licensed material may not be sold * The license covers all data in the dataset whether or not it is by law covered by copyright Link https://co2datashare.org/rock-mechanics-data-for-31-5-7-eos-well-core/static/Northern%20Lights%20Geomechanical%20Dataset%20License.pdf Is referenced by the following dataset(s): rock-mechanics-data-for-31-5-7-eos-well-core rock-mechanics-data-for-31-5-7-eos-well-thermo-mechanical-response Powered by CKAN Hosted by Sigma2 Managed by SINTEF Part of NCCS"
+}

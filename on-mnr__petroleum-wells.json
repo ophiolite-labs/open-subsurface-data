@@ -1,0 +1,59 @@
+{
+  "record_id": "on-mnr/petroleum-wells",
+  "checked_at": "2026-10-24T04:42:28+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://data.ontario.ca/dataset/petroleum-wells"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "whole layer checked (27639 features, esri-json), not a downloadable file; stability unknown (the layer states no edit date)"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5957 characters captured from https://www.ontario.ca/page/open-government-licence-ontario"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://data.ontario.ca/dataset/petroleum-wells",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 575,
+    "reachability": "ok"
+  },
+  "layer_exports": [
+    {
+      "layer": "https://ws.lioservices.lrc.gov.on.ca/arcgis2/rest/services/LIO_OPEN_DATA/LIO_Open08/MapServer/22",
+      "format": "esri-json",
+      "features": 27639,
+      "count": 27639,
+      "bytes": 31607425,
+      "sha256": "ab937591ca1c8ac3bce790743f5883dcb8b064a6cb47deab680f470b60d70edd",
+      "edit_date_before": null,
+      "edit_date_after": null
+    }
+  ],
+  "licence_text_sha256": "efcf7a4b10e24957552e473a70b028e596adda1d746031e5e9d8586dfed5172e",
+  "licence_text": "Skip to main content Log in to continue Please log in for full account access. Government of Ontario home page Search Submit Fran\u00e7ais FR Search Topics Menu Sign in close Benefits and taxes Business and economy Courts, justice and law Driving and road safety Education and apprenticeship Environment and energy Family and social services Government Health and wellness Heritage, arts and history Home and housing Immigration Jobs and employment Land use planning Recreation and tourism Rural, agriculture and north Sign-in Menu EN ServiceOntario Account Driver\u2019s licence renewal, health card renewal, notifications Ontario Business Account Ontario Business Registry MyBenefits Ontario Works, Ontario Disability Support Program OSAP Ontario Student Assistance Program Skilled Trades Ontario Skilled trades and apprenticeships More accounts Topics Sign in Benefits and taxes Business and economy Courts, justice and law Driving and road safety Education and apprenticeship Environment and energy Family and social services Government Health and wellness Heritage, arts and history Home and housing Immigration Jobs and employment Land use planning Recreation and tourism Rural, agriculture and north Sign-in Menu EN ServiceOntario Account Driver\u2019s licence renewal, health card renewal, notifications Ontario Business Account Ontario Business Registry MyBenefits Ontario Works, Ontario Disability Support Program OSAP Ontario Student Assistance Program Skilled Trades Ontario Skilled trades and apprenticeships More accounts Home Government Data Open Government Licence \u2013 Ontario You are encouraged to use the Information that is available under this licence with only a few conditions. All materials licensed under the Open Government Licence \u2013 Ontario have been clearly labelled on the page. On this page Skip this page navigation Using Information under this licence Use of any Information indicates your acceptance of the terms below. The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes, subject to the terms below. You are free to: Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose. You must, where you do any of the above: Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement, or if you are using Information from several Information Providers and multiple attributions are not practical for your product or application, you must use the following attribution statement: Contains information licensed under the Open Government Licence \u2013 Ontario. The terms of this licence are important, and if you fail to comply with any of them, the rights granted to you under this licence, or any similar licence granted by the Information Provider, will end automatically. Exemptions This licence does not grant you any right to use: Personal Information; Information or Records not accessible under the Freedom of Information and Protection of Privacy Act (Ontario); third party rights the Information Provider is not authorized to license; the names, crests, logos, or other official symbols of the Information Provider; and Information subject to other intellectual property rights, including patents, trade-marks and official marks. Non-endorsement This licence does not grant you any right to use the Information in a way that suggests any official status or that the Information Provider endorses you or your use of the Information. No warranty The Information is licensed \"as is\", and the Information Provider excludes all representations, warranties, obligations, and liabilities, whether express or implied, to the maximum extent permitted by law. The Information Provider is not liable for any errors or omissions in the Information, and will not under any circumstances be liable for any direct, indirect, special, incidental, consequential, or other loss, injury or damage caused by its use or otherwise arising in connection with this licence or the Information, even if specifically advised of the possibility of such loss, injury or damage. Governing Law This licence is governed by the laws of the Province of Ontario and the applicable laws of Canada. Legal proceedings related to this licence may only be brought in the courts of Ontario. Definitions In this licence, the terms below have the following meanings: \"Information\" means information resources or Records protected by copyright or other information or Records that are offered for use under the terms of this licence. \"Information Provider\" means His Majesty the King in right of Ontario. \"Personal Information\" has the meaning set out in section 2(1) of Freedom of Information and Protection of Privacy Act (Ontario). \"Records\" has the meaning of \"record\" as set out in the Freedom of Information and Protection of Privacy Act (Ontario). \"You\" means the natural or legal person, or body of persons corporate or incorporate, acquiring rights under this licence. Versioning This is version 1.0 of the Open Government Licence \u2013 Ontario. The Information Provider may make changes to the terms of this licence from time to time and issue a new version of the licence. Your use of the Information will be governed by the terms of the licence in force as of the date you accessed the information. Related information Open data catalogue Government data Updated: March 27, 2025 Published: June 18, 2013 Government of Ontario The Government of Ontario includes ministries, agencies and Crown corporations. Questions or comments There are many ways to contact the Government of Ontario. Contact us About Ontario Accessibility Archives News Privacy Terms of use \u00a9 King\u2019s Printer for Ontario, 2012 \u2013 to 26 Top"
+}

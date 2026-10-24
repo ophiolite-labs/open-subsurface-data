@@ -1,0 +1,55 @@
+{
+  "record_id": "gsi/mineral-exploration-boreholes",
+  "checked_at": "2026-10-24T04:40:24+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.gsi.ie/data-and-maps/minerals/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (2115796 bytes); 165 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4853 characters captured from https://www.gsi.ie/data-and-maps/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.gsi.ie/data-and-maps/minerals/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1399,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://gsi.geodata.gov.ie/downloads/Minerals/Data/IE_GSI_Mineral_Exploration_Boreholes_50K_IE26_ITM.zip",
+      "url": "https://gsi.geodata.gov.ie/downloads/Minerals/Data/IE_GSI_Mineral_Exploration_Boreholes_50K_IE26_ITM.zip",
+      "bytes": 2115796,
+      "sha256": "886104a8bc4a424e96a7d888d6b8b218cc47a8d2da21c1095a55bea58ba66f9d"
+    }
+  ],
+  "licence_text_sha256": "0eaa538337cce62051dff24b657fcf8a88db569b3488f63cfa44c75eacd840bc",
+  "licence_text": "Data and Maps Topics Programmes Research Education Publications Events News More on Us Contact Us Gaeilge \ud835\udd4f Geological Survey Ireland Data and Maps Data and Maps Geological Survey Ireland produces a wide range of datasets from bedrock, quaternary, groundwater, marine, geological heritage, to geotechnical, minerals, geophysics, geochemistry and geohazards. These are organised by themes. \u200bA video tutorial on how to use the Map Viewer can be found here . Data can be downloaded in zip files. They can be viewed in our online viewers. Metadata can be accessed along with web services. Goldmine is a repository of scanned documents in particular old maps and reports. All files are projected to Irish Transverse Mercator / ITM except when otherwise stated. The Marine files are in WGS84. GSI Data Licence Agreement (unless otherwise specified) Data that is produced directly by the Geological Survey Ireland (GSI) is free for use under the conditions of Creative Commons Attribution 4.0 International license. https://creativecommons.org/licenses/by/4.0 https://creativecommons.org/licenses/by/4.0/legalcode Under the CC-BY Licence, users must acknowledge the source of the Information in their product or application. Please use this specific attribution statement: \u201cContains Irish Public Sector Data (Geological Survey Ireland) licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence\u201d. In cases where it is not practical to use the statement users may include a URI or hyperlink to a resource that contains the required attribution statement. Groundwater Flooding Data Licence Agreement Groundwater flooding data produced by Geological Survey Ireland (GSI) is free for use under the conditions of Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Licence. https://creativecommons.org/licenses/by-nc-nd/4.0/ https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode Under the CC BY-NC-ND 4.0 Licence: Users must acknowledge the source of the Information in their product or application. \u200bUsers may not use the material for commercial purposes. Users may not redistribute the material if has been modified. Please use this specific attribution statement: \u201cContains Irish Public Sector Data (Geological Survey Ireland) licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 (CC BY-NC-ND 4.0) International Licence \u201c. In cases where it is not practical to use the statement users may include a URI or hyperlink to a resource that contains the required attribution statement. More permissions granted above and beyond (but still including) the CC licence can be found here . General Access to Data \u200b\u200b\u200b\u200b\u200bType Source Data Download see left panel (desktop view) or below (mobile view) for specific theme Map Viewers Link to our spatial resources viewer s Metadata Link to Irish Spatial Data Exchange (ISDE) website Data.gov.ie Link to Data.gov.ie website \u200bWeb Services \u200b Rest Services Image Services\u200b Goldmine Link to our online digital archive for maps and documents Connecting to Web Services (Bring data into your GIS software) ArcGIS ArcGIS PRO/Insert Tab/Connections/Server/New WFS/WMS/WMTS Server. layers will appear in catalog panel under Servers. QGIS Layer/ Add Layer/Add ArcGIS MapServer Layer or Add WMS / WMTS Layer/New/Name \u2013 Paste in web service link \u2013 Select png for image encoding \u2013 OK If you wish to receive Data Release updates, please join our mailing list . Geological Survey Ireland Data and Maps Bedrock Geochemistry Geohazards Geological heritage Geophysics Geotechnical Geothermal Energy Groundwater Marine Minerals Quaternary Back to top of page Data and Maps Bedrock Geochemistry Geohazards Geological Heritage Geophysics Geotechnical Geothermal Energy Groundwater Marine Minerals Quaternary Topics Climate Change Construction & Engineering Energy Environmental Health Geology Heritage Marine and Coastline Natural Hazards Water Programmes Geohazards Geoheritage Geological Mapping Geoscience for Planning Geothermal Energy Groundwater Information Marine and Coastal Unit Minerals Tellus Urban Geology How and Where We Work Research Collaborations Our Research Funding Strategy Education Down to Earth What is Geology? The Geology of Ireland Your County Our Planet Earth Natural Hazards Rocks, Minerals & Gems Earth Resources Our Water Fossils Life as a Geoscientist Educational Resources Home Schooling Activities Glossary Quake Shake Publications Corporate Education Research Shop Book Booklet Factsheet Groundwater Newsletter GSI Newsletter Journal Maps Poster Report Events and News Events Calendar Annual Events News Image Gallery More on Us About Us Contact Us Visit Us Media Enquiries Mailing List Logos Shop Facilities Data Protection Opportunities Geological Survey Ireland is a Division of Department of Climate, Energy and the Environment \u00a9 2026"
+}

@@ -1,0 +1,47 @@
+{
+  "record_id": "bgr/vmod-gpdn-entenschnabel",
+  "checked_at": "2026-10-24T04:40:05+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://gst.bgr.de/?view=vmod_gpdn_entenschnabel"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "nothing to sample (verifier/samples.yaml): the bucket file is 5,778,689,048 bytes, over the 512 MiB per-record budget (bucket listing, 6 entries; robots 404)"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "3335 characters captured from https://www.govdata.de/dl-de/by-2-0"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://gst.bgr.de/?view=vmod_gpdn_entenschnabel",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1135,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "9536d9f299bcf441619390a5fa00be74e75e6c1e91abc64ef2329898cd0a91e5",
+  "licence_text": "Zur Navigation Zum Hauptinhalt Daten SPARQL Informationen DL-DE->BY-2.0 Datenlizenz Deutschland \u2013 Namensnennung \u2013 Version 2.0 (1) Jede Nutzung ist unter den Bedingungen dieser \u201eDatenlizenz Deutschland \u2013 Namensnennung \u2013 Version 2.0\" zul\u00e4ssig. Die bereitgestellten Daten und Metadaten d\u00fcrfen f\u00fcr die kommerzielle und nicht kommerzielle Nutzung insbesondere vervielf\u00e4ltigt, ausgedruckt, pr\u00e4sentiert, ver\u00e4ndert, bearbeitet sowie an Dritte \u00fcbermittelt werden; mit eigenen Daten und Daten Anderer zusammengef\u00fchrt und zu selbst\u00e4ndigen neuen Datens\u00e4tzen verbunden werden; in interne und externe Gesch\u00e4ftsprozesse, Produkte und Anwendungen in \u00f6ffentlichen und nicht \u00f6ffentlichen elektronischen Netzwerken eingebunden werden. (2) Bei der Nutzung ist sicherzustellen, dass folgende Angaben als Quellenvermerk enthalten sind: Bezeichnung des Bereitstellers nach dessen Ma\u00dfgabe, der Vermerk \u201eDatenlizenz Deutschland \u2013 Namensnennung \u2013 Version 2.0\" oder \u201edl-de/by-2-0\" mit Verweis auf den Lizenztext unter www.govdata.de/dl-de/by-2-0 sowie einen Verweis auf den Datensatz (URI). Dies gilt nur soweit die datenhaltende Stelle die Angaben 1. bis 3. zum Quellenvermerk bereitstellt. (3) Ver\u00e4nderungen, Bearbeitungen, neue Gestaltungen oder sonstige Abwandlungen sind im Quellenvermerk mit dem Hinweis zu versehen, dass die Daten ge\u00e4ndert wurden. Data licence Germany \u2013 attribution \u2013 version 2.0 (1) Any use will be permitted provided it fulfils the requirements of this \"Data licence Germany \u2013 attribution \u2013 Version 2.0\". The data and meta-data provided may, for commercial and non-commercial use, in particular be copied, printed, presented, altered, processed and transmitted to third parties; be merged with own data and with the data of others and be combined to form new and independent datasets; be integrated in internal and external business processes, products and applications in public and non-public electronic networks. (2) The user must ensure that the source note contains the following information: the name of the provider, the annotation \"Data licence Germany \u2013 attribution \u2013 Version 2.0\" or \"dl-de/by-2-0\" referring to the licence text available at www.govdata.de/dl-de/by-2-0 , and a reference to the dataset (URI). This applies only if the entity keeping the data provides the pieces of information 1-3 for the source note. (3) Changes, editing, new designs or other amendments must be marked as such in the source note. URL: http://www.govdata.de/dl-de/by-2-0 Hinweis f\u00fcr Datenbereitsteller: In den DCAT-AP.de Metadaten ist bei Nutzung der \u201eDatenlizenz Deutschland \u2013 Namensnennung \u2013 Version 2.0\" die Lizenz-URI \u201e http://www.dcat-ap.de/def/licenses/dl-by-de/2.0 \" zu verwenden (einzusehen auf der Liste der Lizenzen unter: https://www.dcat-ap.de/def/licenses/ ). Wird die Lizenz in einem anderen Metadatenschema verwendet, kann abweichend auch der Lizenzcode \" dl-by-de/2.0 \" (einzusehen auf der Liste der Lizenzen unter: https://www.dcat-ap.de/def/licenses/ ) verwendet werden. Besuchen Sie unsere Social-Media-Kan\u00e4le Mastodon LinkedIn GitLab Kontakt Datenschutzerkl\u00e4rung Nutzungshinweise Erkl\u00e4rung zur Barrierefreiheit Impressum Seitenmen\u00fc Daten SPARQL Informationen Open Government Open Government Data Datenlizenzen Fragen und Antworten Hochwertige Datens\u00e4tze Das Portal Metadaten-Struktur OGD-DACHLI Datenbereitstellung GovData"
+}

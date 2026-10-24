@@ -1,0 +1,55 @@
+{
+  "record_id": "nysdec/oil-and-gas-annual-production",
+  "checked_at": "2026-10-24T04:42:55+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://data.ny.gov/Energy-Environment/Oil-and-Gas-Annual-Production-Beginning-2001/mxea-iw3u"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (53680139 bytes); 1 entries listed; listing dated 2025-07-30"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "586 characters captured from https://data.ny.gov/d/77gx-ii52"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://data.ny.gov/Energy-Environment/Oil-and-Gas-Annual-Production-Beginning-2001/mxea-iw3u",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 497,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "rows.csv",
+      "url": "https://data.ny.gov/api/views/mxea-iw3u/rows.csv?accessType=DOWNLOAD",
+      "bytes": 53680139,
+      "sha256": "1257b244ade87ece243bf633d8ffbea12b165eea18b913b25cf04db2a51cdd02"
+    }
+  ],
+  "licence_text_sha256": "cae56137bb744bf7a8871c39815eda5a50070647f57939738fb1b15071918576",
+  "licence_text": "Skip to main content DATA.NY.GOV OPEN NY CATALOG DEVELOPERS HELP VIDEO HELP SUPPORTED BROWSERS CATALOG NAVIGATION ABOUT PRESS RELEASES EXECUTIVE ORDER OPEN DATA PROGRAM OVERVIEW OPEN DATA HANDBOOK DATASET SUBMISSION GUIDE REPORTS Search Search English English Espa\u00f1ol Italiano Fran\u00e7ais \u4e2d\u6587 \u0420\u0443\u0441\u0441\u043a\u0438\u0439 Sign In Menu Menu Close OPEN NY CATALOG DEVELOPERS HELP VIDEO HELP SUPPORTED BROWSERS CATALOG NAVIGATION ABOUT PRESS RELEASES EXECUTIVE ORDER OPEN DATA PROGRAM OVERVIEW OPEN DATA HANDBOOK DATASET SUBMISSION GUIDE REPORTS Sign In Search Language English Espa\u00f1ol Italiano Fran\u00e7ais \u4e2d\u6587 \u0420\u0443\u0441\u0441\u043a\u0438\u0439"
+}

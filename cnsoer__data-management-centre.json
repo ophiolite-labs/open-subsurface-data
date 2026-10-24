@@ -1,0 +1,47 @@
+{
+  "record_id": "cnsoer/data-management-centre",
+  "checked_at": "2026-10-24T04:43:54+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://cnsopbdigitaldata.ca/geoviewer/dmc"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5848 characters captured from https://cnsopbdigitaldata.ca/ixplor-admin/dmc/apply"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://cnsopbdigitaldata.ca/geoviewer/dmc",
+    "content_type": "text/html;charset=UTF-8",
+    "elapsed_ms": 488,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "ed828f6b65e404a094af759336ff0f98b7b4ed7ffed0083da40fe546885699e9",
+  "licence_text": "CNSOER DMC If you already have a user account you can login here If you have forgotten your password you can ask for a password reset here Apply for an account Application for CNSOER Digital Data Management Centre Internet Access Acccount (Except Non-Exclusive Seismic Data) Complete this application form to request access to the Canada-Nova Scotia Offshore Energy Regulator (CNSOER) Data Management Centre (DMC), to access non-confidential digital well and geological data and exclusive seismic data. Please note that your DMC internet account is not transferrable. Email Address This email address will be your login username. Please use your company email if possible, to expedite the approval process. If your application is approved, you will receive an email to this address containing a link to set your password Full Name Company/Organization/Affiliation Position/Job Title Address 1 Address 2 City Province/State Postal Code/Zip Code Country Afghanistan \u00c5land Islands Albania Algeria American Samoa Andorra Angola Anguilla Antarctica Antigua & Barbuda Argentina Armenia Aruba Australia Austria Azerbaijan Bahamas Bahrain Bangladesh Barbados Belarus Belgium Belize Benin Bermuda Bhutan Bolivia Bosnia & Herzegovina Botswana Bouvet Island Brazil British Indian Ocean Territory British Virgin Islands Brunei Bulgaria Burkina Faso Burundi Cambodia Cameroon Canada Cape Verde Caribbean Netherlands Cayman Islands Central African Republic Chad Chile China Christmas Island Cocos (Keeling) Islands Colombia Comoros Congo - Brazzaville Congo - Kinshasa Cook Islands Costa Rica C\u00f4te d\u2019Ivoire Croatia Cuba Cura\u00e7ao Cyprus Czechia Denmark Djibouti Dominica Dominican Republic Ecuador Egypt El Salvador Equatorial Guinea Eritrea Estonia Eswatini Ethiopia Falkland Islands Faroe Islands Fiji Finland France French Guiana French Polynesia French Southern Territories Gabon Gambia Georgia Germany Ghana Gibraltar Greece Greenland Grenada Guadeloupe Guam Guatemala Guernsey Guinea Guinea-Bissau Guyana Haiti Heard & McDonald Islands Honduras Hong Kong SAR China Hungary Iceland India Indonesia Iran Iraq Ireland Isle of Man Israel Italy Jamaica Japan Jersey Jordan Kazakhstan Kenya Kiribati Kuwait Kyrgyzstan Laos Latvia Lebanon Lesotho Liberia Libya Liechtenstein Lithuania Luxembourg Macao SAR China Madagascar Malawi Malaysia Maldives Mali Malta Marshall Islands Martinique Mauritania Mauritius Mayotte Mexico Micronesia Moldova Monaco Mongolia Montenegro Montserrat Morocco Mozambique Myanmar (Burma) Namibia Nauru Nepal Netherlands Netherlands Antilles New Caledonia New Zealand Nicaragua Niger Nigeria Niue Norfolk Island Northern Mariana Islands North Korea North Macedonia Norway Oman Pakistan Palau Palestinian Territories Panama Papua New Guinea Paraguay Peru Philippines Pitcairn Islands Poland Portugal Puerto Rico Qatar R\u00e9union Romania Russia Rwanda Samoa San Marino S\u00e3o Tom\u00e9 & Pr\u00edncipe Saudi Arabia Senegal Serbia Seychelles Sierra Leone Singapore Sint Maarten Slovakia Slovenia Solomon Islands Somalia South Africa South Georgia & South Sandwich Islands South Korea South Sudan Spain Sri Lanka St. Barth\u00e9lemy St. Helena St. Kitts & Nevis St. Lucia St. Martin St. Pierre & Miquelon St. Vincent & Grenadines Sudan Suriname Svalbard & Jan Mayen Sweden Switzerland Syria Taiwan Tajikistan Tanzania Thailand Timor-Leste Togo Tokelau Tonga Trinidad & Tobago Tunisia Turkey Turkmenistan Turks & Caicos Islands Tuvalu U.S. Outlying Islands U.S. Virgin Islands Uganda Ukraine United Arab Emirates United Kingdom United States Uruguay Uzbekistan Vanuatu Vatican City Venezuela Vietnam Wallis & Futuna Western Sahara Yemen Zambia Zimbabwe Phone Mobile Company/Organization Web Site I accept these Terms of Use Terms and Conditions The CNSOER does not warrant the information contained in the CNSOER DMC in any way and therefore is not responsible for any errors or omissions. The user named above (\"DMC User\") agrees to comply with the terms of the Exclusive Seismic Data - Data Access & Confidentiality Agreement (the \"Agreement\") as it pertains to the disclosure of digital exclusive seismic data. Before a DMC user is permitted access to exclusive seismic data they will be required to agree to the terms of the Agreement by clicking the 'Accept' button when the Agreement is displayed. The CNSOER will monitor the data accessed by each DMC user. This information will be made available to the data owners and the DMC User hereby consents to the disclosure of this information. The DMC User agrees to indemnify and save harmless the CNSOER and the data owner and their respective affiliates, directors, officers, employees and agents from and against all actions, claims, damages, losses, expenses and costs, inclusive of special, indirect or consequential damages, including loss of profit or loss of competitive position by the data owner or DMC User, which they or any of them may sustain, incur or become liable for as a result of the disclosure of any DMC data to the DMC User or any of the DMC User's affiliates, directors, officers, employees or agents, and this indemnity shall continue in full force and effect and be applicable regardless of whether any such persons who have caused or contributed to such breach cease to be employed or engaged by the DMC User. Neither the data owner nor the CNSOER shall be liable in an action initiated by the DMC User for special, indirect or consequential damages resulting from the disclosure or use of any DMC data, including, without limitation, loss of profit or business interruptions, however same may be caused. The CNSOER reserves the right to restrict, suspend or terminate any DMC User account, without prior notice. This field is required Your application will be reviewed, and you will be notified by email Apply Lynx iXplor Administration Portal V2.98 \u00a9 Lynx Information Systems Ltd 2026"
+}

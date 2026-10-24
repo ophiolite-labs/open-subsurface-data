@@ -1,0 +1,45 @@
+{
+  "record_id": "staatsolie/open-door-data-offering",
+  "checked_at": "2026-10-24T04:44:32+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://geoportal-staatsolie.hub.arcgis.com/pages/open-door-offering"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "no text at https://geoportal-staatsolie.hub.arcgis.com/pages/open-door-offering"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://geoportal-staatsolie.hub.arcgis.com/pages/open-door-offering",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 161,
+    "reachability": "ok"
+  }
+}
