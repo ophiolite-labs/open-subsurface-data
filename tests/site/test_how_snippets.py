@@ -17,8 +17,6 @@ from pathlib import Path
 
 import pytest
 
-from osd.build import build
-
 ROOT = Path(__file__).resolve().parents[2]
 LIVE = "https://opensubsurfacedata.org/"
 
@@ -30,11 +28,10 @@ def snippets():
 
 
 @pytest.fixture(scope="module")
-def site(tmp_path_factory):
-    root = tmp_path_factory.mktemp("site")
+def site(full_build):
+    root = full_build.parent   # the session's real build is <root>/data, as `make build` stages it (E32)
     for f in ("index.html", "how.html", "app.js", "style.css"):
         shutil.copy(ROOT / "site" / f, root / f)
-    build(root / "data", tmp_path_factory.mktemp("verification"))
     handler = partial(type("Quiet", (SimpleHTTPRequestHandler,), {"log_message": lambda *a: None}),
                       directory=str(root))
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)

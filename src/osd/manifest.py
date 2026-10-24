@@ -37,7 +37,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
 
 from . import paths
-from .stac import collection_id
+from .stac import collection_id, collection_items, item_file_name, link_target
 
 FORMAT = "osd.manifest/1"
 FORMAT_2 = "osd.manifest/2"
@@ -232,15 +232,17 @@ def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_
     else:
         outlines = json.loads((catalog_dir / "outlines.geojson").read_text())["features"]
         known = {f["id"]: f["properties"]["record_id"] for f in outlines if "id" in f}
+        linked: dict[str, set[Path]] = {}
         for fid in dict.fromkeys(features):
             rid = known.get(fid)
             if rid is None:
                 raise ManifestError(f"'{fid}' is not a feature id in {catalog_dir / 'outlines.geojson'}")
-            rec, col = recs[rid], collection(rid)
-            item_ids = {json.loads((stac_dir / collection_id(rid) / x["href"]).read_text())["id"]
-                        for x in col["links"] if x["rel"] == "item"}
+            rec = recs[rid]
+            if rid not in linked:   # the Collection's Items, its child shards' included (E32)
+                linked[rid] = set(collection_items(stac_dir / collection_id(rid) / "collection.json"))
+            path = link_target(stac_dir / collection_id(rid) / "items" / item_file_name(fid))
             e = _entry(rec)
-            has_item = fid in item_ids
+            has_item = path in linked[rid] and json.loads(path.read_text())["id"] == fid
             e.update(item_id=fid if has_item else None, feature_id=fid, assets={})
             e["unresolved"] = (
                 "STAC Items carry no assets: the files the catalogue knows belong to the Collection "

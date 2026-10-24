@@ -115,14 +115,34 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     (out_dir / "mirror.json").write_text(json.dumps({"copies": index}, indent=2) + "\n")
     collections = stac.write_catalog(out_dir, records_out, vdir, mirror_index=index)
     (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
+    print_sizes(out_dir)
     write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
     return {"records": len(records_out), "features": len(features), "collections": len(collections)}
 
 
+def print_sizes(out_dir: Path) -> None:
+    """Items and bytes per Collection that has Items, then the totals (E32), on stderr."""
+    import sys
+
+    total_items = total_bytes = 0
+    for d in sorted(p for p in (out_dir / "stac").iterdir() if p.is_dir()):
+        size = items = 0
+        for parent, _, names in os.walk(d):
+            size += sum(os.stat(os.path.join(parent, n)).st_size for n in names)
+            items += len(names) if os.path.basename(parent) == "items" else 0
+        total_items, total_bytes = total_items + items, total_bytes + size
+        if items:
+            print(f"stac: {d.name} {items} Items, {size / 1e6:.1f} MB", file=sys.stderr)
+    print(f"stac: {total_items} Items, {(total_bytes + (out_dir / 'stac' / 'catalog.json').stat().st_size) / 1e6:.1f} MB"
+          f" in stac/; collections.json {(out_dir / 'collections.json').stat().st_size / 1e6:.1f} MB,"
+          f" records.json {(out_dir / 'records.json').stat().st_size / 1e6:.1f} MB", file=sys.stderr)
+
+
 # Tiling (E15). One source layer, "outlines", every GeoJSON property kept. Points are kept at every
 # zoom (-r1) and clustered by the page; polygons are simplified by tippecanoe below zoom 8 only, so
-# z0-7 and z8-12 are two runs joined. Pinned in CI: Ubuntu 24.04 tippecanoe 2.49.0-1build1.
-TIPPECANOE_PIN = "2.49.0"
+# z0-7 and z8-12 are two runs joined. Pinned in CI: Ubuntu tippecanoe 2.79.0-1 (E32: before 2.55.0 the
+# string pool wrote one string for another whose hash shared its low 32 bits, tests/fixtures/tiles/).
+TIPPECANOE_PIN = "2.79.0"
 TILE_RUNS = (
     ["-Z0", "-z7"],
     ["-Z8", "-z12", "--no-line-simplification"],

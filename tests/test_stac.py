@@ -83,10 +83,16 @@ def _items(catalog: Path) -> dict[str, dict]:
 
 
 # --- the published tree: real records, staged as `make build` stages it -------------------------
+# `full_build` (tests/conftest.py) is the real catalogue, built once per session (E32); `staged` is a
+# small build of three real records with this module's own verification inputs.
 
 @pytest.fixture(scope="module")
 def staged(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("staged")
+    records = tmp / "records"
+    for rid in ("equinor/volve", "nlog/nlog", "seg/open-data-wiki"):   # L2, L1, L0
+        (records / rid.split("/")[0]).mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / "records" / f"{rid}.yaml", records / f"{rid}.yaml")
     vdir = tmp / "verification"
     vdir.mkdir()
     (vdir / "equinor__volve.json").write_text(json.dumps(
@@ -98,7 +104,7 @@ def staged(tmp_path_factory):
         {"record_id": "nlog/nlog", "checked_at": "2026-10-23T12:00:00+00:00", "tool_version": "t",
          "level": "L1", "checks": []}))
     catalog = tmp / "build" / "catalog"
-    build(catalog, vdir)
+    build(catalog, vdir, records_dir=records)
     site_data = tmp / "site" / "data"
     shutil.copytree(catalog, site_data, dirs_exist_ok=True)   # the Makefile's `cp -R build/catalog/.`
     return site_data
@@ -113,8 +119,9 @@ ITEM_SAMPLE, ITEM_SEED = 20, 18   # OSD-D18: the gate samples Items; `make check
 
 
 def item_sample(collection_dir: Path) -> list[Path]:
-    """First and last Item by file name, plus up to ITEM_SAMPLE between them chosen by a fixed seed."""
-    items = sorted((collection_dir / "items").glob("*.json"))
+    """First and last Item by file name, plus up to ITEM_SAMPLE between them chosen by a fixed seed,
+    from the Items the Collection links, its child shards' included (E32)."""
+    items = sorted(stac.collection_items(collection_dir / "collection.json"))
     if len(items) <= 2:
         return items
     middle = items[1:-1]
@@ -122,22 +129,25 @@ def item_sample(collection_dir: Path) -> list[Path]:
     return [items[0], *sorted(picked), items[-1]]
 
 
+def _linked_collection(c: Path, names: list[str]) -> None:
+    (c / "items").mkdir(parents=True, exist_ok=True)
+    for n in names:
+        (c / "items" / n).write_text("{}")
+    (c / "collection.json").write_text(json.dumps({"links": [{"rel": "item", "href": f"./items/{n}"} for n in names]}))
+
+
 def test_item_sample_is_bounded_and_fixed(tmp_path):
-    d = tmp_path / "c" / "items"
-    d.mkdir(parents=True)
-    for i in range(100):
-        (d / f"{i:03}.json").write_text("{}")
+    _linked_collection(tmp_path / "c", [f"{i:03}.json" for i in range(100)])
     s = item_sample(tmp_path / "c")
     assert len(s) == ITEM_SAMPLE + 2 and s[0].name == "000.json" and s[-1].name == "099.json"
     assert s == item_sample(tmp_path / "c") and len(set(s)) == len(s)
-    for p in list(d.glob("*.json"))[:97]:
-        p.unlink()
+    _linked_collection(tmp_path / "c", ["000.json", "050.json", "099.json"])
     assert len(item_sample(tmp_path / "c")) == 3
 
 
-def test_staged_catalog_collections_and_item_sample_validate_offline(staged, no_network):
+def test_staged_catalog_collections_and_item_sample_validate_offline(full_build, no_network):
     """OSD-D18: the catalog, every Collection, and per Collection first, last and a seeded sample of Items."""
-    stac_dir = staged / "stac"
+    stac_dir = full_build / "stac"
     cols = sorted(stac_dir.glob("*/collection.json"))
     assert len(cols) == len(load_records())
     targets = [stac_dir / "catalog.json", *cols, *(i for c in cols for i in item_sample(c.parent))]
@@ -174,7 +184,9 @@ def test_staged_links_resolve(staged):
 
 def test_reachable_collections_equal_record_ids(staged):
     reached = stac.reachable(staged / "stac" / "catalog.json")
-    assert reached["collections"] == {stac.collection_id(rid) for rid in load_records()}
+    ids = [r["id"] for r in json.loads((staged / "records.json").read_text())["records"]]
+    assert reached["collections"] == {stac.collection_id(rid) for rid in ids} and len(ids) == 3
+    assert len([i for i in reached["items"] if i.startswith("nlog/nlog#")]) > stac.SHARD_SIZE   # through shards
 
 
 def test_collection_levels_equal_records_json(staged):
@@ -185,15 +197,16 @@ def test_collection_levels_equal_records_json(staged):
         assert col["osd:level"] == level, rid
 
 
-def test_licence_mapping_every_record(staged):
+def test_licence_mapping_every_record(full_build):
     for rid, rec in load_records().items():
-        col = json.loads((staged / "stac" / stac.collection_id(rid) / "collection.json").read_text())
+        col = json.loads((full_build / "stac" / stac.collection_id(rid) / "collection.json").read_text())
         spdx = rec["licence"].get("spdx")
         assert col["license"] == (spdx or "other"), rid
         lic = [x for x in col["links"] if x["rel"] == "license"]
         assert len(lic) == 1 and lic[0]["href"] == rec["licence"].get("url", rec["origin"]["url"]), rid
-    for p in staged.rglob("*.json"):
-        assert '"proprietary"' not in p.read_text(), p
+    for p in full_build.rglob("*.json"):   # Items carry no licence; every other file is read
+        if p.parent.name != "items":
+            assert '"proprietary"' not in p.read_text(), p
 
 
 def test_collection_assets_from_verified_files(staged):
@@ -205,8 +218,8 @@ def test_collection_assets_from_verified_files(staged):
     assert stac.FILE_EXTENSION in col["stac_extensions"]
 
 
-def test_outlines_geojson_carries_feature_id(staged):
-    fc = json.loads((staged / "outlines.geojson").read_text())
+def test_outlines_geojson_carries_feature_id(full_build):
+    fc = json.loads((full_build / "outlines.geojson").read_text())
     with_id = [f for f in fc["features"] if "feature_id" in f["properties"]]
     assert with_id and all(f["id"] == f["properties"]["feature_id"] for f in with_id)
     assert all("id" not in f for f in fc["features"] if "feature_id" not in f["properties"])
@@ -443,3 +456,111 @@ def test_stac_osd_1_and_2_documents_validate_under_their_frozen_schemas(tmp_path
         assert _valid(item, tmp_path) and not list(cur.iter_errors(item)), good
     _, item = _osd_doc(tmp_path, stac.OSD_EXTENSION, **{"osd:period_source": "record"})
     assert not _valid(item, tmp_path)   # closed enum
+
+
+# --- E32: Collections above SHARD_SIZE Items link child Catalog shards --------------------------
+
+def _walk_item_ids(catalog: Path, collections: set | None = None, broken: list | None = None) -> list[str]:
+    """Every Item id reached from the root by `child` and `item` links, once per link (a duplicate
+    link shows as a repeated id); the Collection ids passed go into `collections`, every relative link
+    of a reached file that names no file into `broken`."""
+    ids, todo, seen, exists = [], [stac.link_target(catalog)], set(), {}
+    while todo:
+        p = todo.pop()
+        if p in seen:
+            continue
+        seen.add(p)
+        doc = json.loads(p.read_text())
+        if doc["type"] == "Collection" and collections is not None:
+            collections.add(doc["id"])
+        for x in doc.get("links", []):
+            target = stac.link_target(p, x["href"])
+            if target not in exists:
+                exists[target] = "://" in x["href"] or target.is_file()
+            if broken is not None and not exists[target]:
+                broken.append(f"{p}: {x['rel']} -> {x['href']}")
+            if x["rel"] == "child":
+                todo.append(target)
+            elif x["rel"] == "item":
+                ids.append(json.loads(target.read_text())["id"])
+    return ids
+
+
+def test_reached_items_are_exactly_the_outline_feature_ids(full_build):
+    # mutation: a shard's `child` link left out of its Collection -> Items missed, red
+    want = []
+    for rid, rec in load_records().items():
+        op = ROOT / "outlines" / (rid.replace("/", "__") + ".geojson")
+        if rec.get("period") and op.exists():
+            want += [f["properties"]["feature_id"] for f in json.loads(op.read_text())["features"]
+                     if f["properties"].get("feature_id")]
+    collections, broken = set(), []
+    reached = _walk_item_ids(full_build / "stac" / "catalog.json", collections, broken)
+    assert broken == []   # every link of every reached file resolves (link_problems on the whole tree, once)
+    assert collections == {stac.collection_id(rid) for rid in load_records()}
+    assert len(reached) == len(set(reached)), "an Item is linked twice"
+    assert len(want) == len(set(want))
+    assert set(reached) == set(want)
+
+
+def test_collections_stay_small_and_shard_above_the_threshold(full_build):
+    sharded = 0
+    for col_path in (full_build / "stac").glob("*/collection.json"):
+        assert col_path.stat().st_size < 2_000_000, col_path
+        links = json.loads(col_path.read_text())["links"]
+        items = [x for x in links if x["rel"] == "item"]
+        shards = [x for x in links if x["rel"] == "child"]
+        assert len(items) <= stac.SHARD_SIZE and not (items and shards), col_path
+        sharded += bool(shards)
+        for x in shards:
+            shard = json.loads((col_path.parent / x["href"]).read_text())
+            assert shard["type"] == "Catalog" and 0 < sum(y["rel"] == "item" for y in shard["links"]) <= stac.SHARD_SIZE
+    assert sharded, "no register is above the threshold"
+
+
+def _sharded(tmp_path, monkeypatch, n=5, size=2):
+    """acme/many: n Items in shards of `size`, dated register 1990-2000."""
+    monkeypatch.setattr(stac, "SHARD_SIZE", size)
+    rec = _record("acme/many", period={"start": "1990", "end": "2000"})
+    catalog, (col,) = _write(tmp_path, [rec], {"acme/many": [f"w{i}" for i in range(n)]})
+    return catalog, col
+
+
+def test_shards_are_standard_catalogs_and_items_keep_their_collection(tmp_path, monkeypatch, no_network):
+    catalog, col = _sharded(tmp_path, monkeypatch)
+    assert [x["href"] for x in col["links"] if x["rel"] in ("item", "child")] == [
+        "./shards/1/catalog.json", "./shards/2/catalog.json", "./shards/3/catalog.json"]
+    shard = json.loads((catalog.parent / "acme--many" / "shards" / "3" / "catalog.json").read_text())
+    assert shard["type"] == "Catalog" and [x["href"] for x in shard["links"] if x["rel"] == "item"] == ["../../items/w4.json"]
+    item = json.loads((catalog.parent / "acme--many" / "items" / "w4.json").read_text())
+    assert item["collection"] == "acme--many"
+    assert {x["rel"]: x["href"] for x in item["links"]}["parent"] == "../collection.json"
+    assert "\n " not in (catalog.parent / "acme--many" / "collection.json").read_text()   # compact
+    assert sorted(_walk_item_ids(catalog)) == [f"acme/many#w{i}" for i in range(5)]
+    assert stac.link_problems(catalog.parent) == []
+    ok, messages = stac.validate(catalog, recursive=True)
+    assert ok, messages
+    assert {m["path"].rsplit("/", 1)[-1] for m in messages} >= {"catalog.json", "w4.json"}   # shards walked
+    (catalog.parent / "acme--many" / "shards" / "3" / "catalog.json").unlink()
+    assert stac.link_problems(catalog.parent) == [
+        "acme--many/collection.json: child -> ./shards/3/catalog.json does not exist"]
+
+
+def test_item_outside_its_interval_on_a_later_shard_fails_check_full(tmp_path, monkeypatch, no_network):
+    # mutation: containment_problems reads only the Collection's direct item links -> passes, red
+    catalog, _ = _sharded(tmp_path, monkeypatch)
+    p = catalog.parent / "acme--many" / "items" / "w4.json"
+    item = json.loads(p.read_text())
+    item["properties"].update(start_datetime="2005-01-01T00:00:00Z", end_datetime="2006-01-01T00:00:00Z")
+    p.write_text(json.dumps(item))
+    ok, messages = stac.validate(catalog, recursive=True)
+    assert not ok
+    assert [m["error_message"] for m in messages if m.get("error_type") == "containment"] == [
+        ("acme/many#w4: 2005-01-01T00:00:00Z to 2006-01-01T00:00:00Z is outside its Collection's "
+        "1990-01-01T00:00:00Z to 2000-12-31T23:59:59Z")]
+
+
+def test_item_sample_draws_from_shards(tmp_path, monkeypatch):
+    catalog, _ = _sharded(tmp_path, monkeypatch, n=7)
+    sample = item_sample(catalog.parent / "acme--many")
+    assert [p.name for p in sample] == [f"w{i}.json" for i in range(7)]   # all 7 under the sample size
