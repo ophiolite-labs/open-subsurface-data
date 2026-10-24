@@ -1,0 +1,26 @@
+id: ga/stratdat-biostratigraphy
+title: Collection of biostratigraphic data from petroleum wells (known as STRATDAT database)
+summary: >-
+  "Geoscience Australia's biostratigraphic database (STRADAT) provides information about the
+  biozonation of sedimentary rocks that were intersected by offshore petroleum wells." Data come
+  from well completion reports and destructive analyses reports submitted under the OPGGSA 2006 and
+  the PSLA 1967, and from GA, AGSO, BMR and state studies.
+publisher: {name: Geoscience Australia, url: https://www.ga.gov.au, country: AU}
+origin:
+  url: https://pid.geoscience.gov.au/dataset/ga/146442
+  access: anonymous
+  notes: "eCat 10ac40b7-844c-4ea2-bd84-23eaadfa4e77, DOI 10.26186/146442. Served as layer resfacs:Biostratigraphy of the WFS https://services.ga.gov.au/gis/resfacs/ows and through https://portal.ga.gov.au/. No manifest_url: the data are a web feature service and a portal, with no file listing the verifier reads."
+licence:
+  name: Creative Commons Attribution 4.0 International Licence
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [tops]
+region: {country: AU, basin: Australian offshore basins, bbox: [110.0, -45.0, 155.0, -5.0]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the WFS capabilities WGS84BoundingBox of resfacs:Biostratigraphy; the eCat record states no extent."
+  - "Biozone picks by depth, recorded under the 'tops' kind."
+notes: "No period stated: the eCat record gives creation 2022-03-31 and publication 2022-03-08 only."
+added: 2026-10-24

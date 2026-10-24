@@ -1,0 +1,24 @@
+id: ga/resfacs-porosity-permeability
+title: Collection of porosity and permeability data from petroleum wells (known as RESFACS database/ Porosity and Permeability)
+summary: >-
+  Part of Geoscience Australia's Reservoir, Facies and Shows (RESFACS) database, "which contains
+  depth-based information regarding porosity and permeability measured or interpreted from core,
+  sidewall core and well-log analysis of rocks intersected by offshore petroleum wells."
+publisher: {name: Geoscience Australia, url: https://www.ga.gov.au, country: AU}
+origin:
+  url: https://pid.geoscience.gov.au/dataset/ga/147644
+  access: anonymous
+  notes: "eCat 7bb7352b-5c01-475c-80a8-238d87d0106a, DOI 10.26186/147644. Served as WFS layers resfacs:Porosity, resfacs:Permeability and resfacs:PorosityPermeability of https://services.ga.gov.au/gis/resfacs/ows and through https://portal.ga.gov.au/. No manifest_url: a web feature service and a portal, with no file listing the verifier reads."
+licence:
+  name: Creative Commons Attribution 4.0 International Licence
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [core]
+region: {country: AU, basin: Australian offshore basins, bbox: [110.0, -45.0, 155.0, -5.0]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the WFS capabilities WGS84BoundingBox of the resfacs porosity and permeability layers; the eCat record states no extent."
+notes: "No period stated: the eCat record gives creation 2023-01-12 and publication 2023-08-10 only."
+added: 2026-10-24
