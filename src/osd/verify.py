@@ -41,7 +41,6 @@ import socket
 import time
 import urllib.error
 import urllib.request
-import urllib.robotparser
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -57,6 +56,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from . import __version__, outlines, paths
 from .records import load_outline, load_records
 from .verifier import layers
+from .verifier import robots as robots_txt
 from .verifier.listings import (  # noqa: F401 (E07)
     TRUNCATED,
     Entry,
@@ -381,7 +381,9 @@ def comparable(checksum: dict | None) -> str | None:
 
 class _Robots:
     """robots.txt per host: 2xx is obeyed, 4xx allows everything, anything else (5xx, no answer) is
-    unreadable and treated as disallow (RFC 9309 section 2.3.1.4); `unread` says why, per host."""
+    unreadable and treated as disallow (RFC 9309 section 2.3.1.4); `unread` says why, per host. A
+    2xx body is read by osd.verifier.robots (H3: groups, wildcards, the longest match)."""
+    TOKEN = USER_AGENT.split("/", 1)[0]  # the product token (RFC 9309 section 2.2.1)
 
     def __init__(self, opener: Opener):
         self.opener, self.hosts, self.unread = opener, {}, {}
@@ -390,17 +392,16 @@ class _Robots:
         u = urlsplit(url)
         key = f"{u.scheme}://{u.netloc}"
         if key not in self.hosts:
-            rp = urllib.robotparser.RobotFileParser()
             try:
-                rp.parse(_read(self.opener(key + "/robots.txt"), 512 * 1024).decode("utf-8", "replace").splitlines())
+                text = _read(self.opener(key + "/robots.txt"), 512 * 1024).decode("utf-8", "replace")
+                self.hosts[key] = robots_txt.parse(text, self.TOKEN)
             except FetchError as e:
                 if 400 <= e.status < 500:
-                    rp.allow_all = True
+                    self.hosts[key] = robots_txt.Rules()
                 else:
-                    rp.disallow_all = True
+                    self.hosts[key] = robots_txt.Rules.disallow_all()
                     self.unread[key] = f"HTTP {e.status}" if e.status else (e.error or "no answer")
-            self.hosts[key] = rp
-        return self.hosts[key].can_fetch(USER_AGENT, url)
+        return self.hosts[key].allowed(url)
 
     def refusal(self, url: str, what: str) -> str:
         """Why `url` is not fetched: an unreadable robots.txt (H1 design 9) or an explicit disallow."""
