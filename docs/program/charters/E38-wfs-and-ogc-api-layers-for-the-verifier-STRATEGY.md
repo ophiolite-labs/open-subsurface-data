@@ -129,6 +129,7 @@ manifests in `samples.yaml` (DOV x4, GSNSW, GSV) and replaced by `{sort: <proper
    a level.
 3. The WFS sort property is tool configuration (`sort:` in samples.yaml), because WFS 2.0 sorts by a
    property and GeoServer refuses `@gml:id`; a WFS record without one is partial ("unsortable").
-4. Page size: WFS `min(CountDefault, 5000)`, 1000 when unstated; OGC API `limit=1000`.
+4. Page size: WFS `min(CountDefault, 5000)`, 1000 when unstated; OGC API `limit=1000`. WFS output
+   format: `application/json` first, then `application/geo+json` (DOV lists geo+json and refuses it).
 5. Cap fallback evidence: WFS hashes the manifest's own GetFeature when it states a `count` (the
    bytes DOV's file check hashed before, now a partial export); OGC API keeps the first page.
