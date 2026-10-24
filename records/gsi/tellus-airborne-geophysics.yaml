@@ -1,0 +1,31 @@
+id: gsi/tellus-airborne-geophysics
+title: Tellus airborne geophysical data (magnetic, radiometric and electromagnetic)
+summary: >-
+  "Geophysical data and maps include data from the Tellus project (magnetic, electromagnetic,
+  radiometric data) and other sources." Airborne surveys at "a nominal survey altitude of 60m and a
+  line spacing of 200m"; "Data are available in merged packages of all the Tellus phases or
+  individually as survey blocks are completed."
+publisher: {name: Geological Survey Ireland, url: https://www.gsi.ie, country: IE}
+origin:
+  url: https://www.gsi.ie/data-and-maps/geophysics/
+  access: anonymous
+  manifest_url: https://www.gsi.ie/data-and-maps/geophysics/
+  notes: "The page links 287 entries: merged and per-block XYZ and grid zips on gsi.geodata.gov.ie/downloads/Geophysics/Data/, e.g. GSI_Tellus_RAD_MERGE_DATA_2022.zip (151,141,164 bytes on 24 Oct 2026). Also 2006 JAC pilot and 1979-1981 Hunting surveys."
+licence:
+  name: Creative Commons Attribution 4.0 International license
+  spdx: CC-BY-4.0
+  url: https://www.gsi.ie/data-and-maps/
+  redistribution: allowed
+  attribution: required
+  statement: "Contains Irish Public Sector Data (Geological Survey Ireland) licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence"
+kinds: [potential-fields, radiometrics, airborne-em]
+region: {country: IE, basin: Ireland (Tellus survey blocks), crs: "EPSG:2157"}
+listed_by: [publisher]
+known_issues:
+  - "No extent is stated on the page; bbox left out. Blocks named: Tellus Border, North Midlands, A1-A5, A7-A9, Waterford."
+  - "Licence is the GSI Data Licence Agreement 'unless otherwise specified' on https://www.gsi.ie/data-and-maps/."
+period:
+  start: "2013"
+  end: "2022"
+  stated: "Release names on the geophysics page run from 'Tellus 2013 Tellus Border' to 'Tellus 2022 Merged' (release years, not flight dates)"
+added: 2026-10-24

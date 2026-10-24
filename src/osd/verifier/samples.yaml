@@ -19,6 +19,9 @@ ar-energia/fractura-adjunto-iv: ["*/datos-de-fractura-de-pozos-de-hidrocarburos-
 ar-energia/produccion-por-pozo: ["*/listado-de-pozos-cargados-por-empresas-operadoras.csv"]   # datos.gob.ar dataset page (201 links): the operators' well list, not the yearly production files (hundreds of MB each); size not read
 ar-energia/trayectorias-vaca-muerta: ["*/trayectorias-de-pozo-vaca-muerta.csv"]   # datos.gob.ar dataset page (46 links): the trajectory CSV (not the zip); size not read
 bcer/well-surface-holes-permitted: ["*"]          # ArcGIS layer: one geojson export of at most maxRecordCount (2000) features
+bgr/geostor-reservoir-model-pilot-area-a: ["*/Pilotregion_A.zip"]   # metadata page links one package (application/x-zip-compressed), 6,122,020 bytes (download.bgr.de robots 404)
+bgr/vmod-3dgeo-eu-north-sea: "the bucket file is 14,699,680,338 bytes, over the 512 MiB per-record budget (bucket listing, 6 entries; robots 404)"
+bgr/vmod-gpdn-entenschnabel: "the bucket file is 5,778,689,048 bytes, over the 512 MiB per-record budget (bucket listing, 6 entries; robots 404)"
 bgs/single-onshore-borehole-index: ["*"]   # WPDM download: application/zip, attachment sobi-borehole.zip (a file by its headers); 75.58 MB as the page states, no length sent
 boem/ogor-a-well-production: ["*/Production/Files/ogoradelimit.zip"]   # page links 62 zips (1996 to the current year); the current year's delimited file, 632,057 bytes
 boem/paleontologic-data: ["*/Paleo/Files/gepaldmp_all.zip"]   # page links three zips and five PDFs; all releasable paleo reports, 3,209,217 bytes
@@ -41,6 +44,8 @@ equinor/drogon: ["DROGON_HIST.DATA"]   # GitHub contents API of eclipse/model: t
 fl-dep/oil-gas-permit-database: ["*.xlsx"]   # page links one spreadsheet: OG_WELLS_WEBSITE_4.xlsx, 703,015 bytes
 force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip?download=1"]   # Zenodo record page: the LAS zip, 169,785,172 bytes
 geozs/kataster-raziskovalnih-vrtin: ["*"]   # the bare VRTINE.zip the eGeologija record names (application/x-zip-compressed: a file by its headers), 2,823,170 bytes
+gsi/mineral-exploration-boreholes: ["*/IE_GSI_Mineral_Exploration_Boreholes_50K_IE26_ITM.zip"]   # minerals page (165 links): the shapefile zip, 2,115,796 bytes (www.gsi.ie robots 403, gsi.geodata.gov.ie 404)
+gsi/tellus-airborne-geophysics: ["*/GSI_Tellus_RAD_MERGE_DATA_2022.zip"]   # geophysics page (287 links): the merged radiometric zip, 151,141,164 bytes (www.gsi.ie robots 403, gsi.geodata.gov.ie 404)
 gsmma/hydrogeological-drilling-database: {file: true, sample: ["*"]}   # the bare CSV data.gov.tw names; content type and size not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-core-stations-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the core station table; not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-seismic-lines-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the seismic line table; not read (Cloudflare 403 text/html, 23 Oct)
@@ -95,6 +100,7 @@ sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the explor
 soton/scanner-pockmark-velocity-models: ["*/1/FAST_Final_Tomo_Vp_GI_geo_SP"]   # ePrints page links six files; the tomographic model, 146,169,210 bytes
 spe/csp10-model-2: ["*por_perm_case2a.zip"]   # page links the corrected dataset, 19,476,344 bytes
 spe/csp11: ["*.geo"]   # GitHub contents API of geometries/: spe11a.geo 29,309 bytes, spe11b.geo 611 bytes
+spw/donnees-geologiques-de-base: ["*"]   # the bare FILEGDB zip (application/zip, attachment: a file by its headers), 11,943,843 bytes (geoservices.wallonie.be robots 404)
 swisstopo/deep-wells: ["*_2056.gpkg"]   # STAC item (generic JSON reader, 8 hrefs): the GeoPackage, 237,568 bytes
 swisstopo/reflection-seismic: ["*_2056.gpkg"]   # STAC item (generic JSON reader, 7 hrefs): the GeoPackage, 19,189,760 bytes
 tno/bro-geological-boreholes: ["*"]   # the GeoPackage the PDOK ATOM feed names (application/geopackage+sqlite3: a file by its headers), 158,920,704 bytes

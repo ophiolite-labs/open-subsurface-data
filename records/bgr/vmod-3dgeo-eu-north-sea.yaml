@@ -1,0 +1,29 @@
+id: bgr/vmod-3dgeo-eu-north-sea
+title: Harmonized, cross-border seismic velocity model for the Dutch, German and Danish North Sea area (Project 3DGEO-EU)
+summary: >-
+  A harmonized seismic velocity model across the Dutch, German and Danish North Sea, built by BGR,
+  GEUS and TNO in the 3DGEO-EU project from velocity data of 724 wells, delivered as SEG-Y.
+publisher: {name: Bundesanstalt für Geowissenschaften und Rohstoffe (BGR), url: https://www.bgr.bund.de, country: DE}
+origin:
+  url: https://gst.bgr.de/shortlink/vmod_3dgeo_eu_nl_ger_dk_north_sea
+  access: anonymous
+  manifest_url: https://bgr-geoldg-public.obs.eu-nl.otc.t-systems.com/?prefix=4bc4694c-e14b-45f3-a91e-9330edc26e56/Untergrundmodelle/
+  notes: "BGR geoportal CSW id 872cf5ca-4b84-4411-acf0-c8a0adcb5c79. The bucket listing (6 entries) holds Vmod_3DGEO-EU_Nordsee_EPSG_23031.zip, 14,699,680,338 bytes on 24 Oct 2026, beside the GPDN Entenschnabel model."
+licence:
+  name: Datenlizenz Deutschland Namensnennung 2.0
+  spdx: DL-DE-BY-2.0
+  url: https://www.govdata.de/dl-de/by-2-0
+  redistribution: allowed
+  attribution: required
+  statement: "BGR, GEUS, TNO (2021): Harmonized, cross-border seismic velocity model for the Dutch, German and Danish North Sea area (Project 3DGEO-EU). https://gst.bgr.de, Abgerufen am xx.xx.xxxxx"
+kinds: [velocity-model]
+region: {country: DE, basin: "North Sea (Dutch, German and Danish sectors)", bbox: [3.26, 54.58, 5.59, 56.45], crs: "EPSG:23031"}
+size: {bytes_estimate: 14699680338, stated: one zip in the bucket listing}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the CSW record's stated geographic extent."
+period:
+  start: "2018"
+  end: "2021"
+  stated: "CSW record: 3DGEO-EU project 2018-2021; Quellenvermerk 'BGR, GEUS, TNO (2021)'"
+added: 2026-10-24
