@@ -1,0 +1,2124 @@
+Reading additional input from stdin...
+OpenAI Codex v0.159.0
+--------
+workdir: /home/epic/src/open-subsurface-data
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: concise
+session id: 01a16b69-1ff0-7dc0-892c-27bca9c64706
+--------
+user
+You are a fresh, independent senior reviewer of one epic charter in the Open Subsurface Data project (a verified catalogue of open subsurface datasets: YAML records -> verifier levels L0-L4 -> outlines -> STAC/GeoJSON catalogue -> static MapLibre map; Python package src/osd, tests in tests/, schemas in schema/). Read docs/ARCHITECTURE.md, docs/ENGINEERING.md, docs/program/PROGRAM.md, then the charter at /home/epic/src/open-subsurface-data/docs/program/charters/E35-whole-layers-for-the-verifier.md. VERIFY every 'exists' claim in its Context section against the code at HEAD (open the files; do not trust the document) and state the commit you verified against (git rev-parse HEAD). Report in Markdown: (1) Verdict: APPROVE / APPROVE WITH CHANGES / REWORK, one sentence why. (2) Factual errors about current code, with file:line evidence. (3) Design objections: an owner, boundary, format or contract choice that is unsafe or misplaced, each with a concrete alternative that stays within docs/ENGINEERING.md (no new CI stations, no server, standards over bespoke). (4) Acceptance lines that can pass vacuously or whose proposed test would stay green under the mutation it should catch. (5) Scope creep into another charter in docs/program/charters/. Be specific and terse; no praise; at most 60 lines. Do not modify any files.
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll read the project guidance, check each Context claim against HEAD, and compare the scope with related charters.
+exec
+/bin/bash -lc 'git rev-parse HEAD && cat docs/ARCHITECTURE.md docs/ENGINEERING.md docs/program/PROGRAM.md docs/program/charters/E35-whole-layers-for-the-verifier.md' in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+394e4fd0205d1a33e40fc8fc2c82ebd5bbb07bc1
+# Architecture
+
+One sentence: contributors write facts about open datasets, tools turn those facts into verified
+levels, outlines and a catalogue, and a static map plus a manifest let anyone find and fetch the
+data; Ophiolite reads the same catalogue as a source.
+
+## The chain
+
+```
+  SEG wiki, national        contributor            verifier            outline extractor
+  registers, publishers ──► records/*.yaml ──────► build/verification ─► outlines/*.geojson
+        (lists)             (facts, CC0)            (levels L1–L2)        (L3, derived)
+                                 │                        │                    │
+                                 └──────────┬─────────────┴────────────────────┘
+                                            ▼
+                                     osd build  ─────►  build/catalog/
+                                                        records.json · outlines.geojson · collections.json (STAC)
+                                            │
+                 ┌──────────────────────────┼──────────────────────────────┐
+                 ▼                          ▼                              ▼
+           site/ (MapLibre)           QGIS / any GIS                 manifest (E06)
+           toggles, search,           GeoJSON / STAC by address      osd get · Python reader
+           panel, cards                                                   │
+                                                                          ▼
+                                                              Ophiolite source (E09, L4)
+                                                              E85 intake · E35 rights-basis
+```
+
+## Components and their boundaries
+
+| Component | Owns | Never does |
+|---|---|---|
+| **Records** (`records/`, `schema/record.schema.json`) | Facts as the publisher states them: origin, licence, kinds, region | Carry a level, a checksum or anything a tool produced |
+| **Verifier** (`src/osd/verify.py`, `schema/verification.schema.json`) | Network checks, checksums, licence text capture, the level ladder | Change a record; run inside the required CI check |
+| **Outlines** (`outlines/`, `schema/outline.schema.json`, extractor in E03) | Geometry per wellbore or survey in WGS84, with its derivation named | Invent geometry without saying `approximate: true` |
+| **Build** (`src/osd/build.py`) | Joins records, outlines and levels into the published files | Fetch anything |
+| **Catalogue** (`build/catalog/`) | The one published artefact; STAC-shaped collections, GeoJSON outlines, records JSON | Hold dataset bytes |
+| **Site** (`site/`) | Reading the catalogue and showing it; copyable addresses and snippets | Hold its own data store; need a server |
+| **Retrieval** (E06) | A manifest from a selection; a fetcher that verifies checksums | Decode proprietary project files (Ophiolite connector doctrine) |
+| **Mirror store** (E07) | Checksummed copies of small or orphaned datasets whose licence allows it | Copy anything with `redistribution: unknown` |
+| **Ophiolite bridge** (E09) | The catalogue as an Ophiolite source; rights-basis from the record; fidelity records | Live outside the Ophiolite monorepo's own conventions |
+
+## Formats, all standard
+
+- Records: YAML validated by JSON Schema 2020-12. Outlines: GeoJSON, EPSG:4326.
+- Catalogue: STAC 1.0 collections and items (full validity is E04), plus one GeoJSON for map and GIS.
+- Tiles: PMTiles once outlines exceed what one GeoJSON serves comfortably (E05).
+- Manifest: `osd.manifest/1` JSON (E06). Seismic store, if ever: Zarr-based (E10).
+
+## The level ladder
+
+L0 listed → L1 reachable → L2 checksummed and licence captured → L3 outlined from the data →
+L4 converted to a canonical type with a fidelity record. No rung is skipped, and a level is
+computed from check outcomes, never typed. The ladder is the product's honesty: a dashed outline
+on the map is a placeholder and says so.
+
+## What the map is and is not
+
+The map is a view of the catalogue, nothing more. It has no account, no state beyond the URL, no
+server. Everything it shows can be opened in QGIS by one address. That is also why the website
+and "a GIS layer" are one deliverable rather than two.
+
+## Where Ophiolite comes in
+
+Ophiolite is a consumer of the catalogue, and the catalogue borrows Ophiolite's vocabulary
+(kinds from the E55 registry, rights-basis from E35). The two repositories meet at one interface:
+a manifest or STAC collection Ophiolite's intake (E85) can read. No Ophiolite code runs here;
+no catalogue code runs there.
+# Engineering setup
+
+Fit for purpose: a Python package, YAML records and a static page. The Ophiolite program
+(docs/program-2026-09-25 in the Ophiolite monorepo) taught what to keep and what to drop; the
+evidence for each line is in the Ophiolite program records of 8–22 October 2026.
+
+## Keep (copied from Ophiolite)
+
+| Practice | Why it earned its place |
+|---|---|
+| Claims board: a lane names its paths before it starts, two lanes never share a path | Overlap was the cause of merge pain; the 21 Oct simplification cut kept the board deliberately |
+| Contract first: slice 0 is schema, fixtures and stubs; later slices vertical | Layer-cut slices made serial chains (18 Oct rule) |
+| Kernel vs surface proof bar | Surface strategies capped at one review round after revisions ran to 8 and 18 rounds on E60 and E42c |
+| Outcome-named slices: the brief says what a user can do after merge, or no lane | Success metric is slices merged per day, not green CI |
+| Revert first: a red main gets one revert within the hour, the fix follows | Owner accepted a briefly red main on about one merge in five |
+| No artificial schedule: act when the precondition holds, never on a timer | Nightly timers and self-set dates cost days (night 2026.10.95) |
+| Small fixes batched, one push per merge, no wait on the repeat run | Loop steps 7 and 8 |
+| Brief by reference, one drafting and one execution agent, small contexts | 83 % of usage was sessions over 150k tokens, 78 % subagent-heavy |
+| A different model reviews kernel charters, read-only, one round | Reviews caught contract mistakes; multiple rounds did not pay |
+
+## Drop (what cost Ophiolite more than it returned)
+
+| Station | Evidence | Here instead |
+|---|---|---|
+| Self-hosted runners, pool builders, runner crews | needrestart killed runner units after any apt run; two crews and "chair out, station out" existed only to manage them | GitHub-hosted `ubuntu-24.04`, one job, under two minutes |
+| Merge trains, then a merge queue | 8 workers gave 10× activity for 2–3× merges; merges per worker-day fell from 5.6 to 0.3 at 18 workers | Squash merge on a green check; at most 2 coding lanes plus 1 records lane |
+| Nightly releases, release pinning, qualification | A night took 1 h 50 min at best, ARM64 70 min on the critical path; per-lane qualification 45 min serial | Every merge to main publishes the site; no version numbers |
+| Hardening lanes and a growing item list | 87 hardening merges against about 10 epic slices in a week; the list grew 150 → 217 | Defects under 50 lines ride on the next lane; a red main is reverted, not hardened |
+| Committed conformance results, locks, worker-check cron | Three lanes lost 30–45 min each on a dead lock; a queue stopped for an hour on a docs-only deadline | Nothing is committed that a job can regenerate; no locks; no cron |
+| Multiple Codex rounds, 4-revision caps | 2–4 h of a worker per round | One round for a kernel charter; none for surface or records |
+| Dispatch per commit group | Worth it for a 27-minute C++ build | A 2-minute check runs on every push; nothing to batch |
+| ccache, proven-tree skip, CI spend caps | Needed for a 27-minute C++ build | Irrelevant at Python-and-static scale; revisit above 10 min per check |
+
+## The gate
+
+`make check` = ruff + pytest + schema validation + build, offline. It is the only required
+status. Network verification (`verify` workflow) comments on pull requests and never blocks: a
+publisher's outage is a finding, not a red gate. The site publishes from main on every merge.
+
+## Proof bar by class
+
+- **Kernel** (schemas, verifier, build, manifest, bridge): tests for every acceptance line, a
+  mutation shown to fail for every guard, one Codex round on the charter. Strategy at lane open,
+  at most two pages.
+- **Surface** (site, docs, records): `make check` green and a screenshot or the verify comment.
+  No strategy document; the charter's acceptance list is the brief.
+- **Records**: the verify comment shows the level; a human checks the licence fields against
+  the publisher's page. Same-day merge.
+
+## Roles
+
+- **Supervisor** (one): keeps `docs/program/PROGRAM.md` true, writes lane briefs by reference,
+  merges on green, reverts on red, records decisions in `DECISIONS.md`. Does not write product
+  code except a revert.
+- **Worker** (at most three concurrent: two coding lanes, one records lane): takes a charter,
+  claims paths, opens a branch `e<nn>-<slug>`, pushes when the diff is inside the claim, opens
+  the pull request with the outcome sentence and the proof. Waits for nothing but its own check.
+- **Reviewer** (Codex, read-only): one round per kernel charter, dispositions recorded in the
+  charter.
+
+## What is deliberately absent
+
+No merge queue, no release branches, no version tags, no nightly, no self-hosted compute, no
+lock files committed by hand, no conformance ledger, no item list. If one of these starts to look
+necessary, the measured reason goes into `DECISIONS.md` first.
+# Program: Open Subsurface Data
+
+Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two coding lanes and
+one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
+Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
+
+## Queue (23 Oct 2026)
+
+| # | Epic | Class | Status | Depends on | Outcome a user can observe |
+|---|---|---|---|---|---|
+| 1 | E01 Twenty records from the open lists | Records | MERGED 23 Oct (PR #1, 21 records, 20 at L1) | scaffold | The map lists at least twenty datasets, each with licence and access stated |
+| 2 | E02 Verifier to L2 | Kernel | MERGED 23 Oct (PR #3, 37c010c; 18 mutations; three records at L2, SEG wiki blocked) | E01 | Levels on the map are real: dead links show L0, checksummed sets show L2, with a date |
+| 3 | E03 Outlines from the data | Kernel | MERGED 23 Oct (PR #7, 7ddecf0; record/2 inputs, outline/2; Sodir, NLOG, Poseidon at L3; F3 and Teapot behind logins) | E02 | Solid outlines for Norway, the Netherlands and the five 3D surveys; dashed placeholders gone |
+| 4 | E05 Map that scales | Surface | MERGED 23 Oct (PR #2, 6c232cf; shareable hash, 10k clustered wells, how.html, Playwright site test in CI) | scaffold | Shareable link to a filtered view; thousands of wells without lag; a how-it-works page |
+| 5 | E04 STAC catalogue | Kernel | MERGED 23 Oct (PR #8, aced173; 68 Collections validate offline, Items need periods; QGIS screenshot is owner action 102) | E03 | QGIS's STAC browser opens the catalogue and lists items with licence and level |
+| 6 | E06 Retrieval by manifest | Kernel | DONE (slice 1 PR #9, slice 2 PR #12, 23 Oct; main cc7c470) | E04 | Select on the map, download a manifest, `osd get` fetches with checksums |
+| 7 | E08 Curation that runs itself | Surface | MERGED 23 Oct (PR #5, e408adb; status page, dead-link issues, osd new, CODEOWNERS, labels). DONE when two outside PRs have merged (owner action 101) | E02 | An outside contributor's record merges the same day; dead links become issues |
+| 8 | E11 Hosting and domain | Ops | DONE 23 Oct (https apex 200, http 301 to https, domain verified for the organisation; www certificate propagating) | none | The site at opensubsurfacedata.org with real levels |
+| 9 | E07 Mirror store and custody | Kernel | slice 1 MERGED (PR #13, 23 Oct; main 58e895f; manifest/2, custody/1, verification/3, local transport; Norne eligible); slice 2 QUEUED after owner action 103 | E06, OSD-D6 | Small, allowed datasets download from the catalogue at full speed with a custody record |
+| 10 | E09 Ophiolite reads the catalogue | Kernel, cross-repo | OSD slice 1 MERGED (PR #14, 23 Oct; main c370a87: manifest/3 catalog snapshot, fidelity/1, L4 rule); static manifest/3 fixtures PR #16 (pin 82ae5563d); PARTIAL until Ophiolite E127 lands (after E121 there; rights part after E35) | E06, Ophiolite E85 | An Ophiolite project pulls a manifest in as a source with rights-basis filled |
+| 11 | E10 Seismic slices | Kernel | DEFERRED | E07 | A slice of a mirrored cube in a notebook without downloading the cube |
+| 13 | E13 Twenty records from the national registers | Records | MERGED 23 Oct (PR #4, 6429445; 42 records, 10 countries with a government publisher, 0 new TerraNubis) | E01 | Forty datasets listed; a government source for at least eight countries |
+| 14 | E14 Twenty records: research drilling, CO2 sites, state archives | Records | MERGED 23 Oct (PR #6, 61f9527; 68 records, 26 new, six new countries, all 26 at L1) | E13 | Sixty datasets listed, wider kinds and regions |
+| 15 | E15 Tiles for the registers | Surface | MERGED (PR #10, 23 Oct; main 2904db0) | E03 | The map on a phone connection loads tiles for the viewport, not 7 MB of outlines |
+| 16 | E16 Periods from the publishers | Records | MERGED (PR #11, 23 Oct; main fa13d75; 53 of 68 records with a period, 18,432 Items; OSD-D18 gate sample) | E04 | STAC clients list Items with publisher-stated periods, not only Collections |
+| 17 | E17 Records, fourth twenty (Africa, Middle East, Asia, Canada, open seismic and model sets) | Records | MERGED (PR #15, 23 Oct; main 98eb254; 92 records, 9 new countries) | E16 | The map lists at least 85 datasets on six continents |
+| 18 | E18 Items carry their own dates | Kernel | MERGED (PR #19, 23 Oct, main 8581b50; charter reworked after its Codex round) | E03, E04, E16 | Time filters in a STAC client return the wellbores and surveys of that window, not a whole register |
+| 19 | E19 Vocabulary from the records lanes (potential fields, purchase, licence terms) | Kernel (small) | MERGED (PR #18, 23 Oct; main ae7a812; record/3, manifest/4, stac-osd v2) | E17 | Records can say gravity/magnetics, sold data and time-limited terms as the publisher states them |
+| 20 | E20 Records: the retry and the publishers' sentences | Records | MERGED (PR #21, 23 Oct; main a1f8832; 96 records, NRCan potential-fields, PASA/DGH publisher sentences; six hosts still refuse) | E17, E19 | Unreached publishers are listed when they answer; purchase records carry the publisher's own licence sentence |
+| 21 | E21 The map says when | Surface | MERGED (PR #22, 23 Oct; main 3d5841c; period filter `t=`/`dated=1`, When row, journey tests) | E05, E16 | A person filters the map by acquisition years and reads when a dataset was acquired, in the publisher's words |
+| 22 | E22 Records, fifth twenty (US states, Iberia and the Alps, Latin America, Africa, geothermal and CO2 sites) | Records | MERGED (PR #30, 23 Oct; main 595a30f; 121 records, ten new countries, seven US states) | E20 | The map lists 116 datasets with the open US state regulators and five more countries |
+| 23 | E23 More datasets checksummed | Kernel | MERGED (PR #31, 23 Oct; main 3ece7a2; verification/4, ten listing readers, publisher checksums, a reason per record below L2) | E02, E07 | Every listed dataset has its sample attempted each run; passes show L2, the rest say which check stopped them |
+| 24 | E24 Records: files the verifier can reach, and the sixth twenty | Records | MERGED (PR #32, 23 Oct; main 4dcdc56; 140 records; 24 of 49 lane records L2 on the branch run) |
+| 25 | E25 Records: the seventh twenty, and the bare files | Records | MERGED (PR #35, 23 Oct; main 8843f3e; 160 records, five new countries; branch run 35 L2 + Poseidon L3) | E24, H1 | At least 156 datasets listed; bare-file records reach L2 or say why |
+| 26 | E26 Vocabulary: the kinds the records lanes asked for | Kernel (small) | MERGED (PR #34, 23 Oct; main dcbc1d3; record/4; ten records retagged) | E19, E24 | A record can say velocity model, geological model, airborne EM, radiometrics, stress; ten records lose their want sentence |
+| 27 | E27 The map says why | Surface | MERGED (PR #36, 23 Oct; main 16a2f5a; reasons on the map and the status page; frame budget scaled by runner speed) | E23, H1, E08 | A person reads on the map and the status page why a dataset is at its level, in the verifier's words, with the date |
+| 28 | E28 Periods and extents for the newer records | Records | MERGED (PR #39, 23 Oct; main 520b4c1; periods 90 → 111 of 160, bbox 136 → 138) | E16, E25 | The time filter and STAC reach the datasets added since E16; first zoom right for every located dataset |
+| 29 | E29 Outlines from the registers' map services | Kernel | MERGED (PR #43, 23 Oct; main d0e3241; record/5 arcgis inputs for nine registers; outlines committed for SGUDDS, NZP&M x2, WA DEMIRS (6,970 features), WA at L3; the other five prepared for E32; all-record branch run 42.5 min) | E03, E18, E23, E25, E26 | Registers with an ArcGIS service show their wells and surveys as real points and outlines; L3; one Item per feature |
+| 30 | E30 Listings for the datasets people can download | Records | MERGED (PR #40, 23 Oct; main 641f750; 11 listings, 10 of them L2 on the branch run; 80 records with a manifest_url) | E23, E24, E25 | More anonymous-access datasets at L2; the rest say why in the verifier's words |
+| 31 | E31 Records: the eighth twenty (offshore regulators, Canadian provinces, CCS sites, the rest of Europe) | Records | MERGED (PR #41, 23 Oct; main 08d3985; 176 records, 16 new, 14 with listings; four held back under the unknown cap, Tomakomai held back by its terms) | E25, E30 | At least 176 datasets, BOEM and C-NLOPB among them, four more countries |
+| 32 | E32 Registers with a hundred thousand wells | Kernel | CHARTERED (23 Oct; Codex REWORK, reworked: two-minute gate, child Catalog shards, encoder fix preserving E15's tile contract, 21 dispositions); IN LANE (osd-e32, 23 Oct) | E29, E18, E15 | Virginia, BCER, SGC, Utah and North Dakota wells on the map at L3 with pageable Items; the gate stays under three minutes |
+| 33 | E33 Records: the ninth twenty (the four held back, the Americas and Africa that remain, geothermal and CO2 research sites) | Records | MERGED (PR #44, 23 Oct; main 2752137; 196 records: four restored, 16 new, six new countries, 106 with a manifest_url) | E31 | At least 196 datasets, five more countries, geothermal and CO2 research sites on the map |
+| 34 | E34 Periods and extents for the eighth and ninth twenty | Records | MERGED (PR #47, 23 Oct; main 2a4e75a; periods 10 of 22 (below the bound of 11, finding), bbox 11 of 22 given, 11 explained; 19 records touched) | E28, E31, E33 | The 36 newest datasets reach the time filter and the first zoom |
+| 35 | E35 Whole layers for the verifier | Kernel | CHARTERED, Codex round running (24 Oct); opens beside E32 | E23, E29, H2 | Registers served as ArcGIS layers reach L2 with a stable checksum of the whole layer |
+| H2 | H2 Verify in shards | Kernel (hardening) | CHARTERED (23 Oct; Codex REWORK, reworked: origin-host shard key, one snapshot per shard, fresh-only issue report, 18 dispositions); MERGED (PR #48, 24 Oct; main caec64b; 12 shards by origin-host hash; branch run about 18 min against 56; concurrency group verify-main; failed shard keeps earlier results) | E29, H1 | An all-record verify on main under 25 minutes (56 after E30), no overwrite between dispatches |
+| H1 | H1 Origins that recover, and origins that hide from robots | Kernel (hardening) | MERGED (PR #33, 23 Oct; main 5cbe7af; OSD-D20; issues close on recovery; single-file listings) | E08, E23 | Origin-dead issues close themselves; publishers that hide from the verifier are called blocked, not dead |
+| 12 | E12 Catalogue into a workspace | Kernel, cross-repo | DEFERRED | E09, Ophiolite E36 or E79 | A person keeps a derived asset in a private workspace |
+
+Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
+map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
+(three of them the SEG wiki blocking this host with HTTP 403, one NOPIMS 403; see OSD-D9).
+Published 23 Oct: repository public, `check` and `pages` green on the first push, a dispatched
+`verify` run on GitHub-hosted runners gave the same five L1 and four 403s and republished the map
+with real levels through the `verification-results` branch. `main` requires `check`.
+DNS entered and the domain verified for ophiolite-labs by the owner 23 Oct; HTTPS enforced (certificate issued after re-setting the custom domain).
+E01 follow-ups for E02: ten of twelve new records come from one aggregator (TerraNubis); origins were
+opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
+
+## The loop
+
+1. The supervisor takes the first QUEUED epic whose dependencies are MERGED and whose paths are
+   free on `CLAIMS.md`. Surfaces are disjoint: `records/`, `site/`, `src/osd/`, `.github/`.
+2. Kernel: the worker writes a strategy of at most two pages at lane open (acceptance line → test
+   name), one Codex round on the charter if not yet reviewed, dispositions recorded in the charter.
+   Surface and records: no strategy, the charter's acceptance list is the brief.
+3. The worker claims paths, branches `e<nn>-<slug>`, commits in outcome-named slices.
+4. The worker pushes unasked when the diff is inside the claim; asks for `schema/` version bumps
+   and `.github/` edits.
+5. Pull request: outcome sentence, proof (check green, screenshot or verify comment). The
+   required status is `check` only.
+6. Supervisor merges on green with squash. Main publishes the site. Nobody waits for the
+   repeat run on main.
+7. Red main: revert within the hour, then a fix lane. No hardening lanes, no item list.
+8. Defects under 50 lines ride on the next lane that owns the path. Larger ones get a charter.
+9. During any wait the worker starts the next slice on a stacked branch; it is merged after.
+10. After a merge the supervisor updates this table, moves the claim rows to MERGED, and
+    `/compact`s.
+
+## Rules
+
+- R1 WIP: two coding lanes plus one records lane. A third coding lane waits.
+- R2 Gate: `make check` only. Nothing network-bound is ever required.
+- R3 Records say what the publisher says; tools say what they established. Never cross.
+- R4 Every slice names what a user can do after it merges.
+- R5 Surface gets a screenshot, kernel gets tests and one mutation per guard, records get the
+  verify comment and a licence read.
+- R6 No timers, no nightly, no self-set dates. Act when the precondition holds.
+- R7 Nothing a job can regenerate is committed (`build/`, `site/data/`).
+## E35 Whole layers for the verifier — CHARTERED · Kernel · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct 2026 (levels on the map are real); E23 (listing readers by shape;
+a generated export the server truncates is a partial export, not a hashed file,
+`src/osd/verify.py:25`, `:494-498`); E29 (the ArcGIS adapter: paging by object id, identity
+checks, the 50,000-feature cap, `src/osd/outlines/extractors.py:185-316`); H2 (shards by origin
+host; the 2 GiB budget per process); OSD-D9, OSD-D11, OSD-D20.
+
+**Outcome.** The registers whose publishers serve their data as an ArcGIS layer reach L2 the way a
+register with a downloadable file does: the verifier fetches the whole layer, not the first page,
+and the same layer on two days with no edits gives the same checksum.
+
+**Context (main dd5f549, 24 Oct).** 23 records have an ArcGIS layer as `manifest_url` (list in
+`docs/program/evidence/e35/candidates.md`). The listing reader turns a layer into one generated
+entry, `query?where=1=1&outFields=*&f=geojson&resultRecordCount=<maxRecordCount>`
+(`src/osd/verifier/listings.py:123-136`, `:253-261`). For any layer larger than
+`maxRecordCount` the server answers `exceededTransferLimit: true`, the export is kept under
+`partial_exports`, and `files-checksummed` skips, so those records stop at L1 (Virginia, BCER,
+SGC, Utah, North Dakota, the SK MER and PGI registers among them). E29's adapter already pages a
+layer by object id with count and identity checks for outlines; the verifier does not use it.
+
+**The design the lane must map to.**
+1. A whole-layer export. For a listing of shape `arcgis-layer`, the verifier assembles the layer
+   by object id pages with E29's paging and checks (count equals `returnCountOnly`, no duplicate
+   or missing ids, page errors refuse), imported from `src/osd/outlines/`, not copied, and not
+   modified there. Layers above E29's cap stay a partial export as today, said in the detail.
+2. Canonical bytes. The hashed object is the layer's features as GeoJSON, sorted by object id,
+   written with sorted keys and no whitespace, coordinates as the server returned them (no
+   rounding, no reprojection), plus the layer's `editingInfo.lastEditDate` when stated. The
+   SHA-256 of those bytes is the file's checksum; the entry's detail names it "assembled layer
+   export (N features, canonical GeoJSON)". The server's bytes are not hashed.
+3. Pacing and budget. Pages go through the existing opener, robots check and 2 s pause per host;
+   the assembled bytes count against the record's share of the 2 GiB budget; a layer that would
+   exceed it is abandoned as today's budget rule says.
+4. Nothing else changes: other listing shapes, the levels' rules, the record schema, the
+   verification schema (a new `assembled: true` key on a file entry is allowed only if the
+   verification schema already permits extra keys; otherwise the strategy names the minor bump).
+
+**Acceptance.**
+- Fixture tests in a new `tests/test_whole_layers.py`: a layer of three pages assembles to the exact
+  object-id set; the same features served in another page order give the same SHA-256; a changed
+  attribute gives another; a missing page, a duplicate id, a count mismatch and a page error each
+  fail `files-checksummed` with the reason; a layer above the cap stays partial. Mutations
+  recorded: sort removed (page-order test red), count check removed (count test red), cap removed
+  (cap test red).
+- `make check` green, its duration stated; no other test module edited.
+- An explicit-id `verify.yml` dispatch on the branch over the 23 candidates: per record the level,
+  feature count, bytes and checksum, or the first failing check; a second dispatch the next hour:
+  equal checksums for every layer whose `lastEditDate` did not change (a changed one named).
+- The records that reach L2 are named in the PR; a record that does not is named with its reason.
+
+**Out of scope.** Other server types (WFS, OGC API Features); layers above the cap; mirroring;
+changing E29's outlines code; records edits.
+
+**Stop rules.** If two dispatches an hour apart give different checksums for an unedited layer on
+most candidates (servers that reorder or reformat coordinates), stop after design 1, record the
+measurements, and name the canonicalisation question.
+
+**Ownership and dependencies.** Coding lane, beside E32 (disjoint paths). Paths:
+`src/osd/verifier/listings.py` (the ArcGIS reader), `src/osd/verify.py` (`check_files` for an
+assembled entry only), a new `src/osd/verifier/layers.py`, `tests/test_whole_layers.py` (new),
+`tests/fixtures/whole_layers/**` (new), `schema/verification.schema.json` only if design 4 needs
+the bump (named in the PR title), `docs/program/evidence/e35/**`. Not touched:
+`src/osd/outlines/**`, `records/**`, E32's paths.
+
+**Evidence to inspect.** The two branch dispatches with per-record checksums; the mutation record;
+the PR's list of records at L2.
+
+exec
+/bin/bash -lc "nl -ba src/osd/verifier/listings.py | sed -n '1,310p'
+nl -ba src/osd/outlines/extractors.py | sed -n '140,350p'
+rg -n 'partial_exports|check_files|budget|pause|robots|assembled|checksum|arcgis' src/osd/verify.py" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	"""Listing readers (E23): which files a publisher's listing names, chosen by the response's shape.
+     2	
+     3	A reader is selected by what the body is (JSON keys, an HTML title or marker, an XML root), never by
+     4	the host that served it. Structured readers return dataset assets only: landing pages, API metadata,
+     5	services and documentation links are left out, and an error body raises ListingError with the
+     6	publisher's message. The generic readers of E02 (JSON walk, S3 XML, HTML links, text lines) stay
+     7	for everything else, so E07's mirror selection through `parse_listing` is unchanged.
+     8	
+     9	A `manifest_url` whose response is itself a data file (H1 design 8: a content type other than HTML,
+    10	JSON, XML or plain text, or `Content-Disposition: attachment`) is not read as a listing at all: it
+    11	is the one entry, `file_listing`. A CSV served as `text/csv` is a file, never a text list of URLs.
+    12	
+    13	A publisher's checksum, when the listing states one, rides on the entry as `{algorithm, digest}`
+    14	verbatim; `osd.verify` decides whether it can be compared. A generated export (an ArcGIS query) is
+    15	marked so the hasher watches it for truncation.
+    16	"""
+    17	
+    18	from __future__ import annotations
+    19	
+    20	import html
+    21	import json
+    22	import re
+    23	from dataclasses import dataclass, field
+    24	from datetime import UTC, datetime
+    25	from html.parser import HTMLParser
+    26	from urllib.parse import quote, unquote, urljoin, urlsplit
+    27	
+    28	FIRST_BYTES = 40
+    29	SERVICE_FORMAT = re.compile(r"^\s*(API\b|HTML?\s*$|WEB\s*PAGE|W[MFC]T?S\s*$|ESRI\s*REST|ARCGIS|OGC\b)", re.IGNORECASE)
+    30	TRUNCATED = re.compile(rb'"exceededTransferLimit"\s*:\s*true')
+    31	SOCRATA_ID = re.compile(r"^[a-z0-9]{4}-[a-z0-9]{4}$")
+    32	LISTING_TYPES = frozenset({"text/html", "application/xhtml+xml", "application/json", "text/json",
+    33	                           "application/xml", "text/xml", "text/plain"})  # and every +json, +xml
+    34	
+    35	
+    36	class ListingError(ValueError):
+    37	    """The listing answered, but not with a list of files this verifier can read."""
+    38	
+    39	
+    40	@dataclass(frozen=True)
+    41	class Entry:
+    42	    name: str  # as the listing states it
+    43	    url: str
+    44	    size: int | None = None
+    45	    checksum: dict | None = field(default=None, compare=False)  # {algorithm, digest} as stated
+    46	    generated: bool = False  # a server-side export: may come back truncated
+    47	
+    48	
+    49	@dataclass(frozen=True)
+    50	class Listing:
+    51	    shape: str
+    52	    entries: list[Entry]
+    53	    listed_at: str | None = None  # the publisher's own date for the listed data, when it states one
+    54	
+    55	
+    56	def _size(v) -> int | None:
+    57	    return v if isinstance(v, int) and not isinstance(v, bool) and v >= 0 else None
+    58	
+    59	
+    60	def _basename(url: str) -> str:
+    61	    return unquote(urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1]) or url
+    62	
+    63	
+    64	def _date(ms_or_s, scale: int = 1) -> str | None:
+    65	    if isinstance(ms_or_s, (int, float)) and not isinstance(ms_or_s, bool) and ms_or_s > 0:
+    66	        return datetime.fromtimestamp(ms_or_s / scale, UTC).date().isoformat()
+    67	    return None
+    68	
+    69	
+    70	def stated_checksum(value) -> dict | None:
+    71	    """A publisher's checksum as stated: "md5:…", {"type": "MD5", "value": …}, or bare hex."""
+    72	    if isinstance(value, dict):
+    73	        alg = value.get("type") or value.get("algorithm") or ""
+    74	        dig = value.get("value") or value.get("digest") or ""
+    75	        return {"algorithm": str(alg)[:64], "digest": str(dig)[:256]} if dig else None
+    76	    if not isinstance(value, str) or not value.strip():
+    77	        return None
+    78	    value = value.strip()
+    79	    if ":" in value:
+    80	        alg, dig = value.split(":", 1)
+    81	        return {"algorithm": alg[:64], "digest": dig[:256]}
+    82	    alg = {32: "md5", 40: "sha1", 64: "sha256"}.get(len(value)) if re.fullmatch(r"[0-9a-fA-F]+", value) else None
+    83	    return {"algorithm": alg or "unstated", "digest": value[:256]}
+    84	
+    85	
+    86	# --- structured JSON readers ---------------------------------------------------------------------
+    87	# Each takes the parsed document and the listing URL and returns a Listing, or None when the
+    88	# document is not its shape. Order matters only where shapes nest (CKAN before the generic walk).
+    89	
+    90	def _ckan(d, base):
+    91	    r = d.get("result") if isinstance(d, dict) and "success" in d else None
+    92	    if not (isinstance(r, dict) and isinstance(r.get("resources"), list)):
+    93	        return None
+    94	    out = []
+    95	    for res in r["resources"]:
+    96	        url = res.get("url") if isinstance(res, dict) else None
+    97	        if not isinstance(url, str) or not url or SERVICE_FORMAT.match(str(res.get("format") or "")):
+    98	            continue
+    99	        out.append(Entry(res.get("name") or _basename(url), urljoin(base, url), _size(res.get("size")),
+   100	                         stated_checksum(res.get("hash") or res.get("checksum"))))
+   101	    return Listing("ckan", out)
+   102	
+   103	
+   104	def _datagovtw(d, base):
+   105	    r = d.get("result") if isinstance(d, dict) and "success" in d else None
+   106	    if not (isinstance(r, dict) and isinstance(r.get("distribution"), list)):
+   107	        return None
+   108	    out = [Entry(_basename(x["resourceDownloadUrl"]), x["resourceDownloadUrl"])
+   109	           for x in r["distribution"] if isinstance(x, dict) and isinstance(x.get("resourceDownloadUrl"), str)
+   110	           and x["resourceDownloadUrl"]]
+   111	    return Listing("data.gov.tw", out)
+   112	
+   113	
+   114	def _socrata(d, base):
+   115	    if not (isinstance(d, dict) and SOCRATA_ID.match(str(d.get("id", ""))) and "viewType" in d
+   116	            and isinstance(d.get("columns"), list)):
+   117	        return None
+   118	    u = urlsplit(base)
+   119	    url = f"{u.scheme}://{u.netloc}/api/views/{d['id']}/rows.csv?accessType=DOWNLOAD"
+   120	    return Listing("socrata", [Entry("rows.csv", url, generated=True)], _date(d.get("rowsUpdatedAt")))
+   121	
+   122	
+   123	def _arcgis_export(layer_url: str, max_records: int) -> Entry:
+   124	    url = (f"{layer_url.rstrip('/')}/query?where=1%3D1&outFields=*&f=geojson"
+   125	           f"&resultRecordCount={max_records}")
+   126	    return Entry(f"query export (geojson, at most {max_records} features)", url, generated=True)
+   127	
+   128	
+   129	def _arcgis(d, base):
+   130	    if not (isinstance(d, dict) and d.get("type") in ("Feature Layer", "Table")
+   131	            and isinstance(d.get("maxRecordCount"), int) and isinstance(d.get("fields"), list)):
+   132	        return None
+   133	    u = urlsplit(base)
+   134	    layer = f"{u.scheme}://{u.netloc}{u.path}"
+   135	    edited = (d.get("editingInfo") or {}).get("lastEditDate")
+   136	    return Listing("arcgis-layer", [_arcgis_export(layer, d["maxRecordCount"])], _date(edited, 1000))
+   137	
+   138	
+   139	def _zenodo(d, base):
+   140	    if not (isinstance(d, dict) and "conceptrecid" in d and isinstance(d.get("files"), list)):
+   141	        return None
+   142	    out = [Entry(f["key"], f["links"]["self"], _size(f.get("size")), stated_checksum(f.get("checksum")))
+   143	           for f in d["files"] if isinstance(f, dict) and isinstance((f.get("links") or {}).get("self"), str)]
+   144	    return Listing("zenodo", out)
+   145	
+   146	
+   147	def _figshare(d, base):
+   148	    if not (isinstance(d, dict) and "figshare_url" in d and isinstance(d.get("files"), list)):
+   149	        return None
+   150	    out = [Entry(f["name"], f["download_url"], _size(f.get("size")),
+   151	                 stated_checksum(f.get("supplied_md5") or f.get("computed_md5")))
+   152	           for f in d["files"] if isinstance(f, dict) and not f.get("is_link_only") and f.get("download_url")]
+   153	    return Listing("figshare", out)
+   154	
+   155	
+   156	def _dataverse(d, base):
+   157	    v = (d.get("data") or {}).get("latestVersion") if isinstance(d, dict) and d.get("status") == "OK" else None
+   158	    if not (isinstance(v, dict) and isinstance(v.get("files"), list)):
+   159	        return None
+   160	    u = urlsplit(base)
+   161	    out = []
+   162	    for f in v["files"]:
+   163	        df = f.get("dataFile") if isinstance(f, dict) else None
+   164	        if not isinstance(df, dict) or f.get("restricted") or "id" not in df:
+   165	            continue
+   166	        name = "/".join(x for x in (f.get("directoryLabel"), df.get("filename")) if x)
+   167	        out.append(Entry(name, f"{u.scheme}://{u.netloc}/api/access/datafile/{df['id']}",
+   168	                         _size(df.get("filesize")), stated_checksum(df.get("checksum") or df.get("md5"))))
+   169	    return Listing("dataverse", out)
+   170	
+   171	
+   172	def _github_release(d, base):
+   173	    releases = d if isinstance(d, list) else [d]
+   174	    if not releases or not all(isinstance(r, dict) and "tag_name" in r and isinstance(r.get("assets"), list)
+   175	                               for r in releases):
+   176	        return None
+   177	    out = [Entry(a["name"], a["browser_download_url"], _size(a.get("size")), stated_checksum(a.get("digest")))
+   178	           for r in releases for a in r["assets"] if isinstance(a, dict) and a.get("browser_download_url")]
+   179	    return Listing("github-release", out)
+   180	
+   181	
+   182	def _datacite(d, base):
+   183	    data = d.get("data") if isinstance(d, dict) else None
+   184	    if not (isinstance(data, dict) and data.get("type") == "dois" and isinstance(data.get("attributes"), dict)):
+   185	        return None
+   186	    urls = data["attributes"].get("contentUrl") or []
+   187	    return Listing("datacite", [Entry(_basename(u), u) for u in urls if isinstance(u, str) and u])
+   188	
+   189	
+   190	def _jsonapi(d, base):
+   191	    data = d.get("data") if isinstance(d, dict) and "jsonapi" in d else None
+   192	    if not isinstance(data, list):
+   193	        return None
+   194	    out = []
+   195	    for r in data:
+   196	        a = r.get("attributes") if isinstance(r, dict) else None
+   197	        if isinstance(a, dict) and isinstance(a.get("file_url"), str) and a["file_url"]:
+   198	            out.append(Entry(a.get("title") or _basename(a["file_url"]), a["file_url"], _size(a.get("file_size"))))
+   199	    return Listing("json:api", out)
+   200	
+   201	
+   202	def _error(d) -> str | None:
+   203	    if isinstance(d, dict) and d.get("success") is False:
+   204	        e = d.get("error")
+   205	        return str(e.get("message") if isinstance(e, dict) else e)
+   206	    if isinstance(d, dict) and isinstance(d.get("error"), dict) and set(d) <= {"error"}:
+   207	        return str(d["error"].get("message") or d["error"].get("code"))
+   208	    return None
+   209	
+   210	
+   211	JSON_READERS = (_ckan, _datagovtw, _socrata, _arcgis, _zenodo, _figshare, _dataverse, _github_release,
+   212	                _datacite, _jsonapi)
+   213	
+   214	
+   215	def _json_walk(node, base: str, out: list[Entry]) -> None:
+   216	    """E02's generic reader: GitHub contents, STAC hrefs, name lists."""
+   217	    if isinstance(node, list):
+   218	        for x in node:
+   219	            if isinstance(x, str):
+   220	                out.append(Entry(x, urljoin(base, x)))
+   221	            else:
+   222	                _json_walk(x, base, out)
+   223	    elif isinstance(node, dict):
+   224	        name = node.get("path") or node.get("name") or node.get("key")
+   225	        size = node.get("size") if isinstance(node.get("size"), int) else None
+   226	        if "download_url" in node:  # GitHub contents API: directories have none
+   227	            if isinstance(node["download_url"], str):
+   228	                out.append(Entry(name or node["download_url"], node["download_url"], size))
+   229	            return
+   230	        for k in ("href", "url"):
+   231	            if isinstance(node.get(k), str):
+   232	                out.append(Entry(name if isinstance(name, str) else node[k], urljoin(base, node[k]), size))
+   233	                break
+   234	        for v in node.values():
+   235	            if isinstance(v, (list, dict)):
+   236	                _json_walk(v, base, out)
+   237	
+   238	
+   239	# --- HTML ------------------------------------------------------------------------------------------
+   240	
+   241	class _Links(HTMLParser):
+   242	    def __init__(self):
+   243	        super().__init__()
+   244	        self.hrefs: list[str] = []
+   245	
+   246	    def handle_starttag(self, tag, attrs):
+   247	        if tag == "a":
+   248	            href = dict(attrs).get("href")
+   249	            if href and not href.startswith(("#", "mailto:", "javascript:")):
+   250	                self.hrefs.append(href)
+   251	
+   252	
+   253	def _arcgis_page(text: str, base: str) -> Listing | None:
+   254	    """The ArcGIS REST services directory page of one layer (a layer URL without ?f=json)."""
+   255	    m = re.search(r"Max Record Count:</b>\s*(\d+)", text)
+   256	    if not (m and re.search(r"<title>\s*Layer:", text) and re.search(r"Type:</b>\s*(Feature Layer|Table)", text)):
+   257	        return None
+   258	    u = urlsplit(base)
+   259	    when = re.search(r"Last Edit Date:</b>\s*(\d{1,2})/(\d{1,2})/(\d{4})", text)
+   260	    listed = f"{when.group(3)}-{int(when.group(1)):02d}-{int(when.group(2)):02d}" if when else None
+   261	    return Listing("arcgis-layer", [_arcgis_export(f"{u.scheme}://{u.netloc}{u.path}", int(m.group(1)))], listed)
+   262	
+   263	
+   264	def names_a_file(content_type: str, disposition: str = "") -> bool:
+   265	    """H1 design 8: the response is a data file, not a listing; decided from the headers alone. An
+   266	    unstated content type is not a file (the body's shape decides, as before)."""
+   267	    if disposition.split(";", 1)[0].strip().lower() == "attachment":
+   268	        return True
+   269	    t = content_type.split(";", 1)[0].strip().lower()
+   270	    return bool(t) and t not in LISTING_TYPES and not t.endswith(("+json", "+xml"))
+   271	
+   272	
+   273	def file_listing(url: str, size: int | None = None) -> Listing:
+   274	    """The listing of a `manifest_url` that is itself the file: one entry, named by its last path segment."""
+   275	    return Listing("file", [Entry(_basename(url), url, size)])
+   276	
+   277	
+   278	def read_listing(body: bytes, base: str, content_type: str = "") -> Listing:
+   279	    """The files a listing names. Raises ListingError for an error body or an unrecognised format."""
+   280	    text = body.decode("utf-8", "replace")
+   281	    head = text.lstrip()[:600]
+   282	    if head.startswith(("{", "[")):
+   283	        try:
+   284	            doc = json.loads(text)
+   285	        except ValueError as e:
+   286	            raise ListingError(f"listing is not valid JSON ({e})") from None
+   287	        if (err := _error(doc)) is not None:
+   288	            raise ListingError(f"the listing is an error response: {err[:200]}")
+   289	        for reader in JSON_READERS:
+   290	            if (got := reader(doc, base)) is not None:
+   291	                return got
+   292	        out: list[Entry] = []
+   293	        _json_walk(doc, base, out)
+   294	        return Listing("json", out)
+   295	    if "<ListBucketResult" in head:
+   296	        u = urlsplit(base)
+   297	        prefix = f"{u.scheme}://{u.netloc}{u.path.rstrip('/')}/"
+   298	        out = []
+   299	        for c in re.findall(r"<Contents>(.*?)</Contents>", text, re.DOTALL):
+   300	            key = html.unescape(re.search(r"<Key>(.*?)</Key>", c, re.DOTALL).group(1))
+   301	            size = re.search(r"<Size>(\d+)</Size>", c)
+   302	            out.append(Entry(key, prefix + quote(key), int(size.group(1)) if size else None))
+   303	        return Listing("s3", out)
+   304	    if head.startswith("<"):
+   305	        if (got := _arcgis_page(text, base)) is not None:
+   306	            return got
+   307	        p = _Links()
+   308	        p.feed(text)
+   309	        if re.search(r"<title>\s*Index of ", head, re.IGNORECASE):   # a server directory index: no parent, no sort links
+   310	            return Listing("directory-index", [Entry(unquote(h), urljoin(base, h)) for h in p.hrefs
+   140	                raise Refused(f"{rec_input['name']}: a feature has geometry {g.get('type')!r}")
+   141	            out.append({"kind": _kind(rule, props), **_ident(rule, props), **_period(rule, props),
+   142	                        "geometry": split_antimeridian({"type": g["type"], "coordinates": map_positions(g["coordinates"], f)})})
+   143	    return out
+   144	
+   145	
+   146	NAN_POSITION = re.compile(rb"\[\s*nan\s*,\s*nan\s*\]")
+   147	EMPTY_GEOMETRY = re.compile(rb'\{"type":"(\w+)",\}')
+   148	
+   149	
+   150	def geojson_page(b: bytes) -> dict:
+   151	    """A GeoJSON page. FactMaps writes two things that are not JSON: `[nan,nan]` for a wellbore
+   152	    without a position and `{"type":"MultiPolygon",}` for a survey without an area; both read as
+   153	    a geometry without coordinates (the rule decides: unplaced: report, or refuse)."""
+   154	    return json.loads(EMPTY_GEOMETRY.sub(rb'{"type":"\1","coordinates":null}', NAN_POSITION.sub(b"null", b)))
+   155	
+   156	
+   157	def register_wfs(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+   158	    """GeoJSON pages of a WFS GetFeature; a stored hit count must equal the features served."""
+   159	    pages = [geojson_page(b) for n, b in parts if n.startswith("page-")]
+   160	    served = sum(len(p.get("features") or []) for p in pages)
+   161	    hits = dict(parts).get("hits")
+   162	    if hits is not None:
+   163	        m = re.search(rb'numberMatched="(\d+)"', hits)
+   164	        if m and int(m.group(1)) != served:
+   165	            raise Refused(f"{rec_input['name']}: the service counts {int(m.group(1))} features, the pages "
+   166	                          f"served {served}")
+   167	    if not served:
+   168	        raise Refused(f"{rec_input['name']}: empty response")
+   169	    return _features(rec_input, rule, pages)
+   170	
+   171	
+   172	# --- ArcGIS Map/Feature Server layers (E29) ------------------------------------------------------
+   173	
+   174	ARCGIS_MAX_FEATURES = 50_000   # charter design 4: a layer is read in full or refused; larger ones get no input
+   175	ARCGIS_MAX_PAGES = 200
+   176	
+   177	
+   178	def _json(b: bytes, what: str):
+   179	    try:
+   180	        return json.loads(b)
+   181	    except ValueError:
+   182	        raise Refused(f"{what} is not JSON: {b[:120]!r}") from None
+   183	
+   184	
+   185	def _arcgis_error(doc, what: str) -> None:
+   186	    if not isinstance(doc, dict):
+   187	        raise Refused(f"{what} is not a JSON object")
+   188	    if "error" in doc:
+   189	        e = doc["error"] if isinstance(doc["error"], dict) else {"message": doc["error"]}
+   190	        raise Refused(f"{what} answered an error: {e.get('code', '')} {e.get('message', '')}".strip())
+   191	
+   192	
+   193	def arcgis_layer(b: bytes) -> tuple[str, int]:
+   194	    """(object id field, maxRecordCount) from a layer description (?f=json); refused unless the
+   195	    layer pages (supportsPagination) and names its object id field (objectIdField, else the one
+   196	    field of type esriFieldTypeOID)."""
+   197	    d = _json(b, "the layer description")
+   198	    _arcgis_error(d, "the layer description")
+   199	    pages = (d.get("advancedQueryCapabilities") or {}).get("supportsPagination", d.get("supportsPagination"))
+   200	    if pages is not True:
+   201	        raise Refused("the layer does not state supportsPagination: true; it cannot be read in full")
+   202	    oid = d.get("objectIdField")
+   203	    if not oid:
+   204	        oids = [f.get("name") for f in d.get("fields") or [] if f.get("type") == "esriFieldTypeOID"]
+   205	        oid = oids[0] if len(oids) == 1 else None
+   206	    if not oid:
+   207	        raise Refused("the layer names no object id field (objectIdField or one esriFieldTypeOID field)")
+   208	    size = d.get("maxRecordCount")
+   209	    if not isinstance(size, int) or isinstance(size, bool) or size < 1:
+   210	        raise Refused(f"the layer states no maxRecordCount ({size!r})")
+   211	    return oid, size
+   212	
+   213	
+   214	def arcgis_layer_facts(b: bytes) -> bytes:
+   215	    """The stored layer part: the description reduced to the facts the derivation reads, canonical.
+   216	    The whole description is not an identity: load-balanced nodes serve different `drawingInfo`
+   217	    (WA SLIP, 23 Oct), which would change the input sha256 with no change to any feature."""
+   218	    d = _json(b, "the layer description")
+   219	    _arcgis_error(d, "the layer description")
+   220	    aq = d.get("advancedQueryCapabilities") or {}
+   221	    facts = {k: d[k] for k in ("supportsPagination", "objectIdField", "maxRecordCount", "geometryType",
+   222	                               "spatialReference") if k in d}
+   223	    if "supportsPagination" in aq:
+   224	        facts["advancedQueryCapabilities"] = {"supportsPagination": aq["supportsPagination"]}
+   225	    facts["fields"] = [{"name": f.get("name"), "type": f.get("type")} for f in d.get("fields") or []
+   226	                       if isinstance(f, dict) and f.get("type") == "esriFieldTypeOID"]
+   227	    return json.dumps(facts, sort_keys=True, separators=(",", ":")).encode()
+   228	
+   229	
+   230	def arcgis_count(b: bytes) -> int:
+   231	    """The layer's feature count on the day (returnCountOnly=true), within the cap."""
+   232	    d = _json(b, "the count")
+   233	    _arcgis_error(d, "the count")
+   234	    n = d.get("count")
+   235	    if not isinstance(n, int) or isinstance(n, bool) or n < 0:
+   236	        raise Refused(f"the count response states no count: {b[:120]!r}")
+   237	    if n == 0:
+   238	        raise Refused("empty response: the layer counts 0 features")
+   239	    if n > ARCGIS_MAX_FEATURES:
+   240	        raise Refused(f"the layer counts {n} features, above the {ARCGIS_MAX_FEATURES} an input is read in full to")
+   241	    return n
+   242	
+   243	
+   244	def arcgis_out_fields(rule: dict, oid: str) -> str:
+   245	    """The fields a page asks for: the object id and every field the rule reads, in that order."""
+   246	    kind = rule.get("kind")
+   247	    names = [oid, rule.get("uwi"), rule.get("name"), kind.get("field") if isinstance(kind, dict) else None,
+   248	             *(rule.get("period_fields") or {}).values(), *(rule.get("keep") or {})]
+   249	    return ",".join(dict.fromkeys(n for n in names if n))
+   250	
+   251	
+   252	def page_offsets(count: int, size: int) -> list[int]:
+   253	    offsets = list(range(0, count, size))
+   254	    if len(offsets) > ARCGIS_MAX_PAGES:
+   255	        raise Refused(f"{count} features at {size} per page is more than {ARCGIS_MAX_PAGES} pages")
+   256	    return offsets
+   257	
+   258	
+   259	def _signed_area(ring: list) -> float:
+   260	    return sum(a[0] * b[1] - b[0] * a[1] for a, b in itertools.pairwise(ring)) / 2
+   261	
+   262	
+   263	def _inside(p: list, ring: list) -> bool:
+   264	    x, y, hit = p[0], p[1], False
+   265	    for a, b in itertools.pairwise(ring):
+   266	        if (a[1] > y) != (b[1] > y) and x < a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]):
+   267	            hit = not hit
+   268	    return hit
+   269	
+   270	
+   271	def _number(v) -> bool:
+   272	    return isinstance(v, (int, float)) and not isinstance(v, bool) and not math.isnan(v)
+   273	
+   274	
+   275	def esri_geometry(g: dict | None) -> dict | None:
+   276	    """An Esri JSON geometry as a GeoJSON geometry in the same (native) coordinates; None when the
+   277	    feature has no position. Polygons: Esri writes exterior rings clockwise and holes
+   278	    counter-clockwise; each hole belongs to the exterior that contains it, and GeoJSON (RFC 7946)
+   279	    gets exteriors counter-clockwise and holes clockwise."""
+   280	    if not g:
+   281	        return None
+   282	    if "x" in g:
+   283	        if not (_number(g.get("x")) and _number(g.get("y"))):
+   284	            return None
+   285	        return {"type": "Point", "coordinates": [g["x"], g["y"]]}
+   286	    if "points" in g:
+   287	        pts = [p[:2] for p in g.get("points") or []]
+   288	        return {"type": "MultiPoint", "coordinates": pts} if pts else None
+   289	    if "paths" in g:
+   290	        paths = [[p[:2] for p in path] for path in g.get("paths") or [] if path]
+   291	        if not paths:
+   292	            return None
+   293	        return ({"type": "LineString", "coordinates": paths[0]} if len(paths) == 1
+   294	                else {"type": "MultiLineString", "coordinates": paths})
+   295	    if "rings" in g:
+   296	        rings = [[p[:2] for p in r] for r in g.get("rings") or [] if r]
+   297	        if not rings:
+   298	            return None
+   299	        exteriors = [[r[::-1]] for r in rings if _signed_area(r) < 0]   # clockwise: an exterior
+   300	        for h in (r for r in rings if _signed_area(r) >= 0):
+   301	            owner = [poly for poly in exteriors if _inside(h[0], poly[0])]
+   302	            if not owner:
+   303	                raise Refused("a polygon hole (counter-clockwise ring) lies inside no exterior ring")
+   304	            min(owner, key=lambda poly: abs(_signed_area(poly[0]))).append(h[::-1])   # the innermost exterior
+   305	        if not exteriors:
+   306	            raise Refused("a polygon has no exterior (clockwise) ring")
+   307	        return ({"type": "Polygon", "coordinates": exteriors[0]} if len(exteriors) == 1
+   308	                else {"type": "MultiPolygon", "coordinates": exteriors})
+   309	    raise Refused(f"an Esri geometry of no known type: {sorted(g)}")
+   310	
+   311	
+   312	def _wkids(sr: dict | None) -> set[str]:
+   313	    return {f"EPSG:{sr[k]}" for k in ("wkid", "latestWkid") if isinstance(sr, dict) and isinstance(sr.get(k), int)}
+   314	
+   315	
+   316	def register_arcgis(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+   317	    """The pages of an ArcGIS layer query, reassembled: every page the count calls for is there,
+   318	    none short but the last, none answered an error, each states the record's CRS, the object ids
+   319	    are unique and as many as the layer counted. Positions are native and transformed from the
+   320	    record's crs as the WFS path does; the object id is the feature's key."""
+   321	    by = dict(parts)
+   322	    name = rec_input["name"]
+   323	    if "layer" not in by or "count" not in by:
+   324	        raise Refused(f"{name}: the layer description or the count was not fetched")
+   325	    oid, size = arcgis_layer(by["layer"])
+   326	    count = arcgis_count(by["count"])
+   327	    feats, seen = [], set()
+   328	    offsets = page_offsets(count, size)
+   329	    for k, off in enumerate(offsets):
+   330	        what = f"{name}: page at offset {off}"
+   331	        if f"page-{off:06d}" not in by:
+   332	            raise Refused(f"{what} is missing")
+   333	        page = _json(by[f"page-{off:06d}"], what)
+   334	        _arcgis_error(page, what)
+   335	        served = _wkids(page.get("spatialReference"))
+   336	        if rec_input.get("crs") not in served:
+   337	            raise Refused(f"{what} states spatialReference {sorted(served) or 'none'}, the record {rec_input.get('crs')}")
+   338	        got = page.get("features") or []
+   339	        if k < len(offsets) - 1 and len(got) != size:
+   340	            raise Refused(f"{what} served {len(got)} features, not the {size} a full page holds")
+   341	        for f in got:
+   342	            a = f.get("attributes") or {}
+   343	            if a.get(oid) in (None, ""):
+   344	                raise Refused(f"{what}: a feature has no {oid}")
+   345	            if a[oid] in seen:
+   346	                raise Refused(f"{name}: object id {a[oid]} served twice")
+   347	            seen.add(a[oid])
+   348	            feats.append({"properties": a, "geometry": esri_geometry(f.get("geometry"))})
+   349	    if len(seen) != count:
+   350	        raise Refused(f"{name}: the layer counts {count} features, the pages served {len(seen)}")
+3:L1 (origin reachable), L2 (sample files checksummed, licence text captured) and L3 (outlines
+24:E23); a publisher's stated checksum is computed from the same stream beside SHA-256 and compared, and
+79:RECORD_SAMPLE_BYTES = 512 * 1024**2  # E23: one record's share of the run budget (sample + inventory)
+185:    """One request at a time (the verifier is sequential) and a pause per host after each."""
+187:    def __init__(self, pause: float = PAUSE_S, clock=time.monotonic, sleep=time.sleep):
+188:        self.pause, self.clock, self.sleep = pause, clock, sleep
+194:            delay = self.last[host] + self.pause - self.clock()
+307:        """A record's share: at most `cap` bytes, every byte also drawn from this budget."""
+343:def _digest(stream: Iterable[bytes], budget: ByteBudget, algorithms: Iterable[str] = (),
+351:        if len(chunk) > budget.remaining:
+352:            budget.exhaust()
+354:        budget.add(len(chunk))
+365:def _hash(stream: Iterable[bytes], budget: ByteBudget) -> tuple[str, int]:
+366:    digest, n, _, _ = _digest(stream, budget)
+370:def comparable(checksum: dict | None) -> str | None:
+371:    """The hashlib algorithm a stated checksum can be compared with, or None (recorded, not compared)."""
+372:    if not checksum:
+374:    alg = COMPARABLE.get(re.sub(r"[^a-z0-9]", "", str(checksum.get("algorithm", "")).lower()))
+376:    return alg if width and re.fullmatch(f"[0-9a-fA-F]{{{width}}}", str(checksum.get("digest", ""))) else None
+380:    """robots.txt per host: 2xx is obeyed, 4xx allows everything, anything else (5xx, no answer) is
+392:                rp.parse(_read(self.opener(key + "/robots.txt"), 512 * 1024).decode("utf-8", "replace").splitlines())
+403:        """Why `url` is not fetched: an unreadable robots.txt (H1 design 9) or an explicit disallow."""
+406:            return f"robots.txt unreadable ({why}), treated as disallow (RFC 9309 section 2.3.1.4): {what} not fetched"
+407:        return f"robots.txt disallows {what}"
+417:def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener,
+418:                budget: ByteBudget) -> tuple[dict, list[dict], list[dict]]:
+419:    """The files-checksummed check, the files hashed, and the exports the server truncated. A
+423:        return {"name": "files-checksummed", "level": "L2", "outcome": outcome, "detail": detail[:500]}
+435:    robots = _Robots(opener)
+436:    if not robots.allowed(manifest):
+437:        return check("skip", robots.refusal(manifest, f"the listing {manifest}")), [], []
+471:        if not robots.allowed(e.url):
+472:            notes.append(robots.refusal(e.url, e.name))
+474:        if budget.remaining <= 0 or (e.size is not None and e.size > budget.remaining):
+475:            notes.append(f"sample would exceed the run budget ({e.size if e.size is not None else 'unknown'} "
+476:                         f"bytes listed for {e.name}, {max(budget.remaining, 0)} bytes left)")
+478:        alg = comparable(e.checksum)
+480:            digest, n, theirs, truncated = _digest(opened.pop(e.url, None) or opener(e.url), budget,
+483:            notes.append(f"sample cut at the run budget: {e.name} abandoned mid-stream and not recorded; "
+489:        if e.checksum:
+490:            f["publisher_checksum"] = dict(e.checksum)
+492:            if alg and theirs[alg] != e.checksum["digest"].lower():
+493:                mismatches.append(f"{e.name}: publisher {e.checksum['algorithm']} {e.checksum['digest']}, "
+502:        return check("fail", "publisher checksum mismatch: " + "; ".join(mismatches)), files, partial
+510:        parts.append(f"publisher checksums match for {len(said)} of {len(files)}")
+594:                  budget: ByteBudget | None = None, sample: list[str] | None = None,
+618:        checks.append({"name": "files-checksummed", "level": "L2", "outcome": "skip", "detail": why})
+621:        # the sample and the inventory share one budget: this record's share of the run's
+622:        share = (budget or ByteBudget()).share(RECORD_SAMPLE_BYTES)
+623:        c, files, partial = check_files(rec, sample, opener, share)
+626:            extra["partial_exports"] = partial
+773:               out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None,
+789:    budget = budget or ByteBudget()
+801:        v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
+
+exec
+/bin/bash -lc "cat docs/program/evidence/e35/candidates.md
+nl -ba src/osd/verify.py | sed -n '417,522p'
+nl -ba src/osd/outlines/extractors.py | sed -n '348,360p'
+rg -n 'arcgis|orderByFields|outFields|resultOffset' src/osd/outlines/fetch.py
+cat schema/verification.schema.json
+rg -n 'files|sha256|url' src/osd/manifest.py src/osd/retrieve.py src/osd/mirror.py
+cat docs/program/charters/E32-*.md" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+# E35 candidates (supervisor, 24 Oct): records whose manifest_url is an ArcGIS layer
+al-ogb/wells
+bcer/well-surface-holes-permitted
+cgs/vrtna-prozkoumanost
+inp-mz/actividade-de-pesquisa-e-producao
+nbmg/oil-gas-wells-through-2013
+nd-dmr/wells
+nzpam/petroleum-wells
+nzpam/seismic-surveys-2d
+pgi/cbdg-boreholes
+sgc/banco-informacion-petrolera-pozos
+sgudds/register-geotermalnych-vrtov
+sk-mer/drill-core
+sk-mer/drill-cuttings
+sk-mer/non-vertical-wells
+sk-mer/vertical-wells
+ut-dogm/oil-gas-wells
+va-energy/gas-oil-wells
+wa-demirs/petroleum-wells
+wa-dnr/geophysics-database
+wa-dnr/geothermal-wells
+wa-dnr/groundwater-chemistry
+wa-dnr/oil-gas-wells
+wa-dnr/shear-wave-database
+   417	def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener,
+   418	                budget: ByteBudget) -> tuple[dict, list[dict], list[dict]]:
+   419	    """The files-checksummed check, the files hashed, and the exports the server truncated. A
+   420	    manifest_url answering a data file (by its headers, or `file: true` in samples.yaml) is the one
+   421	    entry, and the response already open is the one hashed: one GET."""
+   422	    def check(outcome: str, detail: str) -> dict:
+   423	        return {"name": "files-checksummed", "level": "L2", "outcome": outcome, "detail": detail[:500]}
+   424	
+   425	    manifest = rec["origin"].get("manifest_url")
+   426	    if not manifest:
+   427	        return check("skip", "no origin.manifest_url"), [], []
+   428	    is_file = False
+   429	    if isinstance(sample, dict):  # H1 design 8: {file: true, sample: [globs]}
+   430	        is_file, sample = sample.get("file") is True, sample.get("sample", ["*"])
+   431	    if isinstance(sample, str):
+   432	        return check("skip", f"nothing to sample (verifier/samples.yaml): {sample}"), [], []
+   433	    if not sample:
+   434	        return check("skip", "no sample for this record in verifier/samples.yaml"), [], []
+   435	    robots = _Robots(opener)
+   436	    if not robots.allowed(manifest):
+   437	        return check("skip", robots.refusal(manifest, f"the listing {manifest}")), [], []
+   438	    opened: dict[str, Iterable[bytes]] = {}
+   439	    try:
+   440	        stream = opener(manifest)
+   441	        chunks = iter(stream)
+   442	        first = next(chunks, b"")  # the response has started: its headers are known
+   443	        body = itertools.chain([first], chunks)
+   444	        if is_file or names_a_file(getattr(stream, "content_type", "") or "",
+   445	                                   getattr(stream, "content_disposition", "") or ""):
+   446	            listing = file_listing(manifest, getattr(stream, "content_length", None))
+   447	            opened[manifest] = body  # hashed below as it streams, never read as a listing
+   448	        else:
+   449	            listing = read_listing(_read(body, LISTING_BYTES), manifest, getattr(stream, "content_type", "") or "")
+   450	    except FetchError as e:
+   451	        return check("fail", f"listing: {e}"), [], []
+   452	    except ListingError as e:
+   453	        return check("fail", str(e)), [], []
+   454	    except ValueError as e:
+   455	        return check("fail", f"listing unreadable: {e}"), [], []
+   456	    entries = listing.entries
+   457	    if not entries:
+   458	        return check("fail", f"the listing ({listing.shape}) names no files"), [], []
+   459	    picked, seen = [], set()
+   460	    for e in entries:
+   461	        if e.url not in seen and any(fnmatchcase(e.name, p) or fnmatchcase(e.url, p) for p in sample):
+   462	            picked.append(e)
+   463	            seen.add(e.url)
+   464	    if not picked:
+   465	        return check("fail", f"no entry of the listing ({len(entries)} entries, {listing.shape}) matches the sample"), [], []
+   466	    files: list[dict] = []
+   467	    partial: list[dict] = []
+   468	    notes: list[str] = []
+   469	    mismatches: list[str] = []
+   470	    for e in picked:
+   471	        if not robots.allowed(e.url):
+   472	            notes.append(robots.refusal(e.url, e.name))
+   473	            continue
+   474	        if budget.remaining <= 0 or (e.size is not None and e.size > budget.remaining):
+   475	            notes.append(f"sample would exceed the run budget ({e.size if e.size is not None else 'unknown'} "
+   476	                         f"bytes listed for {e.name}, {max(budget.remaining, 0)} bytes left)")
+   477	            continue
+   478	        alg = comparable(e.checksum)
+   479	        try:
+   480	            digest, n, theirs, truncated = _digest(opened.pop(e.url, None) or opener(e.url), budget,
+   481	                                                   [alg] if alg else [], e.generated)
+   482	        except _OverBudget:
+   483	            notes.append(f"sample cut at the run budget: {e.name} abandoned mid-stream and not recorded; "
+   484	                         f"{len(files)} of {len(picked)} files hashed")
+   485	            break
+   486	        except FetchError as err:
+   487	            return check("fail", f"{e.name}: {err}"), files, partial
+   488	        f = {"path": e.name, "url": e.url, "bytes": n, "sha256": digest}
+   489	        if e.checksum:
+   490	            f["publisher_checksum"] = dict(e.checksum)
+   491	            f["compared"] = alg is not None
+   492	            if alg and theirs[alg] != e.checksum["digest"].lower():
+   493	                mismatches.append(f"{e.name}: publisher {e.checksum['algorithm']} {e.checksum['digest']}, "
+   494	                                  f"computed {theirs[alg]}")
+   495	        if truncated:
+   496	            partial.append({**f, "partial": True})
+   497	            notes.append(f"export truncated by the server (exceededTransferLimit): {e.name} kept as a "
+   498	                         f"partial export, not a hashed file")
+   499	            continue
+   500	        files.append(f)
+   501	    if mismatches:
+   502	        return check("fail", "publisher checksum mismatch: " + "; ".join(mismatches)), files, partial
+   503	    if not files:
+   504	        return check("skip", "; ".join(notes) or "nothing hashed"), files, partial
+   505	    total = sum(f["bytes"] for f in files)
+   506	    said = [f for f in files if f.get("compared")]
+   507	    parts = [(f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed "
+   508	              f"({total} bytes); {len(entries)} entries listed")]
+   509	    if said:
+   510	        parts.append(f"publisher checksums match for {len(said)} of {len(files)}")
+   511	    if listing.shape == "file":
+   512	        parts.append("the manifest_url is the file itself")
+   513	    if listing.listed_at:
+   514	        parts.append(f"listing dated {listing.listed_at}")
+   515	    return check("pass", "; ".join(parts + notes)), files, partial
+   516	
+   517	
+   518	class _Text(HTMLParser):
+   519	    SKIP = frozenset({"script", "style", "noscript", "head", "template"})
+   520	
+   521	    def __init__(self):
+   522	        super().__init__()
+   348	            feats.append({"properties": a, "geometry": esri_geometry(f.get("geometry"))})
+   349	    if len(seen) != count:
+   350	        raise Refused(f"{name}: the layer counts {count} features, the pages served {len(seen)}")
+   351	    rule = {**rule, "id": oid, "unplaced": "report"}   # a feature the register lists without a position
+   352	    return _features(rec_input, rule, [{"features": feats}])
+   353	
+   354	
+   355	def register_csv(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+   356	    """A register table with one row per wellbore and its coordinate columns named in the rule."""
+   357	    text = parts[0][1].decode(rule.get("encoding", "utf-8-sig"))
+   358	    rows = list(csv.DictReader(io.StringIO(text), delimiter=rule.get("delimiter", ",")))
+   359	    if not rows:
+   360	        raise Refused(f"{rec_input['name']}: empty response")
+rg: src/osd/outlines/fetch.py: IO error for operation on src/osd/outlines/fetch.py: No such file or directory (os error 2)
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/verification/4",
+  "title": "Verification record, version 4",
+  "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_id", "checked_at", "tool_version", "level", "checks"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "tool_version": {"type": "string"},
+    "level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+              "description": "L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted to a canonical type with a fidelity record"},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "level", "outcome"],
+        "properties": {
+          "name": {"type": "string"},
+          "level": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
+          "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+          "detail": {"type": "string", "maxLength": 500}
+        }
+      }
+    },
+    "origin": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "http_status": {"type": "integer"},
+        "final_url": {"type": "string"},
+        "content_type": {"type": "string"},
+        "elapsed_ms": {"type": "integer"},
+        "reachability": {"type": "string", "enum": ["ok", "blocked", "moved", "dead"],
+                         "description": "v2. blocked: 403/429 or a challenge page, awards no level (OSD-D9); ok: 2xx/3xx on the origin host; moved: 2xx/3xx on another host; dead: anything else (timeouts, refused connections and 5xx after one retry)"},
+        "blocked_since": {"type": "string", "format": "date-time", "description": "v2. First check of the current unbroken blocked run"}
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {"allOf": [{"$ref": "#/$defs/file"}], "not": {"required": ["partial"]}}
+    },
+    "partial_exports": {
+      "type": "array",
+      "description": "v4 (E23). Generated exports the server truncated (exceededTransferLimit): hashed, but never a file of the record and never counted for L2",
+      "items": {"allOf": [{"$ref": "#/$defs/file"}], "required": ["partial"]}
+    },
+    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"},
+    "inventory": {
+      "type": "object", "additionalProperties": false, "required": ["rule", "listed", "selected", "coverage"],
+      "description": "v3 (E07). Only for records with a `mirror:` rule in verifier/samples.yaml: every listing entry the rule selects; each hashed one is in `files`. complete: all selected entries hashed in this run (a claim about this selection, never the whole dataset)",
+      "properties": {
+        "rule": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "listed": {"type": "integer", "minimum": 0, "description": "Entries in the listing"},
+        "selected": {"type": "array", "items": {"type": "string"}, "description": "Paths as the listing states them"},
+        "coverage": {"enum": ["complete", "partial"]}
+      }
+    }
+  },
+  "$defs": {
+    "file": {
+      "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "publisher_checksum": {"type": "object", "additionalProperties": false, "required": ["algorithm", "digest"],
+                               "description": "v4 (E23). The checksum the publisher's listing states for this file, verbatim",
+                               "properties": {"algorithm": {"type": "string", "maxLength": 64}, "digest": {"type": "string", "maxLength": 256}}},
+        "compared": {"type": "boolean", "description": "v4. true: the publisher's algorithm (md5, sha1 or sha256) was computed over the same bytes and compared; false: unsupported algorithm or malformed digest, recorded only"},
+        "partial": {"const": true, "description": "v4. Only in partial_exports: the server truncated this generated export"}
+      }
+    }
+  }
+}
+rg: src/osd/retrieve.py: No such file or directory (os error 2)
+src/osd/mirror.py:1:"""The mirror store (E07): eligible files copied once, verified, held under a custody document.
+src/osd/mirror.py:10:  staging/<sha256>/<name>              an upload in progress, never public
+src/osd/mirror.py:11:  mirror/<record id>/<sha256>/<name>   the public copy
+src/osd/mirror.py:12:  custody/<sha256>.json                its custody document (osd.custody/1), written before the move
+src/osd/mirror.py:13:  custody/<sha256>.removed.json        the tombstone: a removed digest is never mirrored again
+src/osd/mirror.py:16:custody, move (no origin fetch); otherwise stream the origin to staging, compare size and sha256,
+src/osd/mirror.py:33:from urllib.parse import quote
+src/osd/mirror.py:74:    """Hash every listing entry the rule selects; files already hashed in this run (`known`, by url)
+src/osd/mirror.py:75:    are reused. Returns (files, inventory), or ([], None) when the listing cannot be read."""
+src/osd/mirror.py:76:    listing = rec["origin"].get("manifest_url")
+src/osd/mirror.py:88:        if e.url not in seen and any(fnmatchcase(e.name, p) or fnmatchcase(e.url, p) for p in rule):
+src/osd/mirror.py:90:            seen.add(e.url)
+src/osd/mirror.py:91:    have = {f["url"]: f for f in known if f.get("url")}
+src/osd/mirror.py:92:    files = []
+src/osd/mirror.py:94:        if e.url in have:
+src/osd/mirror.py:95:            files.append(dict(have[e.url], path=e.name))
+src/osd/mirror.py:97:        if budget.remaining <= 0 or not robots.allowed(e.url):
+src/osd/mirror.py:100:            digest, n = _hash(opener(e.url), budget)
+src/osd/mirror.py:103:        files.append({"path": e.name, "url": e.url, "bytes": n, "sha256": digest})
+src/osd/mirror.py:104:    complete = len(files) == len(selected) and bool(selected)
+src/osd/mirror.py:105:    return files, {"rule": list(rule), "listed": len(entries), "selected": [e.name for e in selected],
+src/osd/mirror.py:116:    files: tuple[dict, ...]
+src/osd/mirror.py:136:    files: list[dict] = []
+src/osd/mirror.py:146:        by_path = {f["path"]: f for f in v.get("files", [])}
+src/osd/mirror.py:154:            if not SHA256.match(f.get("sha256") or ""):
+src/osd/mirror.py:155:                reasons.append(f"{name}: no sha256")
+src/osd/mirror.py:156:            files.append(f)
+src/osd/mirror.py:157:        total = sum(f["bytes"] for f in files if isinstance(f.get("bytes"), int))
+src/osd/mirror.py:160:    total = sum(f.get("bytes") or 0 for f in files)
+src/osd/mirror.py:161:    return Eligibility(rec["id"], not reasons, tuple(reasons), tuple(files), total)
+src/osd/mirror.py:167:    """The store as a directory (slice 1, tests and dry runs). `public_url` is where the directory is
+src/osd/mirror.py:170:    def __init__(self, root: Path, public_url: str):
+src/osd/mirror.py:171:        self.root, self.base = Path(root), public_url.rstrip("/") + "/"
+src/osd/mirror.py:232:    def public_url(self, key: str) -> str:
+src/osd/mirror.py:246:def keys_for(record_id: str, sha256: str, path: str) -> Keys:
+src/osd/mirror.py:248:    return Keys(f"staging/{sha256}/{name}", custody.object_key(record_id, sha256, path),
+src/osd/mirror.py:249:                f"custody/{sha256}.json", f"custody/{sha256}.removed.json")
+src/osd/mirror.py:255:    sha256: str
+src/osd/mirror.py:261:    h, n = hashlib.sha256(), 0
+src/osd/mirror.py:276:    doc = custody.document(rec, v, f, store.public_url(k.public), now)
+src/osd/mirror.py:286:    sha, n = f["sha256"], f["bytes"]
+src/osd/mirror.py:303:    h, count = hashlib.sha256(), [0]
+src/osd/mirror.py:305:        store.upload(k.staging, _hashing(opener(f["url"]), h, count))
+src/osd/mirror.py:311:        return c("mismatch", f"{count[0]} bytes sha256 {h.hexdigest()}; the inventory states {n} bytes {sha}")
+src/osd/mirror.py:322:    return [_put_one(rec, verification, f, store, opener, now) for f in e.files]
+src/osd/mirror.py:325:def remove(sha256: str, store, request: str, approved_by: str, now: datetime | None = None) -> list[str]:
+src/osd/mirror.py:327:    if not SHA256.match(sha256):
+src/osd/mirror.py:328:        raise MirrorError(f"{sha256} is not a sha256 digest")
+src/osd/mirror.py:329:    live, tomb = f"custody/{sha256}.json", f"custody/{sha256}.removed.json"
+src/osd/mirror.py:335:        raise MirrorError(f"no copy with digest {sha256} in the store")
+src/osd/mirror.py:344:    gone = [k for k in store.keys("mirror/") + store.keys("staging/") if f"/{sha256}/" in k or
+src/osd/mirror.py:345:            k.startswith(f"staging/{sha256}/")]
+src/osd/mirror.py:363:        out.append({k: doc[k] for k in ("record_id", "path", "sha256", "bytes", "href")})
+src/osd/manifest.py:6:them from the verifier's files[]: a sample (`coverage: sampled`). Items carry no assets, so an Item
+src/osd/manifest.py:11:schema/manifest.schema.json and returns frozen dataclasses with `sha256` decoded from the
+src/osd/manifest.py:48:LICENCE_FIELDS = ("name", "spdx", "url", "redistribution", "attribution", "share_alike", "statement", "terms")
+src/osd/manifest.py:61:    sha256: str | None
+src/osd/manifest.py:82:    url: str | None = None
+src/osd/manifest.py:99:    origin_url: str
+src/osd/manifest.py:121:    catalog_url: str
+src/osd/manifest.py:137:def sha256_of(checksum: str | None, where: str) -> str | None:
+src/osd/manifest.py:138:    """STAC File `file:checksum` (multihash, hex) to a sha256 hex digest; other algorithms raise."""
+src/osd/manifest.py:143:                            "osd get verifies sha256 only and refuses to guess")
+src/osd/manifest.py:158:                             sha256=sha256_of(a.get("file:checksum"), f"entries/{i}/assets/{k}"),
+src/osd/manifest.py:164:                             origin_url=e["origin_url"], access=e["access"], licence=lic, assets=assets,
+src/osd/manifest.py:169:    return Manifest(created=doc["created"], catalog_url=doc["catalog_url"], selection=doc["selection"],
+src/osd/manifest.py:178:        return "access purchase: the publisher sells the files; buy them at the origin page"
+src/osd/manifest.py:179:    return "the verifier has hashed no file with a fetch address for this record; get the files at the origin page"
+src/osd/manifest.py:184:         "origin_url": rec["origin"]["url"], "access": rec["origin"]["access"],
+src/osd/manifest.py:201:def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_url: str = CATALOG_URL,
+src/osd/manifest.py:246:                "STAC Items carry no assets: the files the catalogue knows belong to the Collection "
+src/osd/manifest.py:261:           "catalog_url": catalog_url, "selection": selection, "entries": entries}
+**1. Verdict: REWORK** — the charter permits a paging layout that existing consumers cannot traverse, a tile change that breaks the site contract, and a weaker gate than repository policy.
+
+Verified against HEAD `f1f05ae2756a1d89d3e8b17ea88755a4f11c130f`. No files modified. References below are repository-relative; E32 references mean the reviewed charter.
+
+**2. Factual errors and Context verification**
+
+- Confirmed: nine real-catalogue build call sites across the six named modules; 18,436 committed outline features; indented Collection item links (`src/osd/stac.py:193`, `:206`); tippecanoe 2.49 pin (`src/osd/build.py:125`); E18 corruption workaround (`src/osd/build.py:91`, `docs/program/evidence/e18/registers.md:41`).
+- E32:15 overstates Item emission: a period alone is insufficient; each feature also needs `feature_id` (`src/osd/stac.py:163`). Consequently, **178,056 Item files from 177,895 features** cannot describe this writer’s output. Distinguish Items from total STAC JSON objects.
+- E32:16–22 timings, E29 feature totals, ND/UT corruption examples, and projected publication sizes are branch measurements, **not verified HEAD facts**. HEAD contains eight outline files and no E29 outline implementation; the cited E29 measurement evidence is not present here. Supply the measured commit, commands, and run/artifact references.
+- E32:22–23 is an unfulfilled dependency assumption: HEAD’s format enum excludes ArcGIS (`schema/record.schema.json:104`), and its rules end with the existing five datasets (`src/osd/outlines/rules.yaml:103`). E29 explicitly permits missing periods and deferred inputs (`E29-outlines-from-the-map-services.md:54`, `:65`); merging E29 does not guarantee all five are ready.
+- E32:73 names nonexistent `.github/workflows/check.yml`; installation is in `.github/workflows/ci.yml:19` and independently in `pages.yml:30`.
+
+**3. Design objections and concrete alternatives**
+
+- **Gate budget:** E32:28/50 allows three minutes; `Makefile:4`, AGENTS.md, and ENGINEERING’s gate policy require two. Retain the two-minute threshold and measure the `make check` step separately from workflow setup.
+- **Shared fixture:** these builds consume different verification/custody inputs (`tests/test_build.py:15`, `tests/test_stac.py:91`, `tests/test_mirror.py:469`). Copying already-built output cannot test a changed input’s join. Share one full-catalogue integration build; retain small isolated builds for behavior tests.
+- **Paging contract:** arbitrary `next` link pages do not establish interoperable static traversal. Current traversal follows only `child`/`item` (`src/osd/stac.py:281`). Use standard child Catalog shards with item links, validated by an ordinary recursive client walk; preserve Item collection identity. [STAC 1.0 Catalog specification](https://raw.githubusercontent.com/radiantearth/stac-spec/v1.0.0/catalog-spec/catalog-spec.md).
+- **Retrieval compatibility:** sharding removes direct Collection item links, but manifest selection reads only those links (`src/osd/manifest.py:240`). Claim that consumer and test a feature on a later shard retains its `item_id`.
+- **Tile contract:** replacing string IDs and removing string attributes breaks kind filters, promoted identity, and record lookup (`site/app.js:166`, `:177`, `:289`). Prefer a corrected encoder preserving properties; otherwise explicitly claim the site adapter and its existing journey tests.
+- **Production encoder:** changing only the check installation leaves Pages publishing with 2.49 (`pages.yml:30`). Pin the same corrected version in both existing workflows.
+- **Schema ownership:** `schema/stac/**` contains standards contracts, not permission to redefine STAC to accept bespoke pages. Use valid standard objects; any project schema change needs the required version bump and old-file compatibility test.
+
+**4. Acceptance loopholes and ineffective mutations**
+
+- E32:51: a spy scoped to one consumer can still count one after fixture scope becomes function-local. Exercise multiple consumers and assert the aggregate session count.
+- E32:54: counting Items permits duplicates replacing missing IDs. Compare the exact expected ID set and reject duplicate visits.
+- E32:55: “paging removed → size red” is incompatible with the explicitly allowed compact, unpaged design. Deleting continuation links also makes files smaller. Test missing continuation/shard links against reachability and completeness.
+- E32:57: IDs can remain correct while names, kinds, or geometry are corrupted; omission can pass a loop over surviving features. Require exact identity coverage and identity-to-geometry/property correspondence.
+- E32:59: outage exceptions can excuse all five registers. Require successful evidence before claiming the five-register outcome; outage-only results remain partial.
+- E32:61 requires only a size table, not the stated size ceiling/headroom. Require a bound on the complete staged site, including duplicated Collection links in `collections.json` (`src/osd/build.py:117`).
+- Layout changes can bypass containment checks: they scan only `*/collection.json` and sibling `items/*.json` (`src/osd/stac.py:241`). Put an invalid dated Item in a later shard and require `check-full` to fail.
+
+**5. Scope overlap**
+
+- E29 already owns all nine records, rules, and generated outlines (`E29-outlines-from-the-map-services.md:60`). Require an explicit merged handoff naming the five deferred outputs and their period readiness.
+- Numeric tile IDs/string removal reopens E15’s same-properties contract and site ownership (`E15-tiles-for-the-registers.md:6`, `:33`); it cannot remain a build-only change.
+- A “detail panel of one well” adds feature-level behavior: today `select()` displays the dataset title (`site/app.js:287`). Specify the existing dataset panel after clicking a well, or explicitly authorize that surface expansion.## E32 Registers with a hundred thousand wells — CHARTERED · Kernel · strategy at lane open · Codex round closed (REWORK, reworked 23 Oct)
+
+Authority: owner direction 23 Oct 2026 (levels on the map are real; the map scales, E05/E15);
+E29 (ArcGIS adapter; its gate-budget evidence `docs/program/evidence/e29/gate-budget.md`, read
+after E29 merges); E18 (Items carry their own dates; the tippecanoe ruling,
+`docs/program/evidence/e18/registers.md`); E15 (tiles: the tile keeps the GeoJSON's properties,
+`feature_id` is the promoted identity, `site/app.js:166-177`); OSD-D18 (the gate validates a
+sample of Items, `make check-full` the tree); `docs/ENGINEERING.md` "The gate" (offline, under two
+minutes); `Makefile:4`; `AGENTS.md:3`.
+
+**Outcome.** The five registers E29 prepared but could not commit (Virginia `va-energy/gas-oil-wells`,
+BCER `bcer/well-surface-holes-permitted`, SGC `sgc/banco-informacion-petrolera-pozos`, Utah
+`ut-dogm/oil-gas-wells`, North Dakota `nd-dmr/wells`) show their wells on the map and reach L3, their
+STAC Items are reachable by an ordinary recursive client walk, `make check` stays under two minutes
+on CI with all nine registers' outlines committed, and the published site stays well inside GitHub
+Pages' limits. All of this without changing what the site reads from a tile or a record.
+
+**Context (E29's branch measurements; the lane re-measures on its own branch and states commit,
+command and run id for every number it reports).** Nine tests across six modules (`test_build`,
+`test_stac`, `test_verify`, `test_manifest`, `test_mirror`, the site snippets) each build the real
+catalogue. One build writes a STAC Item per outline feature that has a `feature_id`, for every
+record with a period (`src/osd/stac.py:163`). `make check` on main: about 2 minutes locally, 86 s on
+CI, 18,436 outline features. With E29's four committed registers: about 2m45 locally, about 115 s on
+CI. With all nine registers E29 measured about 8m40 locally and about 6 minutes on CI; around
+178,000 features; `stac.write_catalog` was most of a build (Collections written indented with tens
+of thousands of item links, one file per Item); the tile test failed because tippecanoe 2.49 wrote
+another feature's string as `feature_id` for two features (North Dakota #18505 and Utah #11965
+carried BCER well names), which is the E18 known red reproduced on real data. Pages would publish
+roughly 190 MB of STAC and a 150 MB pmtiles. Both workflows install tippecanoe 2.49.0 by package
+hash (`.github/workflows/ci.yml:19`, `.github/workflows/pages.yml:30`). After E29 merges the five
+records carry `inputs`, `period` and `rules.yaml` entries (E29's PR names any record whose period is
+missing; such a record gets outlines and L3 but no Items, said in this PR).
+
+**The design the lane must map to.**
+1. One real-catalogue build per test session. A session-scoped fixture builds the full catalogue
+   once into a temporary directory; the tests that only read a full build read that one. A test
+   that needs a changed input (its own verification, custody or mirror inputs: `tests/test_build.py:15`,
+   `tests/test_stac.py:91`, `tests/test_mirror.py:469`) keeps its own small isolated build with
+   fixture records, not a copy of the full build. The `make check` step on the PR's CI run is under
+   two minutes with all nine registers committed; the lane states the step's duration (not the
+   workflow's) before and after.
+2. STAC writing proportional to the data, in standard objects only. A Collection with more than a
+   stated threshold of Items (the strategy fixes it; of the order of 2,000) links to child Catalog
+   shards (`rel: child`, `type: Catalog`) that carry the `rel: item` links; every Item keeps
+   `collection` = the Collection id and `rel: collection`/`rel: parent` links to it. No `next`
+   links, no bespoke page objects, `schema/stac/**` untouched. Collections and shards are written
+   compact (no indentation of link arrays); Items stay one file each. Everything that walks the tree
+   follows `child` as well as `item`: `reachable` (`src/osd/stac.py:281`), `containment_problems`
+   (`src/osd/stac.py:241`; today it scans only `*/collection.json` and sibling `items/*.json`),
+   `link_problems`, the OSD-D18 sample, and manifest selection (`src/osd/manifest.py:240` reads only
+   the Collection's direct item links today). `osd build` prints Items and bytes per Collection.
+3. Tiles. The tippecanoe attribute corruption is reproduced in a fixture test (two registers whose
+   strings cross, as on the real data), then fixed with a tippecanoe release that is correct, pinned
+   by hash in both `ci.yml` and `pages.yml` and in `TIPPECANOE_PIN` (`src/osd/build.py:93`). The
+   tile keeps every GeoJSON property and the string `feature_id` (E15's contract); the site is not
+   touched. If no release is correct, the stop rule applies.
+4. Outlines for the five records committed under `outlines/` with `osd verify --outlines`, reviewed
+   (feature counts equal the day's `returnCountOnly` per layer, stated), then checked with
+   `--outline-inputs` on one all-record `verify.yml` dispatch on the branch, under 60 minutes,
+   duration stated.
+5. Pages. The lane states the staged site's size (STAC bytes, pmtiles bytes, `records.json`,
+   `collections.json`, which repeats every Collection's links, `src/osd/build.py:117`) and shows the
+   complete staged site under 500 MB, half of GitHub Pages' 1 GB site limit. Screenshots at phone
+   width: North Dakota's wells at a town zoom; the dataset panel as it is today after clicking one
+   well.
+
+**Acceptance.**
+- Build count: a test spies on the real build and asserts the aggregate count over the whole
+  session is one across all consumers; mutation: fixture scope set to function → red (the count
+  rises above one).
+- `make check` step under 120 s on the PR's CI run, nine registers committed; the duration is in
+  the PR body with the run id.
+- STAC reachability: a test walks from `catalog.json` by `child` and `item` and compares the set of
+  reached Item ids with the exact set of outline feature ids of every record with a period, no
+  duplicates, no misses; mutation: a shard's `child` link removed from its Collection → red.
+- STAC validity: `make check-full` green on the tree; a Collection file under 2 MB; the OSD-D18
+  sample draws from shards too (mutation: an Item with a date outside its Collection's interval
+  placed in a later shard → `check-full` red).
+- Manifest: selecting a well whose Item lives on a later shard yields an entry with `item_id` set
+  (test with the fixture layout; mutation: manifest reads only direct item links → red).
+- Client walk: pystac (stated version) walks the North Dakota Collection and the Item count equals
+  the record's committed outline feature count; output in evidence.
+- Tiles: the fixture test is red on 2.49 and green on the pinned release; on the real tile of all
+  nine registers every feature's id, kind, title and geometry (point coordinates to 1e-6) equal
+  its outline feature's, compared in full (every feature, both directions), the comparison script
+  and its output in evidence. The E18 known red is closed in HANDOFF.
+- Levels: the five records at L3 on the all-record branch dispatch. A register that fails a check
+  with outage evidence (status, time, retry) keeps its record edits and outline but the outcome is
+  reported partial for that register; outage evidence does not make the lane complete.
+- Diffs: `outlines/` shows exactly five new files; `records/**` unchanged (or only a `known_issues`
+  line removed where a record said its outline was deferred); `site/**` unchanged.
+- Size table for the complete staged site in the PR, with the 500 MB bound shown met.
+
+**Out of scope.** Layers above 50,000 features (SK MER, PGI, CGS); new formats; any records beyond
+the five; site features; the verifier's listing reader for ArcGIS layers (a later slice).
+
+**Stop rules.** If no tippecanoe release is correct, stop after designs 1, 2, 4 and 5, keep 2.49
+pinned, leave the five outlines uncommitted, record the reproduction and the releases tried, and
+name the encoder question for a decision. If designs 1 and 2 cannot bring the gate under 120 s on
+CI, stop with the measurements and name which tests still rebuild, no infrastructure proposal.
+
+**Ownership and dependencies.** Coding lane. Paths: `tests/conftest.py`; the six test modules named
+above (fixture use only, plus the new tests named here); `src/osd/stac.py`; `src/osd/build.py`
+(size print, `TIPPECANOE_PIN`); `src/osd/manifest.py` (shard-aware item lookup only);
+`tests/fixtures/stac/**` and `tests/fixtures/tiles/**` (new); the tippecanoe install step in
+`.github/workflows/ci.yml` and `.github/workflows/pages.yml` (granted, both named in the PR title);
+`outlines/` for the five records; `docs/program/evidence/e32/**`. Not touched: `schema/**`,
+`site/**`, `records/**` beyond the one allowed line, `src/osd/verify.py`, `src/osd/outlines/**`.
+Depends on E29 merged first; the lane reads E29's PR body and gate-budget evidence before writing
+its strategy.
+
+**Evidence to inspect.** CI step durations before and after with run ids; the build-count test;
+the reachability test; the pystac walk output; the tile comparison script and output; the size
+table; the two screenshots.
+
+### Dispositions (Codex round 23 Oct, REWORK; one round, OSD-D8)
+
+| # | Finding | Disposition |
+|---|---|---|
+| 1 | Items need `feature_id`, not only a period; the 178,056 figure is not an Item count | Accepted. Context rewritten; all numbers marked as E29 branch measurements, lane re-measures and cites commit, command, run id |
+| 2 | Branch measurements are not HEAD facts | Accepted. Authority names E29's gate-budget evidence; lane cites it after merge |
+| 3 | Dependency assumption: E29 may leave periods missing | Accepted. Context says E29's PR names missing periods; such a record gets L3 but no Items, said in this PR |
+| 4 | `check.yml` does not exist; two workflows install tippecanoe | Accepted. `ci.yml` and `pages.yml` both named, same pinned release in both and in `TIPPECANOE_PIN` |
+| 5 | Three-minute budget contradicts the two-minute gate policy | Accepted. 120 s, measured as the `make check` step |
+| 6 | A copied build cannot test a changed input's join | Accepted. One shared full build for readers; isolated small builds for tests with their own inputs |
+| 7 | `next` pages are not interoperable static traversal | Accepted. Child Catalog shards with item links; Items keep their Collection; every walker follows `child` |
+| 8 | Manifest selection reads only direct item links | Accepted. `manifest.py` claimed; acceptance test for an Item on a later shard |
+| 9 | Numeric ids and string removal break the site contract | Accepted. Dropped. Corrected encoder preserving properties; site untouched; stop rule if none is correct |
+| 10 | Pages would still publish with 2.49 | Accepted. Both workflows pinned |
+| 11 | `schema/stac/**` is not permission for bespoke pages | Accepted. Standard objects only; `schema/**` not touched |
+| 12 | Build-count spy on one consumer is loose | Accepted. Aggregate session count across all consumers |
+| 13 | Counting Items permits duplicates | Accepted. Exact id set, no duplicates |
+| 14 | "paging removed → size red" is incoherent | Accepted. Replaced by reachability and completeness; size bound kept as its own check |
+| 15 | Id-only tile check misses corrupted names and geometry | Accepted. Full comparison of id, kind, title, geometry, both directions |
+| 16 | Outage exceptions could excuse all five | Accepted. Outage evidence makes a register partial, not complete |
+| 17 | Size table without a bound | Accepted. Complete staged site under 500 MB, `collections.json` included |
+| 18 | Containment check scans only the old layout | Accepted. Walkers follow shards; mutation named |
+| 19 | E29 owns the nine records and outlines | Accepted. Lane opens after E29 merges and reads its PR body; five outline files are the only overlap |
+| 20 | Tile change reopened E15's contract | Accepted with 9. Properties preserved, site untouched |
+| 21 | "Detail panel of one well" adds surface behaviour | Accepted. The dataset panel as it is today after clicking a well |
+
+**Seeking remaining evidence quickly**
+codex
+The export and truncation paths match the Context, but the design would put a locally assembled checksum on a URL that serves different bytes. E29’s reuse boundary also needs clarification: its paging uses offsets ordered by object ID, and its identity checks are coupled to outline conversion.
+exec
+/bin/bash -lc "rg -n 'arcgis|orderByFields|resultOffset' src/osd/outlines
+rg -n 'files|file:checksum|href' src/osd/stac.py
+rg -n 'sha256|mismatch' src/osd/get.py
+nl -ba docs/program/charters/E35-whole-layers-for-the-verifier.md
+rg --files docs/program/charters | sort
+nl -ba src/osd/verify.py | sed -n '280,322p'
+rg -n 'RUN_BYTES|PAUSE|Paced|2 \\*' src/osd/verify.py
+rg -n 'branch|ref:|ids|checkout' .github/workflows/verify.yml
+python - <<'PY'
+import pathlib,yaml,re
+rows=[]
+for p in pathlib.Path('records').rglob('*.yaml'):
+ d=yaml.safe_load(p.read_text()); u=d.get('origin',{}).get('manifest_url','')
+ if re.search(r'/(?:MapServer|FeatureServer)/\\d+/?(?:\\?.*)?"'$'"',u,re.I): rows.append((d['id'],str(p),u))
+c=set(pathlib.Path('docs/program/evidence/e35/candidates.md').read_text().splitlines()[1:])
+print('layer records',len(rows),'missing',set(x[0] for x in rows)-c,'extra',c-set(x[0] for x in rows))
+for r in rows: print(*r)
+PY" in /home/epic/src/open-subsurface-data
+ exited 127 in 0ms:
+src/osd/outlines/extractors.py:185:def _arcgis_error(doc, what: str) -> None:
+src/osd/outlines/extractors.py:193:def arcgis_layer(b: bytes) -> tuple[str, int]:
+src/osd/outlines/extractors.py:198:    _arcgis_error(d, "the layer description")
+src/osd/outlines/extractors.py:214:def arcgis_layer_facts(b: bytes) -> bytes:
+src/osd/outlines/extractors.py:219:    _arcgis_error(d, "the layer description")
+src/osd/outlines/extractors.py:230:def arcgis_count(b: bytes) -> int:
+src/osd/outlines/extractors.py:233:    _arcgis_error(d, "the count")
+src/osd/outlines/extractors.py:244:def arcgis_out_fields(rule: dict, oid: str) -> str:
+src/osd/outlines/extractors.py:316:def register_arcgis(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]]) -> list[dict]:
+src/osd/outlines/extractors.py:325:    oid, size = arcgis_layer(by["layer"])
+src/osd/outlines/extractors.py:326:    count = arcgis_count(by["count"])
+src/osd/outlines/extractors.py:334:        _arcgis_error(page, what)
+src/osd/outlines/extractors.py:541:EXTRACTORS = {"register-wfs": register_wfs, "register-csv": register_csv, "register-arcgis": register_arcgis,
+src/osd/outlines/__init__.py:27:    arcgis_count,
+src/osd/outlines/__init__.py:28:    arcgis_layer,
+src/osd/outlines/__init__.py:29:    arcgis_layer_facts,
+src/osd/outlines/__init__.py:30:    arcgis_out_fields,
+src/osd/outlines/__init__.py:142:    if fmt == "arcgis":   # E29: description, the day's count, then every page in object id order
+src/osd/outlines/__init__.py:143:        layer = arcgis_layer_facts(_get(_with(url, {"f": "json"}), opener, robots))
+src/osd/outlines/__init__.py:144:        oid, size = arcgis_layer(layer)
+src/osd/outlines/__init__.py:147:        fields = arcgis_out_fields(rule, oid)
+src/osd/outlines/__init__.py:148:        for off in page_offsets(arcgis_count(count), size):   # native spatial reference: no outSR
+src/osd/outlines/__init__.py:149:            q = {"where": "1=1", "outFields": fields, "orderByFields": f"{oid} ASC", "resultOffset": off,
+src/osd/outlines/rules.yaml:10:# register-arcgis (E29, record input format arcgis, url = the layer without a query): the layer
+src/osd/outlines/rules.yaml:113:    boreholes: {extractor: register-arcgis, kind: wellbore, name: technickeoznaceniezdroja}
+src/osd/outlines/rules.yaml:118:    wells: {extractor: register-arcgis, kind: wellbore, uwi: UWI, name: Title, period_fields: {"start": "Start_Date", "end": "End_Date"}, period_format: epoch-ms}
+src/osd/outlines/rules.yaml:123:    survey-lines: {extractor: register-arcgis, kind: survey-2d, name: Title, period_fields: {"start": "Start_Date", "end": "End_Date"}, period_format: epoch-ms}
+src/osd/outlines/rules.yaml:128:    wells: {extractor: register-arcgis, kind: wellbore, uwi: uwi, name: well_name, period_fields: {"start": "spud_date", "end": "rig_release_date"}, period_format: epoch-ms}
+src/osd/outlines/rules.yaml:133:    wells: {extractor: register-arcgis, kind: wellbore, name: FiNo}
+src/osd/outlines/rules.yaml:138:    surface-holes: {extractor: register-arcgis, kind: wellbore, name: WELL_NAME}
+src/osd/outlines/rules.yaml:143:    wells: {extractor: register-arcgis, kind: wellbore, uwi: UWI, name: WELL_NAME}
+src/osd/outlines/rules.yaml:148:    wells: {extractor: register-arcgis, kind: wellbore, uwi: API, name: WellName}
+src/osd/outlines/rules.yaml:153:    wells: {extractor: register-arcgis, kind: wellbore, uwi: api_no, name: well_name, period_fields: {"start": "spud_date"}, period_format: epoch-ms}
+5:  <cid>/collection.json           one Collection per record: licence, level, access, the files E02
+96:    """E02's checksummed files that carry a fetch address; collection-level, since which Item a
+100:    for f in (verification or {}).get("files", []):
+102:            out[f["path"]] = {"href": f["url"], "title": f["path"], "roles": ["data"],
+103:                              "file:size": f["bytes"], "file:checksum": "1220" + f["sha256"]}
+105:                out[f["path"]]["alternate"] = {"mirror": {"href": mirrored[f["sha256"]], "title": MIRROR_TITLE}}
+133:        "links": [{"rel": "root", "href": "../../catalog.json", "type": "application/json"},
+134:                  {"rel": "parent", "href": "../collection.json", "type": "application/json"},
+135:                  {"rel": "collection", "href": "../collection.json", "type": "application/json"}],
+173:        mirrored = {c["sha256"]: c["href"] for c in mirror_index or [] if c["record_id"] == rid}
+190:            "links": [{"rel": "root", "href": "../catalog.json", "type": "application/json"},
+191:                      {"rel": "parent", "href": "../catalog.json", "type": "application/json"},
+192:                      {"rel": "about", "href": rec["origin"]["url"], "title": "Publisher's page"},
+193:                      {"rel": "license", "href": lic.get("url", rec["origin"]["url"]),
+195:                     + [{"rel": "item", "href": f"./items/{n}", "type": "application/geo+json"}
+210:        children.append({"rel": "child", "href": f"./{cid}/collection.json",
+217:        "links": [{"rel": "root", "href": "./catalog.json", "type": "application/json"}] + children,
+261:            href = link["href"]
+262:            if "://" not in href and not (p.parent / href).resolve().is_file():
+263:                out.append(f"{p.relative_to(root)}: {link['rel']} -> {href} does not exist")
+281:        todo += [(p.parent / x["href"]).resolve() for x in doc.get("links", [])
+5:with `file:size` and sha256, and only then renamed into place. Outcomes per asset:
+7:  verified       bytes match the catalogue's sha256 (fetched now, or already on disk)
+9:  mismatch       size or sha256 differ: nothing written, the run stops
+10:  not-attempted  after a mismatch
+15:states its sha256, and from origin on any failure of the alternate: no answer, a refusal, or bytes
+16:that do not match (a `mismatch` from the mirror, recorded in `attempts`, never written). Each
+35:FAILED = ("mismatch", "needs-sign-in", "origin-dead")
+70:def _sha256_file(p: Path) -> tuple[str, int]:
+71:    h, n = hashlib.sha256(), 0
+80:    """Stream href to a temporary file beside p; rename into place only when size and sha256 match."""
+83:        h, n = hashlib.sha256(), 0
+95:            return "mismatch", f"{n} bytes, the catalogue states {a.size}"
+96:        if a.sha256 and h.hexdigest() != a.sha256:
+97:            return "mismatch", f"sha256 {h.hexdigest()}, the catalogue states {a.sha256}"
+99:        return ("verified" if a.sha256 else "fetched"), f"{n} bytes"
+107:        digest, n = _sha256_file(p)
+108:        if a.sha256 and digest == a.sha256:
+110:        if not a.sha256 and a.size is not None and n == a.size:
+115:    for name, href in (a.alternates if a.sha256 else ()):   # an alternate is trusted only by checksum
+131:            out.append(Outcome(e.collection_id, a.key, "not-attempted", f"stopped after the mismatch of {stopped}"))
+135:        if r.outcome == "mismatch":
+     1	## E35 Whole layers for the verifier — CHARTERED · Kernel · strategy at lane open · one Codex round
+     2	
+     3	Authority: owner direction 23 Oct 2026 (levels on the map are real); E23 (listing readers by shape;
+     4	a generated export the server truncates is a partial export, not a hashed file,
+     5	`src/osd/verify.py:25`, `:494-498`); E29 (the ArcGIS adapter: paging by object id, identity
+     6	checks, the 50,000-feature cap, `src/osd/outlines/extractors.py:185-316`); H2 (shards by origin
+     7	host; the 2 GiB budget per process); OSD-D9, OSD-D11, OSD-D20.
+     8	
+     9	**Outcome.** The registers whose publishers serve their data as an ArcGIS layer reach L2 the way a
+    10	register with a downloadable file does: the verifier fetches the whole layer, not the first page,
+    11	and the same layer on two days with no edits gives the same checksum.
+    12	
+    13	**Context (main dd5f549, 24 Oct).** 23 records have an ArcGIS layer as `manifest_url` (list in
+    14	`docs/program/evidence/e35/candidates.md`). The listing reader turns a layer into one generated
+    15	entry, `query?where=1=1&outFields=*&f=geojson&resultRecordCount=<maxRecordCount>`
+    16	(`src/osd/verifier/listings.py:123-136`, `:253-261`). For any layer larger than
+    17	`maxRecordCount` the server answers `exceededTransferLimit: true`, the export is kept under
+    18	`partial_exports`, and `files-checksummed` skips, so those records stop at L1 (Virginia, BCER,
+    19	SGC, Utah, North Dakota, the SK MER and PGI registers among them). E29's adapter already pages a
+    20	layer by object id with count and identity checks for outlines; the verifier does not use it.
+    21	
+    22	**The design the lane must map to.**
+    23	1. A whole-layer export. For a listing of shape `arcgis-layer`, the verifier assembles the layer
+    24	   by object id pages with E29's paging and checks (count equals `returnCountOnly`, no duplicate
+    25	   or missing ids, page errors refuse), imported from `src/osd/outlines/`, not copied, and not
+    26	   modified there. Layers above E29's cap stay a partial export as today, said in the detail.
+    27	2. Canonical bytes. The hashed object is the layer's features as GeoJSON, sorted by object id,
+    28	   written with sorted keys and no whitespace, coordinates as the server returned them (no
+    29	   rounding, no reprojection), plus the layer's `editingInfo.lastEditDate` when stated. The
+    30	   SHA-256 of those bytes is the file's checksum; the entry's detail names it "assembled layer
+    31	   export (N features, canonical GeoJSON)". The server's bytes are not hashed.
+    32	3. Pacing and budget. Pages go through the existing opener, robots check and 2 s pause per host;
+    33	   the assembled bytes count against the record's share of the 2 GiB budget; a layer that would
+    34	   exceed it is abandoned as today's budget rule says.
+    35	4. Nothing else changes: other listing shapes, the levels' rules, the record schema, the
+    36	   verification schema (a new `assembled: true` key on a file entry is allowed only if the
+    37	   verification schema already permits extra keys; otherwise the strategy names the minor bump).
+    38	
+    39	**Acceptance.**
+    40	- Fixture tests in a new `tests/test_whole_layers.py`: a layer of three pages assembles to the exact
+    41	  object-id set; the same features served in another page order give the same SHA-256; a changed
+    42	  attribute gives another; a missing page, a duplicate id, a count mismatch and a page error each
+    43	  fail `files-checksummed` with the reason; a layer above the cap stays partial. Mutations
+    44	  recorded: sort removed (page-order test red), count check removed (count test red), cap removed
+    45	  (cap test red).
+    46	- `make check` green, its duration stated; no other test module edited.
+    47	- An explicit-id `verify.yml` dispatch on the branch over the 23 candidates: per record the level,
+    48	  feature count, bytes and checksum, or the first failing check; a second dispatch the next hour:
+    49	  equal checksums for every layer whose `lastEditDate` did not change (a changed one named).
+    50	- The records that reach L2 are named in the PR; a record that does not is named with its reason.
+    51	
+    52	**Out of scope.** Other server types (WFS, OGC API Features); layers above the cap; mirroring;
+    53	changing E29's outlines code; records edits.
+    54	
+    55	**Stop rules.** If two dispatches an hour apart give different checksums for an unedited layer on
+    56	most candidates (servers that reorder or reformat coordinates), stop after design 1, record the
+    57	measurements, and name the canonicalisation question.
+    58	
+    59	**Ownership and dependencies.** Coding lane, beside E32 (disjoint paths). Paths:
+    60	`src/osd/verifier/listings.py` (the ArcGIS reader), `src/osd/verify.py` (`check_files` for an
+    61	assembled entry only), a new `src/osd/verifier/layers.py`, `tests/test_whole_layers.py` (new),
+    62	`tests/fixtures/whole_layers/**` (new), `schema/verification.schema.json` only if design 4 needs
+    63	the bump (named in the PR title), `docs/program/evidence/e35/**`. Not touched:
+    64	`src/osd/outlines/**`, `records/**`, E32's paths.
+    65	
+    66	**Evidence to inspect.** The two branch dispatches with per-record checksums; the mutation record;
+    67	the PR's list of records at L2.
+docs/program/charters/E01-twenty-records.md
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.log
+docs/program/charters/E02-verifier-to-L2-CODEX-REVIEW.md
+docs/program/charters/E02-verifier-to-L2-STRATEGY.md
+docs/program/charters/E02-verifier-to-L2.md
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.log
+docs/program/charters/E03-outlines-from-the-data-CODEX-REVIEW.md
+docs/program/charters/E03-outlines-from-the-data-STRATEGY.md
+docs/program/charters/E03-outlines-from-the-data.md
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.log
+docs/program/charters/E04-stac-catalogue-CODEX-REVIEW.md
+docs/program/charters/E04-stac-catalogue-STRATEGY.md
+docs/program/charters/E04-stac-catalogue.md
+docs/program/charters/E05-map-that-scales.md
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.log
+docs/program/charters/E06-retrieval-by-manifest-CODEX-REVIEW.md
+docs/program/charters/E06-retrieval-by-manifest-STRATEGY.md
+docs/program/charters/E06-retrieval-by-manifest.md
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.log
+docs/program/charters/E07-mirror-store-and-custody-CODEX-REVIEW.md
+docs/program/charters/E07-mirror-store-and-custody-STRATEGY.md
+docs/program/charters/E07-mirror-store-and-custody.md
+docs/program/charters/E08-curation-that-runs-itself.md
+docs/program/charters/E09-ophiolite-half.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.log
+docs/program/charters/E09-ophiolite-reads-the-catalogue-CODEX-REVIEW.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue-STRATEGY.md
+docs/program/charters/E09-ophiolite-reads-the-catalogue.md
+docs/program/charters/E10-seismic-slices.md
+docs/program/charters/E11-hosting-and-domain.md
+docs/program/charters/E12-catalogue-into-a-workspace.md
+docs/program/charters/E13-registers-second-twenty.md
+docs/program/charters/E14-records-third-twenty.md
+docs/program/charters/E15-tiles-for-the-registers.md
+docs/program/charters/E16-periods-from-the-publishers.md
+docs/program/charters/E17-records-fourth-twenty.md
+docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.log
+docs/program/charters/E18-items-carry-their-own-dates-CODEX-REVIEW.md
+docs/program/charters/E18-items-carry-their-own-dates-STRATEGY.md
+docs/program/charters/E18-items-carry-their-own-dates.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes-CODEX-REVIEW.log
+docs/program/charters/E19-vocabulary-from-the-records-lanes-CODEX-REVIEW.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes-STRATEGY.md
+docs/program/charters/E19-vocabulary-from-the-records-lanes.md
+docs/program/charters/E20-records-retry-and-the-publishers-sentences.md
+docs/program/charters/E21-the-map-says-when.md
+docs/program/charters/E22-records-fifth-twenty.md
+docs/program/charters/E23-more-datasets-checksummed-CODEX-REVIEW.log
+docs/program/charters/E23-more-datasets-checksummed-CODEX-REVIEW.md
+docs/program/charters/E23-more-datasets-checksummed-STRATEGY.md
+docs/program/charters/E23-more-datasets-checksummed.md
+docs/program/charters/E24-records-files-the-verifier-can-reach.md
+docs/program/charters/E25-records-seventh-twenty-and-the-bare-files.md
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-CODEX-REVIEW.log
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-CODEX-REVIEW.md
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for-STRATEGY.md
+docs/program/charters/E26-vocabulary-kinds-the-records-lanes-asked-for.md
+docs/program/charters/E27-the-map-says-why.md
+docs/program/charters/E28-periods-and-extents-for-the-newer-records.md
+docs/program/charters/E29-outlines-from-the-map-services-CODEX-REVIEW.log
+docs/program/charters/E29-outlines-from-the-map-services-CODEX-REVIEW.md
+docs/program/charters/E29-outlines-from-the-map-services-STRATEGY.md
+docs/program/charters/E29-outlines-from-the-map-services.md
+docs/program/charters/E30-listings-for-the-datasets-people-can-download.md
+docs/program/charters/E31-records-eighth-twenty.md
+docs/program/charters/E32-registers-with-a-hundred-thousand-wells-CODEX-REVIEW.log
+docs/program/charters/E32-registers-with-a-hundred-thousand-wells-CODEX-REVIEW.md
+docs/program/charters/E32-registers-with-a-hundred-thousand-wells.md
+docs/program/charters/E33-records-ninth-twenty.md
+docs/program/charters/E34-periods-and-extents-for-the-eighth-and-ninth-twenty.md
+docs/program/charters/E35-whole-layers-for-the-verifier-CODEX-REVIEW.log
+docs/program/charters/E35-whole-layers-for-the-verifier.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-CODEX-REVIEW.log
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-CODEX-REVIEW.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide-STRATEGY.md
+docs/program/charters/H1-origins-that-recover-and-origins-that-hide.md
+docs/program/charters/H2-verify-in-shards-CODEX-REVIEW.log
+docs/program/charters/H2-verify-in-shards-CODEX-REVIEW.md
+docs/program/charters/H2-verify-in-shards-STRATEGY.md
+docs/program/charters/H2-verify-in-shards.md
+   280	    if browser_probe is None or not (f.status in BROWSER_RETRY or f.status >= 500):
+   281	        return None
+   282	    status, _ = browser_probe(url)
+   283	    if not 200 <= status < 300:
+   284	        return None
+   285	    return f"answers a browser, not the verifier (HTTP {f.status} to osd-verifier, HTTP {status} to a browser agent)"
+   286	
+   287	
+   288	# --- L2 ------------------------------------------------------------------------------------
+   289	
+   290	class ByteBudget:
+   291	    """Bytes hashed (or abandoned mid-stream) in one run, shared across records."""
+   292	
+   293	    def __init__(self, limit: int = RUN_BYTE_BUDGET):
+   294	        self.limit, self.used = limit, 0
+   295	
+   296	    @property
+   297	    def remaining(self) -> int:
+   298	        return self.limit - self.used
+   299	
+   300	    def add(self, n: int) -> None:
+   301	        self.used += n
+   302	
+   303	    def exhaust(self) -> None:
+   304	        self.used = self.limit
+   305	
+   306	    def share(self, cap: int) -> ByteBudget:
+   307	        """A record's share: at most `cap` bytes, every byte also drawn from this budget."""
+   308	        return _Share(self, cap)
+   309	
+   310	
+   311	class _Share(ByteBudget):
+   312	    def __init__(self, parent: ByteBudget, cap: int):
+   313	        super().__init__(cap)
+   314	        self.parent = parent
+   315	
+   316	    @property
+   317	    def remaining(self) -> int:
+   318	        return min(self.limit - self.used, self.parent.remaining)
+   319	
+   320	    def add(self, n: int) -> None:
+   321	        self.used += n
+   322	        self.parent.add(n)
+78:RUN_BYTE_BUDGET = 2 * 1024**3  # charter: never hash more than 2 GB per run
+79:RECORD_SAMPLE_BYTES = 512 * 1024**2  # E23: one record's share of the run budget (sample + inventory)
+81:LISTING_BYTES = 32 * 1024**2
+84:PAUSE_S = 2.0
+187:    def __init__(self, pause: float = PAUSE_S, clock=time.monotonic, sleep=time.sleep):
+210:    class _Paced:
+234:    return f, _Paced
+392:                rp.parse(_read(self.opener(key + "/robots.txt"), 512 * 1024).decode("utf-8", "replace").splitlines())
+2:# Pull requests touching records, and dispatches naming ids: one job verifies those records (the PR
+3:# gets a comment with the levels). A dispatch with empty ids verifies every record in 12 shards (H2):
+7:# results on the `verification-results` branch (OSD-D5: no bucket, no secret) and republishes.
+12:      ids: { description: "record ids, space separated (empty = all, in shards)", required: false, default: "" }
+13:      fail_shard: { description: "branch dispatches only: this shard exits 1 before verifying (H2 evidence)", required: false, default: "" }
+20:# Pull requests and branch dispatches each get their own group (outside).
+26:    if: github.event_name == 'pull_request' || inputs.ids != ''
+31:      - uses: actions/checkout@v4
+44:      - name: pick ids
+45:        id: ids
+48:            ids=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- records | sed -n 's|^records/\(.*\)\.yaml$|\1|p' | grep -v '^_' | tr '\n' ' ')
+50:            ids="${{ inputs.ids }}"
+52:          echo "ids=$ids" >> "$GITHUB_OUTPUT"
+53:      - run: uv run osd verify --outline-inputs ${{ steps.ids.outputs.ids }} | tee verify.txt   # L3 compares committed outlines with today's inputs (E03)
+65:          IDS: "${{ steps.ids.outputs.ids }}"
+111:    if: github.event_name == 'workflow_dispatch' && inputs.ids == ''
+116:      - uses: actions/checkout@v4
+140:      - uses: actions/checkout@v4
+147:      - name: forced failure (branch dispatches only, H2 evidence)
+156:          uv run osd verify --outline-inputs --shard "$SHARD" --ids-out shard/ids.txt | tee shard/verify.txt
+157:          while read -r id; do cp "build/verification/${id//\//__}.json" shard/verification/; done < shard/ids.txt
+170:      - uses: actions/checkout@v4
+184:            --out build/verification --fresh build/fresh-ids.txt --summary shards.md
+185:          { echo "Earlier results: verification-results $(cat build/snapshot/commit.txt), checkout $(git rev-parse HEAD)"; echo; cat shards.md; } >> "$GITHUB_STEP_SUMMARY"
+190:      - name: dead-link report of the fresh ids (issues opened and closed on main, a dry run otherwise)
+200:          fresh=$(tr '\n' ' ' < build/fresh-ids.txt)
+225:      - name: make check-full (every all-record dispatch, branches too; the gate validates a sample of Items)
+/bin/bash: line 9: python: command not found
+
+exec
+/bin/bash -lc ".venv/bin/python - <<'PY'
+import pathlib,yaml,re
+rows=[]
+for p in pathlib.Path('records').rglob('*.yaml'):
+ d=yaml.safe_load(p.read_text()); u=d.get('origin',{}).get('manifest_url','')
+ if re.search(r'/(?:MapServer|FeatureServer)/\\d+/?(?:\\?.*)?"'$'"',u,re.I): rows.append((d['id'],str(p),u))
+c=set(pathlib.Path('docs/program/evidence/e35/candidates.md').read_text().splitlines()[1:])
+print('layer records',len(rows),'missing',set(x[0] for x in rows)-c,'extra',c-set(x[0] for x in rows))
+for r in rows: print(*r)
+PY
+nl -ba src/osd/outlines/__init__.py | sed -n '132,158p'
+nl -ba schema/verification.schema.json | tail -25
+cat docs/program/charters/E06-retrieval-by-manifest.md docs/program/charters/E07-mirror-store-and-custody.md | head -100
+rg -n 'L1|Virginia|BCER|partial|PGI|SK MER' docs/program/evidence/e29/* docs/program/evidence/e35/*" in /home/epic/src/open-subsurface-data
+ succeeded in 520ms:
+layer records 22 missing set() extra {'al-ogb/wells'}
+sk-mer/drill-core records/sk-mer/drill-core.yaml https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/2?f=json
+sk-mer/non-vertical-wells records/sk-mer/non-vertical-wells.yaml https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/1?f=json
+sk-mer/vertical-wells records/sk-mer/vertical-wells.yaml https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/0?f=json
+sk-mer/drill-cuttings records/sk-mer/drill-cuttings.yaml https://gis.saskatchewan.ca/arcgis/rest/services/Economy/Petroleum/MapServer/3?f=json
+sgudds/register-geotermalnych-vrtov records/sgudds/register-geotermalnych-vrtov.yaml https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2?f=json
+nd-dmr/wells records/nd-dmr/wells.yaml https://gis.dmr.nd.gov/dmrpublicservices/rest/services/Wells/FeatureServer/0?f=json
+pgi/cbdg-boreholes records/pgi/cbdg-boreholes.yaml https://cbdgmapa.pgi.gov.pl/arcgis/rest/services/cbdg_otwory/MapServer/0?f=json
+va-energy/gas-oil-wells records/va-energy/gas-oil-wells.yaml https://energy.virginia.gov/gis/rest/services/DGO/DGO_wells/MapServer/0?f=json
+wa-demirs/petroleum-wells records/wa-demirs/petroleum-wells.yaml https://public-services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/Industry_and_Mining/MapServer/13?f=json
+cgs/vrtna-prozkoumanost records/cgs/vrtna-prozkoumanost.yaml https://mapy.geology.cz/arcgis/rest/services/Prozkoumanost/Vrtna_prozkoumanost/MapServer/1?f=json
+bcer/well-surface-holes-permitted records/bcer/well-surface-holes-permitted.yaml https://geoweb-ags.bc-er.ca/arcgis/rest/services/PASR/PASR_WELL_SURFACE_STATE_PT/MapServer/0?f=json
+nbmg/oil-gas-wells-through-2013 records/nbmg/oil-gas-wells-through-2013.yaml https://gisweb.unr.edu/nbmg/rest/services/MineralsAndEnergy/OilAndGas/MapServer/1?f=json
+wa-dnr/geophysics-database records/wa-dnr/geophysics-database.yaml https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Geophysics/MapServer/2?f=json
+wa-dnr/groundwater-chemistry records/wa-dnr/groundwater-chemistry.yaml https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Groundwater_Chemistry/MapServer/0?f=json
+wa-dnr/shear-wave-database records/wa-dnr/shear-wave-database.yaml https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Shearwave_Data/MapServer/12?f=json
+wa-dnr/geothermal-wells records/wa-dnr/geothermal-wells.yaml https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Geothermal/MapServer/7?f=json
+wa-dnr/oil-gas-wells records/wa-dnr/oil-gas-wells.yaml https://gis.dnr.wa.gov/site1/rest/services/Public_Geology/Oil_and_Gas_Wells/MapServer/1?f=json
+ut-dogm/oil-gas-wells records/ut-dogm/oil-gas-wells.yaml https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/viewAGRC_WellData_Surf/FeatureServer/0
+nzpam/seismic-surveys-2d records/nzpam/seismic-surveys-2d.yaml https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/6?f=json
+nzpam/petroleum-wells records/nzpam/petroleum-wells.yaml https://gis.nzpam.govt.nz/server/rest/services/Public/GeodataCatalogue_Layers/MapServer/4?f=json
+sgc/banco-informacion-petrolera-pozos records/sgc/banco-informacion-petrolera-pozos.yaml https://services1.arcgis.com/Og2nrTKe5bptW02d/arcgis/rest/services/Banco_de_Informaci%C3%B3n_Petrolera_Pozos/FeatureServer/0
+inp-mz/actividade-de-pesquisa-e-producao records/inp-mz/actividade-de-pesquisa-e-producao.yaml https://services3.arcgis.com/GwpN7CU0VUHlIXMI/arcgis/rest/services/Actividades_de_Pesquisa/FeatureServer/0?f=json
+   132	            start = page * size
+   133	            b = _get(_with(url, {**(rule.get("params") or {}), "count": size, "startIndex": start}), opener, robots)
+   134	            parts.append((f"page-{start:06d}", b))
+   135	            try:
+   136	                served = len(geojson_page(b).get("features") or [])
+   137	            except ValueError:
+   138	                raise Refused(f"{rec_input['name']}: page at {start} is not GeoJSON: {b[:120]!r}") from None
+   139	            if served < size:
+   140	                return parts
+   141	        raise Refused(f"{rec_input['name']}: more than {MAX_PAGES} pages")
+   142	    if fmt == "arcgis":   # E29: description, the day's count, then every page in object id order
+   143	        layer = arcgis_layer_facts(_get(_with(url, {"f": "json"}), opener, robots))
+   144	        oid, size = arcgis_layer(layer)
+   145	        count = _get(_with(url + "/query", {"where": "1=1", "returnCountOnly": "true", "f": "json"}), opener, robots)
+   146	        parts = [("layer", layer), ("count", count)]
+   147	        fields = arcgis_out_fields(rule, oid)
+   148	        for off in page_offsets(arcgis_count(count), size):   # native spatial reference: no outSR
+   149	            q = {"where": "1=1", "outFields": fields, "orderByFields": f"{oid} ASC", "resultOffset": off,
+   150	                 "resultRecordCount": size, "f": "json"}
+   151	            parts.append((f"page-{off:06d}", _get(_with(url + "/query", q), opener, robots)))
+   152	        return parts
+   153	    if fmt == "mdio":
+   154	        base = url.rstrip("/") + "/"
+   155	        parts = [(".zmetadata", _get(base + ".zmetadata", opener, robots))]
+   156	        meta = json.loads(parts[0][1])["metadata"]
+   157	        a = meta.get("trace_mask/.zarray") or {}
+   158	        if not a:
+    51	    "inventory": {
+    52	      "type": "object", "additionalProperties": false, "required": ["rule", "listed", "selected", "coverage"],
+    53	      "description": "v3 (E07). Only for records with a `mirror:` rule in verifier/samples.yaml: every listing entry the rule selects; each hashed one is in `files`. complete: all selected entries hashed in this run (a claim about this selection, never the whole dataset)",
+    54	      "properties": {
+    55	        "rule": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    56	        "listed": {"type": "integer", "minimum": 0, "description": "Entries in the listing"},
+    57	        "selected": {"type": "array", "items": {"type": "string"}, "description": "Paths as the listing states them"},
+    58	        "coverage": {"enum": ["complete", "partial"]}
+    59	      }
+    60	    }
+    61	  },
+    62	  "$defs": {
+    63	    "file": {
+    64	      "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+    65	      "properties": {
+    66	        "path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    67	        "publisher_checksum": {"type": "object", "additionalProperties": false, "required": ["algorithm", "digest"],
+    68	                               "description": "v4 (E23). The checksum the publisher's listing states for this file, verbatim",
+    69	                               "properties": {"algorithm": {"type": "string", "maxLength": 64}, "digest": {"type": "string", "maxLength": 256}}},
+    70	        "compared": {"type": "boolean", "description": "v4. true: the publisher's algorithm (md5, sha1 or sha256) was computed over the same bytes and compared; false: unsupported algorithm or malformed digest, recorded only"},
+    71	        "partial": {"const": true, "description": "v4. Only in partial_exports: the server truncated this generated export"}
+    72	      }
+    73	    }
+    74	  }
+    75	}
+## E06 Retrieval by manifest — QUEUED · Kernel · strategy at lane open · one Codex round
+
+Authority: owner direction 23 Oct ("the bridge to transfer/select assets from a map to a
+retrieval"); Ophiolite exchange doctrine (intentional get, nothing applies itself).
+
+**Outcome.** A person selects datasets or wellbores on the map, downloads one manifest, and
+`osd get manifest.json` fetches the files from their origins (or mirrors, E07), verifies the
+checksums the catalogue knows, and writes the attribution lines the licences require next to
+the files. A Python reader opens the manifest without the CLI.
+
+**Context today (verified 23 Oct).** No manifest format, no fetcher. The detail panel's third
+card says retrieval is chartered. Records carry `origin.url` only; file-level addresses arrive
+with E02's `files[]` and E04's item assets.
+
+**The design the lane must map to.**
+1. `osd.manifest/1`: JSON with `created`, `catalog_url`, `items[]` each `{item_id, record_id,
+   assets[]: {href, bytes?, sha256?}, licence: {name, spdx, statement, share_alike}}`. Schema at
+   `schema/manifest.schema.json`. No credentials, ever.
+2. Site: a "Select" mode adds items to a basket; "Download manifest" writes the file client
+   side. Items without resolvable assets (access `registration`/`request`) are included with
+   `assets: []` and the origin page, so the manifest is also the to-do list.
+3. `osd get <manifest> --dest <dir>`: streams each asset, verifies `sha256` when present, writes
+   `ATTRIBUTION.md` from the licence statements, refuses to continue on a mismatch, resumes on
+   rerun. Honest outcome per asset: fetched, verified, mismatch, needs-sign-in, origin-dead.
+4. `osd.manifest.read(path)` in `src/osd/manifest.py` returns typed items; this is the interface
+   Ophiolite's intake reads (E09).
+5. Rights carried: every item's `licence.statement` is copied verbatim; `share_alike` is
+   surfaced in the CLI summary ("2 items require derived work to carry CC BY-SA 4.0").
+
+**Acceptance.**
+- A manifest for two records validates against the schema; a mutated one (missing `licence`) fails.
+- `osd get` on a fixture served locally with 3 assets: 3 fetched, 3 verified; corrupt one byte of
+  one asset: exit non-zero, outcome `mismatch` for that asset, the other two untouched.
+- `ATTRIBUTION.md` contains the F3 statement verbatim and names CC-BY-SA-4.0 as share-alike.
+- Site: select two datasets, download, the file has two items (Playwright).
+- Rerun after a partial failure fetches only the missing asset (test counts requests).
+
+**Out of scope.** Mirrors (E07), seismic slices (E10), authentication to publisher portals,
+decoding any file format.
+
+**Stop rules.** A publisher's terms forbid automated download: that record's items get
+`assets: []` and a note; continue.
+
+**Ownership and dependencies.** Coding lane; paths `src/osd/manifest.py`, `src/osd/get.py`,
+`src/osd/cli.py`, `schema/manifest.schema.json`, `site/app.js` (select mode only, claimed after
+E05 merges), `tests/test_manifest.py`. Depends on E04 (item ids and assets).
+
+**Evidence to inspect.** The strategy's test map; a terminal transcript of `osd get` on F3 with a
+real origin, in the PR.
+
+## Dispositions (Codex review `E06-retrieval-by-manifest-CODEX-REVIEW.md`, verdict REWORK)
+
+Supervisor rulings 23 Oct, all accepted; slice 1 (schema, reader, `osd manifest`, `osd get`) maps
+them in `E06-retrieval-by-manifest-STRATEGY.md`. Where the design above and this table differ,
+this table rules.
+
+| # | Finding | Disposition |
+|---|---|---|
+| 2.1 | "E04's item assets" is false; Items carry `assets: {}` | Accepted. Assets come from the Collection only; an Item selection carries `assets: {}` and an `unresolved` reason naming its Collection (`test_item_selection_carries_no_assets`). |
+| 2.2 | Records carry more than `origin.url` | Accepted as context. The manifest reads the built catalogue, not record addresses; `manifest_url`/`inputs` stay verifier and outline inputs. |
+| 2.3 | "No fetcher" needs qualification | Accepted. `osd get` reuses `verify.http_open`; what was missing was a manifest-driven downloader. |
+| 2.4 | E02 `files[]` is verification output | Accepted (ruling 2). It reaches the manifest only through the STAC Collection assets; `coverage: sampled` is required whenever assets are present, and the CLI says "the files the verifier sampled, not the whole dataset". |
+| 2.5 | Confirmed: no manifest module or `get` command | No change. |
+| 2.6 | F3 fixture is stale (CC-BY-SA-3.0, registration, no statement) | Accepted (ruling 8). F3 is not a fixture. Attribution is tested with two supplied statements and a missing-statement case (`test_attribution_statements_verbatim`, `test_attribution_missing_statement_invents_nothing`); the real-origin transcript uses `opm/norne` and `nopims/poseidon` (anonymous, files hashed), with F3 in the same manifest showing as a registration to-do. |
+| 3.1 | `item_id` conflates datasets and wellbores | Accepted (ruling 1). `selection: collections | items`, never a mix (`test_mixed_selection_refused`); entries carry `collection_id` always, `item_id` (STAC id or `null`) and `feature_id` in Item selections; a feature without an Item stays listed as unresolved with its Collection. |
+| 3.2 | Coverage implied complete | Accepted (ruling 2). `coverage: sampled | complete`; slice 1 only writes `sampled`. |
+| 3.3 | Format incomplete: version, origin, reasons | Accepted. `format: "osd.manifest/1"` (const), `origin_url`, `access`, `unresolved` required when assets are empty (schema `if/then`). |
+| 3.4 | Rights loss | Accepted (ruling 3). The record's licence object is copied whole; absent `share_alike`/`statement` stay absent and print "not stated" / "none stated" (`test_licence_copied_whole`). |
+| 3.5 | Parallel asset vocabulary | Accepted (ruling 4). Assets keep STAC keys and `href`, `title`, `roles`, `file:size`, `file:checksum`; `read` converts multihash `1220…` to `sha256` and raises on any other algorithm (`test_read_refuses_invalid_and_non_sha256`). |
+| 3.6 | Unsafe resume | Accepted (ruling 5). Paths confined to `--dest/<collection_id>/`, duplicates refused before any request, temp file in the same directory, `os.replace` after size and hash match, existing files rehashed before skipping, checksum-free downloads report `fetched` (`test_rerun_repairs_truncated_and_corrupt_files`, `test_get_refuses_escaping_paths`, `test_get_without_checksum_reports_fetched`). |
+| 3.7 | Network boundary | Accepted (ruling 6). AGENTS.md names `osd get` on main (8a0803a); tests use a local 127.0.0.1 server. |
+| 3.8 | Terms enforcement undefined | Accepted (ruling 7). A restriction is carried as `licence.redistribution` plus the record's `known_issues`, verbatim; nothing is inferred from prose (`test_known_issues_and_redistribution_carried`). The stop rule above reads accordingly. |
+| 4.1 | Schema test permits false positives | Accepted. Negative fixtures per guard: missing licence, bad checksum, format 2, userinfo, signed query, empty assets without reason, extra field, bad rights enum, climbing asset key (`test_schema_rejects[...]`). |
+| 4.2 | Download counters permit wrong bytes | Accepted. Fresh destinations per test, exact bytes asserted, bad bytes never land, a pre-existing file survives a mismatch, temp files cleaned. |
+| 4.3 | Hard-coded F3 string can pass | Accepted; see 2.6. |
+| 4.4 | Site count permits duplicates | Accepted for slice 2: the Playwright test asserts exact identities, assets, rights and reasons, with a wellbore and a Collection without Items. |
+| 4.5 | Resume count permits truncation | Accepted. A truncated and a corrupted file are repaired with exactly two requests. |
+| 4.6 | Uncovered guards | Accepted. Typed reader, credential exclusion, checksum-free outcome, 401/403 `needs-sign-in`, 404 `origin-dead` and the CLI share-alike line each have a test and a failing mutation (`docs/program/evidence/e06/mutations.txt`). |
+| 5.1 | E15 owns `site/app.js` and `tests/site/**` | Accepted (ruling 9). Select mode is slice 2, a lane opened after E15 merges, with a claim update. |
+| 5.2 | Do not manufacture periods for Item ids | Accepted. Collection selection works without Items; periods stay E16's. |
+| 5.3 | Mirrors E07, rights mapping E09 | Accepted. The manifest preserves their inputs and implements neither. |
+## E07 Mirror store and custody — QUEUED · Kernel · strategy at lane open · Codex round done 23 Oct (REWORK, dispositions below; no second round)
+
+Authority: `DECISIONS.md` OSD-D6 (mirror policy); Ophiolite E35 (custody registry of every copy);
+OSD-D5 (no bucket before E07; separate Hetzner project); owner action 103 (bucket and keys).
+
+**Outcome.** Datasets whose licence allows redistribution and whose files the catalogue has fully
+enumerated and checksummed download from the mirror at full speed with the same checksum, and every
+copy we hold has a durable custody document saying what it is, where it came from, under which
+licence with which attribution, and how to ask for its removal. Removal leaves a tombstone, and a
+removed copy is never re-mirrored by accident.
+
+**Context today (verified 23 Oct, main after PR #9).** No mirror implementation, no custody schema.
+50 of 68 records say `redistribution: allowed`. L2 hashes a sample of a listing
+(`src/osd/verifier/samples.yaml`), not a whole dataset: Norne's listing names 5 entries and one is
+hashed; Poseidon's sample is metadata only. STAC Collection assets carry one origin href each with
+`file:checksum` (`src/osd/stac.py`); `osd get` opens that one href (`src/osd/get.py`), and the
+manifest reader keeps one href per asset (`src/osd/manifest.py`). F3 is share-alike, behind
+registration, without a listing: it is not eligible and not a fixture. No bucket exists for this
+project; keys and bucket are owner action 103, in a Hetzner project of its own. `build/` is not
+docs/program/evidence/e29/sources.md:19:`f=geojson` query answers WGS84 coordinates with no `spatialReference` (Virginia OBJECTID 4211047:
+docs/program/evidence/e29/sources.md:40:wa-demirs L2; bcer, sgc, ut-dogm L1 (`files-checksummed` skip: the listing export is truncated at
+docs/program/evidence/e29/sources.md:41:2,000 features, kept as a partial export); sgudds L0 (origin page HTTP 403 to the runner, blocked
+docs/program/evidence/e29/results.md:13:| va-energy/gas-oil-wells | DGO/DGO_wells/MapServer/0 | 8,605 | L1 | files-checksummed skip (export truncated at 2,000); outline-present: no outlines file (gate budget) | 0 |
+docs/program/evidence/e29/results.md:14:| bcer/well-surface-holes-permitted | PASR_WELL_SURFACE_STATE_PT/MapServer/0 | 34,431 | L1 | as Virginia | 0 |
+docs/program/evidence/e29/results.md:15:| sgc/banco-informacion-petrolera-pozos | Banco_de_Información_Petrolera_Pozos/FeatureServer/0 | 25,013 | L1 | as Virginia | 0 |
+docs/program/evidence/e29/results.md:16:| ut-dogm/oil-gas-wells | viewAGRC_WellData_Surf/FeatureServer/0 | 40,422 | L1 | as Virginia | 0 |
+docs/program/evidence/e29/results.md:17:| nd-dmr/wells | Wells/FeatureServer/0 | 44,018 | L1 | as Virginia | 0 |
+docs/program/evidence/e29/gate-budget.md:10:| + Virginia (8,605) | 34,011 | ~34,000 | 3m16 | ~137 s | pass |
+docs/program/evidence/e29/gate-budget.md:18:#11965 carry BCER well names) — the known red of E18's ruling, now reproduced on real data.
+docs/program/evidence/e29/gate-budget.md:23:Virginia, BCER, SGC, UT DOGM and North Dakota get record `inputs`, `period` and rules but no
+docs/program/evidence/e29/gate-budget.md:35:Default confirmed: commit outlines for SGUDDS, NZP&M x2 and WA DEMIRS; Virginia, BCER, SGC, UT DOGM and North Dakota get inputs, period and rules without committed outlines; the all-record dispatch covers all nine for the duration proof. Put the measurement table in the PR body and in `docs/program/evidence/e29/`; keep the five derived outlines out of the PR. A follow-up kernel charter (E32, registers with a hundred thousand wells: shared build fixture, faster STAC writing, the tippecanoe attribute bug) is being written now for the free coding slot and depends on your merge.
+docs/program/evidence/e29/nzpam-2d-phone.png: binary file matches (found "\0" byte around offset 8)
+
+**Reviewing parsed meeting records**
+exec
+/bin/bash -lc "nl -ba records/al-ogb/wells.yaml | head -28
+nl -ba src/osd/stac.py | sed -n '94,107p'
+sed -n '1,50p' docs/program/evidence/e29/sources.md
+nl -ba src/osd/verify.py | sed -n '343,364p'
+sed -n '1,28p' docs/program/charters/H2-verify-in-shards.md
+git rev-parse HEAD" in /home/epic/src/open-subsurface-data
+ succeeded in 0ms:
+     1	id: al-ogb/wells
+     2	title: OGB GIS Data (wells, bottomholes and directional boreholes)
+     3	summary: >-
+     4	  The State Oil and Gas Board of Alabama's GIS data: "Wells (Surface Locations- UTM Zone 16N - NAD27)",
+     5	  "Bottomholes", "Bottomhole Lines" and "Directional Boreholes", with permit, API number, well name,
+     6	  operator, field, status, type and permit date for each well.
+     7	publisher: {name: State Oil and Gas Board of Alabama, url: https://www.gsa.state.al.us/ogb/, country: US}
+     8	origin:
+     9	  url: https://www.gsa.state.al.us/ogb/gisdata
+    10	  access: anonymous
+    11	  manifest_url: https://www.gsa.state.al.us/img/ogb/gis/wells.zip
+    12	  notes: "The GIS page offers wells.zip (3,562,207 bytes on 23 Oct 2026, the manifest_url) and the bottomhole, bottomhole-line and directional-borehole shapefiles. The Wells layer of the Board's online map is https://gis.ogb.state.al.us/arcgis/rest/services/OGB/OGBOnlineMap/MapServer/0 (16,235 features)."
+    13	licence:
+    14	  name: OGB GIS Use Constraints
+    15	  spdx: null
+    16	  url: https://www.ogb.state.al.us/img/ogb/gis_constraints.txt
+    17	  redistribution: forbidden
+    18	  attribution: required
+    19	kinds: [wellbore-headers, wellbore-paths]
+    20	region: {country: US, basin: "Black Warrior Basin and Gulf Coast (Alabama onshore and state waters)", bbox: [-88.47, 29.9, -84.89, 35.01], crs: "UTM Zone 16N, NAD27"}
+    21	listed_by: [publisher]
+    22	known_issues:
+    23	  - "Use Constraints: 'Reproduction or redistribution of digital data sets or products derived therefrom to a third party organization or entity is expressly forbidden.' 'The OGB should be acknowledged as the originator of the data.'"
+    24	  - "The GIS page template starts with a UTF-8 byte-order mark; read as a listing it names no files, so the manifest_url is the wells shapefile zip itself."
+    25	  - "bbox is Alabama with state waters, approximate."
+    26	period:
+    27	  start: "1910"
+    28	  end: "2026-10-23"
+    94	
+    95	def _assets(verification: dict | None, mirrored: dict[str, str] | None = None) -> dict:
+    96	    """E02's checksummed files that carry a fetch address; collection-level, since which Item a
+    97	    file belongs to is not established. A file the mirror holds (E07, by sha256) keeps one logical
+    98	    asset and one checksum and gains the mirror as an alternate location."""
+    99	    out = {}
+   100	    for f in (verification or {}).get("files", []):
+   101	        if f.get("url"):
+   102	            out[f["path"]] = {"href": f["url"], "title": f["path"], "roles": ["data"],
+   103	                              "file:size": f["bytes"], "file:checksum": "1220" + f["sha256"]}
+   104	            if f["sha256"] in (mirrored or {}):
+   105	                out[f["path"]]["alternate"] = {"mirror": {"href": mirrored[f["sha256"]], "title": MIRROR_TITLE}}
+   106	    return out
+   107	
+# E29 lane-open evidence: the nine ArcGIS layers (read from the VPS, 23 Oct 2026)
+
+Layer description `?f=json` and `query?where=1=1&returnCountOnly=true&f=json`, user agent
+`osd-verifier`, 23 Oct 2026 between 16:50 and 17:05 UTC. Every request answered HTTP 200.
+
+| record | layer | geometry | object id field | pagination | maxRecordCount | spatialReference (wkid / latestWkid) | count |
+|---|---|---|---|---|---|---|---|
+| sgudds/register-geotermalnych-vrtov | Geofond/Vrty_all/MapServer/2 | point | OBJECTID (field type OID) | true | 1000 | 102067 / 5514 | 307 |
+| nzpam/petroleum-wells | GeodataCatalogue_Layers/MapServer/4 | point | OBJECTID (field type OID) | true | 2000 | 2193 / 2193 | 1,302 |
+| nzpam/seismic-surveys-2d | GeodataCatalogue_Layers/MapServer/6 | polyline | OBJECTID (field type OID) | true | 2000 | 2193 / 2193 | 990 |
+| wa-demirs/petroleum-wells | Industry_and_Mining/MapServer/13 | point | objectid (field type OID) | true | 10000 | 7844 / 7844 | 4,371 |
+| va-energy/gas-oil-wells | DGO/DGO_wells/MapServer/0 | point | OBJECTID (field type OID) | true | 2000 | 102747 / 2284 | 8,605 |
+| bcer/well-surface-holes-permitted | PASR_WELL_SURFACE_STATE_PT/MapServer/0 | point | OBJECTID (field type OID) | true | 2000 | 102190 / 3005 | 34,431 |
+| sgc/banco-informacion-petrolera-pozos | Banco_de_Información_Petrolera_Pozos/FeatureServer/0 | point | FID (`objectIdField`) | true | 2000 | 102100 / 3857 | 25,013 |
+| ut-dogm/oil-gas-wells | viewAGRC_WellData_Surf/FeatureServer/0 | point | OBJECTID (`objectIdField`) | true | 2000 | 102100 / 3857 | 40,422 |
+| nd-dmr/wells | Wells/FeatureServer/0 | point | OBJECTID (`objectIdField`) | true | 2000 | 102100 / 3857 | 44,018 |
+
+All nine are under the 50,000 cap. `supportedQueryFormats` lists geoJSON on all nine, but a
+`f=geojson` query answers WGS84 coordinates with no `spatialReference` (Virginia OBJECTID 4211047:
+geojson `[-77.509195, 38.788625]`, json `{x: 11765413.29, y: 4176392.52}` in 102747), so the adapter
+reads `f=json` only (strategy, dispositions).
+
+NZP&M 2D lines: 959 of 990 features have more than one path (219,146 vertices in all).
+
+## Date fields (esriFieldTypeDate) and what the rules use
+
+| record | date fields | period_fields |
+|---|---|---|
+| nzpam/petroleum-wells | Start_Date, End_Date, Rig_Release_Date | start Start_Date, end End_Date |
+| nzpam/seismic-surveys-2d | Start_Date, End_Date | start Start_Date, end End_Date |
+| wa-demirs/petroleum-wells | spud_date, rig_release_date, extract_date | start spud_date, end rig_release_date |
+| nd-dmr/wells | spud_date | start spud_date |
+| va-energy/gas-oil-wells | FiStatDt (status), FiDrComp, FiWellComp (max 2027-02-20, future) | none: no start date |
+| bcer/well-surface-holes-permitted | name, status and authorization grant dates | none: administrative dates |
+| ut-dogm/oil-gas-wells | ConfRelDate, AbandonDate, OrigComplDate | none: no start date |
+| sgudds, sgc | none (SGUDDS states a year, `rokrealizacie`) | none |
+
+## Origin and L2 as stored on `verification-results` (main, 23 Oct)
+
+wa-demirs L2; bcer, sgc, ut-dogm L1 (`files-checksummed` skip: the listing export is truncated at
+2,000 features, kept as a partial export); sgudds L0 (origin page HTTP 403 to the runner, blocked
+since 2026-10-23; HTTP 200 from the VPS); nzpam x2, va-energy, nd-dmr not yet verified on main.
+   343	def _digest(stream: Iterable[bytes], budget: ByteBudget, algorithms: Iterable[str] = (),
+   344	            watch: bool = False) -> tuple[str, int, dict[str, str], bool]:
+   345	    """SHA-256, byte count, the publisher's algorithms over the same stream, and whether a generated
+   346	    export said the server truncated it (`"exceededTransferLimit": true`, across chunk borders)."""
+   347	    h, n = hashlib.sha256(), 0
+   348	    more = {a: hashlib.new(COMPARABLE[a]) for a in algorithms}
+   349	    truncated, tail = False, b""
+   350	    for chunk in stream:
+   351	        if len(chunk) > budget.remaining:
+   352	            budget.exhaust()
+   353	            raise _OverBudget
+   354	        budget.add(len(chunk))
+   355	        h.update(chunk)
+   356	        for x in more.values():
+   357	            x.update(chunk)
+   358	        if watch and not truncated:
+   359	            truncated = bool(TRUNCATED.search(tail + chunk))
+   360	            tail = (tail + chunk)[-64:]
+   361	        n += len(chunk)
+   362	    return h.hexdigest(), n, {a: x.hexdigest() for a, x in more.items()}, truncated
+   363	
+   364	
+## H2 Verify in shards — CHARTERED · Kernel (hardening) · strategy at lane open · Codex round closed (REWORK, reworked 23 Oct)
+
+Authority: owner direction 23 Oct 2026 (levels on the map are real and current; publication on
+every merge); OSD-D5 (results on the `verification-results` branch, no bucket, no secret);
+OSD-D20 and H1 (dead-link report, issues close on recovery); E23 and E30 (listing readers, 2 s
+pause per host); E29 (`--outline-inputs` on ArcGIS layers); `docs/ENGINEERING.md` (hosted
+runners, one job class, no infrastructure).
+
+**Outcome.** An all-record verify dispatch on main finishes in under 25 minutes with the catalogue
+of today and stays under 40 minutes when it doubles, and two dispatches never overwrite each other's
+results, so every merge can be followed by a verify run without watching a 60-minute ceiling.
+
+**Context (main ee24f97, 23 Oct).** `.github/workflows/verify.yml` is one job, `timeout-minutes: 60`,
+that verifies every record serially (`uv run osd verify --outline-inputs`), then runs `osd status`,
+the dead-link report, `make check-full`, force-pushes `build/verification` to
+`verification-results` and dispatches `pages.yml`. Measured all-record runs (historical; the lane re-measures and states run id, checked-out SHA and the
+count of records verified): after E27/E28 on main, runs 39991398736 and 39991880470, 40 and 43
+minutes; after E30 on main, run 39997774390, 56 minutes (it checked out main before E31 merged, so
+it verified 160 records, not 176); E29's branch run 39998588144, 42.5 minutes. Verification is
+serial (`src/osd/verify.py:791-807`) and reads earlier results for licence changes, blocked history
+and L4 carry-forward (`verify.py:567-569, 610, 734-743, 800`); each process has a 2 GiB L2 byte
+budget (`verify.py:78, 293, 789`); `verify_all(ids=[])` verifies everything. The dead-link report
+gets `--verified all` for an empty selection (`verify.yml:60`; `src/osd/report.py:91-109`). `make
+check-full`, the store and the Pages dispatch run only for dispatches on main. There is no
+`concurrency` group: two dispatches on main both force-push `verification-results`, and the one
+finishing last wins with whatever earlier results it started from.
+
+**The design the lane must map to.**
+394e4fd0205d1a33e40fc8fc2c82ebd5bbb07bc1
+
+codex
+**1. Verdict: REWORK** — the proposed checksum breaks the existing downloadable-asset contract, and the required reuse of E29 cannot preserve whole-layer data through its current interface.
+
+Verified against HEAD `394e4fd0205d1a33e40fc8fc2c82ebd5bbb07bc1`. No files modified. References are repository-relative; “E35” means the reviewed charter.
+
+**2. Factual errors and Context verification**
+
+- **22 candidates, not 23.** Parsed every record’s `manifest_url` and compared the resulting layer URLs with the candidate list. `al-ogb/wells` points to `wells.zip`; its ArcGIS address appears only in notes (`records/al-ogb/wells.yaml:11`). Remove it from the ArcGIS acceptance population.
+- **Generated entry confirmed:** JSON and HTML layer readers produce the stated single GeoJSON query (`src/osd/verifier/listings.py:123`, `:129`, `:253`).
+- **Truncation handling confirmed, universal server behavior unproven:** the verifier detects a literal transfer-limit flag, moves that export into `partial_exports`, and skips when no files remain (`src/osd/verify.py:358`, `:495`, `:503`). It does not establish that *every* oversized server response carries that flag.
+- **Named L1 outcomes are historical observations, not HEAD guarantees.** E29 evidence records the five deferred registers at L1 (`docs/program/evidence/e29/results.md:13`); current server behavior and SK MER/PGI outcomes need dated verification artifacts.
+- **E29 paging exists, with a qualification:** it uses offsets ordered by object ID, not requests for an enumerated ID set (`src/osd/outlines/__init__.py:149`). Duplicate and count checks exist (`extractors.py:345`, `:349`), but do not prove equality with an independently obtained expected-ID set.
+- **Verifier non-use confirmed:** `check_files` hashes the generated URL directly (`src/osd/verify.py:480`).
+- Design 4’s schema uncertainty is already resolvable: file entries forbid extra keys (`schema/verification.schema.json:64`). Adding `assembled` requires a version bump and old-file compatibility proof.
+
+**3. Design objections and concrete alternatives**
+
+- **Checksum/address mismatch — E35:27–31.** STAC publishes every file URL with that file’s digest (`src/osd/stac.py:100`); retrieval hashes the downloaded bytes (`src/osd/get.py:95`). An assembled digest attached to the original query URL causes retrieval failure. Keep assembly evidence without a fetch URL, explicitly test that no downloadable asset is emitted, and describe it as verification evidence; alternatively authorize publication of the exact assembled artifact.
+- **Reuse boundary is unavailable — E35:23–26.** E29 fetches selected outline fields as native Esri JSON (`src/osd/outlines/__init__.py:147`); its identity checks feed geometry conversion and `_features`, not a lossless layer return (`extractors.py:348`, `:352`). Permit a small shared paging/validation extraction with preserved outline behavior, then let verification request all fields.
+- **Format conflict — E35:28.** Reusing E29’s native coordinates while calling the result GeoJSON conflicts with this project’s WGS84 GeoJSON contract. Explicitly request server-produced WGS84 GeoJSON, or preserve native Esri JSON and name that format.
+- **Snapshot consistency unspecified.** Unique IDs and matching counts can still combine attributes from different edits. Re-read edit metadata after paging and reject changes; absent edit metadata must mean “stability unknown,” not “unedited.”
+- **Budget enforcement is too late if applied only to assembled bytes.** Bound page reads before decoding and assembly, preserve the 512 MiB record share (`src/osd/verify.py:79`), and account for abandoned reads. Test oversized responses with an injected opener.
+- **Timer and stop rule — E35:48, :55.** “Next hour” contradicts ENGINEERING’s no-artificial-schedule rule. Repeat when the first run completes; any unexplained instability leaves that candidate incomplete, rather than stopping only when most candidates disagree.
+
+**4. Acceptance loopholes and ineffective mutations**
+
+- E35:47–50 permits every candidate to fail with a reason and zero stable checksum pairs. Require successful whole-layer evidence for named eligible multi-page candidates; otherwise report the outcome incomplete.
+- Removing sorting can remain green when request ordering already produces sorted features. Shuffle feature order *within* pages as well as page delivery order, and assert exact canonical bytes.
+- Removing the count check can remain green if the mismatch fixture also triggers short-page rejection. Use a full first page and an oversized final page with unique IDs, isolating the final total-count guard.
+- Removing the feature cap can remain green if the fixture instead hits the 200-page cap (`extractors.py:254`). Choose page size below that page-count threshold and assert the specific feature-cap reason.
+- Only three mutations are required. Duplicate-ID rejection, page-error rejection, robots enforcement, pacing, budget exhaustion, and downstream asset exclusion need independent failing mutations.
+- No test requires all attributes, null geometries, or coordinate changes to affect the digest. An outline-only projection could pass the proposed ID-set test.
+- E35:46 states duration without requiring `<120 s`; schema changes also lack an explicit old-file validation acceptance test.
+
+**5. Scope overlap**
+
+- Repairing downloadable assembled assets enters **E06 retrieval** and **E07 mirror/custody** scope; an `assembled` flag alone changes neither consumer. Keep evidence non-downloadable or explicitly charter that expansion.
+- The necessary shared extraction enters **E29’s outline implementation**, currently forbidden by E35. Amend ownership rather than duplicate its guards.
+- **E32 owns `src/osd/stac.py` and `src/osd/manifest.py`.** Any consumer-side filtering or retrieval adaptation needs an explicit handoff; E35 cannot retain its “disjoint paths” assertion while silently requiring those changes.
+tokens used
+52,220
+**1. Verdict: REWORK** — the proposed checksum breaks the existing downloadable-asset contract, and the required reuse of E29 cannot preserve whole-layer data through its current interface.
+
+Verified against HEAD `394e4fd0205d1a33e40fc8fc2c82ebd5bbb07bc1`. No files modified. References are repository-relative; “E35” means the reviewed charter.
+
+**2. Factual errors and Context verification**
+
+- **22 candidates, not 23.** Parsed every record’s `manifest_url` and compared the resulting layer URLs with the candidate list. `al-ogb/wells` points to `wells.zip`; its ArcGIS address appears only in notes (`records/al-ogb/wells.yaml:11`). Remove it from the ArcGIS acceptance population.
+- **Generated entry confirmed:** JSON and HTML layer readers produce the stated single GeoJSON query (`src/osd/verifier/listings.py:123`, `:129`, `:253`).
+- **Truncation handling confirmed, universal server behavior unproven:** the verifier detects a literal transfer-limit flag, moves that export into `partial_exports`, and skips when no files remain (`src/osd/verify.py:358`, `:495`, `:503`). It does not establish that *every* oversized server response carries that flag.
+- **Named L1 outcomes are historical observations, not HEAD guarantees.** E29 evidence records the five deferred registers at L1 (`docs/program/evidence/e29/results.md:13`); current server behavior and SK MER/PGI outcomes need dated verification artifacts.
+- **E29 paging exists, with a qualification:** it uses offsets ordered by object ID, not requests for an enumerated ID set (`src/osd/outlines/__init__.py:149`). Duplicate and count checks exist (`extractors.py:345`, `:349`), but do not prove equality with an independently obtained expected-ID set.
+- **Verifier non-use confirmed:** `check_files` hashes the generated URL directly (`src/osd/verify.py:480`).
+- Design 4’s schema uncertainty is already resolvable: file entries forbid extra keys (`schema/verification.schema.json:64`). Adding `assembled` requires a version bump and old-file compatibility proof.
+
+**3. Design objections and concrete alternatives**
+
+- **Checksum/address mismatch — E35:27–31.** STAC publishes every file URL with that file’s digest (`src/osd/stac.py:100`); retrieval hashes the downloaded bytes (`src/osd/get.py:95`). An assembled digest attached to the original query URL causes retrieval failure. Keep assembly evidence without a fetch URL, explicitly test that no downloadable asset is emitted, and describe it as verification evidence; alternatively authorize publication of the exact assembled artifact.
+- **Reuse boundary is unavailable — E35:23–26.** E29 fetches selected outline fields as native Esri JSON (`src/osd/outlines/__init__.py:147`); its identity checks feed geometry conversion and `_features`, not a lossless layer return (`extractors.py:348`, `:352`). Permit a small shared paging/validation extraction with preserved outline behavior, then let verification request all fields.
+- **Format conflict — E35:28.** Reusing E29’s native coordinates while calling the result GeoJSON conflicts with this project’s WGS84 GeoJSON contract. Explicitly request server-produced WGS84 GeoJSON, or preserve native Esri JSON and name that format.
+- **Snapshot consistency unspecified.** Unique IDs and matching counts can still combine attributes from different edits. Re-read edit metadata after paging and reject changes; absent edit metadata must mean “stability unknown,” not “unedited.”
+- **Budget enforcement is too late if applied only to assembled bytes.** Bound page reads before decoding and assembly, preserve the 512 MiB record share (`src/osd/verify.py:79`), and account for abandoned reads. Test oversized responses with an injected opener.
+- **Timer and stop rule — E35:48, :55.** “Next hour” contradicts ENGINEERING’s no-artificial-schedule rule. Repeat when the first run completes; any unexplained instability leaves that candidate incomplete, rather than stopping only when most candidates disagree.
+
+**4. Acceptance loopholes and ineffective mutations**
+
+- E35:47–50 permits every candidate to fail with a reason and zero stable checksum pairs. Require successful whole-layer evidence for named eligible multi-page candidates; otherwise report the outcome incomplete.
+- Removing sorting can remain green when request ordering already produces sorted features. Shuffle feature order *within* pages as well as page delivery order, and assert exact canonical bytes.
+- Removing the count check can remain green if the mismatch fixture also triggers short-page rejection. Use a full first page and an oversized final page with unique IDs, isolating the final total-count guard.
+- Removing the feature cap can remain green if the fixture instead hits the 200-page cap (`extractors.py:254`). Choose page size below that page-count threshold and assert the specific feature-cap reason.
+- Only three mutations are required. Duplicate-ID rejection, page-error rejection, robots enforcement, pacing, budget exhaustion, and downstream asset exclusion need independent failing mutations.
+- No test requires all attributes, null geometries, or coordinate changes to affect the digest. An outline-only projection could pass the proposed ID-set test.
+- E35:46 states duration without requiring `<120 s`; schema changes also lack an explicit old-file validation acceptance test.
+
+**5. Scope overlap**
+
+- Repairing downloadable assembled assets enters **E06 retrieval** and **E07 mirror/custody** scope; an `assembled` flag alone changes neither consumer. Keep evidence non-downloadable or explicitly charter that expansion.
+- The necessary shared extraction enters **E29’s outline implementation**, currently forbidden by E35. Amend ownership rather than duplicate its guards.
+- **E32 owns `src/osd/stac.py` and `src/osd/manifest.py`.** Any consumer-side filtering or retrieval adaptation needs an explicit handoff; E35 cannot retain its “disjoint paths” assertion while silently requiring those changes.
