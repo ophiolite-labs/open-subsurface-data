@@ -329,7 +329,9 @@ def test_template_access_comment_lists_the_schema_values():
 # --- E35: verification/5 (layer_exports); verification/4 frozen ---------------------------------------
 
 FROZEN_V4 = FROZEN / "verification-4.schema.json"
-V5 = Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text()))
+FROZEN_V5 = FROZEN / "verification-5.schema.json"
+V6 = Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text()))
+V5 = Draft202012Validator(json.loads(FROZEN_V5.read_text()))   # E38: /5 frozen, the E35 tests below keep it
 V4 = Draft202012Validator(json.loads(FROZEN_V4.read_text()))
 LAYER_EXPORT = {"layer": "https://x.test/arcgis/rest/services/W/MapServer/0", "format": "esri-json",
                 "features": 3, "count": 3, "bytes": 120, "sha256": "a" * 64,
@@ -340,6 +342,7 @@ V_BASE = {"record_id": "a/b", "checked_at": "2026-10-24T12:00:00+00:00", "tool_v
 
 def test_verification_5_identity():
     assert V5.schema["$id"] == "https://open-subsurface-data.org/schema/verification/5"
+    assert V6.schema["$id"] == "https://open-subsurface-data.org/schema/verification/6"   # E38
 
 
 def test_frozen_4_is_main_8d23039():
@@ -365,12 +368,14 @@ def test_every_verification_4_fixture_validates_under_5():
     assert len(found) >= 10, found   # site, shards, fidelity and mirror fixtures (24 Oct: 15)
     for p in found:
         V5.validate(json.loads(p.read_text()))
+        V6.validate(json.loads(p.read_text()))
     with gzip.open(ROOT / "tests" / "fixtures" / "verification" / "stored-3.jsonl.gz", "rt") as fh:
         docs = [json.loads(line) for line in fh]
     assert len(docs) == 96
     for d in docs:
         V4.validate(d)
         V5.validate(d)
+        V6.validate(d)
 
 
 def test_layer_exports_are_verification_5_only():
@@ -391,3 +396,58 @@ def test_layer_export_shape_is_closed(bad):
 def test_a_layer_export_is_never_a_file():
     with pytest.raises(ValidationError):
         V5.validate({**V_BASE, "files": [LAYER_EXPORT]})
+
+
+# --- E38: verification/6 (WFS and OGC API layer exports); verification/5 frozen ---------------------
+
+OGC_EXPORT = {"layer": "https://x.test/geoserver/wfs?service=WFS&typeNames=ns:wells", "format": "wfs-geojson",
+              "features": 3, "count": 3, "completeness": "complete", "bytes": 120, "sha256": "c" * 64}
+
+
+def test_frozen_5_is_main_8023654():
+    assert hashlib.sha256(FROZEN_V5.read_bytes()).hexdigest() == (
+        "efbf078c60e4eb060e773d2231ebc40f2b46faace3a1f789294e1d602cca0b90")
+    assert V5.schema["$id"].endswith("/verification/5")
+
+
+def test_every_verification_5_file_validates_under_6():
+    """Every fixture the frozen /5 accepts (the /3 and /4 ones included), and an E35 export."""
+    found = [p for p in _verification_fixtures() if V5.is_valid(json.loads(p.read_text()))]
+    assert len(found) >= 10, found
+    for p in found:
+        V6.validate(json.loads(p.read_text()))
+    V6.validate({**V_BASE, "layer_exports": [LAYER_EXPORT]})
+
+
+@pytest.mark.parametrize("fmt", ["wfs-geojson", "ogcapi-geojson"])
+def test_wfs_and_ogc_exports_are_verification_6_only(fmt):
+    doc = {**V_BASE, "layer_exports": [{**OGC_EXPORT, "format": fmt}]}
+    V6.validate(doc)
+    assert not V5.is_valid(doc)
+
+
+def test_an_unconfirmed_count_is_null_and_named():
+    V6.validate({**V_BASE, "layer_exports": [{**OGC_EXPORT, "count": None, "completeness": "unconfirmed"}]})
+    for bad in ({"count": None}, {"completeness": "unconfirmed"}, {"completeness": None},
+                {"count": None, "completeness": "partial"}):
+        with pytest.raises(ValidationError):
+            V6.validate({**V_BASE, "layer_exports": [{**OGC_EXPORT, **bad}]})
+    no = dict(OGC_EXPORT)
+    del no["completeness"]
+    with pytest.raises(ValidationError):
+        V6.validate({**V_BASE, "layer_exports": [no]})
+
+
+@pytest.mark.parametrize("bad", [
+    {"format": "geojson"}, {"format": "esri-json"}, {"edit_date_before": None}, {"extra": 1}, {"sha256": "C" * 64},
+], ids=["format", "esri-format", "edit-date", "extra-key", "sha256"])
+def test_ogc_export_shape_is_closed(bad):
+    with pytest.raises(ValidationError):
+        V6.validate({**V_BASE, "layer_exports": [{**OGC_EXPORT, **bad}]})
+
+
+def test_an_esri_export_keeps_its_verification_5_shape():
+    with pytest.raises(ValidationError):
+        V6.validate({**V_BASE, "layer_exports": [{**LAYER_EXPORT, "completeness": "complete"}]})
+    with pytest.raises(ValidationError):
+        V6.validate({**V_BASE, "files": [OGC_EXPORT]})

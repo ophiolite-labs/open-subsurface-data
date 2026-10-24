@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/verification/5",
-  "title": "Verification record, version 5",
+  "$id": "https://open-subsurface-data.org/schema/verification/6",
+  "title": "Verification record, version 6",
   "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
   "type": "object",
   "additionalProperties": false,
@@ -48,21 +48,8 @@
     },
     "layer_exports": {
       "type": "array",
-      "description": "v5 (E35). Whole ArcGIS layers paged by object id and checked against the layer's own id set: evidence for files-checksummed, never a file of the record (no asset, no download, no mirror)",
-      "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["layer", "format", "features", "count", "bytes", "sha256", "edit_date_before", "edit_date_after"],
-        "properties": {
-          "layer": {"type": "string", "description": "The layer URL the pages were queried from"},
-          "format": {"const": "esri-json", "description": "Canonical bytes: features sorted by object id, keys sorted, no whitespace, values as the server returned them (native spatial reference)"},
-          "features": {"type": "integer", "minimum": 0, "description": "Features assembled from the pages"},
-          "count": {"type": "integer", "minimum": 0, "description": "The layer's returnCountOnly on the day"},
-          "bytes": {"type": "integer", "minimum": 0, "description": "Length of the canonical bytes"},
-          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the canonical bytes"},
-          "edit_date_before": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read before paging; null when the layer states none"},
-          "edit_date_after": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read after paging; null when the layer states none"}
-        }
-      }
+      "description": "v5 (E35), v6 (E38). Whole layers read in full: evidence for files-checksummed, never a file of the record (no asset, no download, no mirror). v5: ArcGIS layers (esri-json); v6 adds WFS 2.0.0 feature types (wfs-geojson) and OGC API Features collections (ogcapi-geojson)",
+      "items": {"oneOf": [{"$ref": "#/$defs/esri_layer"}, {"$ref": "#/$defs/ogc_layer"}]}
     },
     "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"},
@@ -78,6 +65,39 @@
     }
   },
   "$defs": {
+    "esri_layer": {
+      "type": "object", "additionalProperties": false,
+      "description": "v5 (E35). An ArcGIS layer paged by object id and checked against the layer's own id set",
+      "required": ["layer", "format", "features", "count", "bytes", "sha256", "edit_date_before", "edit_date_after"],
+      "properties": {
+        "layer": {"type": "string", "description": "The layer URL the pages were queried from"},
+        "format": {"const": "esri-json", "description": "Canonical bytes: features sorted by object id, keys sorted, no whitespace, values as the server returned them (native spatial reference)"},
+        "features": {"type": "integer", "minimum": 0, "description": "Features assembled from the pages"},
+        "count": {"type": "integer", "minimum": 0, "description": "The layer's returnCountOnly on the day"},
+        "bytes": {"type": "integer", "minimum": 0, "description": "Length of the canonical bytes"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the canonical bytes"},
+        "edit_date_before": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read before paging; null when the layer states none"},
+        "edit_date_after": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read after paging; null when the layer states none"}
+      }
+    },
+    "ogc_layer": {
+      "type": "object", "additionalProperties": false,
+      "description": "v6 (E38). A WFS 2.0.0 feature type paged by startIndex and sortBy, or an OGC API Features collection paged by its next links; neither protocol states a revision, so stability is unknown",
+      "required": ["layer", "format", "features", "count", "completeness", "bytes", "sha256"],
+      "properties": {
+        "layer": {"type": "string", "description": "The feature type (WFS base URL with typeNames) or the collection URL"},
+        "format": {"enum": ["wfs-geojson", "ogcapi-geojson"], "description": "Canonical bytes: a GeoJSON FeatureCollection, features as returned sorted by feature id, keys sorted, no whitespace, the pages' crs when they state one; page members left out"},
+        "features": {"type": "integer", "minimum": 0, "description": "Features assembled from the pages"},
+        "count": {"type": ["integer", "null"], "minimum": 0, "description": "The expected count: WFS resultType=hits numberMatched, OGC API numberMatched; null only when the server states none"},
+        "completeness": {"enum": ["complete", "unconfirmed"], "description": "complete: the pages assembled exactly the expected count of distinct ids; unconfirmed: the server states no count, so the export never earns L2"},
+        "bytes": {"type": "integer", "minimum": 0, "description": "Length of the canonical bytes"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the canonical bytes"}
+      },
+      "allOf": [
+        {"if": {"properties": {"count": {"type": "null"}}}, "then": {"properties": {"completeness": {"const": "unconfirmed"}}}},
+        {"if": {"properties": {"completeness": {"const": "unconfirmed"}}}, "then": {"properties": {"count": {"type": "null"}}}}
+      ]
+    },
     "file": {
       "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
       "properties": {

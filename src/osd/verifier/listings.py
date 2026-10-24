@@ -14,6 +14,11 @@ A publisher's checksum, when the listing states one, rides on the entry as `{alg
 verbatim; `osd.verify` decides whether it can be compared. A generated export (an ArcGIS query) is
 marked so the hasher watches it for truncation; an ArcGIS export names its layer, which the verifier
 reads whole (E35, osd.verifier.layers) before falling back to the export.
+
+A `manifest_url` that names a WFS feature type (`service=WFS` with `typeNames`) or an OGC API
+Features collection (a path ending `/collections/<id>` or `/collections/<id>/items`) is not a
+listing either: `ogc_service` recognises it from the URL alone, and the verifier reads the layer
+whole (E38) before it opens the URL or looks at its headers.
 """
 
 from __future__ import annotations
@@ -24,7 +29,8 @@ import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from html.parser import HTMLParser
-from urllib.parse import quote, unquote, urljoin, urlsplit
+from typing import NamedTuple
+from urllib.parse import parse_qsl, quote, unquote, urlencode, urljoin, urlsplit
 
 FIRST_BYTES = 40
 SERVICE_FORMAT = re.compile(r"^\s*(API\b|HTML?\s*$|WEB\s*PAGE|W[MFC]T?S\s*$|ESRI\s*REST|ARCGIS|OGC\b)", re.IGNORECASE)
@@ -83,6 +89,29 @@ def stated_checksum(value) -> dict | None:
         return {"algorithm": alg[:64], "digest": dig[:256]}
     alg = {32: "md5", 40: "sha1", 64: "sha256"}.get(len(value)) if re.fullmatch(r"[0-9a-fA-F]+", value) else None
     return {"algorithm": alg or "unstated", "digest": value[:256]}
+
+
+class OgcService(NamedTuple):
+    protocol: str   # "wfs" or "ogcapi"
+    url: str        # the WFS endpoint without its query, or the collection URL
+    name: str       # the WFS typeNames, or the collection's query (format parameters) to keep
+
+OGC_COLLECTION = re.compile(r"^(.*/collections/[^/]+?)(?:/items)?/?$")
+OGC_PAGING = frozenset({"limit", "offset", "startindex"})
+
+
+def ogc_service(url: str) -> OgcService | None:
+    """E38 design 3: the WFS feature type or the OGC API collection a manifest_url names, or None."""
+    u = urlsplit(url)
+    q = parse_qsl(u.query, keep_blank_values=True)
+    keys = {k.lower(): v for k, v in q}
+    names = keys.get("typenames") or keys.get("typename")
+    if keys.get("service", "").upper() == "WFS" and names:
+        return OgcService("wfs", f"{u.scheme}://{u.netloc}{u.path}", names)
+    if m := OGC_COLLECTION.match(u.path):
+        kept = urlencode([(k, v) for k, v in q if k.lower() not in OGC_PAGING])
+        return OgcService("ogcapi", f"{u.scheme}://{u.netloc}{m.group(1)}", kept)
+    return None
 
 
 # --- structured JSON readers ---------------------------------------------------------------------

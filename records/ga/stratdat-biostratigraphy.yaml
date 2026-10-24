@@ -9,7 +9,8 @@ publisher: {name: Geoscience Australia, url: https://www.ga.gov.au, country: AU}
 origin:
   url: https://pid.geoscience.gov.au/dataset/ga/146442
   access: anonymous
-  notes: "eCat 10ac40b7-844c-4ea2-bd84-23eaadfa4e77, DOI 10.26186/146442. Served as layer resfacs:Biostratigraphy of the WFS https://services.ga.gov.au/gis/resfacs/ows and through https://portal.ga.gov.au/. No manifest_url: the data are a web feature service and a portal, with no file listing the verifier reads."
+  manifest_url: "https://services.ga.gov.au/gis/resfacs/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=resfacs:Biostratigraphy&count=1000&outputFormat=application/json"
+  notes: "eCat 10ac40b7-844c-4ea2-bd84-23eaadfa4e77, DOI 10.26186/146442. Served as layer resfacs:Biostratigraphy of the WFS https://services.ga.gov.au/gis/resfacs/ows and through https://portal.ga.gov.au/. The manifest_url is a WFS 2.0.0 GetFeature of the first 1,000 of 50,128 resfacs:Biostratigraphy samples (numberMatched on 24 Oct 2026), GeoJSON."
 licence:
   name: Creative Commons Attribution 4.0 International Licence
   spdx: CC-BY-4.0

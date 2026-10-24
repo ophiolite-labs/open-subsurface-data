@@ -24,7 +24,9 @@ keyed by record id, never a record field (OSD-D11). Listings are read by shape (
 E23); a publisher's stated checksum is computed from the same stream beside SHA-256 and compared, and
 an export the server truncated is kept apart from `files` as a partial export. An ArcGIS layer is
 read whole (E35, osd.verifier.layers): its canonical bytes go to `layer_exports`, evidence for the
-check and never a file, so no asset, download or mirror sees it.
+check and never a file, so no asset, download or mirror sees it. A WFS feature type or an OGC API
+Features collection named by the manifest_url is read whole the same way (E38), before the URL is
+opened; only a complete one passes.
 
 The network is injected three times: a Fetcher probes an origin (first 16 KB), an Opener streams a
 body in chunks and raises FetchError, a BrowserProbe answers (status, final URL) for the browser
@@ -63,6 +65,7 @@ from .verifier.listings import (  # noqa: F401 (E07)
     ListingError,
     file_listing,
     names_a_file,
+    ogc_service,
     parse_listing,
     read_listing,
 )
@@ -455,13 +458,15 @@ def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener
     manifest = rec["origin"].get("manifest_url")
     if not manifest:
         return check("skip", "no origin.manifest_url"), [], {}
-    is_file = False
-    if isinstance(sample, dict):  # H1 design 8: {file: true, sample: [globs]}
-        is_file, sample = sample.get("file") is True, sample.get("sample", ["*"])
+    is_file, sort = False, None
+    if isinstance(sample, dict):  # H1 design 8: {file: true, sample: [globs]}; E38: {sort: <property>}
+        is_file, sort, sample = sample.get("file") is True, sample.get("sort"), sample.get("sample", ["*"])
     if isinstance(sample, str):
         return check("skip", f"nothing to sample (verifier/samples.yaml): {sample}"), [], {}
     if not sample:
         return check("skip", "no sample for this record in verifier/samples.yaml"), [], {}
+    if (service := ogc_service(manifest)) is not None:   # E38 design 3: before robots, the open and the headers
+        return _check_service(service, manifest, sort, opener, budget, check)
     robots = _Robots(opener)
     if not robots.allowed(manifest):
         return check("skip", robots.refusal(manifest, f"the listing {manifest}")), [], {}
@@ -570,6 +575,32 @@ def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener
     if listing.listed_at:
         parts.append(f"listing dated {listing.listed_at}")
     return check("pass", "; ".join(parts + notes)), files, _members(partial, exports)
+
+
+def _check_service(service, manifest: str, sort: str | None, opener: Opener, budget: ByteBudget,
+                   check: Callable[[str, str], dict]) -> tuple[dict, list[dict], dict]:
+    """E38: a WFS feature type or an OGC API collection read whole. Only a complete layer passes; an
+    unconfirmed one is kept as evidence without L2, a partial one keeps the cap's one-page export
+    as a partial export; none of them is ever a file."""
+    get = _layer_get(opener, _Robots(opener), budget)
+    if service.protocol == "wfs":
+        fmt, out = layers.WFS_FORMAT, layers.export_wfs(service.url, service.name, sort, manifest, get)
+    else:
+        fmt, out = layers.OGC_FORMAT, layers.export_ogcapi(service.url, service.name, get)
+    if out.status == "complete":
+        return check("pass", f"whole layer checked ({out.entry['features']} features, {fmt}), not a downloadable "
+                             f"file; {out.reason}"), [], {"layer_exports": [out.entry]}
+    if out.status == "unconfirmed":
+        return check("skip", f"whole layer read ({out.entry['features']} features, {fmt}) but its count is "
+                             f"unconfirmed ({out.reason}): no L2"), [], {"layer_exports": [out.entry]}
+    if out.status == "partial":
+        kept = "; the one-page export kept as a partial export, not a hashed file" if out.evidence else ""
+        return (check("skip", f"not read whole: {out.reason}{kept}"), [],
+                {"partial_exports": [out.evidence]} if out.evidence else {})
+    if out.status == "failed":
+        return check("fail", f"whole layer {service.url} {service.name if service.protocol == 'wfs' else ''}"
+                             .rstrip() + f": {out.reason}"), [], {}
+    return check("skip", out.reason), [], {}
 
 
 def _members(partial: list[dict], exports: list[dict]) -> dict:
