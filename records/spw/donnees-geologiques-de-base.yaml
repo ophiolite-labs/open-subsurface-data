@@ -1,0 +1,27 @@
+id: spw/donnees-geologiques-de-base
+title: Données géologiques de base (sondages et affleurements)
+summary: >-
+  Base geological data of the Service géologique de Wallonie: the Sondages layer ("forages
+  profonds, puits, sondages à la tarière") and outcrops, with links to the archived descriptions.
+  Data are "disponibles partiellement ... en fonction de l'état d'avancement".
+publisher: {name: "Service public de Wallonie (SPW), Service géologique de Wallonie", url: https://geoportail.wallonie.be, country: BE}
+origin:
+  url: https://geoportail.wallonie.be/catalogue/351ee778-bbbe-422d-82fd-e7f5d5b0cfbc.html
+  access: anonymous
+  manifest_url: https://geoservices.wallonie.be/geotraitement/spwdatadownload/results/351ee778-bbbe-422d-82fd-e7f5d5b0cfbc/GEOLOGIE_FILEGDB_31370.zip
+  notes: "Metawal id 351ee778-bbbe-422d-82fd-e7f5d5b0cfbc. Atom feed lists FILEGDB (11,943,843 bytes), GEOPACKAGE (30,907,816) and SHAPE (26,621,188) zips, updated 2025-06-19. Sondages: MapServer SOL_SOUS_SOL/GEOLOGIE layer 2, 19,976 features."
+licence:
+  name: Licence ouverte CC BY 4.0
+  spdx: CC-BY-4.0
+  url: https://geoportail.wallonie.be/catalogue/351ee778-bbbe-422d-82fd-e7f5d5b0cfbc.html
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, reports]
+region: {country: BE, basin: Wallonia, bbox: [2.75, 49.45, 6.5, 50.85], crs: "EPSG:31370"}
+listed_by: [publisher]
+known_issues:
+  - "Cette donnée est disponible sous les termes de la licence ouverte CC BY 4.0. Les réutilisations sont autorisées moyennant citation de la source et mention explicite des modifications apportées à la donnée."
+  - "Coverage is partial by the publisher's statement; mostly shallow holes, with some deep boreholes."
+  - "bbox is the metadata's georss polygon."
+notes: "No period stated: the metadata gives creation 2010-11-20 and revision 2024-12-04 only."
+added: 2026-10-24

@@ -1,0 +1,26 @@
+id: bgr/vmod-gpdn-entenschnabel
+title: Seismisches Geschwindigkeitsmodell für den „Entenschnabel“ in der deutschen Nordsee (Projekt GPDN)
+summary: >-
+  Seismic velocity model of the "Entenschnabel" (Duck's Bill) in the German North Sea from the
+  GPDN project, with 12 stratigraphic intervals, delivered as SEG-Y.
+publisher: {name: Bundesanstalt für Geowissenschaften und Rohstoffe (BGR), url: https://www.bgr.bund.de, country: DE}
+origin:
+  url: https://gst.bgr.de/shortlink/vmod_gpdn_entenschnabel
+  access: anonymous
+  manifest_url: https://bgr-geoldg-public.obs.eu-nl.otc.t-systems.com/?prefix=4bc4694c-e14b-45f3-a91e-9330edc26e56/Untergrundmodelle/
+  notes: "BGR geoportal CSW id 09332e62-ffcc-4245-9ba2-9cfbc7d4f5ce. The bucket listing holds Vmod_GPDN_Entenschnabel_EPSG_32631.zip, 5,778,689,048 bytes on 24 Oct 2026."
+licence:
+  name: Datenlizenz Deutschland Namensnennung 2.0
+  spdx: DL-DE-BY-2.0
+  url: https://www.govdata.de/dl-de/by-2-0
+  redistribution: allowed
+  attribution: required
+  statement: "Jähne-Klingberg, F., Lutz, R., Arfai, J. (2014): Seismisches Geschwindigkeitsmodell für den „Entenschnabel“ in der deutschen Nordsee (Projekt GPDN)"
+kinds: [velocity-model]
+region: {country: DE, basin: German North Sea (Entenschnabel), bbox: [3.22, 54.95, 5.48, 56.10], crs: "EPSG:32631"}
+size: {bytes_estimate: 5778689048, stated: one zip in the bucket listing}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the CSW record's stated geographic extent."
+notes: "No period stated beyond the 2014 citation year."
+added: 2026-10-24

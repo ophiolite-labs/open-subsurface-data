@@ -1,0 +1,31 @@
+id: mgds/costa-rica-margin-ew0104
+title: "Processed multichannel seismic data offshore the Costa Rica margin (R/V Maurice Ewing EW0104, 2001)"
+summary: >-
+  "This 2001 Ewing cruise was part of a multidisciplinary investigation of the thermal state of the subducting lithosphere offshore of the Costa Rica margin." Processed multichannel seismic (MCS) reflection data from survey EW0104, published by
+  MGDS with DOI 10.1594/IEDA/500092.
+publisher: {name: Marine Geoscience Data System (MGDS), url: https://www.marine-geo.org, country: US}
+origin:
+  url: https://www.marine-geo.org/doi/10.1594/IEDA/500092
+  access: anonymous
+  notes: "MGDS data_set_uid 27817; its file service lists 96 files, 4,387,679,412 bytes in all, on 24 Oct 2026. No manifest_url: datafileservice.php names files without addresses, and downloads go through a form at /tools/search/download.php, which robots.txt disallows."
+licence:
+  name: Creative Commons Attribution-NonCommercial-Share Alike 3.0 United States [CC BY-NC-SA 3.0]
+  spdx: null
+  url: http://creativecommons.org/licenses/by-nc-sa/3.0/us/
+  redistribution: restricted
+  attribution: required
+  share_alike: true
+  statement: "Fisher, Andrew, et al., (2020), Processed multichannel seismic data offshore the Costa Rica margin, acquired during the R/V Maurice Ewing survey EW0104 (2001). Marine Geoscience Data System (MGDS). doi:10.1594/IEDA/500092"
+kinds: [seismic-2d]
+region: {country: CR, basin: "Costa Rica margin (Middle America Trench)", bbox: [-87.5692, 7.84321, -85.2322, 9.85272]}
+size: {bytes_estimate: 4387679412, stated: "96 files in the MGDS file service"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the DataCite geoLocationBox of the DOI."
+  - "Non-commercial and share-alike licence (the US port of CC BY-NC-SA 3.0 has no SPDX id)."
+  - "Title shortened to the schema limit; the full DOI title is in licence.statement."
+period:
+  start: "2001-04-17"
+  end: "2001-04-26"
+  stated: "Earliest and latest file dates in the MGDS file service for data_set_uid 27817 (survey EW0104)"
+added: 2026-10-24

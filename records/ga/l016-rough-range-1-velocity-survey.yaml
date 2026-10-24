@@ -1,0 +1,29 @@
+id: ga/l016-rough-range-1-velocity-survey
+title: L016 Seismic velocity survey in Rough Range No.1 well, WA, 1955
+summary: >-
+  "At the request of West Australian Petroleum Pty. Ltd. and the Department of Mines, Western
+  Australia, the Bureau carried out a seismic velocity survey in Rough Range No.1 Well, with the
+  object of obtaining velocity distribution data for use in the interpretation of results of seismic
+  refraction surveys in the area." Geophone depths 2,000 to 14,000 feet.
+publisher: {name: Geoscience Australia, url: https://www.ga.gov.au, country: AU}
+origin:
+  url: https://pid.geoscience.gov.au/dataset/ga/76376
+  access: anonymous
+  notes: "eCat de4ecded-0881-7494-e044-00144fdd4fa6; one package, L016_Rough_Range_1955_GeoCat_76376.zip. No manifest_url: the package host d28rz98at9flks.cloudfront.net answers robots.txt 'User-agent: * Disallow: /'."
+licence:
+  name: Creative Commons Attribution 4.0 International Licence
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/
+  redistribution: allowed
+  attribution: required
+kinds: [time-depth]
+region: {country: AU, basin: Western Australia (Rough Range), bbox: [114.0, -22.75, 114.5, -22.0]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the eCat record's EX_GeographicBoundingBox."
+  - "The eCat licence URL is the generic http://creativecommons.org/licenses/; the licence is named CC BY 4.0."
+period:
+  start: "1955-02-21"
+  end: "1955-02-22"
+  stated: "eCat temporal extent 1955-02-21 to 1955-02-22"
+added: 2026-10-24

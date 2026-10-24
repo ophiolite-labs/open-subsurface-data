@@ -1,0 +1,30 @@
+id: mgds/gulf-of-corinth-ew0108
+title: "Processed multichannel seismic data in the Gulf of Corinth, acquired during the R/V Maurice Ewing survey EW0108 (2001)"
+summary: >-
+  "The purpose was to image active rifting in the Gulf of Corinth, the regional crustal structure, and to provide a site survey for future IODP drilling." Processed multichannel seismic (MCS) reflection data from survey EW0108, published by
+  MGDS with DOI 10.1594/IEDA/500094.
+publisher: {name: Marine Geoscience Data System (MGDS), url: https://www.marine-geo.org, country: US}
+origin:
+  url: https://www.marine-geo.org/doi/10.1594/IEDA/500094
+  access: anonymous
+  notes: "MGDS data_set_uid 27823; its file service lists 108 files, 669,907,944 bytes in all, on 24 Oct 2026. No manifest_url: datafileservice.php names files without addresses, and downloads go through a form at /tools/search/download.php, which robots.txt disallows."
+licence:
+  name: Creative Commons Attribution-NonCommercial-Share Alike 3.0 United States [CC BY-NC-SA 3.0]
+  spdx: null
+  url: http://creativecommons.org/licenses/by-nc-sa/3.0/us/
+  redistribution: restricted
+  attribution: required
+  share_alike: true
+  statement: "Taylor, Brian, et al., (2020), Processed multichannel seismic data in the Gulf of Corinth, acquired during the R/V Maurice Ewing survey EW0108 (2001). Marine Geoscience Data System (MGDS). doi:10.1594/IEDA/500094"
+kinds: [seismic-2d]
+region: {country: GR, basin: "Gulf of Corinth rift", bbox: [22.1601, 37.9493, 23.1633, 38.393]}
+size: {bytes_estimate: 669907944, stated: "108 files in the MGDS file service"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the DataCite geoLocationBox of the DOI."
+  - "Non-commercial and share-alike licence (the US port of CC BY-NC-SA 3.0 has no SPDX id)."
+period:
+  start: "2001-07-28"
+  end: "2002-07-31"
+  stated: "Earliest and latest file dates in the MGDS file service for data_set_uid 27823 (survey EW0108)"
+added: 2026-10-24

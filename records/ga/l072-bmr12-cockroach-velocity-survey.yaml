@@ -1,0 +1,29 @@
+id: ga/l072-bmr12-cockroach-velocity-survey
+title: L072 BMR 12 (Cockroach) well seismic velocity survey, NT, 1964
+summary: >-
+  "In November 1964, the Bureau of Mineral Resources Seismic Party No. 1 carried out a velocity
+  survey in CBMR 12 (Cockroach) Well, Northern Territory, which had been drilled to 4000 feet and
+  logged using sonic and other logging methods. The time/depth values obtained in the velocity
+  survey were in good agreement with those obtained by integration of the sonic log."
+publisher: {name: Geoscience Australia, url: https://www.ga.gov.au, country: AU}
+origin:
+  url: https://pid.geoscience.gov.au/dataset/ga/76448
+  access: anonymous
+  notes: "eCat deef3eba-fe72-5c7c-e044-00144fdd4fa6; one package, L072_BMR12_Cockroach_Well_1964_GeoCat_76448.zip. No manifest_url: the package host d28rz98at9flks.cloudfront.net answers robots.txt 'User-agent: * Disallow: /'."
+licence:
+  name: Creative Commons Attribution 4.0 International Licence
+  spdx: CC-BY-4.0
+  url: http://creativecommons.org/licenses/
+  redistribution: allowed
+  attribution: required
+kinds: [time-depth]
+region: {country: AU, basin: Northern Territory (BMR 12 Cockroach well), bbox: [137.0, -22.75, 137.5, -22.25]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the eCat record's EX_GeographicBoundingBox."
+  - "The eCat licence URL is the generic http://creativecommons.org/licenses/; the licence is named CC BY 4.0."
+period:
+  start: "1964-09-13"
+  end: "1964-11-19"
+  stated: "eCat temporal extent 1964-09-13 to 1964-11-19"
+added: 2026-10-24

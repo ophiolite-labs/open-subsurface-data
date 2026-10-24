@@ -1,0 +1,28 @@
+id: pangaea/andrill-and-2a-downhole-log-lithostratigraphy
+title: Lithostratigraphy determined from downhole logs in the AND-2A borehole
+summary: >-
+  "During the 2007-2008 austral spring season, the ANDRILL (Antarctic Drilling project) Southern
+  McMurdo Sound Project recovered an 1138-m-long core ... An extensive downhole logging program was
+  successfully carried out." Supplement to Hunze et al. (2013), Geosphere 9(1).
+publisher: {name: PANGAEA, url: https://www.pangaea.de, country: DE}
+origin:
+  url: https://doi.pangaea.de/10.1594/PANGAEA.834632
+  access: anonymous
+  manifest_url: https://doi.pangaea.de/10.1594/PANGAEA.834632
+  notes: "Dataset publication series of 4 datasets; ZIP of all datasets as tab-delimited text (?format=zip, 1,276,403 bytes on 24 Oct 2026). Event AND-2A, Latitude -77.758141, Longitude 165.276765, Elevation -380.0 m, Recovery 1138.54 m."
+licence:
+  name: Creative Commons Attribution 3.0 Unported (CC-BY-3.0)
+  spdx: CC-BY-3.0
+  url: https://creativecommons.org/licenses/by/3.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-logs]
+region: {country: AQ, basin: Victoria Land Basin (McMurdo Sound)}
+listed_by: [publisher]
+known_issues:
+  - "PANGAEA states one point (event AND-2A), which is not an extent, so there is no bbox."
+period:
+  start: "2007-10-10"
+  end: "2007-11-30"
+  stated: "PANGAEA coverage of event AND-2A: Date/Time Start 2007-10-10T12:00:00, Date/Time End 2007-11-30T12:00:00"
+added: 2026-10-24

@@ -1,0 +1,31 @@
+id: bgr/geostor-reservoir-model-pilot-area-a
+title: Reservoir-modelling and parametrization of a potential reservoir structure (Pilot area A) in the German North Sea
+summary: >-
+  "As part of the CDRmare joint project GEOSTOR ... the BGR created detailed static geological 3D
+  models for two potential CO2 storage structures in the Middle Buntsandstein." Pilot area A (~1300
+  km2, Henni salt pillow) is "based on 2D seismic data from various surveys and ... four exploration
+  wells", with 14 faults and 14 horizons, as a SKUA-GOCAD project.
+publisher: {name: Bundesanstalt für Geowissenschaften und Rohstoffe (BGR), url: https://www.bgr.bund.de, country: DE}
+origin:
+  url: https://download.bgr.de/bgr/geostor/82c22d89-3187-4183-981e-5b2b9e28b6d7.html
+  access: anonymous
+  manifest_url: https://download.bgr.de/bgr/geostor/82c22d89-3187-4183-981e-5b2b9e28b6d7.html
+  notes: "Linked from the GEOSTOR data catalogue https://geostor.cdrmare.de/data. One package, Pilotregion_A.zip (6,122,020 bytes on 24 Oct 2026). Pilot area B is a separate record page: https://download.bgr.de/bgr/geostor/8469e527-1e0b-4cfa-a5d4-2f1c79ca0be1.html."
+licence:
+  name: Creative Commons Namensnennung - Nicht kommerziell (CC BY-NC)
+  spdx: null
+  url: http://creativecommons.org/licenses/by-nc/
+  redistribution: restricted
+  attribution: required
+  statement: "BGR, RM_P-A, 2024"
+kinds: [geological-model, reservoir-model, horizons, faults]
+region: {country: DE, basin: German North Sea (West Schleswig Block)}
+listed_by: [publisher]
+known_issues:
+  - "Licence names no CC version, so no SPDX id is given; non-commercial."
+  - "Stated extent '6.833, 6.904, 54.072, 54.558' is much narrower than ~1300 km2, so no bbox is given."
+period:
+  start: "2021"
+  end: "2024"
+  stated: "Metadata: 'The 3D models were created by the BGR between 2021 and 2024.'"
+added: 2026-10-24

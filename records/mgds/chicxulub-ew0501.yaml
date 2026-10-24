@@ -1,0 +1,31 @@
+id: mgds/chicxulub-ew0501
+title: "Processed multichannel seismic data across the Chicxulub impact structure, Mexico (R/V Maurice Ewing EW0501, 2005)"
+summary: >-
+  "This combined reflection-refraction seismic experiment was a joint project between UTIG, University of Arizona, Imperial College (UK), Cambridge University (UK), UNAM (Mexico), and CICY (Mexico)." Processed multichannel seismic (MCS) reflection data from survey EW0501, published by
+  MGDS with DOI 10.1594/IEDA/500106.
+publisher: {name: Marine Geoscience Data System (MGDS), url: https://www.marine-geo.org, country: US}
+origin:
+  url: https://www.marine-geo.org/doi/10.1594/IEDA/500106
+  access: anonymous
+  notes: "MGDS data_set_uid 27886; its file service lists 174 files, 7,562,483,056 bytes in all, on 24 Oct 2026. No manifest_url: datafileservice.php names files without addresses, and downloads go through a form at /tools/search/download.php, which robots.txt disallows."
+licence:
+  name: Creative Commons Attribution-NonCommercial-Share Alike 3.0 United States [CC BY-NC-SA 3.0]
+  spdx: null
+  url: http://creativecommons.org/licenses/by-nc-sa/3.0/us/
+  redistribution: restricted
+  attribution: required
+  share_alike: true
+  statement: "Gulick, Sean, et al., (2020), Processed multichannel seismic data across the Chicxulub impact structure on the Yucatan Peninsula, Mexico, acquired during the R/V Maurice Ewing survey EW0501 (2005). Marine Geoscience Data System (MGDS). doi:10.1594/IEDA/500106"
+kinds: [seismic-2d]
+region: {country: MX, basin: "Chicxulub impact structure (Yucatan shelf)", bbox: [-90.7471, 21.226, -88.6081, 22.1332]}
+size: {bytes_estimate: 7562483056, stated: "174 files in the MGDS file service"}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the DataCite geoLocationBox of the DOI."
+  - "Non-commercial and share-alike licence (the US port of CC BY-NC-SA 3.0 has no SPDX id)."
+  - "Title shortened to the schema limit; the full DOI title is in licence.statement."
+period:
+  start: "2005-01-20"
+  end: "2005-02-17"
+  stated: "Earliest and latest file dates in the MGDS file service for data_set_uid 27886 (survey EW0501)"
+added: 2026-10-24

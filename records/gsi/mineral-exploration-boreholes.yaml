@@ -1,0 +1,30 @@
+id: gsi/mineral-exploration-boreholes
+title: Mineral Exploration Boreholes
+summary: >-
+  "These boreholes were drilled to find minerals, oil, gas, water or to find out more about geology.
+  The data shows the location of the boreholes drilled in Ireland from 1957 to 2002. They were
+  submitted to the GSI from mineral exploration companies."
+publisher: {name: Geological Survey Ireland, url: https://www.gsi.ie, country: IE}
+origin:
+  url: https://www.gsi.ie/data-and-maps/minerals/
+  access: anonymous
+  manifest_url: https://www.gsi.ie/data-and-maps/minerals/
+  notes: "Shapefile zip IE_GSI_Mineral_Exploration_Boreholes_50K_IE26_ITM.zip (2,115,796 bytes on 24 Oct 2026) and an Excel zip; REST layer gsi.geodata.gov.ie/server/rest/services/Minerals/IE_GSI_Mineral_Exploration_Boreholes_50K_IE26_ITM/MapServer/0 (15,055 features). Scanned logs are in GOLDMINE."
+licence:
+  name: Creative Commons Attribution 4.0 International license
+  spdx: CC-BY-4.0
+  url: https://www.gsi.ie/data-and-maps/
+  redistribution: allowed
+  attribution: required
+  statement: "Contains Irish Public Sector Data (Geological Survey Ireland) licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence"
+kinds: [wellbore-headers, core, reports]
+region: {country: IE, basin: Ireland, bbox: [-10.24, 51.45, -5.98, 55.29], crs: "EPSG:2157"}
+listed_by: [publisher]
+known_issues:
+  - "Mineral-exploration holes, not petroleum wells."
+  - "bbox is the REST layer's stated extent (EPSG:2157) converted to WGS84."
+period:
+  start: "1957"
+  end: "2002"
+  stated: "Minerals page and layer description: 'boreholes drilled in Ireland from 1957 to 2002'"
+added: 2026-10-24
