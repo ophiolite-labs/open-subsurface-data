@@ -1,0 +1,31 @@
+id: on-mnr/petroleum-wells
+title: Petroleum wells (Ontario)
+summary: >-
+  "The locations of wells that have been drilled for oil production, gas or salt resources or for
+  underground storage of hydrocarbons." Surface and bottom-hole positions (NAD83), operator, type
+  and mode, ground elevation, total and true vertical depth, vertical/horizontal/directional flags,
+  spud, total-depth-reached and plugging dates. "The Data is collected on an on-going basis and
+  maintained in the Ontario Petroleum Data System (OPDS)."
+publisher: {name: "Ministry of Natural Resources (Ontario)", url: https://data.ontario.ca, country: CA}
+origin:
+  url: https://data.ontario.ca/dataset/235fcd04-6632-4cce-a403-556089cc4276
+  access: anonymous
+  manifest_url: https://ws.lioservices.lrc.gov.on.ca/arcgis2/rest/services/LIO_OPEN_DATA/LIO_Open08/MapServer/22?f=json
+  notes: "Ontario Data Catalogue entry (maintainer branch Divisional Support Branch); downloads from Land Information Ontario: PETWELL.zip as file geodatabase and shapefile on ws.gisetl.lrc.gov.on.ca, and the ArcGIS layer 'Petroleum Well' (LIO_Open08 MapServer/22, 27,639 features, maxRecordCount 2000, on 24 Oct 2026)."
+licence:
+  name: Open Government Licence – Ontario
+  url: https://www.ontario.ca/page/open-government-licence-ontario
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: CA, basin: Ontario, bbox: [-95.154, 41.677, -74.320, 56.859], crs: "EPSG:4269"}
+listed_by: [publisher]
+known_issues:
+  - "This is the well location layer, not the Oil, Gas and Salt Resources Library's well files."
+  - "213 wells carry SPUD_DATE 1800-01-01, which reads as a placeholder; period starts at the earliest later date."
+  - "bbox is the ArcGIS layer extent (NAD83), which includes Great Lakes offshore wells."
+period:
+  start: "1860-01-01"
+  end: "2025-12-01"
+  stated: "SPUD_DATE in the publisher's ArcGIS layer: earliest after 1800-01-01 is 1860-01-01, latest 2025-12-01 (24 Oct 2026); catalogue 'Last Validated Date February 19, 2016', 'Update frequency Other'"
+added: 2026-10-24

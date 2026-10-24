@@ -1,0 +1,29 @@
+id: ns-energy/onshore-petroleum-wells
+title: Onshore Petroleum Wells (Nova Scotia)
+summary: >-
+  "Listing of petroleum wells drilled onshore in NS as of February 1, 2016": well id and name,
+  company, spud and rig release dates, total depth, northing and easting, latitude and longitude,
+  NTS sheet and status, as a Socrata table with point geometry.
+publisher: {name: Government of Nova Scotia, url: https://data.novascotia.ca, country: CA}
+origin:
+  url: https://data.novascotia.ca/Energy/Onshore-Petroleum-Wells/5q4c-27fh
+  access: anonymous
+  manifest_url: https://data.novascotia.ca/api/views/5q4c-27fh.json
+  notes: "Socrata view 5q4c-27fh (Department: Energy). Usage considerations: \"Information from wells #'d 1-97 were extracted from Department of Mines & Energy Info Series #10 (Jan. 1986). Onshore Petroleum Wells Table is updated by the Department of Natural Resources and Renewables as activity occurs.\" Also listed on open.canada.ca as 'Onshore Petroleum Wells'."
+licence:
+  name: Nova Scotia Open Government Licence
+  url: http://novascotia.ca/opendata/licence.asp
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: CA, basin: "Onshore Nova Scotia", bbox: [-66.5, 43.3, -59.5, 47.3]}
+listed_by: [publisher]
+known_issues:
+  - "The licence page novascotia.ca/opendata/licence.asp did not answer on 24 Oct 2026 (two timeouts); open.canada.ca names the same licence 'Open Government Licence – Nova Scotia'. Redistribution and attribution follow that open-government licence family, not a read of its text."
+  - "\"Disclaimer: This table is intended to be used for general purposes only.\""
+  - "bbox is the open.canada.ca spatial rectangle for the dataset."
+period:
+  start: "1869-01-01"
+  end: "2016-02-01"
+  stated: "Socrata metadata 'Time Period Coverage: 1869-01-01/2016-02-01' (open.canada.ca states the same)"
+added: 2026-10-24

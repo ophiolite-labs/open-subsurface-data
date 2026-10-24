@@ -37,11 +37,14 @@ cnloer/production-statistics: ["*/wp-content/uploads/off_prod-1.pdf"]   # page l
 cnloer/source-rock-inventory: ["*/geoinfo/foasourcerock.xlsx"]   # same page; the source rock inventory, 469,933 bytes
 cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
 cpc/onshore-well-locations: {file: true, sample: ["*"]}   # the bare CSV of six onshore wells, under 1 KB (data.gov.tw); content type not read (www3.cpc.com.tw timed out 23 Oct)
+csulb/san-diego-trough-fault-mcs-2018: ["*SDT_11_fkmigr_1500_30_150hz.sgy"]   # Dataverse dataset API (30 files, 2,770,865,947 bytes): one migrated SEG-Y profile, 21,599,680 bytes (robots 202, empty)
+csulb/san-pedro-basin-fault-mcs-2018: ["*SPB_104a_fkmigr_1500_50_150hz.sgy"]   # Dataverse dataset API (160 files, 20,463,230,528 bytes): one migrated SEG-Y profile, 7,310,240 bytes (robots 202, empty)
 dov/boringen: {sort: id}   # WFS 2.0.0 dov-pub:Boringen read whole (E38): 188,580 features on 24 Oct, above the 50,000 cap, so a partial export (the manifest's 1,000-feature GetFeature)
 dov/boringen-geothermie: {sort: id}   # WFS 2.0.0 geothermie:boringen_geothermie read whole (E38): 24,979 features on 24 Oct, 5 pages of 5,000 sorted by id
 dov/formele-stratigrafie: {sort: Interpretatiefiche}   # WFS 2.0.0 interpretaties:formele_stratigrafie (E38): 107,753 features, above the cap, a partial export; the type has no id property
 dov/graviteit-data-punten: {sort: id}   # WFS 2.0.0 gravimetrie:graviteit_data_punten read whole (E38): 16,915 features on 24 Oct, 4 pages sorted by id
 drieat-idf/puits-de-geothermie: ["https://atom.geo-ide.developpement-durable.gouv.fr/atomArchive/GetResource?id=e0d88ccf-*"]   # data.gouv.fr dataset API (json walk, robots 200, /api/1/datasets/r/ disallowed): the internet Atom shapefile zip, 23,897 bytes (atom host robots 404)
+drieat-idf/puits-de-petrole: ["https://atom.geo-ide.developpement-durable.gouv.fr/atomArchive/GetResource?id=81471c16-*"]   # data.gouv.fr dataset API (json walk): the internet Atom shapefile zip; HEAD 200 with no length (atom host robots 404)
 equinor/drogon: ["DROGON_HIST.DATA"]   # GitHub contents API of eclipse/model: the history deck, 6,010 bytes
 fl-dep/oil-gas-permit-database: ["*.xlsx"]   # page links one spreadsheet: OG_WELLS_WEBSITE_4.xlsx, 703,015 bytes
 force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip?download=1"]   # Zenodo record page: the LAS zip, 169,785,172 bytes
@@ -53,6 +56,11 @@ gsi/tellus-airborne-geophysics: ["*/GSI_Tellus_RAD_MERGE_DATA_2022.zip"]   # geo
 gsmma/hydrogeological-drilling-database: {file: true, sample: ["*"]}   # the bare CSV data.gov.tw names; content type and size not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-core-stations-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the core station table; not read (Cloudflare 403 text/html, 23 Oct)
 gsmma/sw-offshore-seismic-lines-2008-2011: {file: true, sample: ["*"]}   # the bare CSV of the seismic line table; not read (Cloudflare 403 text/html, 23 Oct)
+gsni/tellus-airborne-electromagnetics: ["*/gsni/geophysics/Electromagnetics.zip"]   # Open Data NI page (html links, 54 entries): the EM xyz zip, 383,666,252 bytes (resources.bgs.ac.uk robots 404)
+gsni/tellus-airborne-magnetics: "the one zip the page links, Magnetics.zip, is 997,778,640 bytes, over the 512 MiB per-record budget (html links, 55 entries)"
+gsni/tellus-airborne-radiometrics: ["*/gsni/geophysics/Radiometrics.zip"]   # Open Data NI page (html links): the radiometric xyz zip, 58,395,852 bytes (resources.bgs.ac.uk robots 404)
+gsnsw/coal-seam-gas-boreholes: {sort: gsnsw_drill_id}   # WFS 2.0.0 drilling:drilling_drillholes_csg read whole: 905 features on 24 Oct, one page (GeoJSON offered, paging and sorting TRUE)
+gsnsw/drillholes-core-library: {sort: gsnsw_drill_id}   # WFS 2.0.0 drilling:drilling_drillholes_core_library read whole: 11,955 features on 24 Oct (numberMatched), under the 50,000 cap
 gsnsw/drillholes-petroleum: {sort: gsnsw_drill_id}   # WFS 2.0.0 drilling:drilling_drillholes_petroleum read whole (E38): 1,221 features on 24 Oct, one page
 gsq/qped: "the CKAN package lists no resources (23 Oct 2026); QPED files are reached through its own application"
 gsv/faults-latrobe-group-gippsland: {sort: id}   # WFS 2.0.0 open-data-platform:faults_latrobe_gp read whole (E38): 47 features on 24 Oct, one page (id repeats; one page needs no order)
@@ -61,9 +69,11 @@ ibm-research/netherlands-f3-interpretation: ["*/files/horizons.tar.gz?download=1
 idaho-ogcc/well-files: ["*/oilgas/welldata/LASFiles.zip"]   # well-files page links LASFiles.zip and per-well PDFs; the LAS zip, 36,017,299 bytes (gis1.idl.idaho.gov robots.txt answers an HTML page, no rules)
 ie-pad/offshore-exploration-wells: ["*/Exploration_Wells_Irish_Offshore.csv.zip"]   # data.gov.ie page: the CSV zip, 10,487 bytes
 inp-mz/actividade-de-pesquisa-e-producao: ["*"]   # ArcGIS layer 0 'Poços': one geojson export, all 255 features (maxRecordCount 1000), 98,427 bytes
+ispra/boreholes: ["*"]   # the bare INSPIRE GML zip the metadata names (application/x-gmz: a file by its headers), 824,982 bytes (sgi3 robots 404)
 jamstec/seismic-survey-database: "the listing is a cruise index with no file addresses"
 jardfeingi/well-data: ["*FO_Offshore_Wells.zip"]   # page links the offshore wells zip, 3,204 bytes
 kgs/oil-gas-wells: ["*/Ora_Archive/ks_wells.zip"]   # page links the statewide well zip, 44,028,388 bytes
+kigam/coastal-marine-geological-map-gangneung-samcheok: "the listing is a search result with no file addresses"
 kigam/marine-geological-map-korea-strait: "the listing is a search result with no file addresses"
 lgt/geologiniai-tyrimai: ["*/GeologinisTyrimas/csv/download/"]   # data.gov.lt dataset page (66 links): the CSV export of the report catalogue (302 to get.data.gov.lt, text/csv, no length stated)
 manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links the weekly well list, 1,233,013 bytes
@@ -71,6 +81,7 @@ mase-unmig/videpi-seismic: ["*/sgy/1.sgy"]   # page links 171 SEG-Y lines; 1.sgy
 mase-unmig/videpi-wells: ["*/las/55.las"]   # LAS/LIS list page (44 LAS, 4 LIS); 55.las, 577,512 bytes
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 mem-gt/produccion-de-hidrocarburos: ["*/PRODUCCION-DE-HIDROCARBUROS-2025.xlsx"]   # production page links 14 yearly workbooks; the 2025 one, 53,687 bytes (robots 200: User-agent: * Allow: /, Content-Signal use=reference)
+miterd/sondeos-hidrocarburos: {sort: id}   # WFS 2.0.0 ms:sondeos: 810 features on 24 Oct; the capabilities offer GML only, so the reader keeps it partial
 nbmg/oil-gas-wells-through-2013: ["*"]   # ArcGIS layer 1: one geojson export of at most 1,000 of 1,061 features (maxRecordCount 1000), 422,720 bytes
 nd-dmr/wells: ["*"]   # ArcGIS layer: one geojson export of at most 2000 of 44,018 features (kept as partial), 1,118,791 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB
@@ -80,6 +91,7 @@ nogcc/well-data: ["*/NebraskaWellData_Tops.zip"]   # page links 236 files; the w
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
 ns-energy/onshore-2d-seismic-navigation: ["*2017-11*Cumberland*region.zip"]   # atlas page: OFR 2017-11 Part 2 Cumberland shapefile zip, 1,954,295 bytes
 ns-energy/onshore-petroleum-well-log-database: ["*2017-09*Cape*Breton*region.zip"]   # atlas page: OFR 2017-09 Part 1 Cape Breton LAS zip, 4,837,104 bytes
+ns-energy/onshore-petroleum-wells: ["*"]          # Socrata view: its rows.csv export, onshore wells to February 2016
 nsta/offshore-wellbores-top-holes: ["*"]   # ArcGIS layer 0: the whole layer, 13,385 features (maxRecordCount 2000; services-eu1.arcgis.com robots 403)
 nsta/production-data-by-field: ["*"]   # ArcGIS layer 0: the whole layer, 40 field polygons with zip URLs (services-eu1.arcgis.com robots 403)
 nysdec/oil-and-gas-annual-production: ["*"]   # Socrata view: its rows.csv export (generated; size not stated)
@@ -87,6 +99,7 @@ nysdec/oil-gas-and-other-regulated-wells: ["*"]   # Socrata view: its rows.csv e
 nzpam/petroleum-wells: ["*"]   # ArcGIS layer 4: one geojson export, all 1,302 features (maxRecordCount 2000), 977,308 bytes
 nzpam/seismic-surveys-2d: ["*"]   # ArcGIS layer 6: one geojson export, all 990 features (maxRecordCount 2000), 9,674,966 bytes
 ok-occ/oil-gas-data-files: ["*/esri/files/RBDMS_WELLS.zip"]   # page links many files; the RBDMS wells zip, 45,897,943 bytes
+on-mnr/petroleum-wells: ["*"]   # ArcGIS layer 22: the whole layer, 27,639 features (maxRecordCount 2000; ws.lioservices.lrc.gov.on.ca robots 404)
 opm/norne: ["*.DATA"]                             # the simulation deck
 opm/spe9: ["SPE9.DATA"]   # GitHub contents API: the SPE9 deck, 15,927 bytes
 pangaea/andrill-and-2a-downhole-log-lithostratigraphy: ["*?format=zip"]   # landing page (49 links): the ZIP of all 4 datasets as tab-delimited text, 1,276,403 bytes (doi.pangaea.de robots 200, empty Disallow)
@@ -108,6 +121,7 @@ sk-mer/drill-cuttings: ["*"]   # ArcGIS layer 3: one geojson export of at most 2
 sk-mer/non-vertical-wells: ["*"]   # ArcGIS layer 1: one geojson export of at most 2000 of 68,000 features (kept as partial); size not read (robots 404)
 sk-mer/vertical-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 119,595 features (kept as partial), 4,232,645 bytes
 sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the exploration wellbore table
+sodir/faults-and-boundaries: ["*"]   # ArcGIS layer 702: the whole layer, 3,590 polylines (maxRecordCount 1000; factmaps robots 404)
 soton/scanner-pockmark-velocity-models: ["*/1/FAST_Final_Tomo_Vp_GI_geo_SP"]   # ePrints page links six files; the tomographic model, 146,169,210 bytes
 spe/csp10-model-2: ["*por_perm_case2a.zip"]   # page links the corrected dataset, 19,476,344 bytes
 spe/csp11: ["*.geo"]   # GitHub contents API of geometries/: spe11a.geo 29,309 bytes, spe11b.geo 611 bytes
@@ -124,6 +138,9 @@ usgs/ofr-2009-1021-las-gamma-ray-logs: ["*.zip"]   # report index page (20 links
 ustc/bedrettolab-atv-logs-stress: ["*/files/stress_inversion.zip?download=1"]   # Zenodo record page: stress_inversion.zip, 5,491,891 bytes (ATV.zip 2.4 GB not sampled)
 ut-dogm/oil-gas-wells: ["*"]                      # ArcGIS layer: one geojson export of at most 2000 features
 va-energy/gas-oil-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 8,605 features (kept as partial), 1,185,609 bytes
+wa-demirs/2d-seismic-surveys: ["*"]   # ArcGIS layer 23: the whole layer, 35,082 polylines (maxRecordCount 10000; slip robots 404)
+wa-demirs/3d-seismic-survey-polygons: ["*"]   # ArcGIS layer 24: the whole layer, 209 polygons (maxRecordCount 10000; slip robots 404)
+wa-demirs/core-library-drill-holes: ["*"]   # ArcGIS layer 1: the whole layer, 4,143 points (maxRecordCount 10000; slip robots 404)
 wa-demirs/petroleum-wells: ["*"]   # ArcGIS layer 13: one geojson export, all 4,371 features (maxRecordCount 10000), 1,978,900 bytes
 wa-dnr/geophysics-database: ["*"]   # ArcGIS layer 2 (gravity observations): one geojson export of at most 2000 of 7,577 features; size not read (gis.dnr.wa.gov robots 404)
 wa-dnr/geothermal-wells: ["*"]   # ArcGIS layer 7 (measured geothermal gradient): one geojson export, all 489 features (maxRecordCount 2000); size not read (robots 404)

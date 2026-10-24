@@ -1,0 +1,34 @@
+id: kigam/coastal-marine-geological-map-gangneung-samcheok
+title: "수치연안해저지질도 1집(10만, 강릉삼척해역) (Digital coastal marine geological map 1, 1:100,000, Gangneung-Samcheok)"
+summary: >-
+  GIS build of "대한민국 연안해저지질도 제1집(2019, 강릉-삼척, 1:100,000)" on KIGAM's Geo Big Data Open
+  Platform (Petroleum & Marine subject): eight sheets, among them bathymetry with sampling points
+  and survey lines, surface sediment grain size and type, seabed sound velocity, sediment
+  isopach, gravity anomaly (중력이상분포도), magnetic anomaly (자력이상분포도) and surface sediment
+  rare-earth elements.
+publisher: {name: Korea Institute of Geoscience and Mineral Resources (KIGAM), url: https://data.kigam.re.kr, country: KR}
+origin:
+  url: https://data.kigam.re.kr/data/d7b6565a-0ba7-4658-bd03-4fe95928ceb4
+  access: registration
+  manifest_url: https://data.kigam.re.kr/search/metadata?subject=OilUndersea
+  notes: "DOI 10.22747/data.20231011.5392; one file, 수치연안해저지질도1집.zip (1.00 Gb as the page states), version 1 2023.10.11, created 2024-07-30. The OilUndersea search lists the dataset (location 강릉삼척해역, scale K100) without file addresses."
+licence:
+  name: Creative Commons BY-NC-ND 4.0
+  spdx: CC-BY-NC-ND-4.0
+  url: http://creativecommons.org/licenses/by-nc-nd/4.0/deed.ko
+  redistribution: restricted
+  attribution: required
+  statement: "(2024). 수치연안해저지질도 1집(10만, 강릉삼척해역). 한국지질자원연구원. https://doi.org/10.22747/data.20231011.5392"
+kinds: [potential-fields, surfaces]
+region: {country: KR, basin: "East Sea coast, Gangneung-Samcheok (강릉삼척해역)"}
+listed_by: [publisher]
+known_issues:
+  - "Terms and conditions: \"이 데이터의 저작권은 한국지질자원연구원에게 있습니다.\" (copyright KIGAM); the licence is shown as a CC BY-NC-ND 4.0 badge. NC and ND: restricted."
+  - "Gravity and magnetic data are anomaly map sheets, not point data; surfaces are bathymetry and sediment isopach maps."
+  - "Downloads go through the platform's request form after login, as in kigam/marine-geological-map-korea-strait."
+  - "No extent is stated (the place name 강릉삼척해역 only); bbox left out."
+period:
+  start: "2019"
+  end: "2019"
+  stated: "자료설명: \"대한민국 연안해저지질도 제1집(2019, 강릉-삼척, 1:100,000) GIS 구축\" (the printed map's year); platform version 1 2023.10.11"
+added: 2026-10-24

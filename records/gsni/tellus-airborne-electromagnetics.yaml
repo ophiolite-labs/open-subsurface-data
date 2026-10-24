@@ -1,0 +1,32 @@
+id: gsni/tellus-airborne-electromagnetics
+title: GSNI Tellus Regional Airborne Geophysical Survey - Electromagnetics
+summary: >-
+  "This dataset presents the results of the Tellus Electromagnetic data as xyz data": in-phase and
+  quadrature components, apparent resistivity and apparent depth at a low and a high frequency, with
+  grid and WGS84 positions, flight, altitude and terrain channels. "An airborne geophysical survey of
+  the whole of Northern Ireland was flown by the Geological Survey of Northern Ireland in 2005 and
+  2006"; "In total, 82,000 line-km of data were acquired."
+publisher: {name: Geological Survey of Northern Ireland, url: https://admin.opendatani.gov.uk, country: GB}
+origin:
+  url: https://admin.opendatani.gov.uk/dataset/gsni-tellus-regional-airborne-geophysical-survey-electromagnetics
+  access: anonymous
+  manifest_url: https://admin.opendatani.gov.uk/dataset/gsni-tellus-regional-airborne-geophysical-survey-electromagnetics
+  notes: "Open Data NI (CKAN) page of the GSNI, which is \"part of the Department for the Economy (DfE)\" and \"staffed by scientists of the British Geological Survey (BGS)\". The page links one zip on resources.bgs.ac.uk: Electromagnetics.zip, 383,666,252 bytes on 24 Oct 2026. Survey, processing and data conditioning are described in BGS reports IR/06/136 and IR/06/032 (nora.nerc.ac.uk)."
+licence:
+  name: UK Open Government Licence (OGL)
+  spdx: OGL-UK-3.0
+  url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+  redistribution: allowed
+  attribution: required
+kinds: [airborne-em]
+region: {country: GB, basin: Northern Ireland}
+listed_by: [publisher]
+known_issues:
+  - "No extent is stated on the page (\"the whole of Northern Ireland\" only); bbox left out."
+  - "The page's licence label is 'UK Open Government Licence (OGL)' and links version 3; spdx follows the link."
+  - "Low and high frequencies differ between the 2005 and 2006 flights (3125/14368 Hz and 3005/11962 Hz), as the channel list states."
+period:
+  start: "2005"
+  end: "2006"
+  stated: "Additional Information: \"flown by the Geological Survey of Northern Ireland in 2005 and 2006 as part of the Tellus project\"; CKAN creation date June 3, 2016"
+added: 2026-10-24

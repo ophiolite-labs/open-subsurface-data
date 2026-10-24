@@ -1,0 +1,28 @@
+id: nrcan/west-coast-marine-seismic-repository
+title: West Coast Canadian National Marine Seismic Data Repository
+summary: >-
+  "This release makes available the West Canadian Coast part of the results of an ongoing effort
+  to scan and convert all our inventory of analog marine survey field records (seismic, sidescan
+  and sounder) to digital format." Records "scanned at 300 dpi and were converted into JPEG2000
+  format", indexed by KML with reduced-scale thumbnails, and a master list of scanned sections.
+publisher: {name: Natural Resources Canada, url: https://natural-resources.canada.ca, country: CA}
+origin:
+  url: https://open.canada.ca/data/en/dataset/b9400595-b5b6-4a76-b34e-b437178adb45
+  access: anonymous
+  notes: "Three resources on ftp.maps.canada.ca/pub/nrcan_rncan/raster/marine_geoscience/Seismic_Reflection_Scanned/: WestCoastScannedSeismicCollection.kmz, NRCan Marine Data Holdings.kmz and MasterScannedSectionList.xls. No manifest_url: that host's robots.txt reads 'Disallow: /pub' (24 Oct 2026)."
+licence:
+  name: Open Government Licence - Canada
+  url: https://open.canada.ca/en/open-government-licence-canada
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-2d]
+region: {country: CA, basin: "Pacific margin of Canada", bbox: [-145.0, 43.0, -122.5, 55.0]}
+listed_by: [publisher]
+known_issues:
+  - "Scanned analog field records (images), not SEG-Y traces; seismic-2d is the nearest kind. Sidescan and sub-bottom sounder records are in the same collection."
+  - "bbox is the catalogue's spatial polygon, a rectangle."
+period:
+  start: "1960-01-01"
+  end: "2016-01-01"
+  stated: "open.canada.ca: time_period_coverage_start 1960-01-01, time_period_coverage_end 2016-01-01; date_published 2017-01-01"
+added: 2026-10-24

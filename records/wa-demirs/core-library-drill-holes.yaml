@@ -1,0 +1,32 @@
+id: wa-demirs/core-library-drill-holes
+title: DMIRS Core Library Drill Holes (DMIRS-004)
+summary: >-
+  "Index to mineral core stored by the Department of Mines, Industry Regulation and Safety." "The
+  core libraries in Perth and Kalgoorlie are only capable of storing 2 to 5% of core drilled each
+  year in Western Australia, and once stored is available for public viewing." Each hole has UWI,
+  name, operator, spud date, basin, depth, commodity and store location.
+publisher: {name: "Department of Energy, Mines, Industry Regulation and Safety (Western Australia)", url: https://www.wa.gov.au, country: AU}
+origin:
+  url: https://catalogue.data.wa.gov.au/dataset/mineral-drill-holes-dmirs-004
+  access: anonymous
+  manifest_url: https://public-services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/Industry_and_Mining/MapServer/1?f=json
+  notes: "data.wa.gov.au package mineral-drill-holes-dmirs-004: other spatial formats at https://dasc.dmirs.wa.gov.au/home?productAlias=CoreLibraryDrillholes, WFS and WMS on public-services.slip.wa.gov.au. manifest_url is ArcGIS layer 1 (4,143 points, maxRecordCount 10000, GDA2020, on 24 Oct 2026)."
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [core, wellbore-headers]
+region: {country: AU, basin: Western Australia, bbox: [113.716, -34.977, 129.303, -13.987], crs: "EPSG:7844"}
+listed_by: [publisher]
+known_issues:
+  - "\"Information on drillcore is usually sourced from WAMEX reports (company exploration reports) ... The accuracy of such information is not routinely checked.\""
+  - "Mineral exploration core, not petroleum core; the layer is an index to physical core, not core data."
+  - "The latest spud_date is 2026-09-01, after the date read; 447 of 4,143 holes have no spud_date."
+  - "bbox is the CKAN package's spatial rectangle."
+period:
+  start: "1905-05-25"
+  end: "2026-09-01"
+  stated: "spud_date in the publisher's ArcGIS layer 1: earliest 1905-05-25, latest 2026-09-01, on 3,696 holes (24 Oct 2026); no period stated in prose"
+added: 2026-10-24
