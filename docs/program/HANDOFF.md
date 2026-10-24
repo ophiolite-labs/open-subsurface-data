@@ -4,6 +4,8 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 
 ## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
 
+- H2 merged (PR #48, main caec64b): an all-record verify dispatch on main runs 12 shards (origin-host hash) on hosted runners; snapshot, shard matrix, finishing job (overlay, status, dead-link report on fresh ids only, check-full, store, republish); a failed shard keeps its earlier results; workflow-level concurrency group verify-main. Branch runs about 18 min (40009341905; failed-shard run 40012093005). First main run 40047367101 dispatched 24 Oct 00:55 UTC. PR runs and explicit-id dispatches keep the single job.
+- Verify after E29 (main, run 40007492889): success in 53 min; published 196 records: 2 L3, 57 L2, 102 L1, 35 L0. Verify after E31 (40002956457): success in 52 min.
 - E34 merged (PR #47, main 2a4e75a): periods for 10 of the 22 newest records without one (below the charter's 11; the other 12 state none, said per record), bbox for 11 of 22 (BOEM planning areas, C-NLOER land tenure regions, GeotIS WMS extent, CO2 DataShare points, Falklands designated area); 11 keep their no-bbox reason. mem.gob.gt and noc.ly answered 403 on the day. Verify dispatched on main.
 - E34 chartered and opened (periods and extents for the 36 records of E31 and E33; lane osd-e34).
 - E33 merged (PR #44, main 2752137): 196 records; E31's four held-back records restored (Falklands, PNG, Sri Lanka, South Dakota) plus 16 new (Washington Geological Survey x5, Ile-de-France geothermal, Svelvik CO2, Northern Lights core tests, Guatemala, Liberia and others); six new countries; `unknown` cap reached (45 in all); 106 records with a manifest_url.
