@@ -1,0 +1,24 @@
+# E35 candidates (supervisor, 24 Oct): records whose manifest_url is an ArcGIS layer
+al-ogb/wells
+bcer/well-surface-holes-permitted
+cgs/vrtna-prozkoumanost
+inp-mz/actividade-de-pesquisa-e-producao
+nbmg/oil-gas-wells-through-2013
+nd-dmr/wells
+nzpam/petroleum-wells
+nzpam/seismic-surveys-2d
+pgi/cbdg-boreholes
+sgc/banco-informacion-petrolera-pozos
+sgudds/register-geotermalnych-vrtov
+sk-mer/drill-core
+sk-mer/drill-cuttings
+sk-mer/non-vertical-wells
+sk-mer/vertical-wells
+ut-dogm/oil-gas-wells
+va-energy/gas-oil-wells
+wa-demirs/petroleum-wells
+wa-dnr/geophysics-database
+wa-dnr/geothermal-wells
+wa-dnr/groundwater-chemistry
+wa-dnr/oil-gas-wells
+wa-dnr/shear-wave-database
