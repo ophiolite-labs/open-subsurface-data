@@ -1,0 +1,26 @@
+id: pangaea/kola-superdeep-melt-inclusions-zircon
+title: Composition of melt inclusions and age of zircons of plagiogneisses from the Kola Superdeep Borehole
+summary: >-
+  "A comprehensive study of melt inclusions and SHRIMP dating of zircons from trondhjemite gneisses
+  of the sequence VIII from the Kola Superdeep Borehole has revealed presence of old primary
+  magmatic crystals with age up to 2887+/-15 Ma." Supplement to Chupin et al. (2006), Doklady Earth
+  Sciences 406(4).
+publisher: {name: PANGAEA, url: https://www.pangaea.de, country: DE}
+origin:
+  url: https://doi.pangaea.de/10.1594/PANGAEA.788243
+  access: anonymous
+  manifest_url: https://doi.pangaea.de/10.1594/PANGAEA.788243
+  notes: "Dataset publication series of 2 datasets; ZIP of all datasets as tab-delimited text (?format=zip, 5,347 bytes on 24 Oct 2026). Event SG-3, Latitude 69.395917, Longitude 30.610367, Rock drill."
+licence:
+  name: Creative Commons Attribution 3.0 Unported (CC-BY-3.0)
+  spdx: CC-BY-3.0
+  url: https://creativecommons.org/licenses/by/3.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [core, geochemistry]
+region: {country: RU, basin: Kola Peninsula (Baltic Shield), bbox: [30.610367, 69.395917, 30.610367, 69.395917]}
+listed_by: [publisher]
+known_issues:
+  - "PANGAEA states one point (event SG-3); bbox is that point, not an extent."
+notes: "No period stated beyond the 2006 issue year."
+added: 2026-10-24

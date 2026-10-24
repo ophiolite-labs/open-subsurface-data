@@ -83,6 +83,9 @@ nzpam/seismic-surveys-2d: ["*"]   # ArcGIS layer 6: one geojson export, all 990 
 ok-occ/oil-gas-data-files: ["*/esri/files/RBDMS_WELLS.zip"]   # page links many files; the RBDMS wells zip, 45,897,943 bytes
 opm/norne: ["*.DATA"]                             # the simulation deck
 opm/spe9: ["SPE9.DATA"]   # GitHub contents API: the SPE9 deck, 15,927 bytes
+pangaea/andrill-and-2a-downhole-log-lithostratigraphy: ["*?format=zip"]   # landing page (49 links): the ZIP of all 4 datasets as tab-delimited text, 1,276,403 bytes (doi.pangaea.de robots 200, empty Disallow)
+pangaea/kola-superdeep-melt-inclusions-zircon: ["*?format=zip"]   # landing page: the ZIP of both datasets as tab-delimited text, 5,347 bytes (doi.pangaea.de robots 200, empty Disallow)
+pangaea/oman-drilling-cm1a-cm2b-geochemistry: ["*?format=zip"]   # landing page: the ZIP of all 6 datasets as tab-delimited text, 37,851 bytes (doi.pangaea.de robots 200, empty Disallow)
 petrocom-gh/fields-production-data: ["*"]   # the bare 2025 workbook (xlsx content type: a file by its headers), 597,225 bytes
 pgi/cbdg-boreholes: ["*"]   # ArcGIS layer: one geojson export of at most 1000 of 334,145 features (kept as partial)
 sd-danr/oil-gas-production-injection: ["*/pubs/og/Oil_Gas_Production_All_Years.xlsx"]   # data page links the production and injection workbooks on sddenr.net; production, 14,332,260 bytes

@@ -1,0 +1,30 @@
+id: pangaea/oman-drilling-cm1a-cm2b-geochemistry
+title: Lithology, volatile, major and trace element composition of Holes CM1A and CM2B ultramafic samples, SE Oman ophiolite
+summary: >-
+  "The database reports the results of bulk rock geochemical measurements realized on 105 ultramafic
+  lithologies (harzburgites and dunites) samples collected from Holes CM1A (46 samples) and CM2B (59
+  samples) drilled in the Wadi Tayin massif in the SE of the ophiolite during Phase 2 of the ICDP
+  OmanDP (Nov. 2017-Jan. 2018)."
+publisher: {name: PANGAEA, url: https://www.pangaea.de, country: DE}
+origin:
+  url: https://doi.pangaea.de/10.1594/PANGAEA.942402
+  access: anonymous
+  manifest_url: https://doi.pangaea.de/10.1594/PANGAEA.942402
+  notes: "Dataset publication series of 6 datasets; 'Download ZIP file containing all datasets as tab-delimited text' (?format=zip, 37,851 bytes on 24 Oct 2026). Full title ends '... drilled in Wadi Tayin massif, SE Oman ophiolite (ICDP Oman drilling project Phase 2 Leg 3)'."
+licence:
+  name: Creative Commons Attribution 4.0 International (CC-BY-4.0)
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/legalcode
+  redistribution: allowed
+  attribution: required
+kinds: [core, geochemistry]
+region: {country: OM, basin: Oman ophiolite (Wadi Tayin massif), bbox: [58.33574, 22.90725, 58.33582, 22.911]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is PANGAEA's stated coverage (West/South/East/North-bound) of the two holes."
+  - "Title shortened to the schema limit; the full title is in origin.notes."
+period:
+  start: "2017-11"
+  end: "2018-01"
+  stated: "Abstract: 'drilled ... during Phase 2 of the ICDP OmanDP (Nov. 2017-Jan. 2018)'"
+added: 2026-10-24
