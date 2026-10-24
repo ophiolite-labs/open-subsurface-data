@@ -12,7 +12,8 @@ is the one entry, `file_listing`. A CSV served as `text/csv` is a file, never a 
 
 A publisher's checksum, when the listing states one, rides on the entry as `{algorithm, digest}`
 verbatim; `osd.verify` decides whether it can be compared. A generated export (an ArcGIS query) is
-marked so the hasher watches it for truncation.
+marked so the hasher watches it for truncation; an ArcGIS export names its layer, which the verifier
+reads whole (E35, osd.verifier.layers) before falling back to the export.
 """
 
 from __future__ import annotations
@@ -44,6 +45,7 @@ class Entry:
     size: int | None = None
     checksum: dict | None = field(default=None, compare=False)  # {algorithm, digest} as stated
     generated: bool = False  # a server-side export: may come back truncated
+    layer: str | None = field(default=None, compare=False)  # E35: the ArcGIS layer this export queries
 
 
 @dataclass(frozen=True)
@@ -123,7 +125,8 @@ def _socrata(d, base):
 def _arcgis_export(layer_url: str, max_records: int) -> Entry:
     url = (f"{layer_url.rstrip('/')}/query?where=1%3D1&outFields=*&f=geojson"
            f"&resultRecordCount={max_records}")
-    return Entry(f"query export (geojson, at most {max_records} features)", url, generated=True)
+    return Entry(f"query export (geojson, at most {max_records} features)", url, generated=True,
+                 layer=layer_url.rstrip("/"))
 
 
 def _arcgis(d, base):
