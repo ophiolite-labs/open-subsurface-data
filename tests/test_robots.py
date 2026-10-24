@@ -1,9 +1,10 @@
-"""H3: robots.txt read as RFC 9309 reads it (osd.verifier.robots).
+"""H3: robots.txt read as RFC 9309 reads it (osd.verifier.robots) and judged by osd.verify._Robots.
 Each test names the mutation it catches; docs/program/evidence/h3/mutations.md records them red."""
 
 import pytest
 
 from osd.verifier.robots import Rules, parse
+from osd.verify import USER_AGENT, FetchError, _Robots
 
 TOKEN = "open-subsurface-data-verifier"
 SITE = "https://fixture.test"
@@ -160,3 +161,44 @@ def test_disallow_all_and_allow_all():
     assert not Rules.disallow_all().allowed(SITE + "/") and not Rules.disallow_all().allowed(SITE)
     assert Rules().allowed(SITE + "/x")
 
+
+# --- osd.verify._Robots: status handling unchanged, the body read by the matcher ---------------
+
+def opener_for(answers: dict, calls: list):
+    def open_(url):
+        calls.append(url)
+        a = answers[url]
+        if isinstance(a, Exception):
+            raise a
+        return iter([a.encode()[i:i + 5] for i in range(0, len(a), 5)])
+    return open_
+
+
+def test_the_verifier_names_its_product_token():
+    assert _Robots.TOKEN == TOKEN and TOKEN in USER_AGENT
+
+
+def test_a_2xx_body_is_read_by_the_matcher_once_per_host():
+    calls = []
+    r = _Robots(opener_for({SITE + "/robots.txt": QLD}, calls))
+    assert not r.allowed(SITE + "/api/3/action/package_search?q=x")
+    assert r.allowed(SITE + "/dataset/x")
+    assert calls == [SITE + "/robots.txt"] and r.unread == {}
+    assert r.refusal(SITE + "/api/", "the listing") == "robots.txt disallows the listing"
+
+
+@pytest.mark.parametrize("status", [401, 403, 404, 410])
+def test_robots_4xx_allows_everything(status):
+    # mutation: a 4xx treated as unreadable -> refused
+    r = _Robots(opener_for({SITE + "/robots.txt": FetchError(SITE + "/robots.txt", status)}, []))
+    assert r.allowed(SITE + "/anything") and r.unread == {}
+
+
+@pytest.mark.parametrize("error, why", [(FetchError(SITE + "/robots.txt", 503), "HTTP 503"),
+                                        (FetchError(SITE + "/robots.txt", 0, "timeout"), "timeout"),
+                                        (FetchError(SITE + "/robots.txt"), "no answer")])
+def test_robots_5xx_or_no_answer_disallows_and_says_why(error, why):
+    # mutation: unreachable read as allow-all -> fetched
+    r = _Robots(opener_for({SITE + "/robots.txt": error}, []))
+    assert not r.allowed(SITE + "/x") and r.unread == {SITE: why}
+    assert r.refusal(SITE + "/x", "the listing").startswith(f"robots.txt unreadable ({why}), treated as disallow")
