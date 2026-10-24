@@ -1,0 +1,30 @@
+id: ngu/grunnvannsborehull
+title: Grunnvannsborehull (NGU, national groundwater and energy well database)
+summary: >-
+  "Datasettet gir en landsdekkende oversikt over borede grunnvannsbrønner, energibrønner og
+  naturlige oppkommer av grunnvann": location and "tekniske, administrative og geologiske forhold"
+  of groundwater and energy (ground-source heat) wells in Norway, mostly reported by drilling
+  firms under the Water Resources Act §46, as held in GRANADA, the national groundwater database.
+publisher: {name: Norges geologiske undersøkelse (NGU), url: https://www.ngu.no, country: "NO"}
+origin:
+  url: https://kartkatalog.geonorge.no/metadata/grunnvannsborehull/82cd33ef-52dd-4c83-b2d6-e55a0941b33b
+  access: anonymous
+  notes: "Geonorge entry 82cd33ef-52dd-4c83-b2d6-e55a0941b33b: FGDB, Shape and SOSI by country or county through the Geonorge download API nedlasting.ngu.no (orders are a POST to /api/v2/order, delivery notified by e-mail), and the GRANADA map at https://geo.ngu.no/kart/granada_mobil/. No manifest_url: there is no file address to list, and geo.ngu.no robots.txt answered 503 (24 Oct 2026)."
+licence:
+  name: Norsk lisens for offentlige data (NLOD)
+  url: http://data.norge.no/nlod/no/1.0
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: "NO", basin: Norway (mainland), bbox: [4.5, 57.9, 31.2, 71.2]}
+listed_by: [publisher]
+known_issues:
+  - "Geonorge: \"Ingen begrensninger på bruk er oppgitt.\" with the NLOD 1.0 link; spdx left null (OSD-D15: the catalogue entry is the statement)."
+  - "\"Oppgitte data er veiledende, og man må ta høyde for at det kan være gjengitt, målt eller tolket feil.\" (positions by various methods, of varying accuracy)."
+  - "Shallow water and energy wells, not petroleum wells."
+  - "bbox is the Geonorge bounding box."
+period:
+  start: "2000-09-05"
+  end: "2026-10-20"
+  stated: "Geonorge DatePublished 2000-09-05, DateUpdated 2026-10-20, status 'Kontinuerlig oppdatert'"
+added: 2026-10-24

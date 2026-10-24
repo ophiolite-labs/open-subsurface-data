@@ -1,0 +1,29 @@
+id: ngu/seismiske-linjer-2d
+title: Seismiske linjer, 2D (NGU)
+summary: >-
+  "Seismiske linjer, 2D viser hvor NGU har samlet inn seismiske data og sedimentekkoloddata.
+  Databasen inneholder også data fra MAREANO og en del eksterne data, blant annet fra IKU": marine
+  2D seismic and sediment echo-sounder lines with equipment and acquisition parameters; digital
+  lines (after 1990, and some digitised analogue lines) link to thumbnail images of the profiles.
+publisher: {name: Norges geologiske undersøkelse (NGU), url: https://www.ngu.no, country: "NO"}
+origin:
+  url: https://kartkatalog.geonorge.no/metadata/uuid/a8390c01-62a7-4582-9b77-f42c51656107
+  access: api
+  notes: "Geonorge entry a8390c01-62a7-4582-9b77-f42c51656107 names one distribution, the WMS https://geo.ngu.no/mapserver/MarinLinjerProverWMS2/ (format listed as FGDB). No manifest_url: a WMS lists no files, and geo.ngu.no robots.txt answered 503 (24 Oct 2026), which the verifier reads as disallow."
+licence:
+  name: Norsk lisens for offentlige data (NLOD) 2.0
+  spdx: NLOD-2.0
+  url: https://data.norge.no/nlod/no/2.0
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-2d]
+region: {country: "NO", basin: "Norwegian seas and continental shelf", bbox: [-14.5, 56.0, 33.005, 82.0]}
+listed_by: [publisher]
+known_issues:
+  - "Line locations and thumbnails through a map service; the traces are not offered for download."
+  - "bbox is the Geonorge bounding box."
+period:
+  start: "2020-11-09"
+  end: "2020-11-09"
+  stated: "Geonorge DatePublished and DateUpdated 2020-11-09; status 'Kontinuerlig oppdatert', maintenance 'Ukentlig'; no acquisition years stated"
+added: 2026-10-24

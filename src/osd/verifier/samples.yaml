@@ -69,6 +69,7 @@ ispra/boreholes: ["*"]   # the bare INSPIRE GML zip the metadata names (applicat
 jamstec/seismic-survey-database: "the listing is a cruise index with no file addresses"
 jardfeingi/well-data: ["*FO_Offshore_Wells.zip"]   # page links the offshore wells zip, 3,204 bytes
 kgs/oil-gas-wells: ["*/Ora_Archive/ks_wells.zip"]   # page links the statewide well zip, 44,028,388 bytes
+kigam/coastal-marine-geological-map-gangneung-samcheok: "the listing is a search result with no file addresses"
 kigam/marine-geological-map-korea-strait: "the listing is a search result with no file addresses"
 lgt/geologiniai-tyrimai: ["*/GeologinisTyrimas/csv/download/"]   # data.gov.lt dataset page (66 links): the CSV export of the report catalogue (302 to get.data.gov.lt, text/csv, no length stated)
 manitoba-petroleum/technical-well-files: ["*/uwi_weekly.xlsx"]   # page links the weekly well list, 1,233,013 bytes
