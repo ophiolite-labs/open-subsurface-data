@@ -187,8 +187,8 @@ test('tiles: the page loads tiles for the viewport, under 1 MB from the site, an
   }
 });
 
-test('tiles: #q=sodir, a click on a wellbore shows the same detail title as the GeoJSON path', { skip: noTiles }, async () => {
-  const hash = 'q=sodir&map=10/60.55/2.85';
+test('tiles: #q=factpages, a click on a wellbore shows the same detail title as the GeoJSON path', { skip: noTiles }, async () => {
+  const hash = 'q=factpages&map=10/60.55/2.85';
   const clickWell = async (page, layer, want) => {
     const f = await page.evaluate(([layer, want]) => {
       const m = window.osdMap;
@@ -387,7 +387,7 @@ for (const [path, routes, wellLayer] of [['tiles', withAssets, 'wells-tiles'],
   ['geojson', async c => { await withAssets(c); await withoutTiles(c); }, 'wells']]) {
   test(`select (${path}): tick a dataset on the map and one in the list, see the rights, download a manifest osd get reads`,
     { skip: path === 'tiles' && noTiles }, async () => {
-    const { context, page, errors, unexpected } = await open('q=sodir&map=10/60.55/2.85', { routes });
+    const { context, page, errors, unexpected } = await open('q=factpages&map=10/60.55/2.85', { routes });
     assert.equal(await outlinesSource(page), path === 'tiles' ? 'vector' : 'geojson');
     await page.locator('#pickmode').click();
     assert.equal(await page.locator('#list li .tick').count(), await page.locator('#list li').count());
