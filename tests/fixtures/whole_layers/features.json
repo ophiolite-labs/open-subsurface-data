@@ -1,0 +1,9 @@
+{"objectIdFieldName": "OBJECTID", "geometryType": "esriGeometryPoint",
+ "spatialReference": {"wkid": 2193, "latestWkid": 2193},
+ "features": [
+  {"attributes": {"OBJECTID": 1, "UWI": "W-001", "NAME": "Alpha-1", "DEPTH_M": 1200.5, "SPUD": 315532800000}, "geometry": {"x": 1730000.25, "y": 5900000.5}},
+  {"attributes": {"OBJECTID": 2, "UWI": "W-002", "NAME": "Bravo-1", "DEPTH_M": 980, "SPUD": null}, "geometry": {"x": 1731000.125, "y": 5901000.0}},
+  {"attributes": {"OBJECTID": 3, "UWI": "W-003", "NAME": "Charlie-1", "DEPTH_M": 2210.25, "SPUD": 631152000000}, "geometry": {"x": 1732000.0, "y": 5902000.75}},
+  {"attributes": {"OBJECTID": 4, "UWI": "W-004", "NAME": "Delta-1 é", "DEPTH_M": 15.0, "SPUD": 946684800000}, "geometry": null},
+  {"attributes": {"OBJECTID": 5, "UWI": "W-005", "NAME": "Echo-1", "DEPTH_M": 3005.0, "SPUD": 1262304000000}, "geometry": {"x": 1734000.5, "y": 5904000.25}}
+ ]}
