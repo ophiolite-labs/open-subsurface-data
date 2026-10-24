@@ -103,6 +103,12 @@ jobs:
           { echo '### Verification'; echo '```'; cat verify.txt; echo '```'; echo '### osd status'; echo '```'; cat status.txt; echo '```'
             echo '### dead-link report'; echo '```'; cat dead.txt 2>/dev/null || echo 'not run'; echo '```'; } > body.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file body.md || true
+      - name: tippecanoe 2.79.0 (pinned by hash as in ci.yml; make check-full tiles the real catalogue since E36)
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        run: |
+          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.79.0-1_amd64.deb
+          echo "78261946e0ee8f6cb10c00c4aaf5e66858f0bfb9d870c530d6704fbcc67fb727  /tmp/tippecanoe.deb" | sha256sum -c
+          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
       - name: full STAC tree (OSD-D18; the gate validates a sample of Items)
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         run: make check-full
@@ -182,6 +188,11 @@ jobs:
       - uses: astral-sh/setup-uv@v3
         with: { python-version: "3.12" }
       - run: uv sync
+      - name: tippecanoe 2.79.0 (pinned by hash as in ci.yml; make check-full tiles the real catalogue since E36)
+        run: |
+          curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.79.0-1_amd64.deb
+          echo "78261946e0ee8f6cb10c00c4aaf5e66858f0bfb9d870c530d6704fbcc67fb727  /tmp/tippecanoe.deb" | sha256sum -c
+          sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
       - uses: actions/download-artifact@v4
         with: { name: snapshot, path: build/snapshot }
       - uses: actions/download-artifact@v4   # each accepted or not into build/shards/shard-<I>/
