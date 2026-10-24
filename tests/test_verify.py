@@ -801,7 +801,7 @@ FROZEN_3 = paths.ROOT / "tests" / "fixtures" / "schema" / "verification-3.schema
 
 
 def test_verification_4_identity():
-    assert schema("verification.schema.json").schema["$id"] == "https://open-subsurface-data.org/schema/verification/5"   # E35
+    assert schema("verification.schema.json").schema["$id"] == "https://open-subsurface-data.org/schema/verification/6"   # E38
 
 
 def test_frozen_3_is_main_085a7de():
