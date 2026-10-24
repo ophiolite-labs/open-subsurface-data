@@ -76,6 +76,8 @@ nogcc/well-data: ["*/NebraskaWellData_Tops.zip"]   # page links 236 files; the w
 nopims/poseidon: ["*/.zattrs", "*/.zgroup"]       # MDIO metadata objects, a few hundred bytes
 ns-energy/onshore-2d-seismic-navigation: ["*2017-11*Cumberland*region.zip"]   # atlas page: OFR 2017-11 Part 2 Cumberland shapefile zip, 1,954,295 bytes
 ns-energy/onshore-petroleum-well-log-database: ["*2017-09*Cape*Breton*region.zip"]   # atlas page: OFR 2017-09 Part 1 Cape Breton LAS zip, 4,837,104 bytes
+nsta/offshore-wellbores-top-holes: ["*"]   # ArcGIS layer 0: the whole layer, 13,385 features (maxRecordCount 2000; services-eu1.arcgis.com robots 403)
+nsta/production-data-by-field: ["*"]   # ArcGIS layer 0: the whole layer, 40 field polygons with zip URLs (services-eu1.arcgis.com robots 403)
 nysdec/oil-and-gas-annual-production: ["*"]   # Socrata view: its rows.csv export (generated; size not stated)
 nysdec/oil-gas-and-other-regulated-wells: ["*"]   # Socrata view: its rows.csv export (generated; size not stated)
 nzpam/petroleum-wells: ["*"]   # ArcGIS layer 4: one geojson export, all 1,302 features (maxRecordCount 2000), 977,308 bytes
@@ -92,6 +94,8 @@ sd-danr/oil-gas-production-injection: ["*/pubs/og/Oil_Gas_Production_All_Years.x
 seg/seam-open-data: ["*/Phase+I/SEAM_I_Well_Log_Delivery.zip"]   # page links 387; the Phase I well logs on S3 (literal +), 16,605,942 bytes
 sgc/banco-informacion-petrolera-pozos: ["*"]      # ArcGIS layer: one geojson export of at most 2000 features
 sgu/borrhal: ["*/oppnadata/borrhal/borrhal.zip"]   # page links the GeoPackage zip, 3,361,908 bytes (INSPIRE zip 137 MB not sampled)
+sgu/brunnar: ["*/oppnadata/brunnar/brunnar.zip"]   # page links the GeoPackage zip, 232,973,938 bytes (www.sgu.se robots 200, resource.sgu.se 404)
+sgu/magnetfalt-detaljerad: ["*/geofysik-flyg-magnetfalt-detaljerad.zip"]   # page links the detailed airborne magnetic zip, 668,787 bytes (www.sgu.se robots 200, resource.sgu.se 404)
 sgu/tyngdkraft: ["*/geofysik-mark-tyngdkraft.zip"]   # page links three zips; the ground gravity one, 28,212,306 bytes
 sgudds/register-geotermalnych-vrtov: ["*"]   # ArcGIS layer 2: one geojson export, all 307 features (maxRecordCount 1000), 392,511 bytes
 sintef/johansen: ["*/Sector5.zip"]   # page links eight zips; the 5-layer sector model, 3,943,155 bytes

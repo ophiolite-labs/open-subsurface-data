@@ -1,0 +1,30 @@
+id: nsta/offshore-wellbores-top-holes
+title: UKCS offshore wellbores top holes (ETRS89)
+summary: >-
+  "Oil and gas well header information taken directly from the NSTA's Well Operations Notification
+  System (WONS)." One point per wellbore at its well origin, from spud notification onwards, for
+  the UK continental shelf.
+publisher: {name: North Sea Transition Authority, url: https://www.nstauthority.co.uk, country: GB}
+origin:
+  url: https://www.arcgis.com/home/item.html?id=33ddab463c2f436fafd2a8fbbe406348
+  access: anonymous
+  manifest_url: https://services-eu1.arcgis.com/OZMfUznmLTnWccBc/arcgis/rest/services/UKCS%20offshore%20petroleum%20wells%20top%20holes%20ETRS89/FeatureServer/0?f=json
+  notes: "ArcGIS Online item 33ddab463c2f436fafd2a8fbbe406348 (owner NSTA). Layer 0 holds 13,385 features on 24 Oct 2026, maxRecordCount 2000. The NSTA open-data hub API answered 401 and data.nstauthority.co.uk did not resolve from here."
+licence:
+  name: NSTA Open User Licence
+  spdx: null
+  url: https://www.nstauthority.co.uk/media/u51lhvio/nsta-user-agreeement-june-2023.pdf
+  redistribution: restricted
+  attribution: required
+  statement: "Contains information provided by the North Sea Transition Authority and/or other third parties."
+kinds: [wellbore-headers]
+region: {country: GB, basin: UK continental shelf, bbox: [-9.85, 48.52, 4.08, 62.66], crs: "EPSG:4258"}
+listed_by: [publisher]
+known_issues:
+  - "Licence (June 2023 user agreement): 'You are free to: copy, publish, distribute and transmit the Information; adapt the Information; exploit the Information non-commercially.'"
+  - "bbox is the layer's stated extent (EPSG:4258)."
+period:
+  start: "1964-12-26"
+  end: "2026-09-30"
+  stated: "Layer field SPUDDATE over all 13,385 features on 24 Oct 2026: earliest 1964-12-26, latest 2026-09-30"
+added: 2026-10-24

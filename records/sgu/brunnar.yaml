@@ -1,0 +1,27 @@
+id: sgu/brunnar
+title: Brunnar (wells)
+summary: >-
+  "I dataprodukten Brunnar finns uppgifter om enskilda brunnars läge. Det finns också information om
+  djup, jorddjup, foderrörslängd, dimensioner, vattenkapacitet, vattennivåer och vad brunnen har för
+  funktion." Mainly rock-drilled wells, reported by well drillers to SGU as required by law since
+  1976.
+publisher: {name: Sveriges geologiska undersökning (SGU), url: https://www.sgu.se, country: SE}
+origin:
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/brunnar--geologiska-data/brunnar/
+  access: anonymous
+  manifest_url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/brunnar--geologiska-data/brunnar/
+  notes: "The page links brunnar.zip (GeoPackage, 232,973,938 bytes on 24 Oct 2026) and an OGC API Features service at https://api.sgu.se/oppnadata/brunnar/ogc/features/v1; WMS https://resource.sgu.se/service/wms/130/brunnar."
+licence:
+  name: Creative Commons Noll (CC0)
+  spdx: CC0-1.0
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/om-geologiska-data/licensvillkor/
+  redistribution: allowed
+  attribution: not-required
+kinds: [wellbore-headers]
+region: {country: SE, basin: Sweden}
+listed_by: [publisher]
+known_issues:
+  - "Water and ground-source heat wells, not petroleum wells."
+  - "The OGC collection's bbox [-3.08, 5.75, 45.53, 83.66] reaches far outside Sweden, so no bbox is given."
+notes: "No period stated: the page says drillers have reported wells to SGU since 1976, which bounds the reporting, not the data."
+added: 2026-10-24

@@ -1,0 +1,29 @@
+id: sgu/magnetfalt-detaljerad
+title: Geofysiska flygmätningar, magnetfält (detaljerad)
+summary: >-
+  "Geofysiska flygmätningar, magnetfält (detaljerad) innehåller uppmätta variationer i det
+  magnetiska totalfältet före och efter subtraktion av det geomagnetiska referensfältet (DGRF
+  1965.0). Data innehåller värden för enskilda mätpunkter." Airborne magnetic point data over
+  Sweden, in 450 flight areas.
+publisher: {name: Sveriges geologiska undersökning (SGU), url: https://www.sgu.se, country: SE}
+origin:
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/geofysik--geologiska-data/magnetfalt/
+  access: anonymous
+  manifest_url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/geofysik--geologiska-data/magnetfalt/
+  notes: "The page links geofysik-flyg-magnetfalt-detaljerad.zip (GeoPackage and Text-XYZ, 668,787 bytes on 24 Oct 2026) and an OGC API Features service at https://api.sgu.se/oppnadata/geofysik-flyg-magnetfalt-detaljerad/ogc/features/v1."
+licence:
+  name: Creative Commons Noll (CC0)
+  spdx: CC0-1.0
+  url: https://www.sgu.se/produkter-och-tjanster/geologiska-data/om-geologiska-data/licensvillkor/
+  redistribution: allowed
+  attribution: not-required
+kinds: [potential-fields]
+region: {country: SE, basin: Sweden, bbox: [9.11, 55.15, 25.49, 69.15]}
+listed_by: [publisher]
+known_issues:
+  - "bbox is the OGC API collection's stated extent (CRS84)."
+period:
+  start: "1960"
+  end: "2023"
+  stated: "SGU OGC API collection aero-flightarea (linked from the product page), field flightyear over 450 flight areas: earliest 1960, latest 2023"
+added: 2026-10-24
