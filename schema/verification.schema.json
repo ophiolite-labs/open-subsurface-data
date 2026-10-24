@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/verification/4",
-  "title": "Verification record, version 4",
+  "$id": "https://open-subsurface-data.org/schema/verification/5",
+  "title": "Verification record, version 5",
   "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
   "type": "object",
   "additionalProperties": false,
@@ -45,6 +45,24 @@
       "type": "array",
       "description": "v4 (E23). Generated exports the server truncated (exceededTransferLimit): hashed, but never a file of the record and never counted for L2",
       "items": {"allOf": [{"$ref": "#/$defs/file"}], "required": ["partial"]}
+    },
+    "layer_exports": {
+      "type": "array",
+      "description": "v5 (E35). Whole ArcGIS layers paged by object id and checked against the layer's own id set: evidence for files-checksummed, never a file of the record (no asset, no download, no mirror)",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["layer", "format", "features", "count", "bytes", "sha256", "edit_date_before", "edit_date_after"],
+        "properties": {
+          "layer": {"type": "string", "description": "The layer URL the pages were queried from"},
+          "format": {"const": "esri-json", "description": "Canonical bytes: features sorted by object id, keys sorted, no whitespace, values as the server returned them (native spatial reference)"},
+          "features": {"type": "integer", "minimum": 0, "description": "Features assembled from the pages"},
+          "count": {"type": "integer", "minimum": 0, "description": "The layer's returnCountOnly on the day"},
+          "bytes": {"type": "integer", "minimum": 0, "description": "Length of the canonical bytes"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the canonical bytes"},
+          "edit_date_before": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read before paging; null when the layer states none"},
+          "edit_date_after": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read after paging; null when the layer states none"}
+        }
+      }
     },
     "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"},

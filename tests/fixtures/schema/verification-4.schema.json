@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/verification/4",
+  "title": "Verification record, version 4",
+  "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_id", "checked_at", "tool_version", "level", "checks"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "tool_version": {"type": "string"},
+    "level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+              "description": "L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted to a canonical type with a fidelity record"},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "level", "outcome"],
+        "properties": {
+          "name": {"type": "string"},
+          "level": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
+          "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+          "detail": {"type": "string", "maxLength": 500}
+        }
+      }
+    },
+    "origin": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "http_status": {"type": "integer"},
+        "final_url": {"type": "string"},
+        "content_type": {"type": "string"},
+        "elapsed_ms": {"type": "integer"},
+        "reachability": {"type": "string", "enum": ["ok", "blocked", "moved", "dead"],
+                         "description": "v2. blocked: 403/429 or a challenge page, awards no level (OSD-D9); ok: 2xx/3xx on the origin host; moved: 2xx/3xx on another host; dead: anything else (timeouts, refused connections and 5xx after one retry)"},
+        "blocked_since": {"type": "string", "format": "date-time", "description": "v2. First check of the current unbroken blocked run"}
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {"allOf": [{"$ref": "#/$defs/file"}], "not": {"required": ["partial"]}}
+    },
+    "partial_exports": {
+      "type": "array",
+      "description": "v4 (E23). Generated exports the server truncated (exceededTransferLimit): hashed, but never a file of the record and never counted for L2",
+      "items": {"allOf": [{"$ref": "#/$defs/file"}], "required": ["partial"]}
+    },
+    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"},
+    "inventory": {
+      "type": "object", "additionalProperties": false, "required": ["rule", "listed", "selected", "coverage"],
+      "description": "v3 (E07). Only for records with a `mirror:` rule in verifier/samples.yaml: every listing entry the rule selects; each hashed one is in `files`. complete: all selected entries hashed in this run (a claim about this selection, never the whole dataset)",
+      "properties": {
+        "rule": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "listed": {"type": "integer", "minimum": 0, "description": "Entries in the listing"},
+        "selected": {"type": "array", "items": {"type": "string"}, "description": "Paths as the listing states them"},
+        "coverage": {"enum": ["complete", "partial"]}
+      }
+    }
+  },
+  "$defs": {
+    "file": {
+      "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "publisher_checksum": {"type": "object", "additionalProperties": false, "required": ["algorithm", "digest"],
+                               "description": "v4 (E23). The checksum the publisher's listing states for this file, verbatim",
+                               "properties": {"algorithm": {"type": "string", "maxLength": 64}, "digest": {"type": "string", "maxLength": 256}}},
+        "compared": {"type": "boolean", "description": "v4. true: the publisher's algorithm (md5, sha1 or sha256) was computed over the same bytes and compared; false: unsupported algorithm or malformed digest, recorded only"},
+        "partial": {"const": true, "description": "v4. Only in partial_exports: the server truncated this generated export"}
+      }
+    }
+  }
+}

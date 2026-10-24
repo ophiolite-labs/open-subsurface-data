@@ -22,7 +22,9 @@ agent reaches no listing, licence page or file.
 Sampling policy (which listed files L2 hashes) is tool configuration in verifier/samples.yaml,
 keyed by record id, never a record field (OSD-D11). Listings are read by shape (osd.verifier.listings,
 E23); a publisher's stated checksum is computed from the same stream beside SHA-256 and compared, and
-an export the server truncated is kept apart from `files` as a partial export.
+an export the server truncated is kept apart from `files` as a partial export. An ArcGIS layer is
+read whole (E35, osd.verifier.layers): its canonical bytes go to `layer_exports`, evidence for the
+check and never a file, so no asset, download or mirror sees it.
 
 The network is injected three times: a Fetcher probes an origin (first 16 KB), an Opener streams a
 body in chunks and raises FetchError, a BrowserProbe answers (status, final URL) for the browser
@@ -54,6 +56,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from . import __version__, outlines, paths
 from .records import load_outline, load_records
+from .verifier import layers
 from .verifier.listings import (  # noqa: F401 (E07)
     TRUNCATED,
     Entry,
@@ -414,9 +417,35 @@ def load_samples(path: Path = SAMPLES_PATH) -> dict[str, list[str] | str | dict]
     return {k: v for k, v in (yaml.safe_load(path.read_text()) or {}).items() if k != "mirror"}
 
 
+def _layer_get(opener: Opener, robots: _Robots, budget: ByteBudget) -> Callable[[str], bytes]:
+    """E35: one request of a whole-layer read: robots.txt obeyed, through the (paced) opener, every
+    chunk counted against the record's share before it is kept; a read cut at the budget counts."""
+    def get(url: str) -> bytes:
+        if not robots.allowed(url):
+            raise layers.Incomplete(robots.refusal(url, f"the layer query {url}"), "skip")
+        buf = bytearray()
+        try:
+            for chunk in opener(url):
+                if len(chunk) > budget.remaining:
+                    budget.exhaust()
+                    raise layers.Incomplete(f"whole layer cut at the budget: {url} abandoned mid-stream "
+                                            f"after {len(buf)} bytes", "skip")
+                budget.add(len(chunk))
+                buf += chunk
+        except FetchError as e:
+            raise layers.Incomplete(f"page error: {e}") from None
+        return bytes(buf)
+    return get
+
+
+def _when(ms: int) -> str:
+    return datetime.fromtimestamp(ms / 1000, UTC).isoformat(timespec="seconds")
+
+
 def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener,
-                budget: ByteBudget) -> tuple[dict, list[dict], list[dict]]:
-    """The files-checksummed check, the files hashed, and the exports the server truncated. A
+                budget: ByteBudget) -> tuple[dict, list[dict], dict]:
+    """The files-checksummed check, the files hashed, and the other members the check wrote:
+    `partial_exports` (exports the server truncated) and `layer_exports` (whole layers, E35). A
     manifest_url answering a data file (by its headers, or `file: true` in samples.yaml) is the one
     entry, and the response already open is the one hashed: one GET."""
     def check(outcome: str, detail: str) -> dict:
@@ -424,17 +453,17 @@ def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener
 
     manifest = rec["origin"].get("manifest_url")
     if not manifest:
-        return check("skip", "no origin.manifest_url"), [], []
+        return check("skip", "no origin.manifest_url"), [], {}
     is_file = False
     if isinstance(sample, dict):  # H1 design 8: {file: true, sample: [globs]}
         is_file, sample = sample.get("file") is True, sample.get("sample", ["*"])
     if isinstance(sample, str):
-        return check("skip", f"nothing to sample (verifier/samples.yaml): {sample}"), [], []
+        return check("skip", f"nothing to sample (verifier/samples.yaml): {sample}"), [], {}
     if not sample:
-        return check("skip", "no sample for this record in verifier/samples.yaml"), [], []
+        return check("skip", "no sample for this record in verifier/samples.yaml"), [], {}
     robots = _Robots(opener)
     if not robots.allowed(manifest):
-        return check("skip", robots.refusal(manifest, f"the listing {manifest}")), [], []
+        return check("skip", robots.refusal(manifest, f"the listing {manifest}")), [], {}
     opened: dict[str, Iterable[bytes]] = {}
     try:
         stream = opener(manifest)
@@ -448,26 +477,51 @@ def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener
         else:
             listing = read_listing(_read(body, LISTING_BYTES), manifest, getattr(stream, "content_type", "") or "")
     except FetchError as e:
-        return check("fail", f"listing: {e}"), [], []
+        return check("fail", f"listing: {e}"), [], {}
     except ListingError as e:
-        return check("fail", str(e)), [], []
+        return check("fail", str(e)), [], {}
     except ValueError as e:
-        return check("fail", f"listing unreadable: {e}"), [], []
+        return check("fail", f"listing unreadable: {e}"), [], {}
     entries = listing.entries
     if not entries:
-        return check("fail", f"the listing ({listing.shape}) names no files"), [], []
+        return check("fail", f"the listing ({listing.shape}) names no files"), [], {}
     picked, seen = [], set()
     for e in entries:
         if e.url not in seen and any(fnmatchcase(e.name, p) or fnmatchcase(e.url, p) for p in sample):
             picked.append(e)
             seen.add(e.url)
     if not picked:
-        return check("fail", f"no entry of the listing ({len(entries)} entries, {listing.shape}) matches the sample"), [], []
+        return check("fail", f"no entry of the listing ({len(entries)} entries, {listing.shape}) matches the sample"), [], {}
     files: list[dict] = []
     partial: list[dict] = []
+    exports: list[dict] = []
+    whole: list[str] = []   # what the detail says first: whole layers checked, or why not
+    exports_ok = 0
     notes: list[str] = []
     mismatches: list[str] = []
     for e in picked:
+        if e.layer:   # E35: the whole layer first; above the cap, the export below (a partial export)
+            try:
+                x, _ = layers.export_layer(e.layer, _layer_get(opener, robots, budget))
+            except layers.NotWhole as no:
+                whole.append(f"not read whole: {no}; the one-page export instead")
+            except layers.Incomplete as why:
+                if why.outcome == "fail":
+                    return check("fail", f"whole layer {e.layer}: {why.reason}"), files, _members(partial, exports)
+                notes.append(why.reason)
+                continue
+            else:
+                exports.append(x)
+                a, b = x["edit_date_before"], x["edit_date_after"]
+                if a != b:
+                    notes.append(f"layer edited during paging (lastEditDate {_when(a) if a else 'none'} before, "
+                                 f"{_when(b) if b else 'none'} after): whole layer not a snapshot")
+                    continue
+                exports_ok += 1
+                whole.append(f"whole layer checked ({x['features']} features, {layers.FORMAT}), not a downloadable "
+                             f"file; " + (f"edit date {_when(a)} unchanged during paging" if a
+                                          else "stability unknown (the layer states no edit date)"))
+                continue
         if not robots.allowed(e.url):
             notes.append(robots.refusal(e.url, e.name))
             continue
@@ -484,7 +538,7 @@ def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener
                          f"{len(files)} of {len(picked)} files hashed")
             break
         except FetchError as err:
-            return check("fail", f"{e.name}: {err}"), files, partial
+            return check("fail", f"{e.name}: {err}"), files, _members(partial, exports)
         f = {"path": e.name, "url": e.url, "bytes": n, "sha256": digest}
         if e.checksum:
             f["publisher_checksum"] = dict(e.checksum)
@@ -499,20 +553,26 @@ def check_files(rec: dict, sample: list[str] | str | dict | None, opener: Opener
             continue
         files.append(f)
     if mismatches:
-        return check("fail", "publisher checksum mismatch: " + "; ".join(mismatches)), files, partial
-    if not files:
-        return check("skip", "; ".join(notes) or "nothing hashed"), files, partial
+        return check("fail", "publisher checksum mismatch: " + "; ".join(mismatches)), files, _members(partial, exports)
+    if not files and not exports_ok:
+        return check("skip", "; ".join(whole + notes) or "nothing hashed"), files, _members(partial, exports)
     total = sum(f["bytes"] for f in files)
     said = [f for f in files if f.get("compared")]
-    parts = [(f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed "
-              f"({total} bytes); {len(entries)} entries listed")]
+    parts = list(whole)
+    if files:
+        parts.append(f"sample, not the whole dataset: {len(files)} of {len(picked)} selected files hashed "
+                     f"({total} bytes); {len(entries)} entries listed")
     if said:
         parts.append(f"publisher checksums match for {len(said)} of {len(files)}")
     if listing.shape == "file":
         parts.append("the manifest_url is the file itself")
     if listing.listed_at:
         parts.append(f"listing dated {listing.listed_at}")
-    return check("pass", "; ".join(parts + notes)), files, partial
+    return check("pass", "; ".join(parts + notes)), files, _members(partial, exports)
+
+
+def _members(partial: list[dict], exports: list[dict]) -> dict:
+    return {k: v for k, v in (("partial_exports", partial), ("layer_exports", exports)) if v}
 
 
 class _Text(HTMLParser):
@@ -620,10 +680,9 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
     else:
         # the sample and the inventory share one budget: this record's share of the run's
         share = (budget or ByteBudget()).share(RECORD_SAMPLE_BYTES)
-        c, files, partial = check_files(rec, sample, opener, share)
+        c, files, members = check_files(rec, sample, opener, share)
         checks.append(c)
-        if partial:
-            extra["partial_exports"] = partial
+        extra.update(members)
         if mirror_rule:   # E07: hash every entry the record's mirror rule selects (the inventory)
             from .mirror import inventory
             more, inv = inventory(rec, mirror_rule, opener, share, known=files)

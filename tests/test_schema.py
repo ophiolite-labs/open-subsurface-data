@@ -6,6 +6,8 @@ scaffold's kinds comment. E29 (charter E29-outlines-from-the-map-services.md): r
 format and record/4 compatibility."""
 
 import copy
+import gzip
+import hashlib
 import json
 import socket
 from datetime import UTC, date, datetime
@@ -13,7 +15,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from jsonschema import Draft7Validator, Draft202012Validator, FormatChecker
+from jsonschema import Draft7Validator, Draft202012Validator, FormatChecker, ValidationError
 
 from osd import cli, new, paths, stac
 from osd.records import load_record, load_records, record_files, validate_records
@@ -322,3 +324,70 @@ def test_template_access_comment_lists_the_schema_values():
     line = next(x for x in (paths.RECORDS_DIR / "_template.yaml").read_text().splitlines() if x.strip().startswith("access:"))
     enum = RECORD.schema["properties"]["origin"]["properties"]["access"]["enum"]
     assert line.split("#", 1)[1].strip() == " | ".join(enum) + " (from schema/record.schema.json)"
+
+
+# --- E35: verification/5 (layer_exports); verification/4 frozen ---------------------------------------
+
+FROZEN_V4 = FROZEN / "verification-4.schema.json"
+V5 = Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text()))
+V4 = Draft202012Validator(json.loads(FROZEN_V4.read_text()))
+LAYER_EXPORT = {"layer": "https://x.test/arcgis/rest/services/W/MapServer/0", "format": "esri-json",
+                "features": 3, "count": 3, "bytes": 120, "sha256": "a" * 64,
+                "edit_date_before": 1761213703000, "edit_date_after": 1761213703000}
+V_BASE = {"record_id": "a/b", "checked_at": "2026-10-24T12:00:00+00:00", "tool_version": "t", "level": "L2",
+          "checks": []}
+
+
+def test_verification_5_identity():
+    assert V5.schema["$id"] == "https://open-subsurface-data.org/schema/verification/5"
+
+
+def test_frozen_4_is_main_8d23039():
+    assert hashlib.sha256(FROZEN_V4.read_bytes()).hexdigest() == (
+        "20b7cf84692e42b49092852b54940207b58c1e74497feed66e15f05010e7f4f9")
+    assert V4.schema["$id"].endswith("/verification/4")
+
+
+def _verification_fixtures() -> list[Path]:
+    out = []
+    for p in sorted((ROOT / "tests" / "fixtures").rglob("*.json")):
+        try:
+            d = json.loads(p.read_text())
+        except ValueError:
+            continue
+        if isinstance(d, dict) and {"record_id", "checked_at", "level", "checks"} <= set(d) and V4.is_valid(d):
+            out.append(p)
+    return out
+
+
+def test_every_verification_4_fixture_validates_under_5():
+    found = _verification_fixtures()
+    assert len(found) >= 10, found   # site, shards, fidelity and mirror fixtures (24 Oct: 15)
+    for p in found:
+        V5.validate(json.loads(p.read_text()))
+    with gzip.open(ROOT / "tests" / "fixtures" / "verification" / "stored-3.jsonl.gz", "rt") as fh:
+        docs = [json.loads(line) for line in fh]
+    assert len(docs) == 96
+    for d in docs:
+        V4.validate(d)
+        V5.validate(d)
+
+
+def test_layer_exports_are_verification_5_only():
+    doc = {**V_BASE, "layer_exports": [LAYER_EXPORT]}
+    V5.validate(doc)
+    V5.validate({**V_BASE, "layer_exports": [{**LAYER_EXPORT, "edit_date_before": None, "edit_date_after": None}]})
+    assert not V4.is_valid(doc)
+
+
+@pytest.mark.parametrize("bad", [
+    {"format": "geojson"}, {"sha256": "A" * 64}, {"features": -1}, {"extra": 1}, {"edit_date_after": "today"},
+], ids=["format", "sha256", "features", "extra-key", "edit-date"])
+def test_layer_export_shape_is_closed(bad):
+    with pytest.raises(ValidationError):
+        V5.validate({**V_BASE, "layer_exports": [{**LAYER_EXPORT, **bad}]})
+
+
+def test_a_layer_export_is_never_a_file():
+    with pytest.raises(ValidationError):
+        V5.validate({**V_BASE, "files": [LAYER_EXPORT]})
