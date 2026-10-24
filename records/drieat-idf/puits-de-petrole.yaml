@@ -1,0 +1,30 @@
+id: drieat-idf/puits-de-petrole
+title: Puits de pétrole en Ile-de-France (DRIEAT)
+summary: >-
+  "Puits de pétrole en Ile-de-France": point locations of oil wells in Île-de-France with the
+  regional and national well numbers (NoDRIRE, NOSCG), well name (e.g. BECHEVRET 001), well state
+  and permit number, as a shapefile download with WMS and WFS services.
+publisher: {name: "Direction régionale et interdépartementale de l’environnement, de l’aménagement et des transports d'Île-de-France (DRIEAT)", url: https://www.data.gouv.fr/organizations/direction-regionale-et-interdepartementale-de-lenvironnement-de-lamenagement-et-des-transports-dile-de-france, country: FR}
+origin:
+  url: https://www.data.gouv.fr/datasets/puits-de-petrole-en-ile-de-france
+  access: anonymous
+  manifest_url: https://www.data.gouv.fr/api/1/datasets/6835e107b63a9d35e78588c8/
+  notes: "data.gouv.fr record harvested from the geo-ide catalogue; resources are the internet Atom shapefile download (atom.geo-ide.developpement-durable.gouv.fr, id 81471c16-e4d6-4be8-b2f8-ade4353fb65e) and WMS and WFS GetCapabilities (layer ms:L_PETROLE_PUITS_P_R11, served in RGF93 / Lambert 93; attributes X and Y are Lambert II étendu)."
+licence:
+  name: Licence Ouverte / Open Licence Version 2.0
+  spdx: etalab-2.0
+  url: https://www.etalab.gouv.fr/wp-content/uploads/2017/04/ETALAB-Licence-Ouverte-v2.0.pdf
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers]
+region: {country: FR, basin: "Paris Basin (Île-de-France)", bbox: [1.44728482, 48.1205368, 3.55654097, 49.23738098], crs: "EPSG:2154"}
+listed_by: [publisher]
+known_issues:
+  - "Point positions with names, state and permit, not trajectories, logs or depths."
+  - "The bbox is the data.gouv.fr spatial extent of the record (the Île-de-France region)."
+  - "The Atom download answered HEAD 200 with no length and no content type on 24 Oct 2026."
+period:
+  start: "2022-03-03"
+  end: "2022-03-18"
+  stated: "data.gouv.fr record: last_modified 2022-03-03, created_at 2022-03-18; temporal_coverage none, frequency unknown"
+added: 2026-10-24

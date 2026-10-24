@@ -1,0 +1,30 @@
+id: csulb/san-diego-trough-fault-mcs-2018
+title: 2018 San Diego Trough fault CSULB multichannel seismic reflection data
+summary: >-
+  High-resolution sparker multichannel seismic reflection profiles across the San Diego Trough
+  fault zone, offshore southern California: "We collected six new profiles totaling 50 line-km",
+  acquired on the R/V Point Loma over three single-day trips from San Diego in April 2018. SEG-Y
+  (12 files) with navigation and figure PDFs.
+publisher: {name: "Jayne Bormann (UNR/CSULB) and Graham Kent (UNR), deposited on Harvard Dataverse", url: https://dataverse.harvard.edu, country: US}
+origin:
+  url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/5PXHWK
+  access: anonymous
+  manifest_url: https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=doi:10.7910/DVN/5PXHWK
+  notes: "DOI 10.7910/DVN/5PXHWK, version 1 released 2021-10-14. 30 files, 2,770,865,947 bytes in all on 24 Oct 2026 (6 each .rp, .ts and .pdf, 12 .sgy). Funded by USGS Earthquake Hazards Program award G16AP00119; report at https://earthquake.usgs.gov/cfusion/external_grants/reports/G16AP00119.pdf."
+licence:
+  name: CC0 1.0
+  spdx: CC0-1.0
+  url: http://creativecommons.org/publicdomain/zero/1.0
+  redistribution: allowed
+  attribution: not-required
+kinds: [seismic-2d]
+region: {country: US, basin: "Offshore Southern California Inner Continental Borderland (San Diego Trough)"}
+listed_by: [publisher]
+known_issues:
+  - "No extent is stated (\"Offshore Southern California Inner Continental Borderland\", California); bbox left out."
+  - "Harvard Dataverse answered an empty HTTP 202 to the dataset page and robots.txt on 24 Oct 2026; its JSON API answered 200."
+period:
+  start: "2018-04-22"
+  end: "2018-04-23"
+  stated: "Dataverse dateOfCollection 2018-04-22 to 2018-04-23 (the description says three single-day trips in April 2018); deposited 2021-10-08"
+added: 2026-10-24

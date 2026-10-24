@@ -1,0 +1,32 @@
+id: ispra/boreholes
+title: Boreholes - Dataset (ISPRA, deep hydrocarbon wells of Italy)
+summary: >-
+  "Nel database sono contenuti i dati dell'attività di Esplorazione e Produzione degli idrocarburi
+  in Italia depositati presso l'UNMIG dal 1957 a oggi, e che per legge possono essere resi pubblici
+  dopo un anno dalla cessazione del titolo minerario": public E&P wells digitised in 3D by the
+  Servizio Geologico d'Italia, with "litostratigrafia e cronostratigrafia, biostratigrafia,
+  mineralizzazioni e temperature, tubazioni e finestrature, presenza di prove geofisiche".
+publisher: {name: "ISPRA - Dipartimento per il Servizio Geologico d'Italia", url: http://portalesgi.isprambiente.it, country: IT}
+origin:
+  url: https://catalogosgi.isprambiente.it/geoportalAdm2/rest/document?id=ispra_rm%3ABoreholes_DT
+  access: anonymous
+  manifest_url: https://sgi3.isprambiente.it/download/gml_zip/Boreholes_INSPIRE.zip
+  notes: "INSPIRE metadata ispra_rm:Boreholes_DT (also in RNDT, geodati.gov.it). Downloads on sgi3.isprambiente.it: Boreholes_INSPIRE.zip (824,982 bytes) and Boreholes_GeoSciML.zip (1,557,218 bytes) on 24 Oct 2026, with an Atom feed BH.atom.TOP.en.xml; WMS and ArcGIS REST at sgi2.isprambiente.it/arcgis/rest/services/servizi/sondaggiprofondi (layers 'Pozzi digitalizzati' and 'Pozzi UNMIG')."
+licence:
+  name: CC-BY-4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/deed.it
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, tops]
+region: {country: IT, basin: "Italy, onshore and offshore", bbox: [6.5147, 35.4456, 18.6326, 47.1463]}
+listed_by: [publisher]
+known_issues:
+  - "The wells are the public UNMIG well set that mase-unmig/videpi-wells serves as composite logs; this record is ISPRA's digitised 3D database of them."
+  - "The download is served as application/x-gmz (a GML zip)."
+  - "bbox is the INSPIRE geographic bounding box."
+period:
+  start: "2009-01-01"
+  end: "2013-09-22"
+  stated: "INSPIRE temporal extent beginPosition 2009-01-01, endPosition 2013-09-22 (the digitisation, not the drilling, which the abstract dates 'dal 1957 a oggi')"
+added: 2026-10-24

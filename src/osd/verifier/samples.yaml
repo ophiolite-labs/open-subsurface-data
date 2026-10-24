@@ -35,11 +35,14 @@ cnloer/production-statistics: ["*/wp-content/uploads/off_prod-1.pdf"]   # page l
 cnloer/source-rock-inventory: ["*/geoinfo/foasourcerock.xlsx"]   # same page; the source rock inventory, 469,933 bytes
 cnsoer/directory-of-offshore-wells: ["*/dow-2025.xlsx"]   # page links the directory spreadsheet, 42,654 bytes
 cpc/onshore-well-locations: {file: true, sample: ["*"]}   # the bare CSV of six onshore wells, under 1 KB (data.gov.tw); content type not read (www3.cpc.com.tw timed out 23 Oct)
+csulb/san-diego-trough-fault-mcs-2018: ["*SDT_11_fkmigr_1500_30_150hz.sgy"]   # Dataverse dataset API (30 files, 2,770,865,947 bytes): one migrated SEG-Y profile, 21,599,680 bytes (robots 202, empty)
+csulb/san-pedro-basin-fault-mcs-2018: ["*SPB_104a_fkmigr_1500_50_150hz.sgy"]   # Dataverse dataset API (160 files, 20,463,230,528 bytes): one migrated SEG-Y profile, 7,310,240 bytes (robots 202, empty)
 dov/boringen: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=Boringen.json), first 1,000 of 188,507 features, 1,099,736 bytes
 dov/boringen-geothermie: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=boringen_geothermie.json), first 1,000 of 24,957 features, 1,075,964 bytes
 dov/formele-stratigrafie: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=formele_stratigrafie.json), first 1,000 of 107,753 features, 635,336 bytes
 dov/graviteit-data-punten: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=graviteit_data_punten.json), first 1,000 of 16,915 features, 236,439 bytes
 drieat-idf/puits-de-geothermie: ["https://atom.geo-ide.developpement-durable.gouv.fr/atomArchive/GetResource?id=e0d88ccf-*"]   # data.gouv.fr dataset API (json walk, robots 200, /api/1/datasets/r/ disallowed): the internet Atom shapefile zip, 23,897 bytes (atom host robots 404)
+drieat-idf/puits-de-petrole: ["https://atom.geo-ide.developpement-durable.gouv.fr/atomArchive/GetResource?id=81471c16-*"]   # data.gouv.fr dataset API (json walk): the internet Atom shapefile zip; HEAD 200 with no length (atom host robots 404)
 equinor/drogon: ["DROGON_HIST.DATA"]   # GitHub contents API of eclipse/model: the history deck, 6,010 bytes
 fl-dep/oil-gas-permit-database: ["*.xlsx"]   # page links one spreadsheet: OG_WELLS_WEBSITE_4.xlsx, 703,015 bytes
 force/ml-competition-2020-well-logs: ["*/files/LAS_files_Force_2020_all_wells_train_test_blind_hidden_final.zip?download=1"]   # Zenodo record page: the LAS zip, 169,785,172 bytes
@@ -60,6 +63,7 @@ ibm-research/netherlands-f3-interpretation: ["*/files/horizons.tar.gz?download=1
 idaho-ogcc/well-files: ["*/oilgas/welldata/LASFiles.zip"]   # well-files page links LASFiles.zip and per-well PDFs; the LAS zip, 36,017,299 bytes (gis1.idl.idaho.gov robots.txt answers an HTML page, no rules)
 ie-pad/offshore-exploration-wells: ["*/Exploration_Wells_Irish_Offshore.csv.zip"]   # data.gov.ie page: the CSV zip, 10,487 bytes
 inp-mz/actividade-de-pesquisa-e-producao: ["*"]   # ArcGIS layer 0 'Poços': one geojson export, all 255 features (maxRecordCount 1000), 98,427 bytes
+ispra/boreholes: ["*"]   # the bare INSPIRE GML zip the metadata names (application/x-gmz: a file by its headers), 824,982 bytes (sgi3 robots 404)
 jamstec/seismic-survey-database: "the listing is a cruise index with no file addresses"
 jardfeingi/well-data: ["*FO_Offshore_Wells.zip"]   # page links the offshore wells zip, 3,204 bytes
 kgs/oil-gas-wells: ["*/Ora_Archive/ks_wells.zip"]   # page links the statewide well zip, 44,028,388 bytes
@@ -70,6 +74,7 @@ mase-unmig/videpi-seismic: ["*/sgy/1.sgy"]   # page links 171 SEG-Y lines; 1.sgy
 mase-unmig/videpi-wells: ["*/las/55.las"]   # LAS/LIS list page (44 LAS, 4 LIS); 55.las, 577,512 bytes
 meei/historical-oil-and-gas-production: ["*Annual-Crude-Oil-and-Condensate-Production-1908-2018-1.xlsx"]   # page links two spreadsheets; crude, 95,552 bytes
 mem-gt/produccion-de-hidrocarburos: ["*/PRODUCCION-DE-HIDROCARBUROS-2025.xlsx"]   # production page links 14 yearly workbooks; the 2025 one, 53,687 bytes (robots 200: User-agent: * Allow: /, Content-Signal use=reference)
+miterd/sondeos-hidrocarburos: {file: true, sample: ["*"]}   # WFS GetFeature answers GML (text/xml; subtype gml/3.2.1: a file only by this flag), 810 well points
 nbmg/oil-gas-wells-through-2013: ["*"]   # ArcGIS layer 1: one geojson export of at most 1,000 of 1,061 features (maxRecordCount 1000), 422,720 bytes
 nd-dmr/wells: ["*"]   # ArcGIS layer: one geojson export of at most 2000 of 44,018 features (kept as partial), 1,118,791 bytes
 nlog/nlog: ["*thematische_data_boringen.zip"]     # the borehole page's thematic data download, ~57 MB

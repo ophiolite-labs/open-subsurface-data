@@ -1,0 +1,30 @@
+id: csulb/san-pedro-basin-fault-mcs-2018
+title: 2018 San Pedro Basin fault CSULB multichannel seismic reflection data
+summary: >-
+  High-resolution sparker multichannel seismic reflection profiles across the San Pedro Basin
+  fault, offshore southern California: "We collected 33 new profiles totaling 365 line-km",
+  acquired on the R/V Yellowfin in one-day cruises between Los Angeles Harbor and Two Harbors on
+  Catalina Island during April-June 2018. SEG-Y (66 files) with navigation and figure PDFs.
+publisher: {name: "Jayne Bormann (CSULB / University of Nevada, Reno) and Graham Kent (UNR), deposited on Harvard Dataverse", url: https://dataverse.harvard.edu, country: US}
+origin:
+  url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/EGB21M
+  access: anonymous
+  manifest_url: https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=doi:10.7910/DVN/EGB21M
+  notes: "DOI 10.7910/DVN/EGB21M, version 1 released 2021-10-14. 160 files, 20,463,230,528 bytes in all on 24 Oct 2026 (33 each .rp and .ts, 66 .sgy, 28 .pdf). Funded by USGS Earthquake Hazards Program award G17AP00124; report at https://earthquake.usgs.gov/cfusion/external_grants/reports/G17AP00124.pdf."
+licence:
+  name: CC0 1.0
+  spdx: CC0-1.0
+  url: http://creativecommons.org/publicdomain/zero/1.0
+  redistribution: allowed
+  attribution: not-required
+kinds: [seismic-2d]
+region: {country: US, basin: "Offshore Southern California Inner Continental Borderland (San Pedro Basin)"}
+listed_by: [publisher]
+known_issues:
+  - "No extent is stated (\"Offshore Southern California Inner Continental Borderland\", California); bbox left out."
+  - "Harvard Dataverse answered an empty HTTP 202 to the dataset page and robots.txt on 24 Oct 2026; its JSON API answered 200."
+period:
+  start: "2018-04-28"
+  end: "2018-06-29"
+  stated: "Dataverse dateOfCollection 2018-04-28 to 2018-06-29; deposited 2021-10-13"
+added: 2026-10-24

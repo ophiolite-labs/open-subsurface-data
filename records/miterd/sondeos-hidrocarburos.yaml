@@ -1,0 +1,33 @@
+id: miterd/sondeos-hidrocarburos
+title: Dominio Minero de Hidrocarburos y Sondeos de España
+summary: >-
+  "Conjunto de datos de localización de Permisos de Investigación y Concesiones de Explotación
+  activos así como de campañas sísmicas y sondeos de hidrocarburos en España": hydrocarbon
+  exploration permits and production concessions, seismic campaigns and hydrocarbon wells, state
+  and regional, served by the ministry's WMS and WFS (layers permisos, sondeos, lineasSismicas,
+  lineasSismicas3d).
+publisher: {name: Ministerio para la Transición Ecológica y el Reto Demográfico (MITERD), url: https://www.miteco.gob.es/es/, country: ES}
+origin:
+  url: https://datos.gob.es/es/catalogo/e0dat0002-dominio-minero-de-hidrocarburos-y-sondeos-de-espana
+  access: anonymous
+  manifest_url: https://geoportal.minetur.gob.es/cgi-bin/mapservath?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ms:sondeos
+  notes: "IDEE INSPIRE record spaminetadpermisosysondeos. WFS on geoportal.minetur.gob.es/cgi-bin/mapservath, GML 3.2 in EPSG:4258; ms:sondeos numberMatched 810 on 24 Oct 2026 (points with id, Tipo, state). Well files and reports: Archivo Técnico de Hidrocarburos, linked at https://geoportal.minetur.gob.es/ATHv2/selectAuthentication.do."
+licence:
+  name: MITERD CC BY 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, seismic-2d, seismic-3d]
+region: {country: ES, basin: "Spain, onshore and offshore", bbox: [-19.0, 27.6, 4.3, 44.6], crs: "EPSG:4258"}
+listed_by: [publisher]
+known_issues:
+  - "Well points carry identifiers and type, not names or depths; seismic is campaign and line locations (lineasSismicas, lineasSismicas3d), not traces."
+  - "The metadata also states \"No se aplican condiciones de acceso y uso.\" and \"Sin limitaciones al acceso público.\" beside \"MITERD CC BY 4.0\"; the licence URL is the CC BY 4.0 deed, not a link the publisher gives."
+  - "The datos.gob.es page timed out on 24 Oct 2026; its catalogue API and the IDEE record answered."
+  - "bbox is the INSPIRE geographic bounding box (Spain with the Canary Islands)."
+period:
+  start: "2016-03-02"
+  end: "2025-04-03"
+  stated: "IDEE metadata: date 2016-03-02 (creation), metadata dateStamp 2025-04-03; no temporal extent stated"
+added: 2026-10-24
