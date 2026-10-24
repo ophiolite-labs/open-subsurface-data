@@ -1,0 +1,16 @@
+{
+  "note": "E38: five GeoJSON features as a GeoServer WFS or an OGC API Features server returns them; the fake servers in tests/test_ogc_layers.py page them",
+  "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::31370"}},
+  "features": [
+    {"type": "Feature", "id": "wells.1", "geometry": {"type": "Point", "coordinates": [176878.25, 200476.5]}, "geometry_name": "geom",
+     "properties": {"id": "5007142", "name": "Alpha-1", "depth_m": 1200.5, "spud": "2017-01-20"}},
+    {"type": "Feature", "id": "wells.2", "geometry": {"type": "Point", "coordinates": [176900, 200500.125]}, "geometry_name": "geom",
+     "properties": {"id": "5007143", "name": "Bravo-1", "depth_m": 980, "spud": null}},
+    {"type": "Feature", "id": "wells.3", "geometry": {"type": "Point", "coordinates": [177000.0, 200600.75]}, "geometry_name": "geom",
+     "properties": {"id": "5007144", "name": "Charlie-1", "depth_m": 2210.25, "spud": "1990-01-01"}},
+    {"type": "Feature", "id": "wells.4", "geometry": null, "geometry_name": "geom",
+     "properties": {"id": "5007145", "name": "Delta-1 é", "depth_m": 15.0, "spud": "2000-01-01"}},
+    {"type": "Feature", "id": "wells.5", "geometry": {"type": "Point", "coordinates": [177100.5, 200700.25]}, "geometry_name": "geom",
+     "properties": {"id": "5007146", "name": "Echo-1", "depth_m": 3005.0, "spud": "2010-01-01"}}
+  ]
+}

@@ -10,7 +10,7 @@ publisher: {name: Ministerio para la Transición Ecológica y el Reto Demográfi
 origin:
   url: https://datos.gob.es/es/catalogo/e0dat0002-dominio-minero-de-hidrocarburos-y-sondeos-de-espana
   access: anonymous
-  manifest_url: https://geoportal.minetur.gob.es/cgi-bin/mapservath?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ms:sondeos
+  manifest_url: https://geoportal.minetur.gob.es/cgi-bin/mapservath?service=WFS&version=2.0.0&request=GetFeature&typeNames=ms:sondeos
   notes: "IDEE INSPIRE record spaminetadpermisosysondeos. WFS on geoportal.minetur.gob.es/cgi-bin/mapservath, GML 3.2 in EPSG:4258; ms:sondeos numberMatched 810 on 24 Oct 2026 (points with id, Tipo, state). Well files and reports: Archivo Técnico de Hidrocarburos, linked at https://geoportal.minetur.gob.es/ATHv2/selectAuthentication.do."
 licence:
   name: MITERD CC BY 4.0

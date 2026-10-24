@@ -10,8 +10,8 @@ publisher: {name: "Geological Survey of New South Wales (Department of Primary I
 origin:
   url: https://data.nsw.gov.au/data/dataset/nsw-drillholes-core-library
   access: anonymous
-  manifest_url: https://public-gs.geoscience.nsw.gov.au/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=drilling:drilling_drillholes_core_library&outputFormat=application/json&count=1000
-  notes: "The data.nsw entry is harvested from SEED and names the GSNSW WMS and WFS services; the layer drilling:drilling_drillholes_core_library has numberMatched 11,955 on 24 Oct 2026. manifest_url asks for the first 1,000 features (1,252,987 bytes); the whole layer is more than 8 MB."
+  manifest_url: https://public-gs.geoscience.nsw.gov.au/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=drilling:drilling_drillholes_core_library&outputFormat=application/json
+  notes: "The data.nsw entry is harvested from SEED and names the GSNSW WMS and WFS services; the layer drilling:drilling_drillholes_core_library has numberMatched 11,955 on 24 Oct 2026. manifest_url is the WFS 2.0.0 GetFeature of that type (GeoJSON offered; paging and sorting stated TRUE in the capabilities)."
 licence:
   name: Creative Commons Attribution
   url: http://www.opendefinition.org/licenses/cc-by

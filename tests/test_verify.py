@@ -801,7 +801,7 @@ FROZEN_3 = paths.ROOT / "tests" / "fixtures" / "schema" / "verification-3.schema
 
 
 def test_verification_4_identity():
-    assert schema("verification.schema.json").schema["$id"] == "https://open-subsurface-data.org/schema/verification/5"   # E35
+    assert schema("verification.schema.json").schema["$id"] == "https://open-subsurface-data.org/schema/verification/6"   # E38
 
 
 def test_frozen_3_is_main_085a7de():
@@ -1109,8 +1109,9 @@ def test_samples_file_form(tmp_path):
     (tmp_path / "s.yaml").write_text("a/b: {file: true}\nc/d: {file: true, sample: ['*.zip']}\n")
     assert load_samples(tmp_path / "s.yaml") == {"a/b": {"file": True}, "c/d": {"file": True, "sample": ["*.zip"]}}
     for rid, entry in load_samples().items():  # the committed entries use the forms check_files reads
-        if isinstance(entry, dict):
-            assert set(entry) <= {"file", "sample"} and entry.get("file") is True, rid
+        if isinstance(entry, dict):   # E38: or {sort: <property>} for a WFS feature type
+            assert set(entry) <= {"file", "sample", "sort"} and (entry.get("file") is True
+                                                                 or isinstance(entry.get("sort"), str)), rid
 
 
 # --- H1 design 9: robots.txt that cannot be read -----------------------------------------------
