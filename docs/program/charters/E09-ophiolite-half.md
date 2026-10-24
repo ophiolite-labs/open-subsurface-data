@@ -45,3 +45,12 @@ files beside them. E127 pins the merge commit of the OSD pull request "E09: stat
 fixtures for E127" for those files, never main. In OSD,
 `test_static_manifest_3_fixtures_equal_what_osd_manifest_writes` keeps each file equal to what
 `osd manifest` writes from the fixture catalogue; a change to them is a new pin.
+
+**Pins and naming (planner ophiolite-32, 25 Oct; E127 s0 strategy rev 2, Ophiolite main 54e78248b).**
+Ophiolite pins `tests/fixtures/fidelity/**` and `schema/fidelity.schema.json` at OSD 82ae556 and
+`schema/manifest.schema.json` at ae7a812; its tests read those copies, never OSD main, and a parity
+check runs against an OSD checkout when present. Manifests osd.manifest/1 to /4 are recognised; a
+non-anonymous entry is refused per entry. A lane that moves, renames or changes one of those pinned
+files tells the OSD supervisor, who tells ophiolite-13 or ophiolite-32 (E127 re-pins on purpose).
+OSD documents keep saying "Ophiolite's provenance record (E127)" until ophiolite-32 reports that
+e127s0 has merged; the field name is not written into OSD documents before then.
