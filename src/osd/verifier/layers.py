@@ -139,7 +139,7 @@ def export_layer(layer: str, get: Callable[[str], bytes]) -> tuple[dict, bytes]:
 
 WFS_FORMAT, OGC_FORMAT = "wfs-geojson", "ogcapi-geojson"
 WFS_PAGE, WFS_PAGE_UNSTATED, OGC_PAGE = 5000, 1000, 1000
-WFS_JSON = ("application/geo+json", "application/json", "json")   # outputFormat, first offered wins
+WFS_JSON = ("application/json", "application/geo+json", "json")   # outputFormat, first offered wins (DOV offers geo+json and refuses it, 24 Oct)
 GEOJSON_TYPES = ("application/geo+json", "application/json")
 UNKNOWN_REVISION = {WFS_FORMAT: "stability unknown (WFS 2.0 states no revision for a feature type)",
                     OGC_FORMAT: "stability unknown (OGC API Features states no revision for a collection)"}
