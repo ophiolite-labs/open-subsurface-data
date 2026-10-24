@@ -8,7 +8,8 @@ publisher: {name: Wyoming Oil and Gas Conservation Commission (WOGCC), url: http
 origin:
   url: https://dataexplorer.wogcc.wyo.gov/
   access: anonymous
-  notes: "Linked as \"WYDE (Data Explorer)\" from https://wogcc.wyo.gov/. The viewer's layer list is at /api/GISConfig and its layers are served through /geoserver/wfs; it also has a login for other functions. The older Data Site pipeline.wyo.gov disallows all crawling in robots.txt."
+  manifest_url: "https://dataexplorer.wogcc.wyo.gov/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=WY_SHPS:WELL&count=1000&outputFormat=application/json"
+  notes: "Linked as \"WYDE (Data Explorer)\" from https://wogcc.wyo.gov/. The viewer's layer list is at /api/GISConfig and its layers are served through /geoserver/wfs; it also has a login for other functions. The older Data Site pipeline.wyo.gov disallows all crawling in robots.txt. The manifest_url is a WFS 2.0.0 GetFeature of the first 1,000 of 121,000 wells of WY_SHPS:WELL (24 Oct 2026)."
 licence:
   name: No licence stated (WYDE "No Warranty" notice)
   spdx: null
