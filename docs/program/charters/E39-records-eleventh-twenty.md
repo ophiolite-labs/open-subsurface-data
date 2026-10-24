@@ -6,10 +6,11 @@ OSD-D15, OSD-D20; the supervisor's rulings (a place name is not an extent; chart
 bounds; the lane holding `samples.yaml` adds entries for its own records).
 
 **Outcome.** The map lists at least 236 datasets. Every new dataset states its licence in the
-publisher's words (none new with redistribution `unknown`),  and every new dataset whose publisher lists files points at that listing.
+publisher's words (none new with redistribution `unknown`), and every new dataset whose publisher lists files points at that listing.
 
-**Context today (verified 24 Oct, main 1f22925).** 196 records, 115 with `manifest_url`, 46 with
-redistribution `unknown`. The `unknown` cap is used up: this lane's cap is zero, so a candidate
+**Context today (verified 24 Oct, main 8023654).** 216 records; E37 added none with
+redistribution `unknown`. E38 runs beside this lane and edits only `manifest_url`/`notes` of its
+four candidates and their `samples.yaml` entries: keep to new files and new entries. The `unknown` cap is used up: this lane's cap is zero, so a candidate
 without a stated licence is refused with that reason. Do not retry anything on the E22, E24, E25,
 E30, E31, E33 or E37 refused lists; Tomakomai stays out. Publishers already present are the directory
 names under `records/`; a second dataset from one of them counts only if it is a different product
