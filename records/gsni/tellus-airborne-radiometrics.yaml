@@ -1,0 +1,31 @@
+id: gsni/tellus-airborne-radiometrics
+title: GSNI Tellus Regional Airborne Geophysical Survey - Radiometrics
+summary: >-
+  "This dataset presents the results of the Tellus Radiometric survey as xyz data": total counts,
+  air absorbed dose rate, potassium, uranium and thorium, with grid and WGS84 positions, flight,
+  altitude, temperature and terrain channels. "An airborne geophysical survey of the whole of
+  Northern Ireland was flown by the Geological Survey of Northern Ireland in 2005 and 2006" at
+  "200 m line spacing and a flying height of 56 m (240 m over built-up areas)".
+publisher: {name: Geological Survey of Northern Ireland, url: https://admin.opendatani.gov.uk, country: GB}
+origin:
+  url: https://admin.opendatani.gov.uk/dataset/gsni-tellus-regional-airborne-geophysical-survey-radiometrics
+  access: anonymous
+  manifest_url: https://admin.opendatani.gov.uk/dataset/gsni-tellus-regional-airborne-geophysical-survey-radiometrics
+  notes: "Open Data NI (CKAN) page of the GSNI (Department for the Economy, staffed by BGS). The page links one zip on resources.bgs.ac.uk: Radiometrics.zip, 58,395,852 bytes on 24 Oct 2026. Lineage cites BGS reports IR/06/136, IR/06/032 and CR/07/061N."
+licence:
+  name: UK Open Government Licence (OGL)
+  spdx: OGL-UK-3.0
+  url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+  redistribution: allowed
+  attribution: required
+kinds: [radiometrics]
+region: {country: GB, basin: Northern Ireland}
+listed_by: [publisher]
+known_issues:
+  - "No extent is stated on the page (\"the whole of Northern Ireland\" only); bbox left out."
+  - "The page's licence label is 'UK Open Government Licence (OGL)' and links version 3; spdx follows the link."
+period:
+  start: "2005"
+  end: "2006"
+  stated: "Additional Information: \"flown by the Geological Survey of Northern Ireland in 2005 and 2006 as part of the Tellus project\"; CKAN creation date June 3, 2016"
+added: 2026-10-24
