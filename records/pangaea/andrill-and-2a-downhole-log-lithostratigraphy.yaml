@@ -17,10 +17,10 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [wellbore-logs]
-region: {country: AQ, basin: Victoria Land Basin (McMurdo Sound), bbox: [165.276765, -77.758141, 165.276765, -77.758141]}
+region: {country: AQ, basin: Victoria Land Basin (McMurdo Sound)}
 listed_by: [publisher]
 known_issues:
-  - "PANGAEA states one point (event AND-2A); bbox is that point, not an extent."
+  - "PANGAEA states one point (event AND-2A), which is not an extent, so there is no bbox."
 period:
   start: "2007-10-10"
   end: "2007-11-30"
