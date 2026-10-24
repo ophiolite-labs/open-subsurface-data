@@ -11,7 +11,7 @@ Branch `e35-whole-layers` at 3bb7f7c (code as of 953b6ad; later commits are evid
 
 - **15 layers read whole** on the first run, with `files-checksummed` passing ("whole layer checked
   (N features, esri-json), not a downloadable file"). **Five records rise from L1 to L2** against the stored
-  main results of 24 Oct (\`verification-results\`): BCER, ND DMR, SGC, UT DOGM, WA DNR geophysics (each a
+  main results of 24 Oct (`verification-results`): BCER, ND DMR, SGC, UT DOGM, WA DNR geophysics (each a
   partial export before). INP Mozambique and WA DNR geothermal, groundwater, oil-gas and shear-wave stay L2,
   now on whole-layer evidence instead of a one-page export; WA DEMIRS stays L3.
 - **Checksums equal on the second run for all 14 layers read twice** (every one whose edit date did not
