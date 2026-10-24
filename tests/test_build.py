@@ -160,6 +160,7 @@ _needs_tippecanoe = pytest.mark.skipif(not (shutil.which("tippecanoe") or os.env
                                        reason="tippecanoe not installed (CI installs it)")
 
 
+@pytest.mark.full  # E36: `make check-full`; the gate tiles the fixture above
 @_needs_tippecanoe
 def test_tiles_hold_every_feature_with_its_properties_at_max_zoom(tmp_path, full_build):
     out = _outlines_only(tmp_path, full_build)  # the real catalogue's; tiling is cached by content
