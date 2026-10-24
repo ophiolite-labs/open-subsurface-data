@@ -64,7 +64,7 @@ The well grids (`site/data/wells-z<z>.json`), each summing to 166,407 wells:
 | **complete staged site** | **169,590** | **438,933,481** | **438.9** |
 
 Bound 500 MB: met with 61 MB to spare (E32 measured 485.6 MB with Virginia and wells at every zoom
-in the tiles; the tiles are 32 MB smaller without wellbore points at z0-6).
+in the tiles: `outlines.pmtiles` 149.9 MB then, 117.7 MB now).
 
 ## Screenshots (phone width 390 x 844, live basemap; `node docs/program/evidence/e36/shots.mjs docs/program/evidence/e36`)
 
