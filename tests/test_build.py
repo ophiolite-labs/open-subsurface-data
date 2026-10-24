@@ -160,6 +160,7 @@ _needs_tippecanoe = pytest.mark.skipif(not (shutil.which("tippecanoe") or os.env
                                        reason="tippecanoe not installed (CI installs it)")
 
 
+@pytest.mark.full  # E36: `make check-full`; the gate tiles the fixture above
 @_needs_tippecanoe
 def test_tiles_hold_every_feature_with_its_properties_at_max_zoom(tmp_path, full_build):
     out = _outlines_only(tmp_path, full_build)  # the real catalogue's; tiling is cached by content
@@ -202,6 +203,82 @@ def test_crossing_strings_keep_their_own_features(tmp_path):
     for k, p in want.items():
         got = {a: json.loads(v) if isinstance(p.get(a), list) else v for a, v in seen[k].items()}
         assert got == p, k
+
+
+def _fixture_outlines():
+    """E36: a small catalogue's outlines: three registers of wells (one well approximate), a field
+    polygon and a survey line, at fixed positions (no randomness, no repository records)."""
+    feats = []
+    for r, (lon0, lat0) in enumerate([(-103.5, 47.5), (-110.2, 39.6), (2.4, 60.1)]):
+        for i in range(60):
+            feats.append({"type": "Feature", "properties": {
+                "record_id": f"fixture/register-{r}", "kind": "wellbore", "name": f"W-{r}-{i}",
+                "feature_id": f"fixture/register-{r}#{i}", "approximate": r == 2 and i == 0},
+                "geometry": {"type": "Point", "coordinates": [lon0 + (i % 10) * 0.37, lat0 + (i // 10) * 0.29]}})
+    feats.append({"type": "Feature", "properties": {"record_id": "fixture/field", "kind": "field", "name": "F",
+                  "feature_id": "fixture/field#1", "approximate": False}, "geometry": {"type": "Polygon",
+                  "coordinates": [[[3, 58], [5, 58], [5, 59], [3, 59], [3, 58]]]}})
+    feats.append({"type": "Feature", "properties": {"record_id": "fixture/lines", "kind": "survey-2d", "name": "L",
+                  "feature_id": "fixture/lines#1", "approximate": False}, "geometry": {"type": "LineString",
+                  "coordinates": [[170, -40], [174, -39]]}})
+    return feats
+
+
+@_needs_tippecanoe
+def test_fixture_tiles_hold_wells_from_cluster_zoom_and_every_feature_at_max_zoom(tmp_path):
+    """E36: below CLUSTER_BELOW_ZOOM the tiles carry no wellbore point (the page clusters from the
+    well grids); from it up every well is in the tiles; at z12 every feature with its properties."""
+    from osd.build import CLUSTER_BELOW_ZOOM
+    out = tmp_path / "catalog"
+    out.mkdir()
+    feats = _fixture_outlines()
+    (out / "outlines.geojson").write_text(json.dumps({"type": "FeatureCollection", "features": feats}))
+    tiles = write_tiles(out, cache_dir=tmp_path / "tiles")
+    want = {f["properties"]["feature_id"]: f["properties"] for f in feats}
+    wells = {k for k, p in want.items() if p["kind"] == "wellbore"}
+    for z in range(13):
+        seen = {}
+        for tile in _tiles_at(tiles, z):
+            for _, props in _features(tile):
+                seen.setdefault(props["feature_id"], props)
+        assert seen.keys() - wells == want.keys() - wells, z   # outlines at every zoom
+        assert seen.keys() & wells == (wells if z >= CLUSTER_BELOW_ZOOM else set()), z
+    for k, p in want.items():
+        assert seen[k] == p, k
+
+
+def test_well_grids_count_every_committed_well_per_record_at_every_cluster_zoom(tmp_path, records_subset):
+    """E36: wells-z<z>.json for z below CLUSTER_BELOW_ZOOM; per record the rows sum to its committed
+    wellbore points, each row's mean position lies in its own cell, approximate counted apart."""
+    from osd.build import CLUSTER_BELOW_ZOOM, grid_cell, well_grid
+    rids = ["nzpam/petroleum-wells", "sgudds/register-geotermalnych-vrtov"]
+    build(tmp_path / "catalog", tmp_path / "v", records_dir=records_subset(rids))
+    out = tmp_path / "catalog"
+    committed = collections.Counter(
+        f["properties"]["record_id"] for f in json.loads((out / "outlines.geojson").read_text())["features"]
+        if f["properties"]["kind"] == "wellbore" and f["geometry"]["type"] == "Point")
+    assert set(committed) == set(rids) and all(committed.values())
+    assert sorted(p.name for p in out.glob("wells-z*.json")) == [f"wells-z{z}.json" for z in range(CLUSTER_BELOW_ZOOM)]
+    for z in range(CLUSTER_BELOW_ZOOM):
+        g = json.loads((out / f"wells-z{z}.json").read_text())
+        assert g["zoom"] == z and g["cells"] == 2 ** (z + 3)
+        got = collections.Counter()
+        for cx, cy, ri, exact, approx, lon, lat in g["rows"]:
+            got[g["records"][ri]] += exact + approx
+            gx, gy = grid_cell(lon, lat, g["cells"])   # the mean is rounded to 4 decimals: a cell's edge
+            assert abs(gx - cx) <= 1 and abs(gy - cy) <= 1, (z, cx, cy)
+        assert got == committed, z
+    fx = well_grid(_fixture_outlines(), 3)
+    assert sum(r[4] for r in fx["rows"]) == 1 and sum(r[3] for r in fx["rows"]) == 179
+
+
+def test_site_clusters_below_the_build_zoom():
+    """E36: the page and the build agree where the well grids stop and the tiles' wells start."""
+    import re
+
+    from osd.build import CLUSTER_BELOW_ZOOM
+    app = (Path(__file__).parents[1] / "site" / "app.js").read_text()
+    assert re.findall(r"const CLUSTER_BELOW_ZOOM = (\d+);", app) == [str(CLUSTER_BELOW_ZOOM)]
 
 
 def test_both_workflows_install_the_pinned_tippecanoe():

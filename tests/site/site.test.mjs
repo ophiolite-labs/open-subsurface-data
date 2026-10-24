@@ -236,6 +236,107 @@ test('tiles: phone width with tiles, Sodir wells clustered', { skip: noTiles }, 
   await context.close();
 });
 
+// E36: below CLUSTER_BELOW_ZOOM the wells are clusters from the build's grids (data/wells-z<z>.json),
+// not from tiles; the counts are exact: they sum to the committed outlines' wellbore points.
+const committedWells = async () => {
+  const { readdir } = await import('node:fs/promises');
+  const n = {};
+  for (const f of (await readdir(join(ROOT, 'outlines'))).filter(f => f.endsWith('.geojson'))) {
+    for (const x of JSON.parse(await readFile(join(ROOT, 'outlines', f), 'utf8')).features) {
+      if (x.properties.kind === 'wellbore' && x.geometry.type === 'Point') n[x.properties.record_id] = (n[x.properties.record_id] || 0) + 1;
+    }
+  }
+  return n;
+};
+// What the clusters on the page count, every cell of the world, not only the viewport: the wells source's data.
+const clusterTotal = page => page.evaluate(async () => (await window.osdMap.getSource('wells').getData()).features
+  .reduce((s, f) => s + (f.properties.point_count || 1), 0));
+async function until(page, f, want, what) {
+  let got;
+  for (let i = 0; i < 100; i++) { if ((got = await f(page)) === want) return got; await page.waitForTimeout(100); }
+  assert.equal(got, want, what);
+}
+// The registers with wells committed (va-energy/gas-oil-wells waits: its host's certificate expired on
+// 23 Oct 2026, so the verifier could not derive it; docs/program/evidence/e36/outlines.md).
+const REGISTERS = ['sgudds/register-geotermalnych-vrtov', 'nzpam/petroleum-wells', 'wa-demirs/petroleum-wells',
+  'bcer/well-surface-holes-permitted', 'sgc/banco-informacion-petrolera-pozos',
+  'ut-dogm/oil-gas-wells', 'nd-dmr/wells'];
+
+test('wells: at the world view the cluster total is every committed well; one register alone is its own count; period and approximate filters count the same', { skip: noTiles }, async () => {
+  const want = await committedWells();
+  const total = Object.values(want).reduce((a, b) => a + b, 0);
+  const registers = REGISTERS.reduce((s, id) => s + (want[id] || 0), 0);
+  console.log('# committed wellbore points:', total, 'of which the registers with wells', registers, JSON.stringify(want));
+  for (const id of REGISTERS) assert.ok(want[id] > 0, `${id} has a committed outline`);
+  const { context, page, errors, unexpected } = await open('', { viewport: { width: 390, height: 844 } });
+  assert.ok(await page.evaluate(() => window.osdMap.getZoom()) < 7);
+  await until(page, clusterTotal, total, 'world view: clusters count every committed well');
+  const records = JSON.parse(await readFile(join(ROOT, 'site', 'data', 'records.json'), 'utf8')).records;
+  for (const id of REGISTERS) {   // the search box finds each register by its id and nothing else with wells
+    assert.deepEqual(records.filter(r => r.id.includes(id) && want[r.id]).map(r => r.id), [id]);
+    await page.evaluate(id => { location.hash = 'q=' + id; }, id);
+    await until(page, clusterTotal, want[id], `filtered to ${id}`);
+  }
+  // Period: dated records only, then a window; the clusters follow the list of records.
+  const dated = records.filter(r => r.period && (r.period.start || r.period.end));
+  const yr = s => s ? Number(String(s).slice(0, 4)) : null;
+  const overlaps = r => (yr(r.period.start) ?? -Infinity) <= 2000 && (yr(r.period.end) ?? 9999) >= 2000;
+  const count = rs => rs.reduce((s, r) => s + (want[r.id] || 0), 0);
+  await page.evaluate(() => { location.hash = 'dated=1'; });
+  await until(page, clusterTotal, count(dated), 'dated records only');
+  await page.evaluate(() => { location.hash = 't=2000-2000&dated=1'; });
+  await until(page, clusterTotal, count(dated.filter(overlaps)), 'period 2000');
+  // Approximate: no committed well is approximate today, so hiding them leaves the total.
+  const approx = (await Promise.all((await (await import('node:fs/promises')).readdir(join(ROOT, 'site', 'data')))
+    .filter(f => /^wells-z\d+\.json$/.test(f)).map(async f => JSON.parse(await readFile(join(ROOT, 'site', 'data', f), 'utf8')))))
+    .map(g => g.rows.reduce((s, r) => s + r[4], 0));
+  await page.evaluate(() => { location.hash = 'ph=0'; });
+  await until(page, clusterTotal, total - approx[0], 'approximate wells hidden');
+  await page.screenshot({ path: join(OUT, 'wells-world-phone.png') });
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
+
+test('wells: the approximate toggle takes its wells out of the clusters (fixture grid)', { skip: noTiles }, async () => {
+  const grid = { zoom: 3, cells: 64, records: ['nd-dmr/wells', 'equinor/volve'], rows: [[14, 22, 0, 5, 0, -103.3, 47.8], [14, 22, 1, 2, 3, -103.2, 47.9], [33, 18, 1, 0, 1, 2.0, 58.4]] };
+  const { context, page, errors } = await open('map=3.2/55/5', { routes: c => c.route('**/data/wells-z3.json', r => r.fulfill({ json: grid })) });
+  await until(page, clusterTotal, 11, 'every well');
+  await page.evaluate(() => { location.hash = 'ph=0&map=3.2/55/5'; });
+  await until(page, clusterTotal, 7, 'approximate wells hidden');
+  await page.evaluate(() => { location.hash = 'q=volve&map=3.2/55/5'; });
+  await until(page, clusterTotal, 6, 'one record');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('wells: below CLUSTER_BELOW_ZOOM clusters and no tile well; at it, a clicked North Dakota well opens its dataset panel', { skip: noTiles }, async () => {
+  const { context, page, errors } = await open('map=6/47.8/-103.3', { viewport: { width: 390, height: 844 } });
+  const drawn = () => page.evaluate(() => Object.fromEntries(['wells-cluster', 'wells', 'wells-tiles']
+    .map(l => [l, window.osdMap.queryRenderedFeatures({ layers: [l] }).length])));
+  const at6 = await drawn();
+  assert.ok(at6['wells-cluster'] > 0 && at6['wells-tiles'] === 0, JSON.stringify(at6));
+  await page.evaluate(() => new Promise(ok => { window.osdMap.once('idle', ok); window.osdMap.jumpTo({ zoom: 7 }); }));
+  await page.waitForFunction(() => window.osdMap.queryRenderedFeatures({ layers: ['wells-tiles'] }).length > 0);
+  const at7 = await drawn();
+  assert.ok(at7['wells-cluster'] === 0 && at7.wells === 0, JSON.stringify(at7));
+  const f = await page.evaluate(() => {
+    const m = window.osdMap, c = m.getCanvas().getBoundingClientRect();
+    const f = m.queryRenderedFeatures({ layers: ['wells-tiles'] }).find(f => { const p = m.project(f.geometry.coordinates);
+      return f.properties.record_id === 'nd-dmr/wells' && p.x > 20 && p.x < c.width - 60 && p.y > 80 && p.y < c.height * 0.4; });
+    return f && { id: f.id, feature_id: f.properties.feature_id, at: m.project(f.geometry.coordinates) };
+  });
+  assert.ok(f, 'a North Dakota well in the upper map');
+  assert.equal(f.id, f.feature_id, 'feature_id is the tile feature id');
+  await page.mouse.click(f.at.x, f.at.y);
+  await page.locator('#detail h3 .title').waitFor();
+  assert.match(await page.locator('#detail h3 .title').innerText(), /North Dakota/i);
+  assert.match(await page.evaluate(() => location.hash), /sel=nd-dmr\/wells/);
+  await page.screenshot({ path: join(OUT, 'wells-nd-panel-phone.png') });
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
 // E06 slice 2: select mode. A fixture origin on 127.0.0.1 holds one file per ticked dataset; the
 // page's collections.json is given those files as Collection assets (the verifier's digests), so
 // the downloaded manifest can be read by osd.manifest.read and fetched by `osd get` offline.

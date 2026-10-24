@@ -31,3 +31,6 @@ target-version = "py311"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# E36: `full` tests read the real catalogue's tiles whole; `make check-full` runs them, the gate does not
+markers = ["full: runs in make check-full, not in make check"]
+addopts = "-m 'not full'"

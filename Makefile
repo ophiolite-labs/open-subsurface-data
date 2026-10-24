@@ -1,7 +1,9 @@
 # One target per station. CI runs exactly `make check`.
 .PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
 
-check: lint test validate build          ## the required CI check (offline, < 2 min)
+check:                                   ## the required CI check (offline, < 2 min)
+	$(MAKE) lint
+	$(MAKE) -j3 --output-sync=target test validate build   # side by side (E36): the build's tiling is the long one
 
 lint:
 	uv run ruff check src tests
@@ -17,7 +19,8 @@ build:                                   ## build/catalog/*.json, outlines.pmtil
 	mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
 	ls site/data | grep -vx files.txt > site/data/files.txt   # the map reads optional files from this list
 
-check-full: build                        ## the whole STAC tree, every Item (OSD-D18; verify workflow on main, not the gate)
+check-full: build                        ## the whole STAC tree, every Item (OSD-D18), the full tile comparison (E36); verify workflow on main, not the gate
+	uv run pytest -q -m full
 	uv run python -c "import sys; from pathlib import Path; from osd import stac; ok, m = stac.validate(Path('site/data/stac/catalog.json')); print(len(m), 'STAC objects', 'valid' if ok else 'INVALID'); sys.exit(not ok)"
 
 verify:                                  ## network: reach origins, record levels (not part of `check`)

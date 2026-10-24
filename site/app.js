@@ -1,5 +1,6 @@
 /* Open Subsurface Data map. Static: reads what `make build` puts in data/ (records.json, and
-   outlines.pmtiles when the build wrote it, else outlines.geojson; wellbores.geojson if present).
+   outlines.pmtiles when the build wrote it, else outlines.geojson; wellbores.geojson if present;
+   wells-z<z>.json, the wells counted on a grid below CLUSTER_BELOW_ZOOM, with the tiles).
    No framework; one file on purpose (ENGINEERING.md, "surface"). The URL hash is the only state.
    Select mode (E06): tick datasets, download an osd.manifest/1 file (/4 when a dataset is sold or
    states terms, E19) that `osd get` reads. */
@@ -25,9 +26,10 @@
   // Why each record is at its level (E27): `reasons` by id, the sentence `osd status` prints.
   const records = built.records.map(r => ({ ...r, reason: (built.reasons || {})[r.id] || '' }));
   const outlines = pmtilesMode ? null : await (await fetch('data/outlines.geojson')).json();
-  // Clustering stays on the page: on the tile path the clustered source is fed the wellbores of the
-  // tiles loaded so far (below CLUSTER_BELOW_ZOOM every tile keeps every point), keyed by feature_id.
-  const tileWells = new Map();
+  // Wells below CLUSTER_BELOW_ZOOM are clusters drawn from grids (E36): per zoom, rows of one record's
+  // wells in one cell, [cx, cy, record index, exact, approximate, mean lon, mean lat] (src/osd/build.py
+  // well_grid). On the tile path the build wrote them (the tiles carry no well below that zoom); on the
+  // GeoJSON path the page counts its own points the same way. From CLUSTER_BELOW_ZOOM up wells are single.
   const wellPoints = has('wellbores.geojson')
     ? (await (await fetch('data/wellbores.geojson')).json()).features
     : (outlines ? outlines.features.filter(f => f.properties.kind === 'wellbore' && f.geometry.type === 'Point') : []);
@@ -132,13 +134,59 @@
 
   function visibleIds() { return records.filter(matches).map(r => r.id); }
 
+  const gridCells = z => 2 ** (z + 3); // 64 px cells at 512 px tiles
+  function cellOf([lon, lat], n) {
+    const y = Math.max(-85.05112878, Math.min(85.05112878, lat)) * Math.PI / 180;
+    const cl = v => Math.min(n - 1, Math.max(0, Math.floor(v * n)));
+    return [cl((lon + 180) / 360), cl((1 - Math.log(Math.tan(y) + 1 / Math.cos(y)) / Math.PI) / 2)];
+  }
+  function countWells(points, z) {
+    const n = gridCells(z), ri = new Map(), cells = new Map();
+    for (const f of points) {
+      const id = f.properties.record_id, [cx, cy] = cellOf(f.geometry.coordinates, n);
+      if (!ri.has(id)) ri.set(id, ri.size);
+      const k = `${cx}/${cy}/${ri.get(id)}`;
+      const c = cells.get(k) || cells.set(k, [cx, cy, ri.get(id), 0, 0, 0, 0]).get(k);
+      c[f.properties.approximate ? 4 : 3]++; c[5] += f.geometry.coordinates[0]; c[6] += f.geometry.coordinates[1];
+    }
+    const rows = [...cells.values()].map(c => (c[5] /= c[3] + c[4], c[6] /= c[3] + c[4], c));
+    return { zoom: z, cells: n, records: [...ri.keys()], rows };
+  }
+  const grids = {};
+  const gridAt = z => grids[z] = grids[z] || (pmtilesMode
+    ? fetch(`data/wells-z${z}.json`).then(r => r.ok ? r.json() : { records: [], rows: [] }).catch(() => ({ records: [], rows: [] }))
+    : Promise.resolve(countWells(wellPoints, z)));
+  const abbrev = n => n >= 10000 ? `${Math.round(n / 1000)}k` : n >= 1000 ? `${(Math.round(n / 100) / 10)}k` : String(n);
+  // The filters sum the rows they keep per cell: a cell of one well is that well, clickable; else a cluster.
+  function clusters(g, idSet) {
+    const cells = new Map();
+    for (const [cx, cy, ri, exact, approx, lon, lat] of g.rows) {
+      const id = g.records[ri], k = idSet.has(id) ? exact + (state.approx ? approx : 0) : 0;
+      if (!k) continue;
+      const c = cells.get(cx * 1e5 + cy) || cells.set(cx * 1e5 + cy, { n: 0, lon: 0, lat: 0, id }).get(cx * 1e5 + cy);
+      c.n += k; c.lon += lon * k; c.lat += lat * k;
+    }
+    return [...cells.values()].map(c => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [c.lon / c.n, c.lat / c.n] },
+      properties: c.n > 1 ? { point_count: c.n, point_count_abbreviated: abbrev(c.n) } : { record_id: c.id, kind: 'wellbore' } }));
+  }
+  let wellsShown = null; // the grid zoom drawn, or 'single'
+  async function drawWells(force) {
+    const z = Math.floor(map.getZoom()), want = z < CLUSTER_BELOW_ZOOM ? Math.max(0, z) : 'single';
+    if (want === wellsShown && !force) return;
+    wellsShown = want;
+    const idSet = new Set(visibleIds());
+    const features = want !== 'single' ? clusters(await gridAt(want), idSet)
+      : pmtilesMode ? [] // the tiles draw single wells (wells-tiles)
+      : wellPoints.filter(f => idSet.has(f.properties.record_id) && (state.approx || !f.properties.approximate));
+    if (wellsShown === want) map.getSource('wells').setData({ type: 'FeatureCollection', features });
+  }
+
   let ready = false;
   function applyFilters() {
     const ids = visibleIds();
     renderList(ids);
     writeHash();
     if (!ready) return;
-    const idSet = new Set(ids);
     const idFilter = ['in', ['get', 'record_id'], ['literal', ids]];
     const approxFilter = state.approx ? true : ['!', ['get', 'approximate']];
     for (const l of Object.keys(LAYER_BASE)) {
@@ -149,12 +197,8 @@
       map.setFilter(l, ['all', idFilter]);
     }
     map.setFilter('picked-line', ['in', ['get', 'record_id'], ['literal', state.pick || []]]);
-    // Clustered sources cannot be filtered per feature after clustering, so the wells source
-    // gets the filtered points.
     if (pmtilesMode) map.setFilter('wells-tiles', ['all', WELL, idFilter, approxFilter]);
-    const points = pmtilesMode ? [...tileWells.values()] : wellPoints;
-    map.getSource('wells').setData({ type: 'FeatureCollection',
-      features: points.filter(f => idSet.has(f.properties.record_id) && (state.approx || !f.properties.approximate)) });
+    drawWells(true);
   }
 
   // line-dasharray takes no data expression in MapLibre 4, so derived and placeholder
@@ -178,8 +222,7 @@
       : { type: 'geojson', data: outlines });
     const src = pmtilesMode ? { source: 'outlines', 'source-layer': 'outlines' } : { source: 'outlines' };
     map.addSource('extents', { type: 'geojson', data: extents });
-    map.addSource('wells', { type: 'geojson', data: { type: 'FeatureCollection', features: wellPoints },
-      cluster: true, clusterMaxZoom: CLUSTER_BELOW_ZOOM - 1, clusterRadius: 40 });
+    map.addSource('wells', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addLayer({ id: 'extents-fill', type: 'fill', source: 'extents', paint: { 'fill-color': '#6ea8fe', 'fill-opacity': 0.06 } });
     map.addLayer({ id: 'extents-line', type: 'line', source: 'extents', paint: { 'line-color': '#6ea8fe', 'line-width': 1, 'line-dasharray': [3, 3], 'line-opacity': 0.7 } });
     map.addLayer({ id: 'picked-line', type: 'line', source: 'extents', filter: ['in', ['get', 'record_id'], ['literal', []]], paint: { 'line-color': '#ffffff', 'line-width': 2.5 } });
@@ -196,34 +239,18 @@
       layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 11, 'text-font': ['Noto Sans Regular'] },
       paint: { 'text-color': '#0f1419' } });
     const WELL_PAINT = { 'circle-color': '#3dd68c', 'circle-radius': 4, 'circle-stroke-color': '#0f1419', 'circle-stroke-width': 1 };
-    // On the tile path single wells come from the tiles from CLUSTER_BELOW_ZOOM up (exact positions);
-    // below it from the clustered source, like every cluster.
-    map.addLayer({ id: 'wells', type: 'circle', source: 'wells', filter: ['!', ['has', 'point_count']], paint: WELL_PAINT,
-      ...(pmtilesMode ? { maxzoom: CLUSTER_BELOW_ZOOM } : {}) });
-    if (pmtilesMode) {
-      map.addLayer({ id: 'wells-tiles', type: 'circle', ...src, filter: WELL, minzoom: CLUSTER_BELOW_ZOOM, paint: WELL_PAINT });
-      let fresh = false;
-      map.on('sourcedata', e => { if (e.sourceId === 'outlines' && e.tile) fresh = true; });
-      map.on('idle', () => {
-        if (!fresh || map.getZoom() >= CLUSTER_BELOW_ZOOM) return;
-        fresh = false;
-        const before = tileWells.size;
-        for (const f of map.querySourceFeatures('outlines', { sourceLayer: 'outlines', filter: WELL })) {
-          const p = f.properties;
-          if (!tileWells.has(p.feature_id)) tileWells.set(p.feature_id, { type: 'Feature', geometry: f.geometry,
-            properties: { record_id: p.record_id, kind: p.kind, name: p.name, approximate: p.approximate, feature_id: p.feature_id } });
-        }
-        if (tileWells.size > before) applyFilters();
-      });
-    }
+    // On the tile path single wells come from the tiles from CLUSTER_BELOW_ZOOM up (exact positions,
+    // feature_id promoted); a one-well cell below it is drawn here like every cluster.
+    map.addLayer({ id: 'wells', type: 'circle', source: 'wells', filter: ['!', ['has', 'point_count']], paint: WELL_PAINT });
+    if (pmtilesMode) map.addLayer({ id: 'wells-tiles', type: 'circle', ...src, filter: WELL, minzoom: CLUSTER_BELOW_ZOOM, paint: WELL_PAINT });
+    map.on('zoom', () => drawWells());
 
     for (const l of ['surveys-fill', 'fields-fill', 'wells', 'extents-fill', ...(pmtilesMode ? ['wells-tiles'] : [])]) {
       map.on('click', l, e => state.pick ? tick(e.features[0].properties.record_id) : select(e.features[0].properties.record_id));
     }
-    map.on('click', 'wells-cluster', async e => {
+    map.on('click', 'wells-cluster', e => {
       const f = e.features[0];
-      const zoom = await map.getSource('wells').getClusterExpansionZoom(f.properties.cluster_id);
-      map.easeTo({ center: f.geometry.coordinates, zoom });
+      map.easeTo({ center: f.geometry.coordinates, zoom: Math.min(Math.floor(map.getZoom()) + 2, CLUSTER_BELOW_ZOOM) });
     });
     for (const l of ['surveys-fill', 'fields-fill', 'wells', 'wells-cluster', 'extents-fill', ...(pmtilesMode ? ['wells-tiles'] : [])]) {
       map.on('mouseenter', l, () => map.getCanvas().style.cursor = 'pointer');
