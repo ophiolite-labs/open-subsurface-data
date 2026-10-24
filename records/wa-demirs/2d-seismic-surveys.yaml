@@ -1,0 +1,32 @@
+id: wa-demirs/2d-seismic-surveys
+title: 2D Seismic surveys (DMIRS-034)
+summary: >-
+  "This dataset is a reference system for petroleum exploration 2D seismic surveys conducted in
+  Western Australia." Line locations with survey and line names, first and last CDP and
+  shotpoint, line length and shot interval. "Since 1 January 2012 the offshore (commonwealth
+  water) have been managed by NOPTA in collaboration with Geoscience Australia and delivered
+  through NOPIMS system."
+publisher: {name: "Department of Energy, Mines, Industry Regulation and Safety (Western Australia)", url: https://www.wa.gov.au, country: AU}
+origin:
+  url: https://catalogue.data.wa.gov.au/dataset/2d-seismic-surveys
+  access: anonymous
+  manifest_url: https://public-services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/Industry_and_Mining/MapServer/23?f=json
+  notes: "data.wa.gov.au package 2d-seismic-surveys: files at https://dasc.dmirs.wa.gov.au/home?productAlias=2DSeismicSurveys, WFS and WMS on public-services.slip.wa.gov.au. manifest_url is ArcGIS layer 23 (35,082 polylines, maxRecordCount 10000, GDA2020, on 24 Oct 2026). The traces themselves are in WAPIMS and NOPIMS."
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-2d]
+region: {country: AU, basin: "Western Australian basins, onshore and offshore", bbox: [102.529, -37.132, 132.821, -8.746], crs: "EPSG:7844"}
+listed_by: [publisher]
+known_issues:
+  - "Navigation only (line locations), no traces; seismic-2d is the nearest kind, as in ns-energy/onshore-2d-seismic-navigation."
+  - "The layer has no acquisition dates; period is the read date only."
+  - "bbox is the CKAN package's spatial rectangle."
+period:
+  start: "2026-10-24"
+  end: "2026-10-24"
+  stated: "No dates in the layer or the package; 'The WA State 2D seismic surveys are updated on a regular basis' (read 24 Oct 2026)"
+added: 2026-10-24

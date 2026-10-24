@@ -1,0 +1,30 @@
+id: gsnsw/coal-seam-gas-boreholes
+title: NSW Coal Seam Gas Boreholes
+summary: >-
+  "Information about and locations of wells drilled to explore for, assess or extract potential
+  coal seam gas resources." "The dataset contains summary information about each drillhole such as
+  location, total depth, azimuth/dip, wireline logs, core availability and library location and
+  DIGS references." Part of the New South Wales Geoscientific Data Warehouse (NSW GDW) series.
+publisher: {name: "Geological Survey of New South Wales (Department of Primary Industries and Regional Development)", url: https://www.regional.nsw.gov.au/meg/geoscience, country: AU}
+origin:
+  url: https://data.nsw.gov.au/data/dataset/coal-seam-gas-borehole
+  access: anonymous
+  manifest_url: https://public-gs.geoscience.nsw.gov.au/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=drilling:drilling_drillholes_csg&outputFormat=application/json
+  notes: "The data.nsw entry is harvested from SEED and names the GSNSW WMS and WFS services; manifest_url is the WFS GetFeature of drilling:drilling_drillholes_csg (905 features, 1,175,106 bytes, on 24 Oct 2026), with stratigraphy top and base, core library location and boxes stored for each hole."
+licence:
+  name: Creative Commons Attribution
+  url: http://www.opendefinition.org/licenses/cc-by
+  redistribution: allowed
+  attribution: required
+kinds: [wellbore-headers, core]
+region: {country: AU, basin: New South Wales, bbox: [141.0, -37.7, 154.0, -28.8]}
+listed_by: [publisher]
+known_issues:
+  - "The licence is named 'Creative Commons Attribution' with no version (CKAN licence id cc-by)."
+  - "The page states 'Temporal Coverage From 11/11/1961', but year_drilled in the layer runs from 1937."
+  - "bbox is the State of New South Wales as the catalogue states it."
+period:
+  start: "1937"
+  end: "2014"
+  stated: "year_drilled in the publisher's WFS layer: 1937 to 2014 on all 905 holes (24 Oct 2026); data.nsw page 'Temporal Coverage From 11/11/1961', 'Update Frequency Daily'"
+added: 2026-10-24

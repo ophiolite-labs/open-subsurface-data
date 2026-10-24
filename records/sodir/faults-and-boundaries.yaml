@@ -1,0 +1,32 @@
+id: sodir/faults-and-boundaries
+title: Faults and boundaries (Norwegian Offshore Directorate)
+summary: >-
+  "Forkastninger, strukturgeologiske- og magnetiske- grenser": faults, structural-geological and
+  magnetic boundaries on the Norwegian continental shelf as line features (theme, definition,
+  quality, legend), published by the Norwegian Offshore Directorate as a shapefile and in its
+  FactMaps service.
+publisher: {name: Norwegian Offshore Directorate (Sodir), url: https://www.sodir.no, country: "NO"}
+origin:
+  url: https://kartkatalog.geonorge.no/metadata/uuid/d19c485f-8b42-4dda-b2b2-b1cbe2d613cb
+  access: anonymous
+  manifest_url: https://factmaps.sodir.no/api/rest/services/Factmaps/FactMapsWGS84/MapServer/702?f=json
+  notes: "Geonorge entry (owner Sokkeldirektoratet) names the shapefile https://www.sodir.no/globalassets/1-sodir/fakta/geologi-eng/structural_elements.zip, which also holds the structural elements. manifest_url is FactMaps WGS84 layer 702 'Faults and boundaries' (3,590 polylines, maxRecordCount 1000, on 24 Oct 2026); layer 704 'Structural elements' has 263 polygons with names, levels and age."
+licence:
+  name: Norsk lisens for offentlige data (NLOD)
+  url: http://data.norge.no/nlod/no/1.0
+  redistribution: allowed
+  attribution: required
+  statement: "The contents on the website of the Norwegian Offshore Directorate may be copied and used free of charge as long as all material subject to copyright contains a reference to the source."
+kinds: [faults]
+region: {country: "NO", basin: Norwegian continental shelf, bbox: [1.0, 55.0, 50.0, 81.0], crs: "EPSG:4326"}
+listed_by: [publisher]
+known_issues:
+  - "Geonorge links NLOD 1.0 for this entry while the FactPages terms name NLOD 2.0 (as in sodir/factpages); spdx left null (OSD-D15: the catalogue entry is the statement)."
+  - "www.sodir.no answered a Cloudflare challenge (HTTP 403) to the zip and the structural elements page on 24 Oct 2026: blocked, not dead (OSD-D9)."
+  - "Interpreted map lines, not fault surfaces or sticks."
+  - "bbox is the Geonorge bounding box; the FactMaps layer extent reaches 69°E."
+period:
+  start: "2020-05-07"
+  end: "2020-05-07"
+  stated: "Geonorge DateUpdated 2020-05-07; no publication date or temporal extent stated"
+added: 2026-10-24

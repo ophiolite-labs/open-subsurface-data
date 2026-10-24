@@ -1,0 +1,30 @@
+id: wa-demirs/3d-seismic-survey-polygons
+title: 3D Seismic survey polygons (DMIRS-035)
+summary: >-
+  "This dataset is a reference system for petroleum exploration 3D seismic surveys conducted in
+  Western Australia." Survey outlines with survey name, start and end date, contractor, terrain
+  and line prefix. Offshore Commonwealth-water surveys since 1 January 2012 are managed by NOPTA
+  and delivered through NOPIMS.
+publisher: {name: "Department of Energy, Mines, Industry Regulation and Safety (Western Australia)", url: https://www.wa.gov.au, country: AU}
+origin:
+  url: https://catalogue.data.wa.gov.au/dataset/3d-seismic-survey-polygons
+  access: anonymous
+  manifest_url: https://public-services.slip.wa.gov.au/public/rest/services/SLIP_Public_Services/Industry_and_Mining/MapServer/24?f=json
+  notes: "data.wa.gov.au package 3d-seismic-survey-polygons: files at https://dasc.dmirs.wa.gov.au/home?productAlias=3DSeismicSurveys, WFS and WMS on public-services.slip.wa.gov.au. manifest_url is ArcGIS layer 24 (209 polygons, maxRecordCount 10000, GDA2020, on 24 Oct 2026). The volumes themselves are in WAPIMS and NOPIMS."
+licence:
+  name: Creative Commons Attribution 4.0
+  spdx: CC-BY-4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  redistribution: allowed
+  attribution: required
+kinds: [seismic-3d]
+region: {country: AU, basin: "Western Australian basins, onshore and offshore", bbox: [111.488, -33.066, 128.974, -10.451], crs: "EPSG:7844"}
+listed_by: [publisher]
+known_issues:
+  - "Survey outlines only, no traces; seismic-3d is the nearest kind."
+  - "bbox is the CKAN package's spatial rectangle."
+period:
+  start: "1981-10-29"
+  end: "2024-03-23"
+  stated: "start_date and end_date in the publisher's ArcGIS layer 24: earliest start 1981-10-29, latest end 2024-03-23 (24 Oct 2026)"
+added: 2026-10-24

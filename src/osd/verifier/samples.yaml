@@ -55,6 +55,8 @@ gsmma/sw-offshore-seismic-lines-2008-2011: {file: true, sample: ["*"]}   # the b
 gsni/tellus-airborne-electromagnetics: ["*/gsni/geophysics/Electromagnetics.zip"]   # Open Data NI page (html links, 54 entries): the EM xyz zip, 383,666,252 bytes (resources.bgs.ac.uk robots 404)
 gsni/tellus-airborne-magnetics: "the one zip the page links, Magnetics.zip, is 997,778,640 bytes, over the 512 MiB per-record budget (html links, 55 entries)"
 gsni/tellus-airborne-radiometrics: ["*/gsni/geophysics/Radiometrics.zip"]   # Open Data NI page (html links): the radiometric xyz zip, 58,395,852 bytes (resources.bgs.ac.uk robots 404)
+gsnsw/coal-seam-gas-boreholes: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline; filename=drilling_drillholes_csg.json), 905 features, 1,175,106 bytes
+gsnsw/drillholes-core-library: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline), first 1,000 of 11,955 features, 1,252,987 bytes
 gsnsw/drillholes-petroleum: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (Content-Disposition inline), 1,221 features, 1,624,390 bytes
 gsq/qped: "the CKAN package lists no resources (23 Oct 2026); QPED files are reached through its own application"
 gsv/faults-latrobe-group-gippsland: {file: true, sample: ["*"]}   # WFS GetFeature answers application/json (inline), 47 features, 15,043 bytes
@@ -114,6 +116,7 @@ sk-mer/drill-cuttings: ["*"]   # ArcGIS layer 3: one geojson export of at most 2
 sk-mer/non-vertical-wells: ["*"]   # ArcGIS layer 1: one geojson export of at most 2000 of 68,000 features (kept as partial); size not read (robots 404)
 sk-mer/vertical-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 119,595 features (kept as partial), 4,232,645 bytes
 sodir/factpages: ["*rs:Format=CSV*"]              # the CSV export of the exploration wellbore table
+sodir/faults-and-boundaries: ["*"]   # ArcGIS layer 702: the whole layer, 3,590 polylines (maxRecordCount 1000; factmaps robots 404)
 soton/scanner-pockmark-velocity-models: ["*/1/FAST_Final_Tomo_Vp_GI_geo_SP"]   # ePrints page links six files; the tomographic model, 146,169,210 bytes
 spe/csp10-model-2: ["*por_perm_case2a.zip"]   # page links the corrected dataset, 19,476,344 bytes
 spe/csp11: ["*.geo"]   # GitHub contents API of geometries/: spe11a.geo 29,309 bytes, spe11b.geo 611 bytes
@@ -130,6 +133,9 @@ usgs/ofr-2009-1021-las-gamma-ray-logs: ["*.zip"]   # report index page (20 links
 ustc/bedrettolab-atv-logs-stress: ["*/files/stress_inversion.zip?download=1"]   # Zenodo record page: stress_inversion.zip, 5,491,891 bytes (ATV.zip 2.4 GB not sampled)
 ut-dogm/oil-gas-wells: ["*"]                      # ArcGIS layer: one geojson export of at most 2000 features
 va-energy/gas-oil-wells: ["*"]   # ArcGIS layer 0: one geojson export of at most 2000 of 8,605 features (kept as partial), 1,185,609 bytes
+wa-demirs/2d-seismic-surveys: ["*"]   # ArcGIS layer 23: the whole layer, 35,082 polylines (maxRecordCount 10000; slip robots 404)
+wa-demirs/3d-seismic-survey-polygons: ["*"]   # ArcGIS layer 24: the whole layer, 209 polygons (maxRecordCount 10000; slip robots 404)
+wa-demirs/core-library-drill-holes: ["*"]   # ArcGIS layer 1: the whole layer, 4,143 points (maxRecordCount 10000; slip robots 404)
 wa-demirs/petroleum-wells: ["*"]   # ArcGIS layer 13: one geojson export, all 4,371 features (maxRecordCount 10000), 1,978,900 bytes
 wa-dnr/geophysics-database: ["*"]   # ArcGIS layer 2 (gravity observations): one geojson export of at most 2000 of 7,577 features; size not read (gis.dnr.wa.gov robots 404)
 wa-dnr/geothermal-wells: ["*"]   # ArcGIS layer 7 (measured geothermal gradient): one geojson export, all 489 features (maxRecordCount 2000); size not read (robots 404)

@@ -1,0 +1,32 @@
+id: gsnsw/drillholes-core-library
+title: NSW Drillholes Core Library
+summary: >-
+  Drillholes of the NSW drilling dataset ("over 140,000 non-confidential drillholes related to the
+  activities of the mineral, coal and petroleum industries, as well as government drilling
+  programs") that are "physically held (either wholly or in part) at the Department’s core library
+  facilities across the state, the main core library located at Londonderry NSW": about 8 % of them,
+  with intervals, material and location in the library.
+publisher: {name: "Geological Survey of New South Wales (Department of Primary Industries and Regional Development)", url: https://www.regional.nsw.gov.au/meg/geoscience, country: AU}
+origin:
+  url: https://data.nsw.gov.au/data/dataset/nsw-drillholes-core-library
+  access: anonymous
+  manifest_url: https://public-gs.geoscience.nsw.gov.au/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=drilling:drilling_drillholes_core_library&outputFormat=application/json&count=1000
+  notes: "The data.nsw entry is harvested from SEED and names the GSNSW WMS and WFS services; the layer drilling:drilling_drillholes_core_library has numberMatched 11,955 on 24 Oct 2026. manifest_url asks for the first 1,000 features (1,252,987 bytes); the whole layer is more than 8 MB."
+licence:
+  name: Creative Commons Attribution
+  url: http://www.opendefinition.org/licenses/cc-by
+  redistribution: allowed
+  attribution: required
+kinds: [core, wellbore-headers]
+region: {country: AU, basin: New South Wales, bbox: [141.0, -37.7, 154.0, -28.8]}
+listed_by: [publisher]
+known_issues:
+  - "\"This dataset relates only to open file information, all confidential records are withheld.\""
+  - "The licence is named 'Creative Commons Attribution' with no version (CKAN licence id cc-by)."
+  - "Mineral, coal and petroleum holes together; an index to physical core and samples, not core data."
+  - "bbox is the State of New South Wales as the catalogue states it."
+period:
+  start: "2011-06-30"
+  end: "2026-10-24"
+  stated: "data.nsw page: 'Temporal Coverage From 30/06/2011', no end date, 'Update Frequency Daily' (read 24 Oct 2026)"
+added: 2026-10-24
