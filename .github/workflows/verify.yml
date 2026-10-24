@@ -1,5 +1,6 @@
 # Network verification. Never a required check: a publisher's outage must not stop merges.
-# Pull requests touching records, and dispatches naming ids: one job verifies those records (the PR
+# Pull requests (the records and outlines they change; none changed, nothing verified: H4) and
+# dispatches naming ids: one job verifies those records (the PR
 # gets a comment with the levels). A dispatch with empty ids verifies every record in 12 shards (H2):
 # `snapshot` fetches the stored results once, each `shard` verifies the records whose origin host
 # hashes to it (osd.shards), `finish` lays the accepted shards over the snapshot (a failed shard's
@@ -45,12 +46,22 @@ jobs:
         id: ids
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            ids=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- records | sed -n 's|^records/\(.*\)\.yaml$|\1|p' | grep -v '^_' | tr '\n' ' ')
+            # records changed, plus records whose committed outline changed (outlines/<pub>__<name>.geojson);
+            # a PR changing neither verifies nothing (H4: an empty list used to mean every record, one job)
+            ids=$( { git diff --name-only origin/${{ github.base_ref }}...HEAD -- records | sed -n 's|^records/\(.*\)\.yaml$|\1|p' | grep -v '^_'
+                     git diff --name-only origin/${{ github.base_ref }}...HEAD -- outlines | sed -n 's|^outlines/\(.*\)__\(.*\)\.geojson$|\1/\2|p'; } | sort -u | tr '\n' ' ')
           else
             ids="${{ inputs.ids }}"
           fi
           echo "ids=$ids" >> "$GITHUB_OUTPUT"
-      - run: uv run osd verify --outline-inputs ${{ steps.ids.outputs.ids }} | tee verify.txt   # L3 compares committed outlines with today's inputs (E03)
+      - name: verify the picked records   # L3 compares committed outlines with today's inputs (E03)
+        env: { IDS: "${{ steps.ids.outputs.ids }}" }
+        run: |
+          if [ -z "${IDS// /}" ]; then
+            echo "no record or outline changed: nothing verified (H4)" | tee verify.txt
+          else
+            uv run osd verify --outline-inputs $IDS | tee verify.txt
+          fi
       - name: levels as published (the same levels records.json carries after the republish)
         run: |
           uv run osd status | tee status.txt
