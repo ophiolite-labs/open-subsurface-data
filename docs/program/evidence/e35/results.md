@@ -10,8 +10,10 @@ Branch `e35-whole-layers` at 3bb7f7c (code as of 953b6ad; later commits are evid
 ## Outcome
 
 - **15 layers read whole** on the first run, with `files-checksummed` passing ("whole layer checked
-  (N features, esri-json), not a downloadable file"). **9 records at L2 that were at L1** (E29's evidence, 23 Oct):
-  BCER, ND DMR, SGC, UT DOGM, WA DNR x5, INP Mozambique; WA DEMIRS at L3.
+  (N features, esri-json), not a downloadable file"). **Five records rise from L1 to L2** against the stored
+  main results of 24 Oct (\`verification-results\`): BCER, ND DMR, SGC, UT DOGM, WA DNR geophysics (each a
+  partial export before). INP Mozambique and WA DNR geothermal, groundwater, oil-gas and shear-wave stay L2,
+  now on whole-layer evidence instead of a one-page export; WA DEMIRS stays L3.
 - **Checksums equal on the second run for all 14 layers read twice** (every one whose edit date did not
   change; none changed). SGUDDS was not read on the second run: its layer answered "Could not find service.
   Service may be stopped" (an outage on the publisher's side, not a disagreement). Stop rule not met.
@@ -19,7 +21,7 @@ Branch `e35-whole-layers` at 3bb7f7c (code as of 953b6ad; later commits are evid
   sgc (13), ut-dogm (21), wa-dnr/geophysics (4), nbmg (2) pass on both runs. **va-energy** has outage
   evidence: on both runs the origin refused the connection from the runner (`origin-reachable` fail,
   http_status 0, "connection at https://energy.virginia.gov/gas-oil/GasOil.shtml", checked 01:32:04 and
-  01:47:05 UTC; from this VPS the host also timed out at 10:2x CEST); the layer was not tried.
+  01:47:05 UTC, and from this VPS earlier the same day the description request got no answer within 30 s); the layer was not tried.
 - nbmg, nzpam x2 and sgudds pass the whole-layer check but stay L0 on `origin-reachable` (blocked: NBMG
   answers 404 to the verifier and 200 to a browser; NZP&M and SGUDDS 403 to the runner, as in E29).
 - The six layers above 50,000 features stay partial exports, the cap named in the detail (out of scope).
