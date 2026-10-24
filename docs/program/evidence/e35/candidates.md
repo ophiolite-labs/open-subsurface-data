@@ -1,5 +1,4 @@
 # E35 candidates (supervisor, 24 Oct): records whose manifest_url is an ArcGIS layer
-al-ogb/wells
 bcer/well-surface-holes-permitted
 cgs/vrtna-prozkoumanost
 inp-mz/actividade-de-pesquisa-e-producao
