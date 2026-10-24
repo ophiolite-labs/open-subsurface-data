@@ -256,6 +256,45 @@ def page_offsets(count: int, size: int) -> list[int]:
     return offsets
 
 
+def arcgis_page_query(oid: str, size: int, offset: int, fields: str) -> dict:
+    """The query of one page (E29, shared with the verifier E35): object id order, native spatial
+    reference (no outSR), Esri JSON."""
+    return {"where": "1=1", "outFields": fields, "orderByFields": f"{oid} ASC", "resultOffset": offset,
+            "resultRecordCount": size, "f": "json"}
+
+
+def arcgis_assemble(pages: dict[int, bytes], oid: str, size: int, count: int, name: str,
+                    check_page=None) -> list[dict]:
+    """The Esri features of every page the count calls for, in page order: each page is there, none
+    answered an error, none is short but the last, every feature carries its object id, no id is
+    served twice and the ids are as many as the layer counted. `check_page(page, what)` adds a
+    caller's check per page (E29: the record's CRS)."""
+    feats, seen = [], set()
+    offsets = page_offsets(count, size)
+    for k, off in enumerate(offsets):
+        what = f"{name}: page at offset {off}"
+        if off not in pages:
+            raise Refused(f"{what} is missing")
+        page = _json(pages[off], what)
+        _arcgis_error(page, what)
+        if check_page:
+            check_page(page, what)
+        got = page.get("features") or []
+        if k < len(offsets) - 1 and len(got) != size:
+            raise Refused(f"{what} served {len(got)} features, not the {size} a full page holds")
+        for f in got:
+            a = f.get("attributes") or {}
+            if a.get(oid) in (None, ""):
+                raise Refused(f"{what}: a feature has no {oid}")
+            if a[oid] in seen:
+                raise Refused(f"{name}: object id {a[oid]} served twice")
+            seen.add(a[oid])
+            feats.append(f)
+    if len(seen) != count:
+        raise Refused(f"{name}: the layer counts {count} features, the pages served {len(seen)}")
+    return feats
+
+
 def _signed_area(ring: list) -> float:
     return sum(a[0] * b[1] - b[0] * a[1] for a, b in itertools.pairwise(ring)) / 2
 
@@ -324,30 +363,15 @@ def register_arcgis(rec_input: dict, rule: dict, parts: list[tuple[str, bytes]])
         raise Refused(f"{name}: the layer description or the count was not fetched")
     oid, size = arcgis_layer(by["layer"])
     count = arcgis_count(by["count"])
-    feats, seen = [], set()
-    offsets = page_offsets(count, size)
-    for k, off in enumerate(offsets):
-        what = f"{name}: page at offset {off}"
-        if f"page-{off:06d}" not in by:
-            raise Refused(f"{what} is missing")
-        page = _json(by[f"page-{off:06d}"], what)
-        _arcgis_error(page, what)
+
+    def crs(page: dict, what: str) -> None:
         served = _wkids(page.get("spatialReference"))
         if rec_input.get("crs") not in served:
             raise Refused(f"{what} states spatialReference {sorted(served) or 'none'}, the record {rec_input.get('crs')}")
-        got = page.get("features") or []
-        if k < len(offsets) - 1 and len(got) != size:
-            raise Refused(f"{what} served {len(got)} features, not the {size} a full page holds")
-        for f in got:
-            a = f.get("attributes") or {}
-            if a.get(oid) in (None, ""):
-                raise Refused(f"{what}: a feature has no {oid}")
-            if a[oid] in seen:
-                raise Refused(f"{name}: object id {a[oid]} served twice")
-            seen.add(a[oid])
-            feats.append({"properties": a, "geometry": esri_geometry(f.get("geometry"))})
-    if len(seen) != count:
-        raise Refused(f"{name}: the layer counts {count} features, the pages served {len(seen)}")
+
+    pages = {int(n[5:]): b for n, b in parts if n.startswith("page-")}
+    got = arcgis_assemble(pages, oid, size, count, name, crs)
+    feats = [{"properties": f.get("attributes") or {}, "geometry": esri_geometry(f.get("geometry"))} for f in got]
     rule = {**rule, "id": oid, "unplaced": "report"}   # a feature the register lists without a position
     return _features(rec_input, rule, [{"features": feats}])
 

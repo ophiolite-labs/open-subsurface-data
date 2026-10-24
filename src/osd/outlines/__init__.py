@@ -28,6 +28,7 @@ from .extractors import (
     arcgis_layer,
     arcgis_layer_facts,
     arcgis_out_fields,
+    arcgis_page_query,
     geojson_page,
     mdio_header_chunks,
     page_offsets,
@@ -146,8 +147,7 @@ def fetch_parts(rec_input: dict, rule: dict, opener, robots) -> list[tuple[str, 
         parts = [("layer", layer), ("count", count)]
         fields = arcgis_out_fields(rule, oid)
         for off in page_offsets(arcgis_count(count), size):   # native spatial reference: no outSR
-            q = {"where": "1=1", "outFields": fields, "orderByFields": f"{oid} ASC", "resultOffset": off,
-                 "resultRecordCount": size, "f": "json"}
+            q = arcgis_page_query(oid, size, off, fields)
             parts.append((f"page-{off:06d}", _get(_with(url + "/query", q), opener, robots)))
         return parts
     if fmt == "mdio":
