@@ -15,7 +15,10 @@ Outputs (build/catalog/):
                    licence and level so the map needs no second lookup
   stac/            the static STAC catalogue (src/osd/stac.py)
   collections.json {"collections": [...]}, the same STAC Collections in one file
-  outlines.pmtiles the same features as vector tiles, z0-12, when tippecanoe is installed (E15)
+  outlines.pmtiles the same features as vector tiles, z0-12, when tippecanoe is installed (E15);
+                   wellbore points from CLUSTER_BELOW_ZOOM up only (E36)
+  wells-z<z>.json  for z below CLUSTER_BELOW_ZOOM, the wellbore points counted on a grid (E36): what
+                   the map clusters there, so the world view does not load every well
   mirror.json     {"copies": [...]}, the public index of what the mirror holds, regenerated from the
                    custody documents in <mirror_dir>/custody/ (E07); STAC assets gain the alternates
 """
@@ -115,6 +118,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     (out_dir / "mirror.json").write_text(json.dumps({"copies": index}, indent=2) + "\n")
     collections = stac.write_catalog(out_dir, records_out, vdir, mirror_index=index)
     (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
+    write_well_grids(out_dir, features)
     print_sizes(out_dir)
     write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
     return {"records": len(records_out), "features": len(features), "collections": len(collections)}
@@ -138,17 +142,76 @@ def print_sizes(out_dir: Path) -> None:
           f" records.json {(out_dir / 'records.json').stat().st_size / 1e6:.1f} MB", file=sys.stderr)
 
 
+# Wells below CLUSTER_BELOW_ZOOM (E36). The page draws clusters there from these grids, not from tiles:
+# per zoom z, the world is grid_cells(z) cells a side in Web Mercator (64 px at 512 px tiles, the
+# page's old cluster radius), and each row is one record's wells in one cell:
+#   [cx, cy, record index, exact count, approximate count, mean lon, mean lat]
+# The record, period and approximate filters stay on the page: it sums the rows it keeps per cell.
+# site/app.js CLUSTER_BELOW_ZOOM is the same number (tests/test_build.py).
+CLUSTER_BELOW_ZOOM = 7
+
+
+def grid_cells(z: int) -> int:
+    return 2 ** (z + 3)
+
+
+def is_well(f: dict) -> bool:
+    return f["properties"].get("kind") == "wellbore" and f["geometry"]["type"] == "Point"
+
+
+def grid_cell(lon: float, lat: float, n: int) -> tuple[int, int]:
+    import math
+
+    lat = max(-85.05112878, min(85.05112878, lat))
+    x = (lon + 180) / 360
+    y = (1 - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat))) / math.pi) / 2
+    return min(n - 1, max(0, int(x * n))), min(n - 1, max(0, int(y * n)))
+
+
+def well_grid(features: list[dict], z: int) -> dict:
+    n = grid_cells(z)
+    records: dict[str, int] = {}
+    cells: dict[tuple, list] = {}
+    for f in features:
+        if not is_well(f):
+            continue
+        lon, lat = f["geometry"]["coordinates"][:2]
+        ri = records.setdefault(f["properties"]["record_id"], len(records))
+        c = cells.setdefault((*grid_cell(lon, lat, n), ri), [0, 0, 0.0, 0.0])
+        c[1 if f["properties"].get("approximate") else 0] += 1
+        c[2] += lon
+        c[3] += lat
+    rows = [[cx, cy, ri, e, a, round(lon / (e + a), 4), round(lat / (e + a), 4)]
+            for (cx, cy, ri), (e, a, lon, lat) in sorted(cells.items())]
+    return {"zoom": z, "cells": n, "records": list(records), "rows": rows}
+
+
+def write_well_grids(out_dir: Path, features: list[dict]) -> None:
+    import sys
+
+    for old in out_dir.glob("wells-z*.json"):
+        old.unlink()
+    size = 0
+    for z in range(CLUSTER_BELOW_ZOOM):
+        p = out_dir / f"wells-z{z}.json"
+        p.write_text(json.dumps(well_grid(features, z), separators=(",", ":")) + "\n")
+        size += p.stat().st_size
+    print(f"wells: wells-z0..z{CLUSTER_BELOW_ZOOM - 1}.json {sum(map(is_well, features))} wellbore points,"
+          f" {size / 1e3:.0f} kB", file=sys.stderr)
+
+
 # Tiling (E15). One source layer, "outlines", every GeoJSON property kept. Points are kept at every
-# zoom (-r1) and clustered by the page; polygons are simplified by tippecanoe below zoom 8 only, so
-# z0-7 and z8-12 are two runs joined. Pinned in CI: Ubuntu tippecanoe 2.79.0-1 (E32: before 2.55.0 the
+# zoom they are in (-r1); wellbore points start at CLUSTER_BELOW_ZOOM (E36, the filter below), the
+# page clusters them under it from the grids. One run z0-12, lines and polygons unsimplified at every
+# zoom (E36: E15's two runs, simplified below z8 and joined, took 25 s more of the gate's build for
+# 75 kB less in all). Pinned in CI: Ubuntu tippecanoe 2.79.0-1 (E32: before 2.55.0 the
 # string pool wrote one string for another whose hash shared its low 32 bits, tests/fixtures/tiles/).
 TIPPECANOE_PIN = "2.79.0"
-TILE_RUNS = (
-    ["-Z0", "-z7"],
-    ["-Z8", "-z12", "--no-line-simplification"],
-)
+TILE_ZOOMS = ["-Z0", "-z12", "--no-line-simplification"]
+TILE_WELLS_FROM = {"*": ["any", ["!=", "kind", "wellbore"], ["!=", "$type", "Point"],
+                         [">=", "$zoom", CLUSTER_BELOW_ZOOM]]}
 TILE_COMMON = ["-q", "-f", "-l", "outlines", "-r1", "--no-feature-limit", "--no-tile-size-limit",
-               "--no-tiny-polygon-reduction"]
+               "--no-tiny-polygon-reduction", "-j", json.dumps(TILE_WELLS_FROM)]
 
 
 def write_tiles(out_dir: Path, cache_dir: Path = paths.BUILD_DIR / "tiles") -> Path | None:
@@ -163,32 +226,25 @@ def write_tiles(out_dir: Path, cache_dir: Path = paths.BUILD_DIR / "tiles") -> P
 
     src, dst = out_dir / "outlines.geojson", out_dir / "outlines.pmtiles"
     dst.unlink(missing_ok=True)
-    if not (shutil.which("tippecanoe") and shutil.which("tile-join")):
+    if not shutil.which("tippecanoe"):
         print("notice: tippecanoe not found, outlines.pmtiles not written; the map reads outlines.geojson "
               f"whole (install tippecanoe {TIPPECANOE_PIN}, see .github/workflows/ci.yml)", file=sys.stderr)
         return None
     version = subprocess.run(["tippecanoe", "--version"], capture_output=True, text=True, check=False).stderr.strip()
     key = hashlib.sha256(src.read_bytes())
-    key.update(json.dumps([version, TILE_RUNS, TILE_COMMON]).encode())
+    key.update(json.dumps([version, TILE_ZOOMS, TILE_COMMON]).encode())
     cached = cache_dir / f"outlines-{key.hexdigest()[:16]}.pmtiles"
     if not cached.exists():
         cache_dir.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory() as tmp:
-            parts = [Path(tmp) / f"z{i}.pmtiles" for i in range(len(TILE_RUNS))]
-            runs = [subprocess.Popen(["tippecanoe", *TILE_COMMON, *zooms, "-o", str(part), str(src)],
-                                     stderr=subprocess.PIPE, text=True) for zooms, part in zip(TILE_RUNS, parts)]
-            for r in runs:
-                err = r.communicate()[1]
-                if r.returncode:
-                    raise RuntimeError(f"tippecanoe failed: {err}")
-            joined = Path(tmp) / "outlines.pmtiles"
-            j = subprocess.run(["tile-join", "-q", "-f", "--no-tile-size-limit", "-o", str(joined), *map(str, parts)],
+            tiles = Path(tmp) / "outlines.pmtiles"
+            r = subprocess.run(["tippecanoe", *TILE_COMMON, *TILE_ZOOMS, "-o", str(tiles), str(src)],
                                capture_output=True, text=True, check=False)
-            if j.returncode:
-                raise RuntimeError(f"tile-join failed: {j.stderr}")
+            if r.returncode:
+                raise RuntimeError(f"tippecanoe failed: {r.stderr}")
             for old in cache_dir.glob("outlines-*.pmtiles"):
                 old.unlink()
-            shutil.move(joined, cached)
+            shutil.move(tiles, cached)
     shutil.copyfile(cached, dst)
     note = "" if TIPPECANOE_PIN in version else f" (CI pins {TIPPECANOE_PIN})"
     print(f"tiles: {dst.name} {dst.stat().st_size / 1e6:.1f} MB, z0-12, {version}{note}", file=sys.stderr)
