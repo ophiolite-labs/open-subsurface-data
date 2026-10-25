@@ -54,3 +54,8 @@ non-anonymous entry is refused per entry. A lane that moves, renames or changes 
 files tells the OSD supervisor, who tells ophiolite-13 or ophiolite-32 (E127 re-pins on purpose).
 OSD documents keep saying "Ophiolite's provenance record (E127)" until ophiolite-32 reports that
 e127s0 has merged; the field name is not written into OSD documents before then.
+
+**Update 25 Oct (ophiolite-32).** E127 slice 0 merged on Ophiolite main b1ecad72e: the field is
+`Acquisition.listed_in` (scientific-asset/1); OSD documents may name it. Slice 0 is the contract and a
+refusing stub ("Catalogue manifests cannot be read on this deployment yet."); do not describe
+Ophiolite as reading manifests until slice a (landing files) merges. The pinned-file rule stands.

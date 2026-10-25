@@ -2,7 +2,7 @@
 
 One sentence: contributors write facts about open datasets, tools turn those facts into verified
 levels, outlines and a catalogue, and a static map plus a manifest let anyone find and fetch the
-data; Ophiolite reads the same catalogue as a source.
+data; Ophiolite will read the same catalogue as a source (its E127; today a contract and a refusing stub).
 
 ## The chain
 
