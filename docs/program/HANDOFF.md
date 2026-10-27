@@ -4,6 +4,7 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 
 ## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
 
+- 27 Oct: nlog redistribution allowed with attribution (PR #75), owner decision "107 allowed" 27 Oct 16:05 CET (relayed by ophiolite-e8, owner file item 107 DONE). The mirror may hold NLOG once owner item 103 (bucket) is done. `unknown` count falls by one.
 - 27 Oct: nlog licence corrected (PR #74), reported by Ophiolite E127 s1b acceptance (ophiolite-e8): named "NLOG.NL Disclaimer, Intellectuele eigendomsrechten", cites the Dutch page (it prevails over /en), reuse clause quoted in `terms.stated`. Redistribution stays unknown pending owner action 107 (recommended: allowed).
 - 25 Oct: Ophiolite E127 slice 0 merged (b1ecad72e): the field is `Acquisition.listed_in` (scientific-asset/1), OSD may name it; slice 0 is a contract and a refusing stub, so OSD says Ophiolite "will read" the catalogue until slice a merges (ARCHITECTURE.md adjusted). E09 stays PARTIAL.
 - 25 Oct, from Ophiolite planner ophiolite-32: E127 pins OSD `tests/fixtures/fidelity/**`, `schema/fidelity.schema.json` (82ae556) and `schema/manifest.schema.json` (ae7a812). Any lane touching those files tells the supervisor, who tells ophiolite-13/-32. Keep the wording "Ophiolite's provenance record (E127)" until e127s0 merges. Details in `docs/program/charters/E09-ophiolite-half.md`.
