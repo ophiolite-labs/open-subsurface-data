@@ -12,7 +12,7 @@ licence:
   name: NLOG.NL Disclaimer, Intellectuele eigendomsrechten
   spdx: null
   url: https://www.nlog.nl/disclaimer
-  redistribution: unknown
+  redistribution: allowed
   attribution: required
   terms:
     stated: "Het is toegestaan informatie op deze website te kopiëren, te downloaden of op enigerlei wijze openbaar te maken, te verspreiden of te vereenvoudigen zonder voorafgaande schriftelijke toestemming van NLOG.NL of de rechtmatige toestemming van de rechthebbende. Het is, mits met bronvermelding, tevens toegestaan om de informatie en/of vormgeving te kopiëren, te vermenigvuldigen of te bewerken."
@@ -20,7 +20,8 @@ kinds: [wellbore-headers, wellbore-logs, wellbore-paths, tops, seismic-2d, seism
 region: {country: NL, basin: Netherlands onshore and offshore, bbox: [2.5, 50.7, 7.3, 55.9], crs: "EPSG:28992"}
 listed_by: [publisher, community]
 known_issues:
-  - "The Dutch disclaimer (nlog.nl/disclaimer) prevails over the English translation (nlog.nl/en/disclaimer: 'The Dutch-language version will prevail'); read 27 Oct 2026. Redistribution stays unknown pending the owner's review of whether this wording lets a third party host a copy (owner action)."
+  - "The Dutch disclaimer prevails over the English one; read 27 Oct 2026."
+  - "Redistribution allowed with NLOG named as the source ('Intellectuele eigendomsrechten'): owner decision 27 Oct 2026 16:05 CET, owner action 107."
   - Ophiolite already ships an NLOG sample in its try-it image (E79); keep the two consistent at L4.
 inputs:
   - name: boreholes
