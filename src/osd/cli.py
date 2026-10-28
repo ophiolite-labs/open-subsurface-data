@@ -201,8 +201,12 @@ def cmd_report(a: argparse.Namespace) -> int:
 
 
 def cmd_manifest(a: argparse.Namespace) -> int:
+    if bool(a.ids) == bool(a.starter):
+        print("refused: give record, collection or feature ids, or --starter <pack id>, not both")
+        return 2
     try:
-        doc = manifest_mod.from_catalog(a.ids, Path(a.catalog), a.catalog_url)
+        doc = (manifest_mod.from_starter(a.starter, Path(a.catalog), a.catalog_url) if a.starter
+               else manifest_mod.from_catalog(a.ids, Path(a.catalog), a.catalog_url))
     except manifest_mod.ManifestError as e:
         print(f"refused: {e}")
         return 1
@@ -337,7 +341,8 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--dry-run", action="store_true", help="say 'would open/close'; the workflow mutates nothing")
     pr.set_defaults(fn=cmd_report)
     pm = sub.add_parser("manifest", help="write a retrieval manifest from the built catalogue")
-    pm.add_argument("ids", nargs="+", help="record or collection ids, or feature ids (never a mix)")
+    pm.add_argument("ids", nargs="*", help="record or collection ids, or feature ids (never a mix)")
+    pm.add_argument("--starter", metavar="PACK_ID", help="one published starter pack, <record id>/<pack> (E40)")
     pm.add_argument("-o", "--out", default="manifest.json")
     pm.add_argument("--catalog", default=str(paths.CATALOG_DIR), help="the built catalogue (osd build)")
     pm.add_argument("--catalog-url", default=manifest_mod.CATALOG_URL)

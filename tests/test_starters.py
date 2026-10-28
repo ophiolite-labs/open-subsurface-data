@@ -716,3 +716,119 @@ def test_nothing_unchecked_is_published(tmp_path, capsys):
     assert json.loads((out / "starters.json").read_text()) == {"starters": []}
     assert "not published: unchecked here: artefact standard/F3.sgy: no custody documents here" in capsys.readouterr().err
     assert all("starters" not in r for r in json.loads((out / "records.json").read_text())["records"])
+
+
+# --- a manifest for a pack (design 6; acceptance 7) ----------------------------------------------------
+
+SITE = "https://opensubsurfacedata.org/data/"
+F3_ID = "terranubis/f3-demo-2020/starter"
+
+
+def _store(tmp_path: Path):
+    """The mirror as a LocalDirectory: every fixture artefact at its custody key."""
+    from osd import mirror
+
+    store = mirror.LocalDirectory(tmp_path / "store", "https://mirror.example")
+    for name in (F3, TEAPOT):
+        for t in pack(name)["targets"]:
+            for a in t["artefacts"]:
+                store.upload(a["key"], [(FIXTURES / "artefacts" / name.removesuffix(".json") / a["path"]).read_bytes()])
+    return store
+
+
+def _opener(store, catalog: Path, seen: list[str]):
+    from osd.verify import FetchError
+
+    def opener(url: str):
+        seen.append(url)
+        if url.startswith(store.base) and store.exists(url[len(store.base):]):
+            return store.open(url[len(store.base):])
+        if url.startswith(SITE) and (catalog / url[len(SITE):]).is_file():
+            return iter([(catalog / url[len(SITE):]).read_bytes()])
+        raise FetchError(url, 404)
+    return opener
+
+
+def _pack_manifest(tmp_path: Path, capsys) -> tuple[Path, Path]:
+    out = fixture_build(tmp_path)
+    m = tmp_path / "manifest.json"
+    assert cli.main(["manifest", "--starter", F3_ID, "--catalog", str(out), "-o", str(m)]) == 0
+    assert capsys.readouterr().out.startswith(f"wrote {m}: 1 collections, 12 assets, 0 to-do")
+    return out, m
+
+
+def test_pack_manifest_and_get(tmp_path, capsys):
+    from osd import get as get_mod
+    from osd import manifest as mf
+
+    out, path = _pack_manifest(tmp_path, capsys)
+    doc = json.loads(path.read_text())
+    assert doc["format"] == "osd.manifest/4" and mf.problems(doc) == []
+    (entry,) = doc["entries"]
+    f3 = pack(F3)
+    assert entry["collection_id"] == "terranubis--f3-demo-2020" and entry["record_id"] == "terranubis/f3-demo-2020"
+    assert entry["licence"] == {k: v for k, v in f3["licence"].items() if k != "sources"}
+    artefacts = {a["path"]: a for t in f3["targets"] for a in t["artefacts"]}
+    assert set(entry["assets"]) == set(artefacts) | {"starter.json", "fidelity.json"}
+    assert entry["assets"]["starter.json"]["href"] == SITE + "starters/" + F3
+    m = mf.read(path)
+    seen: list[str] = []
+    store = _store(tmp_path)
+    outcomes = get_mod.get(m, tmp_path / "dest", opener=_opener(store, out, seen))
+    print("\n".join(get_mod.summary(m, outcomes)))   # the transcript the PR quotes (pytest -s)
+    assert not get_mod.failed(outcomes) and {r.outcome for r in outcomes} == {"verified"}
+    dest = tmp_path / "dest" / "terranubis--f3-demo-2020"
+    for p, a in artefacts.items():
+        b = (dest / p).read_bytes()
+        assert (len(b), hashlib.sha256(b).hexdigest()) == (a["bytes"], a["sha256"])
+        assert f"{store.base}{a['key']}" in seen
+    assert (dest / "starter.json").read_bytes() == (PACKS / F3).read_bytes()
+    assert (dest / "fidelity.json").read_bytes() == (PACKS / "fidelity" / F3).read_bytes()
+    attribution = (tmp_path / "dest" / "ATTRIBUTION.md").read_text()
+    for line in ("## F3 starter project", "- Record: terranubis/f3-demo-2020 (collection terranubis--f3-demo-2020)",
+                 ("- Licence: Creative Commons 3.0 (the page links the BY-SA 3.0 deed) (CC-BY-SA-3.0), "
+                 "https://creativecommons.org/licenses/by-sa/3.0/"),
+                 "- Attribution: required", "- Share-alike: derived work must carry CC-BY-SA-3.0"):
+        assert line in attribution.splitlines(), line
+
+
+def test_pack_manifest_wrong_path_fails_the_fetch(tmp_path, capsys):
+    from osd import get as get_mod
+    from osd import manifest as mf
+
+    out, path = _pack_manifest(tmp_path, capsys)
+    doc = json.loads(path.read_text())
+    a = doc["entries"][0]["assets"]["standard/F3.sgy"]
+    a["href"] = a["href"].replace("/F3.sgy", "/F4.sgy")
+    path.write_text(json.dumps(doc))
+    m = mf.read(path)
+    outcomes = {r.key: r for r in get_mod.get(m, tmp_path / "dest", opener=_opener(_store(tmp_path), out, []))}
+    assert get_mod.failed(list(outcomes.values()))
+    assert outcomes["standard/F3.sgy"].outcome == "origin-dead"
+    assert not (tmp_path / "dest" / "terranubis--f3-demo-2020" / "standard" / "F3.sgy").exists()
+    doc["entries"][0]["assets"]["../F3.sgy"] = doc["entries"][0]["assets"].pop("standard/F3.sgy")
+    assert mf.problems(doc)   # a key leaving the collection directory never reads
+
+
+def test_pack_manifest_refusals(tmp_path, capsys):
+    from osd import manifest as mf
+
+    out = fixture_build(tmp_path)
+    with pytest.raises(mf.ManifestError, match="is not a published starter pack"):
+        mf.from_starter("terranubis/f3-demo-2020/other", out)
+    with pytest.raises(mf.ManifestError, match="does not end in /stac/catalog.json"):
+        mf.from_starter(F3_ID, out, "https://example.org/catalog.json")
+    assert cli.main(["manifest", "terranubis/f3-demo-2020", "--starter", F3_ID, "--catalog", str(out)]) == 2
+
+
+def test_pack_manifest_licence_is_the_packs(tmp_path):
+    """The pack's computed licence, not the record's: they differ when a deposit captured other terms."""
+    from osd import manifest as mf
+
+    out = fixture_build(tmp_path)
+    built = json.loads((out / "starters.json").read_text())
+    f3 = next(p for p in built["starters"] if p["id"] == F3_ID)
+    f3["licence"]["statement"] = "F3 Demo by dGB Earth Sciences, CC BY-SA 3.0, as captured at deposit"
+    (out / "starters.json").write_text(json.dumps(built))
+    (entry,) = mf.from_starter(F3_ID, out)["entries"]
+    assert entry["licence"]["statement"] == f3["licence"]["statement"] and "sources" not in entry["licence"]

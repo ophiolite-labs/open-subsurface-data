@@ -90,3 +90,16 @@ re-reads the mutated file before running (`mut.py`, lane scratchpad).
 | the pack loses `record` (title, level) | `test_projection_holds_the_packs_whole` |
 | artefacts lose `href` | `test_projection_holds_the_packs_whole` |
 | documents re-serialised instead of copied byte for byte | `test_projection_holds_the_packs_whole` |
+
+## C7: a manifest for a pack (design 6; acceptance 7)
+
+| Mutation in `src/osd/manifest.py` | Red test |
+|---|---|
+| the entry takes the record's licence instead of the pack's (equivalent on the fixtures, where both agree: `test_pack_manifest_and_get` stayed green; the evidence was traced to its second source and a pack licence that differs added) | `test_pack_manifest_licence_is_the_packs` |
+| artefacts lose `file:checksum` | `test_pack_manifest_and_get` |
+| the two documents dropped | `test_pack_manifest_and_get` |
+| the documents' href leaves `data/starters/` | `test_pack_manifest_and_get` |
+| an id not in starters.json accepted | `test_pack_manifest_refusals` |
+
+A wrong path fails the fetch (`test_pack_manifest_wrong_path_fails_the_fetch`, a guard of `osd get`
+since E06, exercised here on a pack manifest). The `osd get` transcript is `osd-get.txt`.
