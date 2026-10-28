@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/verification/6",
-  "title": "Verification record, version 6",
-  "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed.",
+  "$id": "https://open-subsurface-data.org/schema/verification/7",
+  "title": "Verification record, version 7",
+  "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed. v7 (E40): a check named `deposit` takes the deposit shape (`$defs/deposit_check`, written by E41); every other check keeps the v6 shape.",
   "type": "object",
   "additionalProperties": false,
   "required": ["record_id", "checked_at", "tool_version", "level", "checks"],
@@ -15,13 +15,17 @@
     "checks": {
       "type": "array",
       "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["name", "level", "outcome"],
-        "properties": {
-          "name": {"type": "string"},
-          "level": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
-          "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
-          "detail": {"type": "string", "maxLength": 500}
+        "if": {"properties": {"name": {"const": "deposit"}}, "required": ["name"]},
+        "then": {"$ref": "#/$defs/deposit_check"},
+        "else": {
+          "type": "object", "additionalProperties": false,
+          "required": ["name", "level", "outcome"],
+          "properties": {
+            "name": {"type": "string"},
+            "level": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
+            "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+            "detail": {"type": "string", "maxLength": 500}
+          }
         }
       }
     },
@@ -65,6 +69,35 @@
     }
   },
   "$defs": {
+    "deposit_check": {
+      "type": "object", "additionalProperties": false,
+      "description": "v7 (E40; written by E41). A maintainer deposited the publisher's download (OSD-D22): the files as held in the mirror under custody/2 `deposit`, when, by which role, and the publisher's page and licence text as captured then",
+      "required": ["name", "level", "outcome", "detail", "files", "obtained_at", "by", "publisher_page_sha256", "licence_text_sha256"],
+      "properties": {
+        "name": {"const": "deposit"},
+        "level": {"const": "L2"},
+        "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+        "detail": {"type": "string", "maxLength": 500},
+        "files": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["path", "sha256", "bytes", "key"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1, "description": "As the publisher's download names it"},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "bytes": {"type": "integer", "minimum": 0},
+              "key": {"type": "string", "pattern": "^mirror/[a-z0-9-]+/[a-z0-9-]+/[0-9a-f]{64}/[A-Za-z0-9._-]+$", "description": "The custody/2 object that holds it"}
+            }
+          }
+        },
+        "obtained_at": {"type": "string", "format": "date-time"},
+        "by": {"type": "string", "pattern": "^[a-z]+(-[a-z]+)*$", "description": "A role (maintainer), never a person's name"},
+        "publisher_page_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "if": {"properties": {"outcome": {"const": "pass"}}},
+      "then": {"properties": {"detail": {"pattern": "^deposited by a maintainer from the publisher's download, [0-9]{4}-[0-9]{2}-[0-9]{2}$"}}}
+    },
     "esri_layer": {
       "type": "object", "additionalProperties": false,
       "description": "v5 (E35). An ArcGIS layer paged by object id and checked against the layer's own id set",

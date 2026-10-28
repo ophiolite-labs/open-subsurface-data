@@ -342,7 +342,7 @@ V_BASE = {"record_id": "a/b", "checked_at": "2026-10-24T12:00:00+00:00", "tool_v
 
 def test_verification_5_identity():
     assert V5.schema["$id"] == "https://open-subsurface-data.org/schema/verification/5"
-    assert V6.schema["$id"] == "https://open-subsurface-data.org/schema/verification/6"   # E38
+    assert V6.schema["$id"] == "https://open-subsurface-data.org/schema/verification/7"   # E38 /6, E40 /7
 
 
 def test_frozen_4_is_main_8d23039():

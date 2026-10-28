@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/verification/7",
+  "title": "Verification record, version 7",
+  "description": "What our tools established about one record on one date. Written by `osd verify`, never by hand. The level is the highest level whose every check passed. v7 (E40): a check named `deposit` takes the deposit shape (`$defs/deposit_check`, written by E41); every other check keeps the v6 shape.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_id", "checked_at", "tool_version", "level", "checks"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "tool_version": {"type": "string"},
+    "level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"],
+              "description": "L0 listed; L1 origin reachable; L2 files checksummed and licence text captured; L3 outlines extracted by a reader; L4 converted to a canonical type with a fidelity record"},
+    "checks": {
+      "type": "array",
+      "items": {
+        "if": {"properties": {"name": {"const": "deposit"}}, "required": ["name"]},
+        "then": {"$ref": "#/$defs/deposit_check"},
+        "else": {
+          "type": "object", "additionalProperties": false,
+          "required": ["name", "level", "outcome"],
+          "properties": {
+            "name": {"type": "string"},
+            "level": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
+            "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+            "detail": {"type": "string", "maxLength": 500}
+          }
+        }
+      }
+    },
+    "origin": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "http_status": {"type": "integer"},
+        "final_url": {"type": "string"},
+        "content_type": {"type": "string"},
+        "elapsed_ms": {"type": "integer"},
+        "reachability": {"type": "string", "enum": ["ok", "blocked", "moved", "dead"],
+                         "description": "v2. blocked: 403/429 or a challenge page, awards no level (OSD-D9); ok: 2xx/3xx on the origin host; moved: 2xx/3xx on another host; dead: anything else (timeouts, refused connections and 5xx after one retry)"},
+        "blocked_since": {"type": "string", "format": "date-time", "description": "v2. First check of the current unbroken blocked run"}
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {"allOf": [{"$ref": "#/$defs/file"}], "not": {"required": ["partial"]}}
+    },
+    "partial_exports": {
+      "type": "array",
+      "description": "v4 (E23). Generated exports the server truncated (exceededTransferLimit): hashed, but never a file of the record and never counted for L2",
+      "items": {"allOf": [{"$ref": "#/$defs/file"}], "required": ["partial"]}
+    },
+    "layer_exports": {
+      "type": "array",
+      "description": "v5 (E35), v6 (E38). Whole layers read in full: evidence for files-checksummed, never a file of the record (no asset, no download, no mirror). v5: ArcGIS layers (esri-json); v6 adds WFS 2.0.0 feature types (wfs-geojson) and OGC API Features collections (ogcapi-geojson)",
+      "items": {"oneOf": [{"$ref": "#/$defs/esri_layer"}, {"$ref": "#/$defs/ogc_layer"}]}
+    },
+    "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "licence_text": {"type": "string", "maxLength": 100000, "description": "v2. The visible licence text the hash was computed over, whitespace collapsed"},
+    "inventory": {
+      "type": "object", "additionalProperties": false, "required": ["rule", "listed", "selected", "coverage"],
+      "description": "v3 (E07). Only for records with a `mirror:` rule in verifier/samples.yaml: every listing entry the rule selects; each hashed one is in `files`. complete: all selected entries hashed in this run (a claim about this selection, never the whole dataset)",
+      "properties": {
+        "rule": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "listed": {"type": "integer", "minimum": 0, "description": "Entries in the listing"},
+        "selected": {"type": "array", "items": {"type": "string"}, "description": "Paths as the listing states them"},
+        "coverage": {"enum": ["complete", "partial"]}
+      }
+    }
+  },
+  "$defs": {
+    "deposit_check": {
+      "type": "object", "additionalProperties": false,
+      "description": "v7 (E40; written by E41). A maintainer deposited the publisher's download (OSD-D22): the files as held in the mirror under custody/2 `deposit`, when, by which role, and the publisher's page and licence text as captured then",
+      "required": ["name", "level", "outcome", "detail", "files", "obtained_at", "by", "publisher_page_sha256", "licence_text_sha256"],
+      "properties": {
+        "name": {"const": "deposit"},
+        "level": {"const": "L2"},
+        "outcome": {"type": "string", "enum": ["pass", "fail", "skip"]},
+        "detail": {"type": "string", "maxLength": 500},
+        "files": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["path", "sha256", "bytes", "key"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1, "description": "As the publisher's download names it"},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "bytes": {"type": "integer", "minimum": 0},
+              "key": {"type": "string", "pattern": "^mirror/[a-z0-9-]+/[a-z0-9-]+/[0-9a-f]{64}/[A-Za-z0-9._-]+$", "description": "The custody/2 object that holds it"}
+            }
+          }
+        },
+        "obtained_at": {"type": "string", "format": "date-time"},
+        "by": {"type": "string", "pattern": "^[a-z]+(-[a-z]+)*$", "description": "A role (maintainer), never a person's name"},
+        "publisher_page_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "if": {"properties": {"outcome": {"const": "pass"}}},
+      "then": {"properties": {"detail": {"pattern": "^deposited by a maintainer from the publisher's download, [0-9]{4}-[0-9]{2}-[0-9]{2}$"}}}
+    },
+    "esri_layer": {
+      "type": "object", "additionalProperties": false,
+      "description": "v5 (E35). An ArcGIS layer paged by object id and checked against the layer's own id set",
+      "required": ["layer", "format", "features", "count", "bytes", "sha256", "edit_date_before", "edit_date_after"],
+      "properties": {
+        "layer": {"type": "string", "description": "The layer URL the pages were queried from"},
+        "format": {"const": "esri-json", "description": "Canonical bytes: features sorted by object id, keys sorted, no whitespace, values as the server returned them (native spatial reference)"},
+        "features": {"type": "integer", "minimum": 0, "description": "Features assembled from the pages"},
+        "count": {"type": "integer", "minimum": 0, "description": "The layer's returnCountOnly on the day"},
+        "bytes": {"type": "integer", "minimum": 0, "description": "Length of the canonical bytes"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the canonical bytes"},
+        "edit_date_before": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read before paging; null when the layer states none"},
+        "edit_date_after": {"type": ["integer", "null"], "description": "editingInfo.lastEditDate (ms) read after paging; null when the layer states none"}
+      }
+    },
+    "ogc_layer": {
+      "type": "object", "additionalProperties": false,
+      "description": "v6 (E38). A WFS 2.0.0 feature type paged by startIndex and sortBy, or an OGC API Features collection paged by its next links; neither protocol states a revision, so stability is unknown",
+      "required": ["layer", "format", "features", "count", "completeness", "bytes", "sha256"],
+      "properties": {
+        "layer": {"type": "string", "description": "The feature type (WFS base URL with typeNames) or the collection URL"},
+        "format": {"enum": ["wfs-geojson", "ogcapi-geojson"], "description": "Canonical bytes: a GeoJSON FeatureCollection, features as returned sorted by feature id, keys sorted, no whitespace, the pages' crs when they state one; page members left out"},
+        "features": {"type": "integer", "minimum": 0, "description": "Features assembled from the pages"},
+        "count": {"type": ["integer", "null"], "minimum": 0, "description": "The expected count: WFS resultType=hits numberMatched, OGC API numberMatched; null only when the server states none"},
+        "completeness": {"enum": ["complete", "unconfirmed"], "description": "complete: the pages assembled exactly the expected count of distinct ids; unconfirmed: the server states no count, so the export never earns L2"},
+        "bytes": {"type": "integer", "minimum": 0, "description": "Length of the canonical bytes"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the canonical bytes"}
+      },
+      "allOf": [
+        {"if": {"properties": {"count": {"type": "null"}}}, "then": {"properties": {"completeness": {"const": "unconfirmed"}}}},
+        {"if": {"properties": {"completeness": {"const": "unconfirmed"}}}, "then": {"properties": {"count": {"type": "null"}}}}
+      ]
+    },
+    "file": {
+      "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "description": "As the listing states it"}, "url": {"type": "string", "description": "v2. Where it was fetched"}, "bytes": {"type": "integer"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "publisher_checksum": {"type": "object", "additionalProperties": false, "required": ["algorithm", "digest"],
+                               "description": "v4 (E23). The checksum the publisher's listing states for this file, verbatim",
+                               "properties": {"algorithm": {"type": "string", "maxLength": 64}, "digest": {"type": "string", "maxLength": 256}}},
+        "compared": {"type": "boolean", "description": "v4. true: the publisher's algorithm (md5, sha1 or sha256) was computed over the same bytes and compared; false: unsupported algorithm or malformed digest, recorded only"},
+        "partial": {"const": true, "description": "v4. Only in partial_exports: the server truncated this generated export"}
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/custody/1",
+  "title": "Custody document, version 1 (osd.custody/1)",
+  "description": "One copy the mirror holds: what it is, where it came from, under which licence with which attribution, and how to ask for its removal. Written by `osd mirror put` beside the object as custody/<sha256>.json before the object becomes public; `osd mirror remove` turns it into the tombstone custody/<sha256>.removed.json. Never written by hand. The build regenerates the public index from these documents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "record_id", "path", "origin_href", "key", "href", "sha256", "bytes", "copied_at",
+               "verifier_run", "licence", "licence_text_sha256", "attribution", "takedown", "removal"],
+  "properties": {
+    "format": {"const": "osd.custody/1"},
+    "record_id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$"},
+    "path": {"type": "string", "minLength": 1, "description": "The file as the publisher's listing names it"},
+    "origin_href": {"$ref": "#/$defs/href", "description": "Where the bytes were copied from"},
+    "key": {"type": "string", "pattern": "^mirror/[a-z0-9-]+/[a-z0-9-]+/[0-9a-f]{64}/[A-Za-z0-9._-]+$",
+            "description": "mirror/<record id>/<sha256>/<file name> in the store"},
+    "href": {"$ref": "#/$defs/href", "description": "The public address of the copy"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "bytes": {"type": "integer", "minimum": 0},
+    "copied_at": {"type": "string", "format": "date-time"},
+    "verifier_run": {
+      "type": "object", "additionalProperties": false, "required": ["checked_at", "tool_version"],
+      "description": "The verification run whose inventory named this file with its bytes and sha256",
+      "properties": {"checked_at": {"type": "string", "format": "date-time"}, "tool_version": {"type": "string"}}
+    },
+    "licence": {
+      "type": "object", "additionalProperties": false, "required": ["name", "redistribution", "attribution"],
+      "description": "The record's licence object, whole. Only `allowed` is ever mirrored (OSD-D6)",
+      "properties": {
+        "name": {"type": "string"},
+        "spdx": {"type": ["string", "null"]},
+        "url": {"type": "string", "format": "uri"},
+        "redistribution": {"const": "allowed"},
+        "attribution": {"enum": ["required", "not-required", "unknown"]},
+        "share_alike": {"type": "boolean"},
+        "statement": {"type": "string", "maxLength": 300}
+      }
+    },
+    "licence_text_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$",
+                            "description": "The licence text the verifier captured (E02), or null when none was"},
+    "attribution": {"type": "array", "minItems": 1, "items": {"type": "string"},
+                    "description": "The lines `osd get` writes to ATTRIBUTION.md for this record"},
+    "takedown": {"$ref": "#/$defs/href", "description": "Where to ask for removal: the takedown issue template"},
+    "removal": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["state"],
+         "properties": {"state": {"const": "held"}}},
+        {"type": "object", "additionalProperties": false, "required": ["state", "removed_at", "request", "approved_by"],
+         "properties": {"state": {"const": "removed"},
+                        "removed_at": {"type": "string", "format": "date-time"},
+                        "request": {"$ref": "#/$defs/href", "description": "The takedown issue"},
+                        "approved_by": {"type": "string", "pattern": "^[A-Za-z0-9-]+$",
+                                        "description": "The maintainer's GitHub login (CONTRIBUTING.md)"}}}
+      ]
+    }
+  },
+  "$defs": {
+    "href": {"type": "string", "pattern": "^https?://[^/?#@]+(/|$)"}
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/custody/2",
+  "title": "Custody document, version 2 (osd.custody/2; osd.custody/1 still validates)",
+  "description": "One copy the mirror holds: what it is, where it came from, under which licence with which attribution, and how to ask for its removal. Written by `osd mirror put` (a verified download) or by the deposit and derived uploads (E41) beside the object as custody/<sha256>.json before the object becomes public; `osd mirror remove` turns it into the tombstone custody/<sha256>.removed.json. Never written by hand. The build regenerates the public index from these documents. v2 (E40): exactly one provenance: `origin_href` with `verifier_run` (a verified download, as /1), or `origin_href: null` with `deposit` (a maintainer's deposit of the publisher's download) or with `derived` (an artefact a starter-pack recipe made from held inputs). A /1 document keeps the /1 shape.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "record_id", "path", "origin_href", "key", "href", "sha256", "bytes", "copied_at",
+               "licence", "licence_text_sha256", "attribution", "takedown", "removal"],
+  "properties": {
+    "format": {"enum": ["osd.custody/1", "osd.custody/2"]},
+    "record_id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$"},
+    "path": {"type": "string", "minLength": 1, "description": "The file as the publisher's listing names it"},
+    "origin_href": {"oneOf": [{"$ref": "#/$defs/href"}, {"type": "null"}],
+                    "description": "Where the bytes were copied from; null for a deposit or a derived artefact (v2), which name their provenance instead"},
+    "key": {"type": "string", "pattern": "^mirror/[a-z0-9-]+/[a-z0-9-]+/[0-9a-f]{64}/[A-Za-z0-9._-]+$",
+            "description": "mirror/<record id>/<sha256>/<file name> in the store"},
+    "href": {"$ref": "#/$defs/href", "description": "The public address of the copy"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "bytes": {"type": "integer", "minimum": 0},
+    "copied_at": {"type": "string", "format": "date-time"},
+    "verifier_run": {
+      "type": "object", "additionalProperties": false, "required": ["checked_at", "tool_version"],
+      "description": "A verified download: the verification run whose inventory named this file with its bytes and sha256",
+      "properties": {"checked_at": {"type": "string", "format": "date-time"}, "tool_version": {"type": "string"}}
+    },
+    "deposit": {
+      "type": "object", "additionalProperties": false,
+      "required": ["obtained_at", "by", "publisher_page_url", "publisher_page_sha256", "licence_text_sha256"],
+      "description": "v2 (E40; written by E41). A maintainer deposited the publisher's download: when, by which role, the publisher's page it came from and the two hashes captured then",
+      "properties": {
+        "obtained_at": {"type": "string", "format": "date-time"},
+        "by": {"type": "string", "pattern": "^[a-z]+(-[a-z]+)*$", "description": "A role (maintainer), never a person's name"},
+        "publisher_page_url": {"$ref": "#/$defs/href"},
+        "publisher_page_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "The publisher's download page as captured at deposit"},
+        "licence_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "The licence text as captured at deposit"}
+      }
+    },
+    "derived": {
+      "type": "object", "additionalProperties": false, "required": ["pack_id", "recipe_id", "from"],
+      "description": "v2 (E40; uploaded by E41, run by E42). An artefact of a starter pack: which pack, which recipe, made from which held inputs",
+      "properties": {
+        "pack_id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$",
+                    "description": "<record id>/<pack>, the starter/1 `id`"},
+        "recipe_id": {"type": "string", "minLength": 1},
+        "from": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                 "description": "The sha256 of each pack input the artefact was made from"}
+      }
+    },
+    "licence": {
+      "type": "object", "additionalProperties": false, "required": ["name", "redistribution", "attribution"],
+      "description": "The licence object, whole: the record's for a verified download or a deposit, the pack's computed licence for a derived artefact (v2 admits record/5 `terms`). Only `allowed` is ever mirrored (OSD-D6)",
+      "properties": {
+        "name": {"type": "string"},
+        "spdx": {"type": ["string", "null"]},
+        "url": {"type": "string", "format": "uri"},
+        "redistribution": {"const": "allowed"},
+        "attribution": {"enum": ["required", "not-required", "unknown"]},
+        "share_alike": {"type": "boolean"},
+        "statement": {"type": "string", "maxLength": 300},
+        "terms": {
+          "type": "object", "additionalProperties": false, "required": ["stated"], "description": "v2. record/5 licence.terms, copied whole",
+          "properties": {
+            "stated": {"type": "string", "minLength": 1, "maxLength": 600},
+            "duration": {"type": ["string", "null"], "minLength": 1},
+            "review_before_publication": {"type": ["boolean", "null"]},
+            "expires": {"type": ["string", "null"], "format": "date", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"}
+          }
+        }
+      }
+    },
+    "licence_text_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$",
+                            "description": "The licence text the verifier captured (E02), or null when none was"},
+    "attribution": {"type": "array", "minItems": 1, "items": {"type": "string"},
+                    "description": "The lines `osd get` writes to ATTRIBUTION.md for this record"},
+    "takedown": {"$ref": "#/$defs/href", "description": "Where to ask for removal: the takedown issue template"},
+    "removal": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["state"],
+         "properties": {"state": {"const": "held"}}},
+        {"type": "object", "additionalProperties": false, "required": ["state", "removed_at", "request", "approved_by"],
+         "properties": {"state": {"const": "removed"},
+                        "removed_at": {"type": "string", "format": "date-time"},
+                        "request": {"$ref": "#/$defs/href", "description": "The takedown issue"},
+                        "approved_by": {"type": "string", "pattern": "^[A-Za-z0-9-]+$",
+                                        "description": "The maintainer's GitHub login (CONTRIBUTING.md)"}}}
+      ]
+    }
+  },
+  "allOf": [
+    {"oneOf": [
+      {"$ref": "#/$defs/verified"},
+      {"properties": {"origin_href": {"type": "null"}}, "required": ["deposit"],
+       "not": {"anyOf": [{"required": ["verifier_run"]}, {"required": ["derived"]}]}},
+      {"properties": {"origin_href": {"type": "null"}}, "required": ["derived"],
+       "not": {"anyOf": [{"required": ["verifier_run"]}, {"required": ["deposit"]}]}}
+    ]},
+    {"if": {"properties": {"format": {"const": "osd.custody/1"}}, "required": ["format"]}, "then": {"$ref": "#/$defs/verified"}}
+  ],
+  "$defs": {
+    "verified": {
+      "description": "A verified download (/1 and /2): origin_href and verifier_run, no other provenance",
+      "properties": {"origin_href": {"$ref": "#/$defs/href"}}, "required": ["verifier_run"],
+      "not": {"anyOf": [{"required": ["deposit"]}, {"required": ["derived"]}]}
+    },
+    "href": {"type": "string", "pattern": "^https?://[^/?#@]+(/|$)"}
+  }
+}
