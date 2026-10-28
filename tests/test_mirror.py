@@ -690,10 +690,11 @@ def test_sigv4_matches_aws_example():
         "AWS4-HMAC-SHA256 Credential=AKIAIOSFODNN7EXAMPLE/20130524/us-east-1/s3/aws4_request, "
         "SignedHeaders=host;range;x-amz-content-sha256;x-amz-date, "
         "Signature=f0e8bdb87c964420e857bd35b5d6ed310bd44f0170aba48dd91039c6036bdb41")
-    got = mirror.sigv4("GET", "https://examplebucket.s3.amazonaws.com/?max-keys=2&prefix=J", {},
-                       mirror.EMPTY_SHA256, key, secret, "us-east-1", when)
-    assert got["Authorization"].endswith(
-        "Signature=34b48302e7b5fa45bde8084f4b7868a86f0a534bc59db6670ed5711ef69dc6f7")
+    for query in ("max-keys=2&prefix=J", "prefix=J&max-keys=2"):     # the canonical query is sorted
+        got = mirror.sigv4("GET", f"https://examplebucket.s3.amazonaws.com/?{query}", {},
+                           mirror.EMPTY_SHA256, key, secret, "us-east-1", when)
+        assert got["Authorization"].endswith(
+            "Signature=34b48302e7b5fa45bde8084f4b7868a86f0a534bc59db6670ed5711ef69dc6f7")
 
 
 def test_s3_region_from_endpoint_and_keys_never_shown():
