@@ -1,0 +1,44 @@
+{
+  "record_id": "terranubis/f3-demo-2020",
+  "checked_at": "2026-10-29T10:05:00+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "deposit",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "deposited by a maintainer from the publisher's download, 2026-10-29",
+      "files": [
+        {
+          "path": "F3_Demo_2023_seismic.zip",
+          "sha256": "98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb",
+          "bytes": 920,
+          "key": "mirror/terranubis/f3-demo-2020/98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb/F3_Demo_2023_seismic.zip"
+        },
+        {
+          "path": "F3_Demo_2023_wells.zip",
+          "sha256": "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c",
+          "bytes": 420,
+          "key": "mirror/terranubis/f3-demo-2020/cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c/F3_Demo_2023_wells.zip"
+        }
+      ],
+      "obtained_at": "2026-10-29T10:00:00Z",
+      "by": "maintainer",
+      "publisher_page_sha256": "7e5e22f8bfdfb3391335ddfc2a274d2fbdcd84c955100ab90a0f3d4ef8a6088c",
+      "licence_text_sha256": "8fb31f3a7aea41edc02ac3553f663237e66a1a56916389d1dd9c88e373c757d0"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://terranubis.com/datainfo/F3-Demo-2020",
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "8fb31f3a7aea41edc02ac3553f663237e66a1a56916389d1dd9c88e373c757d0"
+}

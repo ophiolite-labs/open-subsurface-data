@@ -1,7 +1,9 @@
-"""Custody documents, osd.custody/1 (E07): one per copy the mirror holds, keyed by sha256.
+"""Custody documents, osd.custody/1 (E07) and /2 (E40): one per copy the mirror holds, keyed by sha256.
 
 `document()` writes what a copy is from the record (publisher facts) and the verification run that
-inventoried it (tool facts). `problems()` is the schema plus what a schema cannot say: the store key
+inventoried it (tool facts), as /1. custody/2 adds two provenances besides that verified download: a
+maintainer's `deposit` and a starter pack's `derived` artefact (written by E41); every reader here
+takes both versions through the live schema, and `provenance()` says which of the three a document is. `problems()` is the schema plus what a schema cannot say: the store key
 names the record, the digest and the file; a `.removed.json` name holds a tombstone and nothing else
 does; and, given the stored object's size, `bytes` agrees with it.
 """
@@ -21,6 +23,7 @@ from .manifest import LICENCE_FIELDS, Entry, Licence
 from .stac import collection_id
 
 FORMAT = "osd.custody/1"
+FORMAT_2 = "osd.custody/2"
 TAKEDOWN_URL = ("https://github.com/ophiolite-labs/open-subsurface-data/issues/new"
                 "?template=takedown.yml")
 
@@ -38,6 +41,11 @@ def object_name(path: str) -> str:
 
 def object_key(record_id: str, sha256: str, path: str) -> str:
     return f"mirror/{record_id}/{sha256}/{object_name(path)}"
+
+
+def provenance(doc: dict) -> str:
+    """verified, deposit or derived, for a document the schema accepts (exactly one holds)."""
+    return "deposit" if "deposit" in doc else "derived" if "derived" in doc else "verified"
 
 
 def problems(doc: dict, name: str | None = None, object_bytes: int | None = None) -> list[str]:

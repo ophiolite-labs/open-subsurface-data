@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/starter/1",
+  "title": "Starter pack, version 1 (osd.starter/1)",
+  "description": "One starter pack of one catalogue record: which held files went in, which decisions were taken for which object, which artefacts came out for which application and version, under the licence computed from the inputs, with the fidelity record of the conversion. Written by the recipe run it names (family rule R-T1, never by hand) and committed as starters/<record id with / as __>__<pack>.json (OSD-D12). `src/osd/starters.py` states what a schema cannot: inputs held, licence computed, decisions complete, artefacts in custody, fidelity covering the inputs, the oracle clean (E40 design 4).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "id", "record_id", "title", "summary", "recipe", "contents", "inputs", "derived", "decisions",
+               "targets", "licence", "fidelity", "built_at"],
+  "properties": {
+    "format": {"const": "osd.starter/1"},
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$",
+           "description": "<record id>/<pack>"},
+    "record_id": {"$ref": "#/$defs/record_id"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 200},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "unpublished": {"type": "boolean", "description": "true: valid but not published (the build leaves it out); required while an oracle states differences"},
+    "recipe": {
+      "type": "object", "additionalProperties": false, "required": ["id", "repository", "commit", "tools"],
+      "description": "The recipe run that wrote this document and every artefact",
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "repository": {"type": "string", "pattern": "^https://[^/?#@]+/"},
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "tools": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "minLength": 1},
+                  "description": "Tool name to the version the run used"}
+      }
+    },
+    "contents": {
+      "type": "array", "minItems": 1,
+      "description": "The objects in the pack, named as the data names them (wells by name, a cube by survey name, horizons by name)",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["kind", "ids", "count"],
+        "properties": {
+          "kind": {"$ref": "#/$defs/kind"},
+          "ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "not": {"const": "pack"}}},
+          "count": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "inputs": {
+      "type": "array", "minItems": 1,
+      "description": "The held files of the record the recipe read; `held` binds name, size and digest to their evidence",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name", "sha256", "bytes", "held"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1, "description": "The last segment of the evidence path, path-safe (custody object name)"},
+          "sha256": {"$ref": "#/$defs/sha256"},
+          "bytes": {"type": "integer", "minimum": 0},
+          "held": {"oneOf": [
+            {"type": "object", "additionalProperties": false, "required": ["as", "verifier_run", "path"],
+             "description": "A verified download: a file of the record's latest verification",
+             "properties": {
+               "as": {"const": "verified"},
+               "verifier_run": {"type": "object", "additionalProperties": false, "required": ["checked_at", "tool_version"],
+                                "properties": {"checked_at": {"type": "string", "format": "date-time"}, "tool_version": {"type": "string"}}},
+               "path": {"type": "string", "minLength": 1, "description": "The file's path in the verification inventory"}}},
+            {"type": "object", "additionalProperties": false, "required": ["as", "key"],
+             "description": "A maintainer's deposit: a custody/2 `deposit` document of the record",
+             "properties": {"as": {"const": "deposited"}, "key": {"$ref": "#/$defs/key"}}}
+          ]}
+        }
+      }
+    },
+    "derived": {
+      "type": "array",
+      "description": "Intermediate standard files the recipe made from an input (they may be artefacts too)",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["path", "sha256", "bytes", "from", "how"],
+        "properties": {
+          "path": {"$ref": "#/$defs/path"},
+          "sha256": {"$ref": "#/$defs/sha256"},
+          "bytes": {"type": "integer", "minimum": 0},
+          "from": {"$ref": "#/$defs/sha256", "description": "The sha256 of the input it was made from"},
+          "how": {"type": "string", "minLength": 1, "maxLength": 300}
+        }
+      }
+    },
+    "decisions": {
+      "type": "array", "minItems": 1,
+      "description": "The decision log (family rule R-T3): one line per topic per object",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["topic", "subject", "value", "source"],
+        "properties": {
+          "topic": {"enum": ["crs", "vertical-datum", "depth-reference", "depth-kind", "units", "nulls", "domain", "velocity", "names"]},
+          "subject": {"type": "string", "minLength": 1, "description": "A `contents` id, or `pack`"},
+          "value": {"type": "string", "minLength": 1, "maxLength": 300},
+          "source": {"enum": ["publisher", "data", "chosen"]},
+          "note": {"type": "string", "minLength": 1, "maxLength": 500}
+        },
+        "if": {"properties": {"source": {"const": "chosen"}}}, "then": {"required": ["note"], "description": "chosen by us, because …"}
+      }
+    },
+    "targets": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["application", "version", "artefacts", "import", "oracle"],
+        "properties": {
+          "application": {"enum": ["opendtect", "resinsight", "python"]},
+          "version": {"type": "string", "minLength": 1},
+          "artefacts": {
+            "type": "array", "minItems": 1,
+            "items": {
+              "type": "object", "additionalProperties": false, "required": ["path", "sha256", "bytes"],
+              "description": "`key` is required unless the pack is `unpublished: true` (a recipe's build step writes the pack before the upload, its finalise step fills each key from the held derived custody document)",
+              "properties": {"path": {"$ref": "#/$defs/path"}, "sha256": {"$ref": "#/$defs/sha256"},
+                             "bytes": {"type": "integer", "minimum": 0}, "key": {"$ref": "#/$defs/key"}}
+            }
+          },
+          "import": {"$ref": "#/$defs/path", "description": "The script or notebook artefact that opens the pack in the application"},
+          "oracle": {
+            "type": "object", "additionalProperties": false, "required": ["compared", "values", "differences", "seed"],
+            "description": "The comparison against a reader that is not ours (family rule R-T5)",
+            "properties": {
+              "compared": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 300}},
+              "values": {"type": "integer", "minimum": 0},
+              "differences": {"type": "integer", "minimum": 0},
+              "seed": {"type": "integer"}
+            }
+          }
+        }
+      }
+    },
+    "licence": {
+      "$ref": "#/$defs/licence_fields",
+      "required": ["sources"],
+      "description": "The record/5-shaped licence computed from the inputs (family rule R-T4), plus each input's licence object whole",
+      "properties": {
+        "sources": {
+          "type": "array", "minItems": 1,
+          "items": {"type": "object", "additionalProperties": false, "required": ["input", "licence"],
+                    "properties": {"input": {"type": "string", "minLength": 1, "description": "The input's name"},
+                                   "licence": {"$ref": "#/$defs/licence"}}}
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "fidelity": {"type": "string", "pattern": "^fidelity/[A-Za-z0-9_-][A-Za-z0-9._-]*\\.json$",
+                 "description": "The committed fidelity/1 document, relative to starters/"},
+    "built_at": {"type": "string", "format": "date-time"}
+  },
+  "if": {"properties": {"unpublished": {"const": true}}, "required": ["unpublished"]},
+  "else": {"properties": {"targets": {"items": {"properties": {"artefacts": {"items": {"required": ["key"]}}}}}}},
+  "$defs": {
+    "record_id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "key": {"type": "string", "pattern": "^mirror/[a-z0-9-]+/[a-z0-9-]+/[0-9a-f]{64}/[A-Za-z0-9._-]+$",
+            "description": "The custody key of the held object: mirror/<record id>/<sha256>/<name>"},
+    "path": {"type": "string", "pattern": "^[A-Za-z0-9_-][A-Za-z0-9._-]*(/[A-Za-z0-9_-][A-Za-z0-9._-]*)*$",
+             "description": "Relative, inside the pack; no empty, dot-leading or parent segment"},
+    "kind": {"enum": ["wellbore-headers", "wellbore-logs", "wellbore-paths", "tops", "core", "time-depth", "seismic-3d",
+                      "seismic-2d", "seismic-4d", "horizons", "surfaces", "faults", "reservoir-model", "production", "pressure",
+                      "geochemistry", "reports", "source-list", "potential-fields", "velocity-model", "geological-model",
+                      "airborne-em", "radiometrics", "stress"],
+             "description": "record/5 `kinds`"},
+    "licence": {"$ref": "#/$defs/licence_fields", "unevaluatedProperties": false},
+    "licence_fields": {
+      "type": "object", "required": ["name", "redistribution", "attribution"],
+      "description": "record/5 `licence`",
+      "properties": {
+        "name": {"type": "string"},
+        "spdx": {"type": ["string", "null"]},
+        "url": {"type": "string", "format": "uri"},
+        "redistribution": {"enum": ["allowed", "restricted", "forbidden", "unknown"]},
+        "attribution": {"enum": ["required", "not-required", "unknown"]},
+        "share_alike": {"type": "boolean"},
+        "statement": {"type": "string", "maxLength": 300},
+        "terms": {
+          "type": "object", "additionalProperties": false, "required": ["stated"],
+          "properties": {
+            "stated": {"type": "string", "minLength": 1, "maxLength": 600},
+            "duration": {"type": ["string", "null"], "minLength": 1},
+            "review_before_publication": {"type": ["boolean", "null"]},
+            "expires": {"type": ["string", "null"], "format": "date", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"}
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+  verified      terranubis--f3-demo-2020/standard/F3.sgy  (68 bytes)
+  verified      terranubis--f3-demo-2020/standard/horizons.xyz  (43 bytes)
+  verified      terranubis--f3-demo-2020/standard/F02-1.las  (32 bytes)
+  verified      terranubis--f3-demo-2020/standard/F03-2.las  (32 bytes)
+  verified      terranubis--f3-demo-2020/standard/F03-4.las  (32 bytes)
+  verified      terranubis--f3-demo-2020/standard/F06-1.las  (32 bytes)
+  verified      terranubis--f3-demo-2020/opendtect/import_f3.py  (65 bytes)
+  verified      terranubis--f3-demo-2020/resinsight/import_f3.py  (33 bytes)
+  verified      terranubis--f3-demo-2020/python/f3_starter.ipynb  (78 bytes)
+  verified      terranubis--f3-demo-2020/python/requirements.txt  (27 bytes)
+  verified      terranubis--f3-demo-2020/starter.json  (18238 bytes)
+  verified      terranubis--f3-demo-2020/fidelity.json  (1001 bytes)
+1 passed, 77 deselected in 0.22s

@@ -10,7 +10,7 @@ bucket, selected by a `s3://<bucket>` store spec with keys from the environment)
 
   staging/<sha256>/<name>              an upload in progress, never public
   mirror/<record id>/<sha256>/<name>   the public copy
-  custody/<sha256>.json                its custody document (osd.custody/1), written before the move
+  custody/<sha256>.json                its custody document (osd.custody/1; /2 deposits and derived artefacts, E40), written before the move
   custody/<sha256>.removed.json        the tombstone: a removed digest is never mirrored again
 
 `put()` per file: tombstone -> refused; public object and custody -> present; complete staging ->

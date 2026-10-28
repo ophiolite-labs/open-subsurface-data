@@ -25,10 +25,18 @@ osd.manifest/4 (E19) carries the record/3 vocabulary: `access: purchase` and `li
 publisher's terms copied whole (`Terms.stated_keys`: absent and null differ here too). A manifest is
 written as /4 only when an entry carries one of them, so every other manifest is what it was; /4
 carries `metadata.catalog` like /3.
+
+`from_starter(pack_id)` (E40) writes a manifest/4 for one published starter pack (build/catalog/
+starters.json): one entry with the record's collection, the pack's artefacts as assets (key = the
+artefact path, href = its mirror address from custody, size and digest) plus the pack document (the
+decision log) and its fidelity record as `starter.json` and `fidelity.json`, served by the site from
+data/starters/, and the pack's computed licence (record-shaped, so ATTRIBUTION.md comes from the same
+fields as for a record). No schema change.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -272,3 +280,50 @@ def from_catalog(ids: list[str], catalog_dir: Path = paths.CATALOG_DIR, catalog_
 def write(doc: dict, path: Path) -> Path:
     path.write_text(json.dumps(doc, indent=2) + "\n")
     return path
+
+
+STARTER_DOCUMENTS = ("starter.json", "fidelity.json")   # asset keys of the pack document and its fidelity record
+
+
+def from_starter(pack_id: str, catalog_dir: Path = paths.CATALOG_DIR, catalog_url: str = CATALOG_URL,
+                 now: datetime | None = None) -> dict:
+    p = catalog_dir / "starters.json"
+    packs = {x["id"]: x for x in json.loads(p.read_text())["starters"]} if p.exists() else {}
+    if pack_id not in packs:
+        raise ManifestError(f"'{pack_id}' is not a published starter pack in {p}")
+    pack = packs[pack_id]
+    built = json.loads((catalog_dir / "records.json").read_text())
+    rec = next(r for r in built["records"] if r["id"] == pack["record_id"])
+    if not built.get("catalog"):
+        raise ManifestError("records.json has no `catalog`: rebuild the catalogue")
+    if not catalog_url.endswith("/stac/catalog.json"):
+        raise ManifestError(f"--catalog-url {catalog_url} does not end in /stac/catalog.json: no site address "
+                            "for the pack documents")
+    site = catalog_url.removesuffix("stac/catalog.json")   # build/catalog/ is served as data/
+    assets: dict[str, dict] = {}
+    for t in pack["targets"]:
+        for a in t["artefacts"]:
+            assets[a["path"]] = {"href": a["href"], "title": f"{a['path']} ({t['application']} {t['version']})"
+                                 if a["path"] not in assets else assets[a["path"]]["title"],
+                                 "file:size": a["bytes"], "file:checksum": SHA256_MULTIHASH + a["sha256"]}
+    name = pack["id"].replace("/", "__") + ".json"
+    for key, rel, title in (("starter.json", name, "the pack document with its decision log (osd.starter/1)"),
+                            ("fidelity.json", pack["fidelity"], "the fidelity record (osd.fidelity/1)")):
+        if key in assets:
+            raise ManifestError(f"{pack_id}: an artefact is named {key}, the name of a pack document")
+        b = (catalog_dir / "starters" / rel).read_bytes()
+        assets[key] = {"href": f"{site}starters/{rel}", "title": title,
+                       "file:size": len(b), "file:checksum": SHA256_MULTIHASH + hashlib.sha256(b).hexdigest()}
+    entry = {"collection_id": collection_id(rec["id"]), "record_id": rec["id"], "title": pack["title"],
+             "origin_url": rec["origin"]["url"], "access": rec["origin"]["access"],
+             "licence": {k: v for k, v in pack["licence"].items() if k != "sources"}, "assets": assets,
+             "coverage": "complete"}
+    if rec.get("known_issues"):
+        entry["known_issues"] = list(rec["known_issues"])
+    doc = {"format": FORMAT_4, "created": (now or datetime.now(UTC)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+           "catalog_url": catalog_url, "selection": "collections", "entries": [entry],
+           "metadata": {"catalog": dict(built["catalog"])}}
+    bad = problems(doc)
+    if bad:
+        raise ManifestError("built an invalid manifest:\n  " + "\n  ".join(bad))
+    return doc

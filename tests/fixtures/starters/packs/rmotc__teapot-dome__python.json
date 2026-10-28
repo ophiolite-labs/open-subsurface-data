@@ -1,0 +1,217 @@
+{
+  "format": "osd.starter/1",
+  "id": "rmotc/teapot-dome/python",
+  "record_id": "rmotc/teapot-dome",
+  "title": "Teapot Dome for Python",
+  "summary": "The Teapot Dome cube and well 48-X-28 for segyio and lasio.",
+  "recipe": {
+    "id": "teapot-dome-python",
+    "repository": "https://github.com/ophiolite-labs/ophiolite",
+    "commit": "4444444444444444444444444444444444444444",
+    "tools": {
+      "ophiolite": "0.9.0",
+      "segyio": "1.9.12",
+      "lasio": "0.31"
+    }
+  },
+  "contents": [
+    {
+      "kind": "seismic-3d",
+      "ids": [
+        "Teapot 3D"
+      ],
+      "count": 1
+    },
+    {
+      "kind": "wellbore-logs",
+      "ids": [
+        "48-X-28"
+      ],
+      "count": 1
+    }
+  ],
+  "inputs": [
+    {
+      "name": "filt_mig.sgy",
+      "sha256": "63b01def3f1bb93e393587444e891ccf77fbcc0a455245f232068e298db73c70",
+      "bytes": 870,
+      "held": {
+        "as": "verified",
+        "verifier_run": {
+          "checked_at": "2026-10-29T09:30:00+00:00",
+          "tool_version": "0.1.0"
+        },
+        "path": "teapot/3D_Seismic/filt_mig.sgy"
+      }
+    },
+    {
+      "name": "490251051400.las",
+      "sha256": "cbf580d6ebaa5f001b1afdf04b011462ea2b85afe3ec1a43ef64bc7807bb12e3",
+      "bytes": 270,
+      "held": {
+        "as": "verified",
+        "verifier_run": {
+          "checked_at": "2026-10-29T09:30:00+00:00",
+          "tool_version": "0.1.0"
+        },
+        "path": "teapot/Well_logs/490251051400.las"
+      }
+    }
+  ],
+  "derived": [
+    {
+      "path": "standard/teapot.sgy",
+      "sha256": "581ae92c92a9cba90788c4d911a6f118c2291545e2669b1d8dbda3a73818ab73",
+      "bytes": 43,
+      "from": "63b01def3f1bb93e393587444e891ccf77fbcc0a455245f232068e298db73c70",
+      "how": "SEG-Y rev 1 with the textual header rewritten"
+    },
+    {
+      "path": "standard/48-X-28.las",
+      "sha256": "6f04fab7cc7dcdf27b49fa3144bb014668a07839d91feb70560b94d46fefad04",
+      "bytes": 34,
+      "from": "cbf580d6ebaa5f001b1afdf04b011462ea2b85afe3ec1a43ef64bc7807bb12e3",
+      "how": "LAS 2.0 with the well name in the header"
+    }
+  ],
+  "decisions": [
+    {
+      "topic": "crs",
+      "subject": "pack",
+      "value": "EPSG:32056 (NAD27 / Wyoming East Central)",
+      "source": "publisher"
+    },
+    {
+      "topic": "crs",
+      "subject": "Teapot 3D",
+      "value": "EPSG:32056 (NAD27 / Wyoming East Central)",
+      "source": "publisher"
+    },
+    {
+      "topic": "domain",
+      "subject": "Teapot 3D",
+      "value": "time",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "Teapot 3D",
+      "value": "TWT ms; ft",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "Teapot 3D",
+      "value": "none",
+      "source": "data"
+    },
+    {
+      "topic": "crs",
+      "subject": "48-X-28",
+      "value": "EPSG:32056 (NAD27 / Wyoming East Central)",
+      "source": "publisher"
+    },
+    {
+      "topic": "vertical-datum",
+      "subject": "48-X-28",
+      "value": "NGVD29",
+      "source": "publisher"
+    },
+    {
+      "topic": "depth-reference",
+      "subject": "48-X-28",
+      "value": "KB 5,207 ft",
+      "source": "data"
+    },
+    {
+      "topic": "depth-kind",
+      "subject": "48-X-28",
+      "value": "MD",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "48-X-28",
+      "value": "depth ft; GR API",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "48-X-28",
+      "value": "-999.25",
+      "source": "data"
+    },
+    {
+      "topic": "names",
+      "subject": "48-X-28",
+      "value": "curve names as the LAS states them",
+      "source": "data"
+    }
+  ],
+  "targets": [
+    {
+      "application": "python",
+      "version": "3.12",
+      "artefacts": [
+        {
+          "path": "standard/teapot.sgy",
+          "sha256": "581ae92c92a9cba90788c4d911a6f118c2291545e2669b1d8dbda3a73818ab73",
+          "bytes": 43,
+          "key": "mirror/rmotc/teapot-dome/581ae92c92a9cba90788c4d911a6f118c2291545e2669b1d8dbda3a73818ab73/teapot.sgy"
+        },
+        {
+          "path": "standard/48-X-28.las",
+          "sha256": "6f04fab7cc7dcdf27b49fa3144bb014668a07839d91feb70560b94d46fefad04",
+          "bytes": 34,
+          "key": "mirror/rmotc/teapot-dome/6f04fab7cc7dcdf27b49fa3144bb014668a07839d91feb70560b94d46fefad04/48-X-28.las"
+        },
+        {
+          "path": "python/teapot_starter.ipynb",
+          "sha256": "de9f06386749a40dc997de0746f2f35827bb7339a02bd30baaffb646c375b608",
+          "bytes": 82,
+          "key": "mirror/rmotc/teapot-dome/de9f06386749a40dc997de0746f2f35827bb7339a02bd30baaffb646c375b608/teapot_starter.ipynb"
+        }
+      ],
+      "import": "python/teapot_starter.ipynb",
+      "oracle": {
+        "compared": [
+          "trace samples at 32 seeded positions against segyio"
+        ],
+        "values": 32,
+        "differences": 0,
+        "seed": 7
+      }
+    }
+  ],
+  "licence": {
+    "name": "US Government work (public domain)",
+    "spdx": null,
+    "url": "https://www.usa.gov/government-copyright",
+    "redistribution": "allowed",
+    "attribution": "not-required",
+    "sources": [
+      {
+        "input": "filt_mig.sgy",
+        "licence": {
+          "name": "US Government work (public domain)",
+          "spdx": null,
+          "url": "https://www.usa.gov/government-copyright",
+          "redistribution": "allowed",
+          "attribution": "not-required"
+        }
+      },
+      {
+        "input": "490251051400.las",
+        "licence": {
+          "name": "US Government work (public domain)",
+          "spdx": null,
+          "url": "https://www.usa.gov/government-copyright",
+          "redistribution": "allowed",
+          "attribution": "not-required"
+        }
+      }
+    ]
+  },
+  "fidelity": "fidelity/rmotc__teapot-dome__python.json",
+  "built_at": "2026-10-29T11:30:00Z"
+}

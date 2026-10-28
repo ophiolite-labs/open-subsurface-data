@@ -1,0 +1,44 @@
+{
+  "format": "osd.custody/2",
+  "record_id": "terranubis/f3-demo-2020",
+  "path": "standard/F03-2.las",
+  "origin_href": null,
+  "key": "mirror/terranubis/f3-demo-2020/9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b/F03-2.las",
+  "href": "https://mirror.example/mirror/terranubis/f3-demo-2020/9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b/F03-2.las",
+  "sha256": "9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b",
+  "bytes": 32,
+  "copied_at": "2026-10-29T11:00:00Z",
+  "derived": {
+    "pack_id": "terranubis/f3-demo-2020/starter",
+    "recipe_id": "f3-demo-2020-starter",
+    "from": [
+      "98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb",
+      "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c"
+    ]
+  },
+  "licence": {
+    "name": "Creative Commons 3.0 (the page links the BY-SA 3.0 deed)",
+    "spdx": "CC-BY-SA-3.0",
+    "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "redistribution": "allowed",
+    "attribution": "required",
+    "share_alike": true
+  },
+  "licence_text_sha256": null,
+  "attribution": [
+    "## F3 Demo 2020 (Dutch North Sea)",
+    "",
+    "- Record: terranubis/f3-demo-2020 (collection terranubis--f3-demo-2020)",
+    "- Origin: https://terranubis.com/datainfo/F3-Demo-2020",
+    "- Licence: Creative Commons 3.0 (the page links the BY-SA 3.0 deed) (CC-BY-SA-3.0), https://creativecommons.org/licenses/by-sa/3.0/",
+    "- Attribution: required",
+    "- Redistribution: allowed",
+    "- Share-alike: derived work must carry CC-BY-SA-3.0",
+    "- Statement: none stated by the publisher in the record",
+    "- Known issue: Publisher replaced F3-Demo-2020 with F3 Demo 2023 on 12 June 2023; /datainfo/F3-Demo-2020 now serves the 2023 page (7.6 GB, 4.5 GB download), whose licence label links the BY-SA 3.0 deed. Licence fields corrected from the earlier BY-SA 4.0 entry to what the page states."
+  ],
+  "takedown": "https://github.com/ophiolite-labs/open-subsurface-data/issues/new?template=takedown.yml",
+  "removal": {
+    "state": "held"
+  }
+}
