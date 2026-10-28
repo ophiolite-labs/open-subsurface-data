@@ -9,7 +9,7 @@
 </head>
 <body class="page">
 <main>
-<p><a href="./">← Back to the map</a></p>
+<p><a href="./">← Back to the map</a><span id="starterlink" hidden> · <a href="starters.html">Starter projects</a></span></p>
 <h1>How to read the map</h1>
 <p class="muted">The map lists open subsurface datasets: wells, seismic, horizons, production. Each one
 is described by a record that repeats what its publisher says. This page explains the level next
@@ -94,5 +94,11 @@ advice. Before you use or share a dataset, read the licence on the publisher's o
 <p>An outline can be added the same way, under <code>outlines/</code>. See
 <a href="https://github.com/ophiolite-labs/open-subsurface-data/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
 </main>
+<script>
+// The header link shows only when the build published at least one starter pack (E43).
+fetch('data/starters.json').then(r => r.ok ? r.json() : null).then(d => {
+  if (d && d.starters.length) document.getElementById('starterlink').hidden = false;
+}, () => {});
+</script>
 </body>
 </html>

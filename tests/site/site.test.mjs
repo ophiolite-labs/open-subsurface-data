@@ -856,3 +856,28 @@ test('starter: the F3-shaped record shows a fourth card with the pack\'s buttons
   assert.deepEqual(unexpected, []);
   await context.close();
 });
+
+test('starter: with no pack in the build, no fourth card, no header link, no filter, and the page says so', async () => {
+  const { context, page, errors, unexpected } = await open(`sel=${F3_RECORD}&starter=1`, { routes: withoutStarters });
+  const all = await page.evaluate(() => window.osdMap && document.querySelectorAll('#list li').length);
+  assert.ok(all > 100, 'starter=1 is ignored while no dataset has a pack');
+  assert.equal(await page.locator('#detail .card').count(), 3);
+  assert.equal(await page.locator('#detail .card.starter').count(), 0);
+  assert.equal(await page.locator('#starterlink').isVisible(), false);
+  assert.equal(await page.locator('#starterfilter').isVisible(), false);
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /starter=/);
+  for (const p of ['how.html', 'status.html']) {
+    await page.goto(server.url + p);
+    await page.waitForLoadState('networkidle');
+    assert.equal(await page.locator('#starterlink').isVisible(), false, p);
+  }
+  await page.goto(server.url + 'starters.html');
+  await page.locator('#none').waitFor();
+  assert.equal(await page.locator('#none').innerText(), 'No starter projects yet.');
+  assert.equal(await page.locator('section.pack').count(), 0);
+  assert.match(await page.locator('#ask a').getAttribute('href'), /issues\/new\?template=starter-request\.yml$/);
+  await page.screenshot({ path: join(OUT, 'starters-empty.png'), fullPage: true });
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
