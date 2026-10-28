@@ -908,3 +908,35 @@ test('starter: #starter=1 lists exactly the two fixture records; unticking resto
   assert.deepEqual(errors, []);
   await context.close();
 });
+
+test('starter: "Download the pack manifest" writes the manifest/4 osd manifest --starter writes, artefacts equal by sha256', async () => {
+  const pack = fixturePack(`${F3_ANCHOR}.json`);
+  const { context, page, errors, unexpected } = await open(`sel=${F3_RECORD}`, { routes: withStarters });
+  const button = page.locator('#detail .card.starter .starter-download');
+  await button.waitFor();
+  assert.equal(await button.innerText(), 'Download the pack manifest');
+  const [dl] = await Promise.all([page.waitForEvent('download'), button.click()]);
+  assert.equal(dl.suggestedFilename(), `${F3_ANCHOR}.manifest.json`);
+  const file = join(OUT, `${F3_ANCHOR}.manifest.json`);
+  await dl.saveAs(file);
+  const doc = JSON.parse(await readFile(file, 'utf8'));
+  assert.equal(doc.format, 'osd.manifest/4');
+  // osd.manifest.read accepts it; its entries equal what `osd manifest --starter` writes from the same build
+  const { stdout } = await promisify(execFile)(process.env.UV || 'uv', ['run', '--quiet', 'python', '-c',
+    'import json, sys; from pathlib import Path; from osd import manifest as mf\n' +
+    'page = json.loads(Path(sys.argv[1]).read_text()); m = mf.read(sys.argv[1])\n' +
+    'want = mf.from_starter(sys.argv[3], catalog_dir=Path(sys.argv[2]), catalog_url=page["catalog_url"])\n' +
+    'assert page["format"] == want["format"] and page["entries"] == want["entries"], (page["entries"], want["entries"])\n' +
+    'print(json.dumps({a.key: a.sha256 for e in m.entries for a in e.assets}))',
+    file, E43_DIR, F3_PACK], { cwd: ROOT });
+  const got = JSON.parse(stdout.trim().split('\n').pop());
+  const want = Object.fromEntries(pack.targets.flatMap(t => t.artefacts.map(a => [a.path, a.sha256])));
+  const { 'starter.json': doc256, 'fidelity.json': fid256, ...artefacts } = got;
+  assert.deepEqual(artefacts, want);
+  assert.equal(doc256, createHash('sha256').update(readFileSync(join(FX, 'packs', `${F3_ANCHOR}.json`))).digest('hex'));
+  assert.equal(fid256, createHash('sha256').update(readFileSync(join(FX, 'packs', pack.fidelity))).digest('hex'));
+  console.log(`# pack manifest: ${Object.keys(artefacts).length} artefacts and 2 pack documents, entries equal to osd manifest --starter`);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});

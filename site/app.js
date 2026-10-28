@@ -475,7 +475,9 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   // ---- Starter projects (E43). Deletable: this block, the fourth card in select(), the `starter` hash
   // key, #starterlink, #starterfilter and site/starters.html. The page holds no pack text of its own:
   // everything comes from data/starters.json (E40: every published pack whole, with each artefact's
-  // mirror address) and data/starters/ (the pack document and its fidelity record).
+  // mirror address) and data/starters/ (the pack document and its fidelity record). The manifest is the
+  // one `osd manifest --starter <pack id>` writes (src/osd/manifest.py from_starter); the site test
+  // checks the two agree entry for entry.
   const APPS = { opendtect: 'OpendTect', resinsight: 'ResInsight', python: 'Python' };
   let packs = null;
   const loadPacks = () => packs = packs || fetch('data/starters.json').then(r => r.ok ? r.json() : { starters: [] })
@@ -485,6 +487,37 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   const packLicence = l => [l.spdx || l.name, l.attribution === 'required' ? 'attribution required' : '',
     l.share_alike === true ? 'share-alike' : ''].filter(Boolean).join(' · ');
   const manifestName = p => p.id.replaceAll('/', '__') + '.manifest.json';
+
+  async function sha256(buf) {
+    return [...new Uint8Array(await crypto.subtle.digest('SHA-256', buf))].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function starterManifest(p) {
+    const r = byId[p.record_id], assets = {};
+    for (const t of p.targets) for (const a of t.artefacts) {
+      const title = assets[a.path] ? assets[a.path].title : `${a.path} (${t.application} ${t.version})`;
+      assets[a.path] = { href: a.href, title, 'file:size': a.bytes, 'file:checksum': '1220' + a.sha256 };
+    }
+    for (const [key, rel, title] of [['starter.json', packFile(p.id), 'the pack document with its decision log (osd.starter/1)'],
+      ['fidelity.json', p.fidelity, 'the fidelity record (osd.fidelity/1)']]) {
+      const buf = await (await fetch('data/starters/' + rel)).arrayBuffer();
+      assets[key] = { href: base + 'data/starters/' + rel, title, 'file:size': buf.byteLength, 'file:checksum': '1220' + await sha256(buf) };
+    }
+    const { sources, ...licence } = p.licence;
+    const entry = { collection_id: collectionId(r.id), record_id: r.id, title: p.title, origin_url: r.origin.url,
+      access: r.origin.access, licence, assets, coverage: 'complete' };
+    if (r.known_issues && r.known_issues.length) entry.known_issues = [...r.known_issues];
+    return { format: MANIFEST_FORMAT_4, created: new Date().toISOString().replace(/\.\d+Z$/, 'Z'),
+      catalog_url: base + 'data/stac/catalog.json', selection: 'collections', entries: [entry], metadata: { catalog: { ...built.catalog } } };
+  }
+
+  function save(doc, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2) + '\n'], { type: 'application/json' }));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
 
   // The fourth card: one button per target in the pack's order (the application and the version the
   // pack was built against), the licence line, the decision log, and the three steps for the chosen one.
@@ -496,7 +529,8 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
     card.innerHTML = '<b>Starter project</b>' + list.map(p => `<div class="pack" data-pack="${esc(p.id)}">
       <div class="apps">${p.targets.map((t, i) => `<button type="button" class="app" data-app="${esc(t.application)}" aria-pressed="${i === 0}">${esc(APPS[t.application] || t.application)} <span>${esc(t.version)}</span></button>`).join('')}</div>
       <div class="lic">${esc(packLicence(p.licence))} · <a href="starters.html#${esc(packAnchor(p.id))}-decisions">what we decided</a></div>
-      <div class="steps"></div></div>`).join('');
+      <div class="steps"></div>
+      <button type="button" class="starter-download">Download the pack manifest</button></div>`).join('');
     for (const el of card.querySelectorAll('.pack')) {
       const p = all[el.dataset.pack];
       const steps = app => {
@@ -506,6 +540,7 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
       };
       el.querySelectorAll('.app').forEach(b => b.onclick = () => steps(b.dataset.app));
       steps(p.targets[0].application);
+      el.querySelector('.starter-download').onclick = async () => save(await starterManifest(p), manifestName(p));
     }
   }
 
