@@ -5,12 +5,15 @@ fixtures in tests/fixtures/starters/ and the custody snapshot in tests/fixtures/
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 
 import pytest
+import yaml
 from jsonschema import Draft202012Validator, FormatChecker
 
-from osd import custody, paths
+from osd import cli, custody, paths, starters
+from osd.records import load_records
 
 ROOT = Path(__file__).resolve().parents[1]
 FROZEN = ROOT / "tests" / "fixtures" / "schema"
@@ -256,3 +259,396 @@ def test_keys_come_later_while_unpublished():
     assert _errors(STARTER, doc) == [] and _errors(STARTER_1, doc) == []
     doc["unpublished"] = False
     assert _errors(STARTER, doc)
+
+
+# --- the nine validity tests (design 4; acceptance 1 to 5) -------------------------------------------
+
+VDIR = FIXTURES / "verification"
+
+
+def evidence(records_dir: Path = FIXTURES / "records", custody_dir: Path | None = SNAPSHOT,
+             vdir: Path | None = VDIR) -> starters.Evidence:
+    return starters.Evidence(load_records(records_dir), vdir, custody_dir)
+
+
+def problems(doc: dict, ev: starters.Evidence | None = None, starters_dir: Path = PACKS) -> list[str]:
+    return starters.check(doc, ev or evidence(), starters_dir).problems
+
+
+def refused(doc: dict, expected: str, ev: starters.Evidence | None = None, starters_dir: Path = PACKS) -> list[str]:
+    out = problems(doc, ev, starters_dir)
+    assert any(expected in p for p in out), out
+    return out
+
+
+def test_the_fixture_packs_are_valid():
+    for name in (F3, TEAPOT):
+        r = starters.check(pack(name), evidence(), PACKS, name)
+        assert (r.problems, r.unchecked) == ([], [])
+
+
+def test_without_evidence_nothing_is_passed_that_needs_it():
+    """make check has no verifications and no custody: (b) and (f) are unchecked there, never passed."""
+    ev = starters.Evidence(load_records(FIXTURES / "records"), None, Path("/nonexistent"))
+    r = starters.check(pack(F3), ev, PACKS)
+    assert r.problems == []
+    assert {u.split(":")[0] for u in r.unchecked} == (
+        {f"input {i['name']}" for i in pack(F3)["inputs"]}
+        | {f"artefact {a['path']}" for t in pack(F3)["targets"] for a in t["artefacts"]})
+    r = starters.check(pack(TEAPOT), ev, PACKS)
+    assert r.problems == [] and all(u.startswith(("input ", "artefact ")) for u in r.unchecked)
+
+
+def _custody_doc(key: str) -> dict:
+    return next(json.loads(p.read_text()) for p in SNAPSHOT.glob("*.json") if json.loads(p.read_text())["key"] == key)
+
+
+# acceptance 2: inputs
+
+def test_input_of_another_record():
+    doc = pack(F3)
+    norne = json.loads((MIRROR_CUSTODY / "held.json").read_text())
+    doc["inputs"][0]["held"]["key"] = norne["key"]
+    refused(doc, "input F3_Demo_2023_seismic.zip: custody key mirror/opm/norne/")
+    refused(doc, "holds a file of record opm/norne, not terranubis/f3-demo-2020")
+
+
+def test_input_of_another_record_verified(tmp_path):
+    vdir = tmp_path / "v"
+    shutil.copytree(VDIR, vdir)
+    other = json.loads((VDIR / "rmotc__teapot-dome.json").read_text())
+    (vdir / "acme__other.json").write_text(json.dumps(dict(other, record_id="acme/other")))
+    doc = pack(TEAPOT)
+    v = json.loads((VDIR / "rmotc__teapot-dome.json").read_text())
+    v["files"] = v["files"][1:]
+    (vdir / "rmotc__teapot-dome.json").write_text(json.dumps(v))
+    refused(doc, "input filt_mig.sgy: " + doc["inputs"][0]["sha256"][:12] + "… is a file of record acme/other, "
+            "not rmotc/teapot-dome", evidence(vdir=vdir))
+
+
+def test_input_wrong_verifier_run():
+    doc = pack(TEAPOT)
+    doc["inputs"][0]["held"]["verifier_run"]["checked_at"] = "2026-10-01T09:30:00+00:00"
+    assert problems(doc) == [("input filt_mig.sgy: verifier_run 2026-10-01T09:30:00+00:00 0.1.0 is not the latest "
+                             "verification of rmotc/teapot-dome (2026-10-29T09:30:00+00:00 0.1.0)")]
+
+
+def test_input_wrong_size():
+    doc = pack(TEAPOT)
+    doc["inputs"][1]["bytes"] += 1
+    assert problems(doc) == [(f"input 490251051400.las: bytes {doc['inputs'][1]['bytes']}, the verification states "
+                             f"{doc['inputs'][1]['bytes'] - 1}")]
+
+
+def test_input_wrong_name():
+    doc = pack(TEAPOT)
+    doc["inputs"][0]["name"] = doc["licence"]["sources"][0]["input"] = "cube.sgy"
+    assert problems(doc) == ["input cube.sgy: name cube.sgy is not filt_mig.sgy, the file the verification names"]
+
+
+def test_input_tombstoned_custody_key():
+    doc = pack(F3)
+    tomb = json.loads(next(SNAPSHOT.glob("*.removed.json")).read_text())
+    doc["inputs"][0].update(sha256=tomb["sha256"], bytes=tomb["bytes"], held={"as": "deposited", "key": tomb["key"]})
+    refused(doc, f"input F3_Demo_2023_seismic.zip: custody key {tomb['key']} is removed (2026-10-28, "
+                 "https://github.com/ophiolite-labs/open-subsurface-data/issues/101): never in a pack")
+
+
+def test_input_deposit_must_be_a_deposit():
+    doc = pack(F3)
+    doc["inputs"][0]["held"]["key"] = _artefact(doc)["key"]
+    refused(doc, "is a derived copy, not a deposit")
+
+
+# acceptance 3: licence
+
+def _teapot_licence(tmp_path: Path, **change) -> tuple[dict, starters.Evidence]:
+    """Teapot with its record's licence changed and the pack's sources following it: only the rule speaks."""
+    records = tmp_path / "records"
+    shutil.copytree(FIXTURES / "records", records)
+    p = records / "rmotc" / "teapot-dome.yaml"
+    rec = yaml.safe_load(p.read_text())
+    rec["licence"].update(change)
+    p.write_text(yaml.safe_dump(rec, sort_keys=False))
+    doc = pack(TEAPOT)
+    for s in doc["licence"]["sources"]:
+        s["licence"].update(change)
+    return doc, evidence(records_dir=records)
+
+
+@pytest.mark.parametrize("value", ["restricted", "unknown"])
+def test_licence_not_allowed(tmp_path, value):
+    doc, ev = _teapot_licence(tmp_path, redistribution=value)
+    assert problems(doc, ev) == [f"input filt_mig.sgy: redistribution {value}: never in a pack",
+                                 f"input 490251051400.las: redistribution {value}: never in a pack"]
+
+
+def test_licence_value_outside_the_enum():
+    doc = pack(TEAPOT)
+    doc["licence"]["sources"][0]["licence"]["redistribution"] = "maybe"
+    assert problems(doc) == [("licence/sources/0/licence/redistribution: 'maybe' is not one of "
+                             "['allowed', 'restricted', 'forbidden', 'unknown']")]
+
+
+def _f3_second_input_licence(tmp_path: Path, **change) -> tuple[dict, starters.Evidence]:
+    doc = pack(F3)
+    custody_dir = tmp_path / "custody"
+    shutil.copytree(SNAPSHOT, custody_dir)
+    sha = doc["inputs"][1]["sha256"]
+    d = json.loads((custody_dir / f"{sha}.json").read_text())
+    d["licence"].update(change)
+    (custody_dir / f"{sha}.json").write_text(json.dumps(d))
+    doc["licence"]["sources"][1]["licence"].update(change)
+    return doc, evidence(custody_dir=custody_dir)
+
+
+def test_licence_mixed_spdx(tmp_path):
+    doc, ev = _f3_second_input_licence(tmp_path, spdx="CC-BY-SA-4.0")
+    assert problems(doc, ev) == [('unsupported combination: the inputs\' licence spdx differs ("CC-BY-SA-3.0", '
+                                 '"CC-BY-SA-4.0")')]
+
+
+def test_licence_dropped_required_attribution():
+    doc = pack(F3)
+    doc["licence"]["attribution"] = "not-required"
+    assert problems(doc) == ['licence attribution is "not-required", computed "required" from the inputs']
+
+
+def test_licence_share_alike_over_a_share_alike_input():
+    doc = pack(F3)
+    doc["licence"]["share_alike"] = False
+    assert problems(doc) == ["licence share_alike is false, computed true from the inputs"]
+
+
+def test_licence_sources_entry_edited():
+    doc = pack(F3)
+    doc["licence"]["sources"][0]["licence"]["url"] = "https://creativecommons.org/licenses/by/4.0/"
+    out = refused(doc, "licence sources F3_Demo_2023_seismic.zip: not its evidence's licence (url differ)")
+    assert all("url" in p for p in out)
+
+
+def test_licence_attribution_computed_across_inputs():
+    lic = {"name": "n", "redistribution": "allowed"}
+    for values, expected in ((["required", "unknown"], "required"), (["not-required", "unknown"], "unknown"),
+                             (["not-required", "not-required"], "not-required")):
+        got, why = starters.computed_licence([{"input": str(i), "licence": dict(lic, attribution=a)}
+                                              for i, a in enumerate(values)])
+        assert why == [] and got["attribution"] == expected and "share_alike" not in got
+
+
+# acceptance 4: decisions
+
+def test_decision_missing_for_one_well():
+    doc = pack(F3)
+    doc["decisions"] = [d for d in doc["decisions"] if (d["topic"], d["subject"]) != ("depth-reference", "F03-2")]
+    assert problems(doc) == ["decision depth-reference for F03-2 (wellbore-logs) is missing"]
+
+
+def test_decision_contradicting_duplicate():
+    doc = pack(F3)
+    doc["decisions"].append({"topic": "crs", "subject": "F3", "value": "EPSG:25831", "source": "chosen", "note": "n"})
+    assert problems(doc) == ["decision crs for F3 has two values: EPSG:23031 (ED50 / UTM zone 31N) | EPSG:25831"]
+    doc["decisions"][-1]["value"] = doc["decisions"][0]["value"]   # the same value twice is one decision
+    assert problems(doc) == []
+
+
+def test_decision_depth_cube_needs_velocity():
+    doc = pack(F3)
+    next(d for d in doc["decisions"] if (d["topic"], d["subject"]) == ("domain", "F3"))["value"] = "depth"
+    assert problems(doc) == ["decision velocity for F3 (seismic-3d) is missing"]
+    doc["decisions"].append({"topic": "velocity", "subject": "F3", "value": "dGB's interval model", "source": "publisher"})
+    assert problems(doc) == []
+
+
+def test_decision_subject_and_count():
+    doc = pack(F3)
+    doc["decisions"][0]["subject"] = "F9"
+    doc["contents"][1]["count"] = 5
+    assert set(problems(doc)) == {"contents wellbore-logs: count 5, ids name 4",
+                                  "decision crs names subject F9, not an object of contents",
+                                  "decision crs for F3 (seismic-3d) is missing"}
+
+
+def test_a_pack_line_satisfies_no_object():
+    doc = pack(TEAPOT)
+    doc["decisions"] = [d for d in doc["decisions"] if (d["topic"], d["subject"]) != ("crs", "Teapot 3D")]
+    assert problems(doc) == ["decision crs for Teapot 3D (seismic-3d) is missing"]
+
+
+# acceptance 5: artefacts and fidelity
+
+def _custody_copy(tmp_path: Path) -> Path:
+    shutil.copytree(SNAPSHOT, tmp_path / "custody")
+    return tmp_path / "custody"
+
+
+def test_artefact_missing_custody_object(tmp_path):
+    custody_dir, a = _custody_copy(tmp_path), _artefact(pack(F3))
+    (custody_dir / f"{a['sha256']}.json").unlink()
+    assert problems(pack(F3), evidence(custody_dir=custody_dir)) == [
+        f"artefact standard/F3.sgy: no held custody document has key {a['key']}"]
+
+
+def test_artefact_tombstone(tmp_path):
+    custody_dir, a = _custody_copy(tmp_path), _artefact(pack(F3))
+    d = json.loads((custody_dir / f"{a['sha256']}.json").read_text())
+    d["removal"] = {"state": "removed", "removed_at": "2026-10-30T08:00:00Z",
+                    "request": "https://github.com/ophiolite-labs/open-subsurface-data/issues/102", "approved_by": "tuna-soup"}
+    (custody_dir / f"{a['sha256']}.removed.json").write_text(json.dumps(d))   # takedown writes the tombstone first
+    expected = problems(pack(F3), evidence(custody_dir=custody_dir))
+    (custody_dir / f"{a['sha256']}.json").unlink()                           # then deletes the live document
+    assert problems(pack(F3), evidence(custody_dir=custody_dir)) == expected == [
+        (f"artefact standard/F3.sgy: custody key {a['key']} is removed (2026-10-30, "
+        "https://github.com/ophiolite-labs/open-subsurface-data/issues/102): never in a pack")]
+
+
+def test_artefact_size_mismatch():
+    doc = pack(TEAPOT)
+    a = doc["targets"][0]["artefacts"][2]
+    a["bytes"] += 1
+    assert problems(doc) == [(f"artefact python/teapot_starter.ipynb: bytes {a['bytes']}, its custody document states "
+                             f"{a['bytes'] - 1}")]
+
+
+def test_artefact_of_another_pack():
+    doc = pack(TEAPOT)
+    other = _artefact(pack(F3))
+    doc["targets"][0]["artefacts"][2] = dict(other, path="python/teapot_starter.ipynb")
+    refused(doc, "is not an artefact of rmotc/teapot-dome/python (terranubis/f3-demo-2020/starter)")
+
+
+def test_import_names_no_artefact():
+    doc = pack(F3)
+    doc["targets"][1]["import"] = "resinsight/missing.py"
+    assert problems(doc) == ["target resinsight: import resinsight/missing.py is not one of its artefacts"]
+
+
+def test_one_path_one_digest():
+    doc = pack(F3)
+    doc["derived"][0]["sha256"] = "0" * 64
+    assert problems(doc) == ["artefact standard/F3.sgy: two digests for one path in the pack"]
+
+
+def _fidelity(tmp_path: Path, mutate) -> Path:
+    shutil.copytree(PACKS, tmp_path / "packs")
+    p = tmp_path / "packs" / "fidelity" / F3
+    fd = json.loads(p.read_text())
+    mutate(fd)
+    p.write_text(json.dumps(fd))
+    return tmp_path / "packs"
+
+
+def _extra(fd: dict) -> None:
+    fd["inputs"].append(dict(fd["inputs"][0], sha256="e" * 64, name="extra.zip"))
+
+
+def _failed(fd: dict) -> None:
+    fd["inputs"][1].update(result="failed", reason="unreadable")
+    fd["inputs"][1].pop("output")
+
+
+@pytest.mark.parametrize("mutate,expected", [
+    (lambda fd: fd["inputs"].pop(), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: no result for input "
+                                    "F3_Demo_2023_wells.zip (cca8d65df640…)")),
+    (_extra, ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: input extra.zip (eeeeeeeeeeee…) is not a pack "
+             "input")),
+    (_failed, "fidelity fidelity/terranubis__f3-demo-2020__starter.json: input F3_Demo_2023_wells.zip is failed"),
+    (lambda fd: fd.update(record="opm/norne"), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: record "
+                                               "opm/norne, the pack is of terranubis/f3-demo-2020")),
+    (lambda fd: fd["inputs"][0]["output"].update(kind="faults"), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: input "
+                                                                 "F3_Demo_2023_seismic.zip became faults, not a contents kind")),
+    (lambda fd: fd.pop("catalog"), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: (root): 'catalog' is a "
+                                   "required property")),
+], ids=["input-missing", "input-extra", "failed", "wrong-record", "kind", "schema"])
+def test_fidelity_refusals(tmp_path, mutate, expected):
+    assert problems(pack(F3), starters_dir=_fidelity(tmp_path, mutate)) == [expected]
+
+
+def test_fidelity_path_stays_in_starters(tmp_path):
+    doc = pack(F3)
+    doc["fidelity"] = "fidelity/absent.json"
+    assert problems(doc) == [f"fidelity fidelity/absent.json: not found under {PACKS}"]
+    d = tmp_path / "starters"
+    shutil.copytree(PACKS, d)
+    (d / "fidelity" / F3).unlink()
+    (d / "fidelity" / F3).symlink_to(PACKS / "fidelity" / F3)   # a valid record, but outside this starters/
+    assert problems(pack(F3), starters_dir=d) == [f"fidelity fidelity/{F3}: not found under {d}"]
+
+
+def test_derived_from_an_input():
+    doc = pack(F3)
+    doc["derived"][2]["from"] = "0" * 64
+    assert problems(doc) == ["derived standard/F02-1.las: from 000000000000… is not an input digest"]
+
+
+def test_oracle():
+    doc = pack(F3)
+    doc["targets"][2]["oracle"].update(differences=3)
+    doc["targets"][0]["oracle"].update(values=0)
+    assert problems(doc) == ["target opendtect: the oracle compared no values",
+                             "target python: the oracle found 3 differences; such a pack says unpublished: true"]
+    doc["unpublished"] = True
+    assert problems(doc) == []
+
+
+def test_file_name_and_record():
+    r = starters.check(pack(F3), evidence(), PACKS, "f3.json")
+    assert r.problems == [("file name f3.json is not terranubis__f3-demo-2020__starter.json, the name of pack "
+                          "terranubis/f3-demo-2020/starter")]
+    doc = pack(F3)
+    doc["record_id"] = "acme/f3"
+    assert "id terranubis/f3-demo-2020/starter is not a pack of record acme/f3" in problems(doc)
+
+
+# acceptance 1: discovery (the function `osd validate` runs is `starters.check`)
+
+def _starters_dir(tmp_path: Path, broken: bool = True) -> Path:
+    d = tmp_path / "starters"
+    shutil.copytree(PACKS, d)
+    if broken:
+        doc = pack(F3)
+        doc["decisions"] = [x for x in doc["decisions"] if (x["topic"], x["subject"]) != ("nulls", "MFS4")]
+        (d / F3).write_text(json.dumps(doc))
+    return d
+
+
+def _validate(*args: str) -> int:
+    return cli.main(["validate", *args, "--records", str(FIXTURES / "records"), "--vdir", str(VDIR),
+                     "--custody", str(SNAPSHOT), "--outlines", str(FIXTURES / "no-outlines")])
+
+
+def test_osd_validate_names_the_invalid_pack(tmp_path, capsys, monkeypatch):
+    calls = []
+    real = starters.check
+    monkeypatch.setattr(starters, "check", lambda *a, **k: calls.append(a[0]["id"]) or real(*a, **k))
+    assert _validate("--starters", str(_starters_dir(tmp_path))) == 1
+    out = capsys.readouterr().out
+    bad = [line for line in out.splitlines() if line.startswith("  ")]
+    assert bad == [(f"  {tmp_path / 'starters' / F3}: decision nulls for MFS4 "
+                   "(horizons) is missing")]
+    assert out.splitlines()[-1] == "2 records, 2 starter packs, 1 problems"
+    assert sorted(calls) == ["rmotc/teapot-dome/python", "terranubis/f3-demo-2020/starter"]
+    assert _validate("--starters", str(_starters_dir(tmp_path / "ok", broken=False))) == 0
+
+
+def test_osd_validate_one_document_by_path(tmp_path, capsys):
+    """Ophiolite E129's subprocess: `osd validate <pack>.json` anywhere on disk, exit 0 or 1."""
+    work = tmp_path / "e129-run"
+    shutil.copytree(PACKS, work)
+    p = work / "pack.json"   # outside starters/: no file-name rule
+    doc = pack(F3)
+    for t in doc["targets"]:
+        for a in t["artefacts"]:
+            a.pop("key")
+    p.write_text(json.dumps(dict(doc, unpublished=True)))
+    assert _validate(str(p)) == 0
+    out = capsys.readouterr().out
+    assert "unchecked here: artefact standard/F3.sgy: no custody key yet (unpublished)" in out
+    assert out.splitlines()[-1] == "1 starter documents, 0 problems"
+    p.write_text(json.dumps(pack(F3)))
+    assert _validate(str(p)) == 0
+    doc = pack(F3)
+    doc["licence"]["share_alike"] = False
+    p.write_text(json.dumps(doc))
+    assert _validate(str(p)) == 1
+    assert "licence share_alike is false" in capsys.readouterr().out

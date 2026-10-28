@@ -31,3 +31,17 @@ The build publishes the valid packs whole in `build/catalog/starters.json` (with
 title and level, and each artefact's mirror address), lists their ids in the record's `starters`
 in `records.json`, and copies each pack document and fidelity record to `build/catalog/starters/`.
 `osd manifest --starter <pack id>` writes the manifest `osd get` fetches a pack with.
+
+## Checking one document (Ophiolite E129)
+
+A recipe checks the pack it wrote, wherever it is on disk, with the same function:
+
+```sh
+uv run osd validate path/to/<record id with / as __>__<pack>.json \
+    --vdir build/verification --custody build/mirror/custody
+```
+
+Exit 0: no problem (lines starting `unchecked here:` name what this checkout could not check, never a
+pass); exit 1: each problem printed. The fidelity path resolves against the document's directory; the
+file-name rule applies only to documents inside `starters/`. A pack written before its upload says
+`unpublished: true` and may carry artefacts without `key`; a published pack needs every key.

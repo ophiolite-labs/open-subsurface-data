@@ -18,18 +18,45 @@ from . import paths
 from . import reasons as reasons_mod
 from . import report as report_mod
 from . import shards as shards_mod
+from . import starters as starters_mod
 from . import verify as verify_mod
 from .records import load_records, validate_outlines, validate_records
 from .verify import apply_fidelity, conversion_coverage, http_open, is_stale, verify_all
 
 
-def cmd_validate(_: argparse.Namespace) -> int:
-    problems = validate_records() + validate_outlines()
+def cmd_validate(a: argparse.Namespace) -> int:
+    """Records, outlines and the starter packs (E40); with documents given, those starter documents alone,
+    wherever they are (Ophiolite E129 runs `osd validate <pack>.json` before and after its upload)."""
+    records_dir, starters_dir = Path(a.records), Path(a.starters)
+    ev = starters_mod.Evidence(load_records(records_dir), Path(a.vdir), Path(a.custody))
+    problems = [] if a.documents else validate_records(records_dir) + validate_outlines(Path(a.outlines), records_dir)
     for p in problems:
         print(f"  {p}")
-    n = len(load_records())
-    print(f"{n} records, {len(problems)} problems")
-    return 1 if problems else 0
+    if a.documents:
+        checked = []
+        for d in map(Path, a.documents):
+            try:
+                doc = json.loads(d.read_text())
+            except (OSError, ValueError) as e:
+                checked.append((d, starters_mod.Result(problems=[str(e)])))
+                continue
+            inside = d.parent.resolve() == starters_dir.resolve()
+            checked.append((d, starters_mod.check(doc, ev, d.parent, d.name if inside else None) if isinstance(doc, dict)
+                            else starters_mod.Result(problems=["(root): not an object"])))
+    else:
+        checked = [(p, r) for p, _, r in starters_mod.check_dir(starters_dir, ev)]
+    bad = 0
+    for p, r in checked:
+        bad += len(r.problems)
+        for line in r.problems:
+            print(f"  {p}: {line}")
+        for line in r.unchecked:
+            print(f"  {p}: unchecked here: {line}")
+    if a.documents:
+        print(f"{len(checked)} starter documents, {bad} problems")
+    else:
+        print(f"{len(load_records(records_dir))} records, {len(checked)} starter packs, {len(problems) + bad} problems")
+    return 1 if problems or bad else 0
 
 
 def cmd_fidelity(a: argparse.Namespace) -> int:
@@ -272,7 +299,14 @@ def cmd_mirror_remove(a: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="osd", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("validate", help="records and outlines against their schemas").set_defaults(fn=cmd_validate)
+    pva = sub.add_parser("validate", help="records, outlines and starter packs against their schemas and rules")
+    pva.add_argument("documents", nargs="*", help="starter documents to check alone, anywhere on disk (E40)")
+    pva.add_argument("--records", default=str(paths.RECORDS_DIR))
+    pva.add_argument("--outlines", default=str(paths.OUTLINES_DIR))
+    pva.add_argument("--starters", default=str(starters_mod.STARTERS_DIR))
+    pva.add_argument("--vdir", default=str(paths.VERIFICATION_DIR), help="latest verifications (absent: unchecked)")
+    pva.add_argument("--custody", default=str(starters_mod.CUSTODY_DIR), help="custody documents (absent: unchecked)")
+    pva.set_defaults(fn=cmd_validate)
     pv = sub.add_parser("verify", help="network: reach each origin, write verification records")
     pv.add_argument("ids", nargs="*")
     pv.add_argument("--outlines", action="store_true",
