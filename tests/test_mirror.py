@@ -1156,6 +1156,7 @@ def mixed_store(tmp_path):
     nv = verification("opm/norne", files, rule=rule)
     mirror.put(norne, nv, rule, s, net, now=NOW)
     deposit(s)
+    mirror.put_derived(unpublished_pack(), f3_record(), ARTEFACTS, s, now=NOW)
     return s, nv
 
 
@@ -1164,7 +1165,8 @@ def test_mixed_custody_versions_through_sync_index_and_build(tmp_path, records_s
     mirror_dir = tmp_path / "mirror"
     names = mirror.sync_custody(s, mirror_dir / "custody")
     docs = [json.loads((mirror_dir / "custody" / n).read_text()) for n in names]
-    assert sorted(d["format"] for d in docs) == ["osd.custody/1"] + ["osd.custody/2"] * 3
+    assert sorted((d["format"], custody.provenance(d)) for d in docs) == (
+        [("osd.custody/1", "verified")] + [("osd.custody/2", "deposit")] * 3 + [("osd.custody/2", "derived")] * 10)
     vdir = tmp_path / "verification"
     vdir.mkdir()
     (vdir / "opm__norne.json").write_text(json.dumps(nv))
@@ -1172,8 +1174,10 @@ def test_mixed_custody_versions_through_sync_index_and_build(tmp_path, records_s
     out = tmp_path / "catalog"
     build(out, vdir, mirror_dir=mirror_dir, records_dir=records_subset(["opm/norne", F3]))
     index = json.loads((out / "mirror.json").read_text())["copies"]
-    assert sorted((c["record_id"], c["path"]) for c in index) == [("opm/norne", "norne/README")] + [
-        (F3, p) for p in DEPOSITED]
+    assert sorted((c["record_id"], c["path"]) for c in index) == sorted([("opm/norne", "norne/README")] + [
+        (F3, p) for p in DEPOSITED] + [(F3, p.relative_to(ARTEFACTS).as_posix()) for p in ARTEFACTS.rglob("*") if p.is_file()])
+    col = json.loads((out / "stac" / "terranubis--f3-demo-2020" / "collection.json").read_text())
+    assert sorted(col["assets"]) == DEPOSITED          # derived artefacts are no asset of the record
     built = json.loads((out / "records.json").read_text())
     assert {r["id"]: r["level"] for r in built["records"]}[F3] == "L2"
     assert built["reasons"][F3] == "deposited by a maintainer from the publisher's download, 2026-10-29"
@@ -1272,3 +1276,90 @@ def test_deposit_asset_gone_after_takedown(tmp_path):
     assert len(outcome_files(before)) == 3
     col = json.loads((f3_catalogue(tmp_path, s, before) / "stac" / "terranubis--f3-demo-2020" / "collection.json").read_text())
     assert sorted(col["assets"]) == ["F3_Demo_2023.zip", "wells/F02-1.las"]   # no publisher address to fall back on
+
+
+# --- E41: derived uploads (design 5; acceptance 7) -----------------------------------------------
+
+STARTERS = ROOT / "tests" / "fixtures" / "starters"
+PACK_ID = "terranubis/f3-demo-2020/starter"
+ARTEFACTS = STARTERS / "artefacts" / "terranubis__f3-demo-2020__starter"
+
+
+def unpublished_pack() -> dict:
+    """The F3 fixture pack as Ophiolite E129's build step writes it: unpublished, no artefact keys."""
+    pack = json.loads((STARTERS / "packs" / "terranubis__f3-demo-2020__starter.json").read_text())
+    pack["unpublished"] = True
+    for t in pack["targets"]:
+        for a in t["artefacts"]:
+            del a["key"]
+    return pack
+
+
+def test_put_derived_custody_lineage_and_e129_key_fill(tmp_path):
+    from osd import starters
+    s, pack = store(tmp_path), unpublished_pack()
+    out = mirror.put_derived(pack, f3_record(), ARTEFACTS, s, now=NOW)
+    paths_ = sorted({a["path"] for t in pack["targets"] for a in t["artefacts"]})
+    assert sorted(c.path for c in out) == paths_ and {c.outcome for c in out} == {"published"}
+    docs = {(d["sha256"], d["bytes"]): d for d in (s.get_json(k) for k in s.keys("custody/"))}
+    made_from = {d["path"]: d["from"] for d in pack["derived"]}
+    for d in docs.values():
+        assert custody.provenance(d) == "derived" and d["origin_href"] is None and d["format"] == "osd.custody/2"
+        assert d["derived"]["pack_id"] == PACK_ID and d["derived"]["recipe_id"] == pack["recipe"]["id"]
+        assert d["derived"]["from"] == ([made_from[d["path"]]] if d["path"] in made_from
+                                        else [i["sha256"] for i in pack["inputs"]])
+        assert d["licence"] == {k: v for k, v in pack["licence"].items() if k != "sources"}
+        assert d["licence_text_sha256"] is None and "deposit" not in d
+        assert mirror._hash_object(s, d["key"]) == (d["sha256"], d["bytes"])
+    for t in pack["targets"]:          # E129 finalise: each key from the held document matching (sha256, bytes)
+        for a in t["artefacts"]:
+            a["key"] = docs[(a["sha256"], a["bytes"])]["key"]
+    del pack["unpublished"]
+    mirror.sync_custody(s, tmp_path / "custody")
+    ev = starters.Evidence(load_records(STARTERS / "records"), STARTERS / "verification", tmp_path / "custody")
+    res = starters.check(pack, ev, STARTERS / "packs")
+    assert not [p for p in res.problems if p.startswith("artefact")], res.problems
+    assert [c.outcome for c in mirror.put_derived(unpublished_pack(), f3_record(), ARTEFACTS, s)] == ["present"] * len(out)
+
+
+def test_put_derived_refusals(tmp_path):
+    s, pack = store(tmp_path), unpublished_pack()
+    d = tmp_path / "artefacts"
+    shutil.copytree(ARTEFACTS, d)
+    (d / "notes.txt").write_text("not in the pack")
+    with pytest.raises(mirror.MirrorError, match="notes.txt: not an artefact of terranubis/f3-demo-2020/starter"):
+        mirror.put_derived(pack, f3_record(), d, s)
+    (d / "notes.txt").unlink()
+    (d / "python" / "requirements.txt").unlink()
+    with pytest.raises(mirror.MirrorError, match="artefact python/requirements.txt of .* not in"):
+        mirror.put_derived(pack, f3_record(), d, s)
+    shutil.copy(ARTEFACTS / "python" / "requirements.txt", d / "python" / "requirements.txt")
+    (d / "standard" / "F02-1.las").write_bytes(b"other bytes")
+    with pytest.raises(mirror.MirrorError, match="standard/F02-1.las: 11 bytes sha256 .*, the pack states"):
+        mirror.put_derived(pack, f3_record(), d, s)
+    restricted = copy.deepcopy(pack)
+    restricted["licence"]["redistribution"] = "restricted"
+    with pytest.raises(mirror.NotEligible, match="redistribution restricted, not allowed"):
+        mirror.put_derived(restricted, f3_record(), ARTEFACTS, s)
+    assert not s.keys("")
+
+
+def test_put_derived_refuses_a_digest_another_pack_holds(tmp_path):
+    s = store(tmp_path)
+    mirror.put_derived(unpublished_pack(), f3_record(), ARTEFACTS, s, now=NOW)
+    other = dict(unpublished_pack(), id="terranubis/f3-demo-2020/other")
+    with pytest.raises(mirror.MirrorError, match="is held for terranubis/f3-demo-2020 as a derived copy of "
+                                                 "terranubis/f3-demo-2020/starter"):
+        mirror.put_derived(other, f3_record(), ARTEFACTS, s)
+
+
+def test_cli_put_derived(tmp_path, capsys):
+    from osd.cli import main
+    doc = tmp_path / "terranubis__f3-demo-2020__starter.json"
+    doc.write_text(json.dumps(unpublished_pack()))
+    args = ["mirror", "put-derived", PACK_ID, str(ARTEFACTS), "--pack", str(doc),
+            "--store", str(tmp_path / "store"), "--public-url", MIRROR]
+    assert main(args) == 0
+    assert "10 published, 0 present" in capsys.readouterr().out
+    assert main(["mirror", "put-derived", "terranubis/f3-demo-2020/other", *args[3:]]) == 1
+    assert "its id is terranubis/f3-demo-2020/starter, not terranubis/f3-demo-2020/other" in capsys.readouterr().out

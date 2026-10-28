@@ -303,6 +303,36 @@ def cmd_mirror_deposit(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_mirror_put_derived(a: argparse.Namespace) -> int:
+    """E41: a starter pack's artefacts; no network but the store. Prints, per artefact, the custody
+    key a recipe fills into its pack (matched on sha256 and bytes)."""
+    path = Path(a.pack) if a.pack else starters_mod.STARTERS_DIR / starters_mod.file_name(a.pack_id)
+    try:
+        pack = json.loads(path.read_text())
+    except (OSError, ValueError) as e:
+        print(f"refused: the pack document {path}: {e}")
+        return 1
+    bad = [f"{'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}"
+           for e in starters_mod._validator().iter_errors(pack)]
+    if bad or pack["id"] != a.pack_id:
+        print(f"refused: {path}: " + ("; ".join(bad) if bad else f"its id is {pack['id']}, not {a.pack_id}"))
+        return 1
+    recs = load_records()
+    if pack["record_id"] not in recs:
+        print(f"refused: no record {pack['record_id']}")
+        return 1
+    try:
+        store = _store(a)
+        if hasattr(store, "check"):
+            store.check()
+        out = mirror_mod.put_derived(pack, recs[pack["record_id"]], Path(a.dir), store)
+    except mirror_mod.MirrorError as e:
+        print(f"refused: {e}")
+        return 1
+    _uploaded(pack["record_id"], out, store)
+    return 0
+
+
 def cmd_mirror_custody(a: argparse.Namespace) -> int:
     try:
         names = mirror_mod.sync_custody(_store(a), Path(a.out))
@@ -407,6 +437,12 @@ def main(argv: list[str] | None = None) -> int:
     md.add_argument("--licence-text", required=True,
                     help="the licence page or text as the person saved it; kept as the sha256 of its visible text")
     md.set_defaults(fn=cmd_mirror_deposit)
+    mpd = msub.add_parser("put-derived", parents=[store_args],
+                          help="upload a starter pack's artefacts with custody/2 derived (E41; no network but the store)")
+    mpd.add_argument("pack_id", help="<record id>/<pack>, the starter/1 id")
+    mpd.add_argument("dir", help="the artefacts as the recipe wrote them, by their pack paths")
+    mpd.add_argument("--pack", help="the pack document (default starters/<record id with / as __>__<pack>.json)")
+    mpd.set_defaults(fn=cmd_mirror_put_derived)
     mc = msub.add_parser("custody", parents=[store_args],
                          help="copy the store's custody documents and tombstones into a directory (for the build)")
     mc.add_argument("--out", required=True)

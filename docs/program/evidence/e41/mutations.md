@@ -37,3 +37,15 @@ is committed. "red" is the expected result.
 | `src/osd/mirror.py` | eligibility ignores the deposit check | red | test_deposit_eligible_and_put_present |
 | `src/osd/mirror.py` | `put` tries to fetch a deposited file | red | test_deposit_eligible_and_put_present |
 | `src/osd/get.py` | control (E06 code, not changed here): ATTRIBUTION.md without the share-alike line | red | test_deposit_stac_assets_manifest_and_get |
+
+## C5, design 5: derived uploads; the verifier ignores them (acceptance 7)
+
+| File | Mutation | Result | First red test |
+|---|---|---|---|
+| `src/osd/mirror.py` | derived copies counted as the record's files (`deposits_of`) | red | test_mixed_custody_versions_through_sync_index_and_build |
+| `src/osd/mirror.py` | lineage: every input, even for a derived file | red | test_put_derived_custody_lineage_and_e129_key_fill |
+| `src/osd/mirror.py` | a file that is no artefact of the pack is uploaded | red | test_put_derived_refusals |
+| `src/osd/mirror.py` | an artefact unlike the pack's digest is uploaded | red | test_put_derived_refusals |
+| `src/osd/mirror.py` | a missing artefact is not refused | red | test_put_derived_refusals |
+| `src/osd/mirror.py` | a restricted pack licence is not refused by name | red | test_put_derived_refusals |
+| `src/osd/mirror.py` | another pack's held digest taken as this pack's (`_holder` without the pack id) | red | test_put_derived_refuses_a_digest_another_pack_holds |

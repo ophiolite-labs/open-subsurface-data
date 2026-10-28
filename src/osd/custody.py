@@ -105,3 +105,18 @@ def deposit_document(rec: dict, path: str, sha256: str, n: int, href: str, now: 
         "takedown": TAKEDOWN_URL,
         "removal": {"state": "held"},
     }
+
+
+def derived_document(rec: dict, licence: dict, path: str, sha256: str, n: int, href: str, now: datetime,
+                     derived: dict) -> dict:
+    """custody/2 for a starter pack's artefact (E41 design 5): the pack's computed licence (without
+    `sources`), attribution worded from it, no origin and no licence text of its own, the lineage."""
+    return {
+        "format": FORMAT_2, "record_id": rec["id"], "path": path, "origin_href": None,
+        "key": object_key(rec["id"], sha256, path), "href": href, "sha256": sha256, "bytes": n,
+        "copied_at": _stamp(now), "derived": dict(derived), "licence": dict(licence),
+        "licence_text_sha256": None,
+        "attribution": entry_attribution(_entry(dict(rec, licence=licence))),
+        "takedown": TAKEDOWN_URL,
+        "removal": {"state": "held"},
+    }

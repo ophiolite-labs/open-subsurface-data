@@ -838,3 +838,37 @@ def deposit(rec: dict, root: Path, store, *, obtained: str, by: str, page_url: s
     now = now or datetime.now(UTC)
     return upload_local(rec["id"], files, store, lambda f, href: custody.deposit_document(
         rec, f.path, f.sha256, f.bytes, href, now, block))
+
+
+def put_derived(pack: dict, rec: dict, root: Path, store, now: datetime | None = None) -> list[Copied]:
+    """A starter pack's artefacts (E41 design 5), from the directory the recipe wrote them to. Every
+    file must be an artefact of `pack` (a starter/1 document, possibly `unpublished: true` without
+    keys) with the size and digest the pack states, and every artefact must be there. Lineage:
+    `recipe.id`, and `from` the input a derived file was made from, else every input. The custody
+    document is matched by (sha256, bytes) to fill the pack's keys (Ophiolite E129); derived copies
+    are never the record's files (no inventory, no level)."""
+    if pack["record_id"] != rec["id"]:
+        raise MirrorError(f"pack {pack['id']} is of record {pack['record_id']}, not {rec['id']}")
+    licence = {k: v for k, v in pack["licence"].items() if k != "sources"}
+    if licence["redistribution"] != "allowed":
+        raise NotEligible(f"{pack['id']}: redistribution {licence['redistribution']}, not allowed (OSD-D6)")
+    stated = {a["path"]: a for t in pack["targets"] for a in t["artefacts"]}
+    files = walk(root)
+    under_cap(files)
+    on_disk = {f.path for f in files}
+    if extra := sorted(on_disk - set(stated)):
+        raise MirrorError(f"{', '.join(extra)}: not an artefact of {pack['id']}")
+    if missing := sorted(set(stated) - on_disk):
+        raise MirrorError(f"artefact {', '.join(missing)} of {pack['id']} not in {root}")
+    files = hash_local(files)
+    for f in files:
+        a = stated[f.path]
+        if (f.sha256, f.bytes) != (a["sha256"], a["bytes"]):
+            raise MirrorError(f"{f.path}: {f.bytes} bytes sha256 {f.sha256[:12]}…, the pack states "
+                              f"{a['bytes']} bytes {a['sha256'][:12]}…")
+    made_from = {d["path"]: [d["from"]] for d in pack["derived"]}
+    inputs = list(dict.fromkeys(i["sha256"] for i in pack["inputs"]))
+    now = now or datetime.now(UTC)
+    return upload_local(rec["id"], files, store, lambda f, href: custody.derived_document(
+        rec, licence, f.path, f.sha256, f.bytes, href, now,
+        {"pack_id": pack["id"], "recipe_id": pack["recipe"]["id"], "from": made_from.get(f.path, inputs)}))
