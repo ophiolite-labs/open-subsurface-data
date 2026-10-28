@@ -1,0 +1,47 @@
+✔ no console error on load, map and how page (1907.100622ms)
+✔ #q=volve lists one dataset (968.176701ms)
+✔ a hash with a kind filter and a selection renders the same view in a second context (3510.78997ms)
+✔ stale: checked_at older than 30 days shows "stale" next to the level (990.814771ms)
+✔ 10,000 wellbores cluster at zoom 5 and the frame after moveend arrives under 100 ms (8174.886303ms)
+✔ phone width: the panel is a bottom sheet (2006.657282ms)
+✔ tiles: the page loads tiles for the viewport, under 1 MB from the site, and never outlines.geojson (4055.558475ms)
+✔ tiles: #q=factpages, a click on a wellbore shows the same detail title as the GeoJSON path (5437.238429ms)
+✔ tiles: a server without byte ranges (python3 -m http.server) falls back to outlines.geojson (4634.747334ms)
+✔ tiles: phone width with tiles, Sodir wells clustered (825.725102ms)
+✔ wells: at the world view the cluster total is every committed well; one register alone is its own count; period and approximate filters count the same (2364.740484ms)
+✔ wells: the approximate toggle takes its wells out of the clusters (fixture grid) (1337.056993ms)
+✔ wells: below CLUSTER_BELOW_ZOOM clusters and no tile well; at it, a clicked North Dakota well opens its dataset panel (3222.093879ms)
+✔ select (tiles): tick a dataset on the map and one in the list, see the rights, download a manifest osd get reads (2767.950917ms)
+✔ select (geojson): tick a dataset on the map and one in the list, see the rights, download a manifest osd get reads (6365.851422ms)
+✔ select: a #pick= link restores the selection in a new context; a registration dataset is a to-do (2148.714442ms)
+✔ select: phone width, the basket and the download button are reachable in the sheet (1294.245079ms)
+✔ kinds: a potential-fields chip appears from the data and filters one record in, one out (1257.119358ms)
+✔ select: a purchase dataset with terms: the page writes osd.manifest/4 with the same terms object osd manifest writes (1526.528306ms)
+✔ period: #t=1990-2000 lists the records whose period overlaps plus undated ones; dated=1 drops the undated (1391.857162ms)
+✔ period: a hash with t=, a kind and a selection renders the same list and detail in a second context (4511.717568ms)
+✔ period: the detail of a dated record shows the When row with the stated sentence; undated says not stated (1853.649771ms)
+✔ period: the filter on the real catalogue, desktop and phone width; the year inputs fit the sheet (1994.49656ms)
+✔ why: each reason class shows the verifier's sentence and the date it was checked in the detail panel (8356.714721ms)
+✔ why: a blocked record shows the OSD-D20 sentence and no level badge, in the panel and the list (1755.539079ms)
+✔ why: phone width, the detail panel of a blocked and of an L2 record (2269.760862ms)
+✔ why: the share hash and the filters are unchanged by the reason (1233.227822ms)
+✔ why: the basket to-do names the verifier's reason; a never-verified dataset keeps the access sentence (1108.758735ms)
+✔ why: the status page shows a sortable Why column on desktop and hides it at phone width (685.503166ms)
+✔ why: how.html lists the reason sentences and what a publisher can do about each (95.926299ms)
+✔ starter: the F3-shaped record shows a fourth card with the pack's buttons, licence line and decision-log link (2060.375216ms)
+✔ starter: with no pack in the build, no fourth card, no header link, no filter, and the page says so (2871.898465ms)
+✔ starter: #starter=1 lists exactly the two fixture records; unticking restores the count; starters.json waits for a card (2016.101233ms)
+# pack manifest: 10 artefacts and 2 pack documents, entries equal to osd manifest --starter
+✔ starter: "Download the pack manifest" writes the manifest/4 osd manifest --starter writes, artefacts equal by sha256 (2177.174537ms)
+✔ starter: starters.html at 360 px and on desktop, and the fourth card at phone width: no horizontal scroll, buttons wrap (2108.965265ms)
+✔ status.html lists every record with its level and the date it was checked (1845.411211ms)
+✔ the built catalogue renders: a record never checked says so (173.599477ms)
+✔ a column header sorts, a second click reverses (435.087349ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91897.369415

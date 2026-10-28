@@ -940,3 +940,44 @@ test('starter: "Download the pack manifest" writes the manifest/4 osd manifest -
   assert.deepEqual(unexpected, []);
   await context.close();
 });
+
+test('starter: starters.html at 360 px and on desktop, and the fourth card at phone width: no horizontal scroll, buttons wrap', async () => {
+  for (const [w, h, name] of [[360, 740, 'starters-phone'], [1400, 900, 'starters-desktop']]) {
+    const context = await browser.newContext({ viewport: { width: w, height: h } });
+    const unexpected = [];
+    await offline(context, unexpected);
+    await withStarters(context);
+    const page = await context.newPage();
+    const errors = errorsOf(page);
+    await page.goto(server.url + 'starters.html');
+    await page.locator(`section#${F3_ANCHOR}`).waitFor();
+    assert.equal(await page.locator('section.pack').count(), 2);
+    const sec = page.locator(`section#${F3_ANCHOR}`);
+    assert.match(await sec.locator('h2.ds').innerText(), /^F3 Demo 2020 \(Dutch North Sea\) L2$/);
+    assert.match(await sec.locator('dd.where').innerText(), /Dutch North Sea \(F3 block\), NL/);
+    assert.match(await sec.locator('dd.inside').innerText(), /seismic-3d 1 \(F3\)/);
+    assert.match(await sec.locator('dd.lic').innerText(), /^CC-BY-SA-3\.0 · attribution required · share-alike/);
+    assert.deepEqual(await sec.locator('td.oracle').evaluateAll(ts => ts.map(t => t.firstChild.textContent)),
+      fixturePack(`${F3_ANCHOR}.json`).targets.map(t => `${t.oracle.values} values compared, ${t.oracle.differences} differences`));
+    assert.equal(await sec.locator('ol.steps li').count(), 3);
+    assert.ok(await page.evaluate(w => document.documentElement.scrollWidth <= w, w), `no horizontal scroll at ${w} px`);
+    await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true });
+    assert.deepEqual(errors, []);
+    assert.deepEqual(unexpected, []);
+    await context.close();
+  }
+  const { context, page, errors } = await open(`sel=${F3_RECORD}`, { viewport: { width: 360, height: 800 }, routes: withStarters });
+  const card = page.locator('#detail .card.starter');
+  await card.locator('.app').first().waitFor();
+  await card.scrollIntoViewIfNeeded();
+  const box = await card.boundingBox(), panel = await page.locator('#detail').boundingBox();
+  assert.ok(box.x + box.width <= panel.x + panel.width, 'the card fits the panel');
+  for (const b of await card.locator('.app, .starter-download').all()) {
+    const bb = await b.boundingBox();
+    assert.ok(bb.x >= box.x && bb.x + bb.width <= box.x + box.width + 0.5, 'each button inside the card');
+  }
+  assert.equal(await sheetOverflows(page), false, 'no horizontal overflow in the sheet');
+  await card.screenshot({ path: join(OUT, 'starter-card-phone.png') });
+  assert.deepEqual(errors, []);
+  await context.close();
+});
