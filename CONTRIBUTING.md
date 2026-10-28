@@ -45,8 +45,10 @@ it is, where it came from, its licence and attribution, and where to ask for its
 1. Anyone opens a "Ask for a mirrored copy to be removed" issue (`.github/ISSUE_TEMPLATE/takedown.yml`).
 2. The maintainer who approves removals is the owner, @tuna-soup. Approval is a comment on the
    issue with the label `takedown-approved` added.
-3. The maintainer runs `uv run osd mirror remove <sha256> --request <issue url> --approved-by <login>`
-   against the store. It writes the tombstone `custody/<sha256>.removed.json` first, then deletes
+3. The maintainer dispatches the `verify` workflow on `main` with `takedown_sha256` set to the
+   copy's digest and `takedown_request` set to the issue URL (the keys live only in GitHub; the job
+   refuses unless the issue carries `takedown-approved` added by the maintainer). It runs
+   `osd mirror remove` against the store, which writes the tombstone `custody/<sha256>.removed.json` first, then deletes
    every object of that copy. The next build drops the mirror address from the catalogue, and
    `osd mirror put` refuses that digest from then on.
 
