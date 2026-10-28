@@ -18,3 +18,22 @@
 | custody: object size not compared | `src/osd/custody.py` | RED: test_custody_rejects[inconsistent-size], test_custody_rejects_size_unlike_the_object |
 | manifest/1 alternates allowed | `schema/manifest.schema.json` | RED: test_manifest_v1_refuses_alternates |
 | inventory: partial reported complete | `src/osd/mirror.py` | RED: test_inventory_counts_against_the_run_budget |
+
+## Slice 2 (E07s2, 28 Oct): the S3 transport, the dry run, the custody refresh, the workflow
+
+Each mutation applied alone to the slice 2 head, `uv run pytest tests/test_mirror.py` run unchanged, then restored.
+
+| Mutation | File | Unchanged suite under the mutation |
+|---|---|---|
+| signature: query not sorted | `src/osd/mirror.py` | RED: test_sigv4_matches_aws_example |
+| signature: range header not signed | `src/osd/mirror.py` | RED: test_sigv4_matches_aws_example |
+| payload hash unsigned (UNSIGNED-PAYLOAD) | `src/osd/mirror.py` | RED: test_cli_dry_run_and_custody_on_s3, test_custody_sync_feeds_the_build, test_custody_sync_keeps_the_old_set_when_a_document_is_bad, test_put_dry_run_writes_nothing, test_s3_acl_on_public_keys_only, test_s3_copy_error_in_200, test_s3_corrupted_stream_leaves_no_public_key, test_s3_keys_paginate, test_s3_large_copy_in_ranges, test_s3_mirror_three_files, test_s3_multipart_upload, test_s3_origin_failure_aborts_multipart, test_s3_rerun_after_interruption_and_crash_before_move, test_s3_takedown, test_s3_wrong_key_is_refused_without_showing_it |
+| multipart: last part dropped | `src/osd/mirror.py` | RED: test_s3_multipart_upload |
+| no abort on a failed upload | `src/osd/mirror.py` | RED: test_s3_origin_failure_aborts_multipart |
+| copy error inside a 200 ignored | `src/osd/mirror.py` | RED: test_s3_copy_error_in_200 |
+| ACL public-read on every key (staging too) | `src/osd/mirror.py` | RED: test_s3_acl_on_public_keys_only |
+| dry run ignored (writes) | `src/osd/mirror.py` | RED: test_cli_dry_run_and_custody_on_s3, test_put_dry_run_writes_nothing |
+| custody refresh keeps stale documents | `src/osd/mirror.py` | RED: test_custody_sync_feeds_the_build |
+| custody refresh unchecked | `src/osd/mirror.py` | RED: test_custody_sync_keeps_the_old_set_when_a_document_is_bad |
+| workflow: put on branch dispatches | `.github/workflows/verify.yml` | RED: test_workflow_keys_only_on_dispatch |
+| workflow: keys on pull-request runs | `.github/workflows/verify.yml` | RED: test_workflow_keys_only_on_dispatch |

@@ -1,0 +1,11 @@
+# verify dispatch on branch e07s2-mirror-on-s3, ids=opm/norne, run 40639870390 (2026-10-28)
+# https://github.com/ophiolite-labs/open-subsurface-data/actions/runs/40639870390
+# step 'mirror, read only': HEAD on the bucket, HEAD per key, ListObjectsV2 on mirror/ and custody/ (SigV4 against Hetzner fsn1); nothing written
+  would-copy  opm/norne norne/NORNE_ATW2013.DATA f346c910f68a  (12129 bytes from https://raw.githubusercontent.com/OPM/opm-data/master/norne/NORNE_ATW2013.DATA)
+  would-copy  opm/norne norne/Norne_model_for_atw2013.pdf b6c7aaa9eb09  (1320215 bytes from https://raw.githubusercontent.com/OPM/opm-data/master/norne/Norne_model_for_atw2013.pdf)
+  would-copy  opm/norne norne/README 73be5dd04396  (687 bytes from https://raw.githubusercontent.com/OPM/opm-data/master/norne/README)
+  would-copy  opm/norne norne/plothelper.sh 380d97662683  (5893 bytes from https://raw.githubusercontent.com/OPM/opm-data/master/norne/plothelper.sh)
+  would-copy  opm/norne norne/plotwells.sh 58b1c25d01f7  (3270 bytes from https://raw.githubusercontent.com/OPM/opm-data/master/norne/plotwells.sh)
+dry run: 5 files, 1342194 bytes would be copied; nothing written to s3://osd-mirror
+store s3://osd-mirror: 0 objects, 0 custody documents, 0 tombstones
+anonymous bucket listing: HTTP 403 (403 expected)

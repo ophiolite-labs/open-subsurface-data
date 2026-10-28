@@ -572,3 +572,382 @@ def test_mirror_inventory_reads_ckan_assets_only():
     files, inv = mirror.inventory(rec, ["*"], net, ByteBudget())
     assert inv == {"rule": ["*"], "listed": 1, "selected": ["survey/a.sgy"], "coverage": "complete"}
     assert [f["path"] for f in files] == ["survey/a.sgy"]
+
+
+# --- slice 2: the S3 transport against an in-memory S3 that checks every signature ---------------
+
+S3_ENDPOINT = "https://fsn1.objects.test"
+S3_ACCESS, S3_SECRET = "TESTACCESSKEY", "test/secret/key"     # fakes: the real keys live only in GitHub
+
+
+class FakeS3:
+    """S3 over `send(method, url, headers, body)`: one bucket, objects with their ACL, multipart
+    uploads, server-side copy, ListObjectsV2 in pages of `page`. Every request's SigV4 signature and
+    payload hash are checked; `fail` maps (method, key, query-substring) to a status to answer once;
+    `copy_error` answers the next copy with 200 and an <Error> body."""
+
+    def __init__(self, bucket="osd-mirror", page=1000):
+        self.bucket, self.page = bucket, page
+        self.objects: dict[str, tuple[bytes, str]] = {}
+        self.uploads: dict[str, dict] = {}
+        self.requests: list[tuple[str, str, str]] = []
+        self.fail: dict[tuple[str, str, str], int] = {}
+        self.copy_error = False
+
+    def _reply(self, status, body=b"", headers=None):
+        stream = __import__("io").BytesIO(body)
+        return mirror.Reply(status, {k.lower(): v for k, v in (headers or {}).items()},
+                            lambda n=-1: stream.read(n))
+
+    def __call__(self, method, url, headers, body):
+        from urllib.parse import parse_qs, unquote, urlsplit
+        u = urlsplit(url)
+        assert u.scheme + "://" + u.netloc == S3_ENDPOINT
+        _, bucket, *rest = u.path.split("/", 2)
+        key = unquote(rest[0]) if rest else ""
+        q = {k: v[0] for k, v in parse_qs(u.query, keep_blank_values=True).items()}
+        self.requests.append((method, key, u.query))
+        # the signature: recomputed from what arrived
+        assert headers["x-amz-content-sha256"] == hashlib.sha256(body).hexdigest(), "payload hash not signed"
+        when = datetime.strptime(headers["x-amz-date"], "%Y%m%dT%H%M%SZ").replace(tzinfo=UTC)
+        plain = {k: v for k, v in headers.items() if k not in ("Authorization", "x-amz-date", "x-amz-content-sha256")}
+        want = mirror.sigv4(method, url, plain, headers["x-amz-content-sha256"], S3_ACCESS, S3_SECRET, "fsn1", when)
+        if bucket != self.bucket or headers["Authorization"] != want["Authorization"]:
+            return self._reply(403, b"<Error><Code>SignatureDoesNotMatch</Code></Error>")
+        for (m, k, part), status in list(self.fail.items()):
+            if m == method and k == key and part in u.query:
+                del self.fail[(m, k, part)]
+                return self._reply(status, b"<Error><Code>InternalError</Code></Error>")
+        acl = headers.get("x-amz-acl", "private")
+        if method == "HEAD":
+            if not key:
+                return self._reply(200)
+            if key in self.objects:
+                return self._reply(200, headers={"Content-Length": str(len(self.objects[key][0]))})
+            return self._reply(404)
+        if method == "GET" and not key:
+            names = sorted(k for k in self.objects if k.startswith(q.get("prefix", "")))
+            start = int(q.get("continuation-token", "0"))
+            batch, more = names[start:start + self.page], start + self.page < len(names)
+            xml = ("<ListBucketResult xmlns='http://s3.amazonaws.com/doc/2006-03-01/'>"
+                   + "".join(f"<Contents><Key>{k}</Key></Contents>" for k in batch)
+                   + f"<IsTruncated>{'true' if more else 'false'}</IsTruncated>"
+                   + (f"<NextContinuationToken>{start + self.page}</NextContinuationToken>" if more else "")
+                   + "</ListBucketResult>")
+            return self._reply(200, xml.encode())
+        if method == "GET":
+            return self._reply(200, self.objects[key][0]) if key in self.objects else self._reply(404)
+        if method == "DELETE":
+            if "uploadId" in q:
+                self.uploads.pop(q["uploadId"], None)
+            else:
+                self.objects.pop(key, None)
+            return self._reply(204)
+        if method == "POST" and "uploads" in q:
+            uid = f"u{len(self.requests)}"
+            self.uploads[uid] = {"key": key, "acl": acl, "parts": {}}
+            return self._reply(200, f"<InitiateMultipartUploadResult><UploadId>{uid}</UploadId>"
+                                    f"</InitiateMultipartUploadResult>".encode())
+        if method == "POST":
+            up = self.uploads.pop(q["uploadId"])
+            numbers = [int(n) for n in __import__("re").findall(r"<PartNumber>(\d+)</PartNumber>", body.decode())]
+            self.objects[key] = (b"".join(up["parts"][n] for n in numbers), up["acl"])
+            return self._reply(200, b"<CompleteMultipartUploadResult/>")
+        if method == "PUT":
+            source = headers.get("x-amz-copy-source")
+            if source:
+                if self.copy_error:
+                    self.copy_error = False
+                    return self._reply(200, b"<Error><Code>InternalError</Code></Error>")
+                data = self.objects[unquote(source).split("/", 2)[2]][0]
+                if "x-amz-copy-source-range" in headers:
+                    a, b = map(int, headers["x-amz-copy-source-range"].removeprefix("bytes=").split("-"))
+                    data = data[a:b + 1]
+            else:
+                data = body
+            if "uploadId" in q:
+                self.uploads[q["uploadId"]]["parts"][int(q["partNumber"])] = data
+                etag = f'"{hashlib.md5(data).hexdigest()}"'
+                return self._reply(200, f"<CopyPartResult><ETag>{etag}</ETag></CopyPartResult>".encode()
+                                   if source else b"", {"ETag": etag})
+            self.objects[key] = (data, acl)
+            return self._reply(200, b"<CopyObjectResult><ETag>x</ETag></CopyObjectResult>" if source else b"")
+        return self._reply(405)
+
+
+def s3_store(fake=None, **kw) -> tuple[mirror.S3, FakeS3]:
+    fake = fake or FakeS3()
+    return mirror.S3("osd-mirror", S3_ENDPOINT, S3_ACCESS, S3_SECRET, MIRROR, send=fake, **kw), fake
+
+
+def test_sigv4_matches_aws_example():
+    """AWS's published SigV4 examples for S3 (GET Object with a range; ListObjects)."""
+    when = datetime(2013, 5, 24, tzinfo=UTC)
+    key, secret = "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    got = mirror.sigv4("GET", "https://examplebucket.s3.amazonaws.com/test.txt", {"Range": "bytes=0-9"},
+                       mirror.EMPTY_SHA256, key, secret, "us-east-1", when)
+    assert got["Authorization"] == (
+        "AWS4-HMAC-SHA256 Credential=AKIAIOSFODNN7EXAMPLE/20130524/us-east-1/s3/aws4_request, "
+        "SignedHeaders=host;range;x-amz-content-sha256;x-amz-date, "
+        "Signature=f0e8bdb87c964420e857bd35b5d6ed310bd44f0170aba48dd91039c6036bdb41")
+    for query in ("max-keys=2&prefix=J", "prefix=J&max-keys=2"):     # the canonical query is sorted
+        got = mirror.sigv4("GET", f"https://examplebucket.s3.amazonaws.com/?{query}", {},
+                           mirror.EMPTY_SHA256, key, secret, "us-east-1", when)
+        assert got["Authorization"].endswith(
+            "Signature=34b48302e7b5fa45bde8084f4b7868a86f0a534bc59db6670ed5711ef69dc6f7")
+
+
+def test_s3_region_from_endpoint_and_keys_never_shown():
+    s, _ = s3_store()
+    assert s.region == "fsn1" and s.root == "s3://osd-mirror"
+    assert S3_SECRET not in repr(s) and S3_ACCESS not in repr(s)
+    with pytest.raises(mirror.MirrorError, match="OSD_S3_SECRET_KEY") as e:
+        mirror.open_store("s3://osd-mirror", None, {"OSD_S3_ENDPOINT": S3_ENDPOINT, "OSD_S3_ACCESS_KEY": S3_ACCESS})
+    assert S3_ACCESS not in str(e.value)
+    s = mirror.open_store("s3://osd-mirror", None, {"OSD_S3_ENDPOINT": "https://fsn1.your-objectstorage.com",
+                                                     "OSD_S3_ACCESS_KEY": "a", "OSD_S3_SECRET_KEY": "b"})
+    assert s.public_url("mirror/x") == "https://osd-mirror.fsn1.your-objectstorage.com/mirror/x"
+
+
+def test_s3_mirror_three_files():
+    s, _ = s3_store()
+    net = Net()
+    out = mirror.put(record(), verification(), RULE, s, net, now=NOW)
+    assert [c.outcome for c in out] == ["published"] * 3
+    docs = [s.get_json(k) for k in s.keys("custody/")]
+    assert {(d["path"], d["sha256"], d["bytes"]) for d in docs} == {(p, _sha(b), len(b)) for p, b in FILES.items()}
+    for d in docs:
+        assert custody.problems(d, d["sha256"] + ".json", s.size(d["key"])) == []
+        assert b"".join(s.open(d["key"])) == FILES[d["path"]]
+    assert net.origin_requests() == 3 and s.keys("staging/") == []
+
+
+def test_s3_acl_on_public_keys_only():
+    s, fake = s3_store()
+    mirror.put(record(), verification(), RULE, s, Net(), now=NOW)
+    assert {k.split("/")[0]: acl for k, (_, acl) in fake.objects.items()} == {
+        "mirror": "public-read", "custody": "public-read"}
+    staged = [(m, k, q) for m, k, q in fake.requests if m == "PUT" and k.startswith("staging/")]
+    assert staged and all(fake.objects.get(k) is None for _, k, _ in staged)     # staging gone after the move
+    s.upload("staging/x/y", [b"z"])
+    assert fake.objects["staging/x/y"][1] == "private"
+
+
+def test_s3_corrupted_stream_leaves_no_public_key():
+    s, fake = s3_store()
+    net = Net()
+    net.corrupt.add(ORIGIN + "survey/b.las")
+    out = {c.path: c.outcome for c in mirror.put(record(), verification(), RULE, s, net, now=NOW)}
+    assert out["survey/b.las"] == "mismatch"
+    assert not [k for k in fake.objects if _sha(FILES["survey/b.las"]) in k]
+
+
+def test_s3_rerun_after_interruption_and_crash_before_move():
+    s, fake = s3_store()
+    net = Net()
+    net.interrupt.add(ORIGIN + "survey/b.las")
+    with pytest.raises(ConnectionResetError):
+        mirror.put(record(), verification(), RULE, s, net, now=NOW)
+    sha_c = _sha(FILES["survey/c.csv"])
+    fake.fail[("PUT", mirror.keys_for("acme/demo", sha_c, "survey/c.csv").public, "")] = 500   # copy fails
+    out = {c.path: c.outcome for c in _put_until_error(s, net)}
+    assert out == {"survey/a.sgy": "present", "survey/b.las": "published"}
+    assert [k for k in fake.objects if k.startswith("staging/")] == [f"staging/{sha_c}/c.csv"]
+    out = mirror.put(record(), verification(), RULE, s, net, now=NOW)
+    assert [c.outcome for c in out] == ["present", "present", "published"] and "staging" in out[2].detail
+    assert net.requests[ORIGIN + "survey/a.sgy"] == 1 and net.requests[ORIGIN + "survey/c.csv"] == 1
+    assert len(s.keys("mirror/")) == 3 and s.keys("staging/") == []
+
+
+def _put_until_error(s, net):
+    done = []
+    for f in mirror.eligibility(record(), verification(), RULE).files:
+        try:
+            done.append(mirror._put_one(record(), verification(), f, s, net, NOW))
+        except mirror.MirrorError:
+            break
+    return done
+
+
+def test_s3_multipart_upload(monkeypatch):
+    monkeypatch.setattr(mirror, "PART", 1024)
+    s, fake = s3_store()
+    net = Net()
+    mirror.put(record(), verification(), RULE, s, net, now=NOW)
+    big = mirror.keys_for("acme/demo", _sha(FILES["survey/a.sgy"]), "survey/a.sgy").public
+    assert fake.objects[big] == (FILES["survey/a.sgy"], "public-read")
+    parts = [q for m, k, q in fake.requests if m == "PUT" and k.startswith("staging/") and "partNumber" in q]
+    assert len(parts) == 5 + 2       # a.sgy 5000 bytes: 5 parts of 1024 (last 904); b.las 1665: 2
+    assert not fake.uploads
+
+
+def test_s3_origin_failure_aborts_multipart(monkeypatch):
+    monkeypatch.setattr(mirror, "PART", 1000)
+    s, fake = s3_store()
+    net = Net()
+    net.dead.add(ORIGIN + "survey/b")
+    big = Net().files["survey/a.sgy"]
+
+    def failing():
+        yield big[:2500]
+        raise FetchError(ORIGIN + "survey/a.sgy", 0, "connection reset")
+    with pytest.raises(FetchError):
+        s.upload("staging/x/a.sgy", failing())
+    assert fake.uploads == {} and "staging/x/a.sgy" not in fake.objects
+    assert any(m == "DELETE" and "uploadId" in q for m, _, q in fake.requests)
+    out = {c.path: c.outcome for c in mirror.put(record(), verification(), RULE, s, net, now=NOW)}
+    assert out["survey/b.las"] == "origin-dead" and not s.keys("staging/")
+
+
+def test_s3_copy_error_in_200():
+    s, fake = s3_store()
+    s.upload("staging/x/y", [b"bytes"])
+    fake.copy_error = True
+    with pytest.raises(mirror.MirrorError, match="InternalError"):
+        s.move("staging/x/y", "mirror/r/x/y")
+    assert "mirror/r/x/y" not in fake.objects and "staging/x/y" in fake.objects
+
+
+def test_s3_large_copy_in_ranges(monkeypatch):
+    monkeypatch.setattr(mirror, "COPY_LIMIT", 10)
+    monkeypatch.setattr(mirror, "COPY_PART", 4)
+    s, fake = s3_store()
+    s.upload("staging/x/y", [b"0123456789abc"])
+    s.move("staging/x/y", "mirror/r/x/y")
+    assert fake.objects["mirror/r/x/y"] == (b"0123456789abc", "public-read") and "staging/x/y" not in fake.objects
+    assert [q.split("&")[0] for m, k, q in fake.requests if "partNumber" in q] == [
+        f"partNumber={i}" for i in range(1, 5)]       # 13 bytes in ranges of 4
+
+
+def test_s3_wrong_key_is_refused_without_showing_it():
+    fake = FakeS3()
+    s = mirror.S3("osd-mirror", S3_ENDPOINT, S3_ACCESS, "not-the-secret", MIRROR, send=fake)
+    with pytest.raises(mirror.MirrorError, match="HTTP 403 SignatureDoesNotMatch") as e:
+        s.put_json("custody/x.json", {})
+    assert "not-the-secret" not in str(e.value) and fake.objects == {}
+
+
+def test_s3_keys_paginate():
+    s, fake = s3_store(FakeS3(page=2))
+    for i in range(5):
+        s.put_json(f"custody/{i}.json", {})
+    assert s.keys("custody/") == [f"custody/{i}.json" for i in range(5)]
+    assert sum(1 for m, k, q in fake.requests if m == "GET" and not k) == 3
+
+
+def test_s3_takedown():
+    s, fake = s3_store()
+    mirror.put(record(), verification(), RULE, s, Net(), now=NOW)
+    sha = _sha(FILES["survey/a.sgy"])
+    gone = mirror.remove(sha, s, request="https://github.com/ophiolite-labs/open-subsurface-data/issues/9",
+                         approved_by="tuna-soup", now=NOW)
+    assert gone and [k for k in fake.objects if sha in k] == [f"custody/{sha}.removed.json"]
+    assert mirror.put(record(), verification(), RULE, s, Net(), now=NOW)[0].outcome == "refused"
+
+
+def test_put_dry_run_writes_nothing(tmp_path):
+    s, fake = s3_store()
+    net = Net()
+    mirror.put(record(), verification(files={"survey/a.sgy": FILES["survey/a.sgy"]}, selected=["survey/a.sgy"]),
+               RULE, s, net, now=NOW)
+    before, net.requests = dict(fake.objects), Counter()
+    fake.requests.clear()
+    out = mirror.put(record(), verification(), RULE, s, net, now=NOW, dry_run=True)
+    assert [(c.outcome, c.bytes) for c in out] == [
+        ("present", 5000), ("would-copy", len(FILES["survey/b.las"])), ("would-copy", len(FILES["survey/c.csv"]))]
+    assert fake.objects == before and net.requests == Counter()
+    assert {m for m, _, _ in fake.requests} <= {"HEAD", "GET"}
+
+
+def test_cli_dry_run_and_custody_on_s3(tmp_path, capsys, monkeypatch):
+    from osd import cli
+    rule = mirror.load_rules()["opm/norne"]
+    vdir = tmp_path / "v"
+    vdir.mkdir()
+    (vdir / "opm__norne.json").write_text(json.dumps(verification("opm/norne", NORNE_LISTING, rule=rule)))
+    fake = FakeS3()
+    real = mirror.S3.from_env
+    monkeypatch.setattr(mirror.S3, "from_env", classmethod(
+        lambda cls, bucket, public_url=None, environ=None, send=None: real(
+            bucket, public_url, {"OSD_S3_ENDPOINT": S3_ENDPOINT, "OSD_S3_ACCESS_KEY": S3_ACCESS,
+                                 "OSD_S3_SECRET_KEY": S3_SECRET}, fake)))
+    net = Net(files={})
+    net.body = lambda url: NORNE_LISTING[url[len(ORIGIN):]]
+    store = ["--store", "s3://osd-mirror"]
+    args = cli.argparse.Namespace(ids=["opm/norne"], vdir=str(vdir), store="s3://osd-mirror", public_url=None,
+                                  dry_run=True)
+    assert cli.cmd_mirror_put(args, opener=net) == 0
+    out = capsys.readouterr().out
+    total = sum(len(b) for b in NORNE_LISTING.values())
+    assert f"dry run: 5 files, {total} bytes would be copied; nothing written to s3://osd-mirror" in out
+    assert fake.objects == {} and net.requests == Counter()
+    args.dry_run = False
+    assert cli.cmd_mirror_put(args, opener=net) == 0
+    assert "store s3://osd-mirror: 5 objects, 5 custody documents, 0 tombstones" in capsys.readouterr().out
+    assert all(c["href"].startswith("https://osd-mirror.fsn1.objects.test/mirror/opm/norne/")
+               for c in (json.loads(b) for k, (b, _) in fake.objects.items() if k.startswith("custody/")))
+    out_dir = tmp_path / "verification" / "custody"
+    assert cli.main(["mirror", "custody", *store, "--out", str(out_dir)]) == 0
+    assert "5 custody documents, 0 tombstones" in capsys.readouterr().out
+    assert len(list(out_dir.glob("*.json"))) == 5
+
+
+def test_custody_sync_feeds_the_build(tmp_path, records_subset):
+    rec = load_record(paths.RECORDS_DIR / "opm" / "norne.yaml")
+    rule = mirror.load_rules()["opm/norne"]
+    s, _ = s3_store()
+    net = Net(files={})
+    net.body = lambda url: NORNE_LISTING[url[len(ORIGIN):]]
+    v = verification("opm/norne", NORNE_LISTING, rule=rule)
+    mirror.put(rec, v, rule, s, net, now=NOW)
+    sha = _sha(NORNE_LISTING["norne/README"])
+    mirror.remove(sha, s, request="https://github.com/ophiolite-labs/open-subsurface-data/issues/9",
+                  approved_by="tuna-soup", now=NOW)
+    mirror_dir = tmp_path / "mirror"
+    (mirror_dir / "custody").mkdir(parents=True)
+    (mirror_dir / "custody" / ("ab" * 32 + ".json")).write_text("{}")       # stale: replaced whole
+    names = mirror.sync_custody(s, mirror_dir / "custody")
+    assert len(names) == 5 and f"{sha}.removed.json" in names and "ab" * 32 + ".json" not in names
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    (vdir / "opm__norne.json").write_text(json.dumps(v))
+    out = tmp_path / "catalog"
+    build(out, vdir, mirror_dir=mirror_dir, records_dir=records_subset(["opm/norne"]))
+    index = json.loads((out / "mirror.json").read_text())["copies"]
+    assert sorted(c["path"] for c in index) == sorted(set(NORNE_LISTING) - {"norne/README"})
+    assert all(c["href"].startswith(MIRROR + "mirror/opm/norne/") for c in index)
+
+
+def test_custody_sync_keeps_the_old_set_when_a_document_is_bad(tmp_path):
+    s, _ = s3_store()
+    mirror.put(record(), verification(), RULE, s, Net(), now=NOW)
+    out = tmp_path / "custody"
+    mirror.sync_custody(s, out)
+    before = sorted(p.name for p in out.iterdir())
+    s.put_json("custody/" + "ef" * 32 + ".json", {"format": "osd.custody/1"})
+    with pytest.raises(mirror.MirrorError):
+        mirror.sync_custody(s, out)
+    assert sorted(p.name for p in out.iterdir()) == before
+
+
+def test_workflow_keys_only_on_dispatch():
+    """The S3 keys appear only in steps of workflow_dispatch runs; a step that writes to the bucket
+    (put without --dry-run, remove) runs only on main; pages.yml never sees a key."""
+    import yaml
+    wf = yaml.safe_load((ROOT / ".github" / "workflows" / "verify.yml").read_text())
+    with_keys = writes = 0
+    for name, job in wf["jobs"].items():
+        for step in job["steps"]:
+            cond = f"{job.get('if', '')} && {step.get('if', '')}"
+            text = json.dumps(step)
+            if "secrets.OSD_S3" in text:
+                with_keys += 1
+                assert "github.event_name == 'workflow_dispatch'" in cond, (name, step["name"])
+            run = step.get("run", "")
+            if "osd mirror remove" in run or ("osd mirror put" in run and "--dry-run" not in run):
+                writes += 1
+                assert "github.ref == 'refs/heads/main'" in cond, (name, step["name"])
+            if "osd mirror put" in run and "--dry-run" in run:
+                assert "github.ref != 'refs/heads/main'" in cond, (name, step["name"])
+    assert with_keys == 5 and writes == 3        # put in verify and finish, read-only in both, takedown
+    assert "secrets." not in (ROOT / ".github" / "workflows" / "pages.yml").read_text()

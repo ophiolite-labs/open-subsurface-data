@@ -1,6 +1,7 @@
 # Publish the site from main. Continuous: every merge is a release. No version numbers,
 # no qualification step; the check on the pull request was the proof.
-# Levels come from the `verification-results` branch the verify workflow writes (OSD-D5).
+# Levels come from the `verification-results` branch the verify workflow writes (OSD-D5), and with
+# them, under custody/, the mirror's custody documents: mirror.json and the STAC alternates (E07).
 name: pages
 on:
   push:
@@ -26,6 +27,13 @@ jobs:
             mkdir -p build/verification
             git archive origin/verification-results | tar -x -C build/verification
             echo "OSD_VERIFICATION_COMMIT=$(git rev-parse origin/verification-results)" >> "$GITHUB_ENV"   # records.json catalog (E09)
+          fi
+      - name: custody documents (E07; the verify workflow copies them from the bucket, so Pages holds no key and nobody lists the bucket)
+        run: |
+          if [ -d build/verification/custody ]; then
+            mkdir -p build/mirror && rm -rf build/mirror/custody
+            mv build/verification/custody build/mirror/custody
+            echo "$(ls build/mirror/custody | grep -vc '\.removed\.json$') custody documents, $(ls build/mirror/custody | grep -c '\.removed\.json$') tombstones"
           fi
       - name: tippecanoe 2.79.0 (Ubuntu package, pinned by hash; E15 tiles; 2.49 crossed strings, E32)
         run: |
