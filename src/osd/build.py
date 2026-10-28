@@ -20,7 +20,15 @@ Outputs (build/catalog/):
   wells-z<z>.json  for z below CLUSTER_BELOW_ZOOM, the wellbore points counted on a grid (E36): what
                    the map clusters there, so the world view does not load every well
   mirror.json     {"copies": [...]}, the public index of what the mirror holds, regenerated from the
-                   custody documents in <mirror_dir>/custody/ (E07); STAC assets gain the alternates
+                   custody documents in <mirror_dir>/custody/ (E07, custody/1 and /2); STAC assets gain
+                   the alternates
+  starters.json   {"starters": [...]}, every published starter pack whole (E40): each pack document that
+                   passes every rule of osd.starters with its evidence here, is not `unpublished`, plus
+                   `record` (the record's title and level) and each artefact's `href` from its custody
+                   document; the record in records.json lists the pack ids in `starters` (only records
+                   with a pack carry the key). A refused or unchecked pack is printed, never published
+  starters/       each published pack document and its fidelity record, byte for byte (the pack
+                   manifest's two documents, osd manifest --starter)
 """
 
 from __future__ import annotations
@@ -29,11 +37,12 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
-from . import __version__, mirror, paths, stac
+from . import __version__, mirror, paths, stac, starters
 from .reasons import reason
 from .records import load_outline, load_records
 from .verify import is_stale
@@ -74,7 +83,7 @@ def verification_commit_from_env() -> str | None:
 def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
           now: datetime | None = None, mirror_dir: Path = mirror.MIRROR_DIR,
           records_dir: Path = paths.RECORDS_DIR, source_commit: str | None = FROM_ENVIRONMENT,
-          verification_commit: str | None = FROM_ENVIRONMENT) -> dict:
+          verification_commit: str | None = FROM_ENVIRONMENT, starters_dir: Path = starters.STARTERS_DIR) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     recs = load_records(records_dir)
     records_out = []
@@ -101,6 +110,11 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
                 })
                 fid = {"id": props["feature_id"]} if "feature_id" in props else {}
                 features.append({"type": "Feature", **fid, "properties": props, "geometry": f["geometry"]})
+    packs = published_starters(starters_dir, recs, records_out, vdir, mirror_dir / "custody")
+    for r in records_out:
+        ids = sorted(p["id"] for p in packs if p["record_id"] == r["id"])
+        if ids:
+            r["starters"] = ids
     catalog = {
         "source_commit": git_head() if source_commit == FROM_ENVIRONMENT else source_commit,
         "verification_commit": (verification_commit_from_env() if verification_commit == FROM_ENVIRONMENT
@@ -114,6 +128,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         indent=2) + "\n")
     (out_dir / "outlines.geojson").write_text(json.dumps(
         {"type": "FeatureCollection", "features": features}) + "\n")
+    write_starters(out_dir, starters_dir, packs)
     index = mirror.public_index(mirror_dir / "custody")
     (out_dir / "mirror.json").write_text(json.dumps({"copies": index}, indent=2) + "\n")
     collections = stac.write_catalog(out_dir, records_out, vdir, mirror_index=index)
@@ -121,7 +136,47 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     write_well_grids(out_dir, features)
     print_sizes(out_dir)
     write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
-    return {"records": len(records_out), "features": len(features), "collections": len(collections)}
+    return {"records": len(records_out), "features": len(features), "collections": len(collections),
+            "starters": len(packs)}
+
+
+def published_starters(starters_dir: Path, recs: dict[str, dict], records_out: list[dict], vdir: Path,
+                       custody_dir: Path) -> list[dict]:
+    """The packs the site shows (E40): valid with every rule checked here, not unpublished; the rest on stderr."""
+    import sys
+
+    ev = starters.Evidence(recs, vdir, custody_dir)
+    joined = {r["id"]: r for r in records_out}
+    out = []
+    for p, doc, r in starters.check_dir(starters_dir, ev):
+        why = r.problems or [f"unchecked here: {u}" for u in r.unchecked]
+        if why:
+            for line in why:
+                print(f"starters: {p.name} not published: {line}", file=sys.stderr)
+            continue
+        if doc.get("unpublished") is True:
+            print(f"starters: {p.name} not published: it says unpublished", file=sys.stderr)
+            continue
+        held = ev.custody[0]
+        pack = json.loads(json.dumps(doc))
+        for t in pack["targets"]:
+            for a in t["artefacts"]:
+                a["href"] = held[a["key"]]["href"]
+        rec = joined[doc["record_id"]]
+        out.append({**pack, "record": {"title": rec["title"], "level": rec["level"]}})
+    return out
+
+
+def write_starters(out_dir: Path, starters_dir: Path, packs: list[dict]) -> None:
+    """starters.json, and the published pack documents and fidelity records copied byte for byte."""
+    docs = out_dir / "starters"
+    if docs.exists():
+        shutil.rmtree(docs)
+    for pack in packs:
+        for rel in (starters.file_name(pack["id"]), pack["fidelity"]):
+            (docs / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(starters_dir / rel, docs / rel)
+    (out_dir / "starters.json").write_text(json.dumps({"starters": packs}, indent=2, ensure_ascii=False) + "\n")
 
 
 def print_sizes(out_dir: Path) -> None:

@@ -78,3 +78,15 @@ re-reads the mutated file before running (`mut.py`, lane scratchpad).
 | (h) confined to starters/ | `exists()` instead of resolve-inside (a symlink out) | `test_fidelity_path_stays_in_starters` |
 | (i) | the `values == 0` refusal skipped; the `unpublished` exemption removed | `test_oracle` (twice) |
 | discovery | `osd validate` no longer counts starter problems | `test_osd_validate_names_the_invalid_pack` |
+
+## C6: the published projection (design 5; acceptance 1, 6)
+
+| Mutation in `src/osd/build.py` | Red test |
+|---|---|
+| a refused pack is published | `test_build_refuses_the_invalid_pack_and_publishes_the_rest` |
+| a pack with unchecked rules is published | `test_nothing_unchecked_is_published` |
+| an `unpublished` pack is published | `test_an_unpublished_pack_is_absent` |
+| records lose `starters` | `test_projection_holds_the_packs_whole` |
+| the pack loses `record` (title, level) | `test_projection_holds_the_packs_whole` |
+| artefacts lose `href` | `test_projection_holds_the_packs_whole` |
+| documents re-serialised instead of copied byte for byte | `test_projection_holds_the_packs_whole` |

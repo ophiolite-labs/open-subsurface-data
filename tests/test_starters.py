@@ -652,3 +652,67 @@ def test_osd_validate_one_document_by_path(tmp_path, capsys):
     p.write_text(json.dumps(doc))
     assert _validate(str(p)) == 1
     assert "licence share_alike is false" in capsys.readouterr().out
+
+
+# --- the published projection (design 5; acceptance 1, 6) -------------------------------------------
+
+def fixture_build(tmp_path: Path, starters_dir: Path = PACKS, custody_dir: Path | None = SNAPSHOT) -> Path:
+    from osd.build import build
+
+    mirror_dir = tmp_path / "mirror"
+    if custody_dir is not None:
+        shutil.copytree(custody_dir, mirror_dir / "custody")
+    out = tmp_path / "catalog"
+    build(out, VDIR, mirror_dir=mirror_dir, records_dir=FIXTURES / "records", starters_dir=starters_dir,
+          source_commit="1" * 40, verification_commit="2" * 40)
+    return out
+
+
+def test_projection_holds_the_packs_whole(tmp_path):
+    out = fixture_build(tmp_path)
+    published = json.loads((out / "starters.json").read_text())["starters"]
+    assert [p["id"] for p in published] == ["rmotc/teapot-dome/python", "terranubis/f3-demo-2020/starter"]
+    held = {json.loads(p.read_text())["key"]: json.loads(p.read_text()) for p in SNAPSHOT.glob("*.json")}
+    for p in published:
+        name = starters.file_name(p["id"])
+        assert p["record"] == {"title": {"rmotc/teapot-dome": "Teapot Dome 3D survey and wells",
+                                         "terranubis/f3-demo-2020": "F3 Demo 2020 (Dutch North Sea)"}[p["record_id"]],
+                               "level": "L2"}
+        for t in p["targets"]:
+            for a in t["artefacts"]:
+                assert a.pop("href") == held[a["key"]]["href"]
+        assert {k: v for k, v in p.items() if k != "record"} == pack(name)   # whole, nothing else added
+        assert (out / "starters" / name).read_bytes() == (PACKS / name).read_bytes()
+        assert (out / "starters" / p["fidelity"]).read_bytes() == (PACKS / p["fidelity"]).read_bytes()
+    recs = json.loads((out / "records.json").read_text())["records"]
+    assert {r["id"]: r["starters"] for r in recs if "starters" in r} == {
+        "rmotc/teapot-dome": ["rmotc/teapot-dome/python"], "terranubis/f3-demo-2020": ["terranubis/f3-demo-2020/starter"]}
+
+
+def test_build_refuses_the_invalid_pack_and_publishes_the_rest(tmp_path, capsys):
+    out = fixture_build(tmp_path, starters_dir=_starters_dir(tmp_path))
+    assert [p["id"] for p in json.loads((out / "starters.json").read_text())["starters"]] == ["rmotc/teapot-dome/python"]
+    assert f"starters: {F3} not published: decision nulls for MFS4 (horizons) is missing" in capsys.readouterr().err
+    recs = json.loads((out / "records.json").read_text())["records"]
+    assert [r["id"] for r in recs if "starters" in r] == ["rmotc/teapot-dome"]
+    assert not (out / "starters" / F3).exists()
+
+
+def test_an_unpublished_pack_is_absent(tmp_path):
+    d = _starters_dir(tmp_path, broken=False)
+    doc = pack(F3)
+    doc["unpublished"] = True
+    doc["targets"][0]["oracle"]["differences"] = 2
+    (d / F3).write_text(json.dumps(doc))
+    assert starters.check(doc, evidence(), d, F3).problems == []
+    out = fixture_build(tmp_path, starters_dir=d)
+    assert [p["id"] for p in json.loads((out / "starters.json").read_text())["starters"]] == ["rmotc/teapot-dome/python"]
+    assert "terranubis/f3-demo-2020/starter" not in (out / "records.json").read_text()
+
+
+def test_nothing_unchecked_is_published(tmp_path, capsys):
+    """make check's build has no custody: the packs stay out, the records carry no starters key."""
+    out = fixture_build(tmp_path, custody_dir=None)
+    assert json.loads((out / "starters.json").read_text()) == {"starters": []}
+    assert "not published: unchecked here: artefact standard/F3.sgy: no custody documents here" in capsys.readouterr().err
+    assert all("starters" not in r for r in json.loads((out / "records.json").read_text())["records"])
