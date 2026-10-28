@@ -927,3 +927,26 @@ def test_custody_sync_keeps_the_old_set_when_a_document_is_bad(tmp_path):
     with pytest.raises(mirror.MirrorError):
         mirror.sync_custody(s, out)
     assert sorted(p.name for p in out.iterdir()) == before
+
+
+def test_workflow_keys_only_on_dispatch():
+    """The S3 keys appear only in steps of workflow_dispatch runs; a step that writes to the bucket
+    (put without --dry-run, remove) runs only on main; pages.yml never sees a key."""
+    import yaml
+    wf = yaml.safe_load((ROOT / ".github" / "workflows" / "verify.yml").read_text())
+    with_keys = writes = 0
+    for name, job in wf["jobs"].items():
+        for step in job["steps"]:
+            cond = f"{job.get('if', '')} && {step.get('if', '')}"
+            text = json.dumps(step)
+            if "secrets.OSD_S3" in text:
+                with_keys += 1
+                assert "github.event_name == 'workflow_dispatch'" in cond, (name, step["name"])
+            run = step.get("run", "")
+            if "osd mirror remove" in run or ("osd mirror put" in run and "--dry-run" not in run):
+                writes += 1
+                assert "github.ref == 'refs/heads/main'" in cond, (name, step["name"])
+            if "osd mirror put" in run and "--dry-run" in run:
+                assert "github.ref != 'refs/heads/main'" in cond, (name, step["name"])
+    assert with_keys == 5 and writes == 3        # put in verify and finish, read-only in both, takedown
+    assert "secrets." not in (ROOT / ".github" / "workflows" / "pages.yml").read_text()

@@ -5,13 +5,19 @@
 # `snapshot` fetches the stored results once, each `shard` verifies the records whose origin host
 # hashes to it (osd.shards), `finish` lays the accepted shards over the snapshot (a failed shard's
 # records keep their earlier results), reports, runs `make check-full`, and on main stores the
-# results on the `verification-results` branch (OSD-D5: no bucket, no secret) and republishes.
+# results on the `verification-results` branch (OSD-D5) and republishes.
+# The mirror (E07): a dispatch on main copies the eligible records to the S3 bucket and refreshes the
+# custody documents, which travel on `verification-results` under custody/ for the build (pages.yml);
+# a branch dispatch only reads the bucket (`--dry-run`). A dispatch naming `takedown_sha256` runs only
+# the takedown job (main, an approved request). The S3 keys reach no pull-request run.
 name: verify
 on:
   workflow_dispatch:
     inputs:
       ids: { description: "record ids, space separated (empty = all, in shards)", required: false, default: "" }
       fail_shard: { description: "branch dispatches only: this shard exits 1 before verifying (H2 evidence)", required: false, default: "" }
+      takedown_sha256: { description: "main only: remove this mirrored copy (E07); nothing else runs", required: false, default: "" }
+      takedown_request: { description: "with takedown_sha256: the issue URL carrying takedown-approved", required: false, default: "" }
   pull_request:
     paths: ["records/**", "outlines/**"]
 # One dispatch on main at a time, all-record and explicit-id alike, so two never overwrite each
@@ -24,7 +30,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
-    if: github.event_name == 'pull_request' || inputs.ids != ''
+    if: (github.event_name == 'pull_request' || inputs.ids != '') && inputs.takedown_sha256 == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 60   # L2 hashes up to 2 GB per run, 2 s pause per host
     permissions: { contents: write, pull-requests: write, actions: write, issues: write }
@@ -112,6 +118,62 @@ jobs:
       - name: full STAC tree (OSD-D18; the gate validates a sample of Items)
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         run: make check-full
+      - name: mirror (E07, dispatches on main) - copy the eligible records to S3, refresh the custody documents
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        continue-on-error: true   # an S3 outage is a finding: the results are still stored, the earlier custody set kept
+        shell: bash
+        env:
+          OSD_S3_ACCESS_KEY: "${{ secrets.OSD_S3_ACCESS_KEY }}"
+          OSD_S3_SECRET_KEY: "${{ secrets.OSD_S3_SECRET_KEY }}"
+          OSD_S3_ENDPOINT: "${{ vars.OSD_S3_ENDPOINT }}"
+          OSD_S3_BUCKET: "${{ vars.OSD_S3_BUCKET }}"
+        run: |
+          set -o pipefail
+          status=0 store="s3://$OSD_S3_BUCKET"
+          ids=$(uv run osd mirror eligible --vdir build/verification | awk '$1 == "eligible" {print $2}' | tr '\n' ' ')
+          if [ -n "${ids// /}" ]; then
+            uv run osd mirror put $ids --store "$store" --vdir build/verification | tee mirror.txt || status=1
+          else
+            echo "no eligible record" | tee mirror.txt
+          fi
+          uv run osd mirror custody --store "$store" --out build/verification/custody | tee -a mirror.txt || status=1
+          # anonymous reads: every held copy answers without a key; the bucket does not list
+          for f in build/verification/custody/*.json; do
+            case "$f" in *.removed.json) continue ;; esac
+            [ -e "$f" ] && [ ! -e "${f%.json}.removed.json" ] || continue
+            href=$(jq -r .href "$f")
+            code=$(curl -s -o /dev/null -I -w '%{http_code}' "$href")
+            echo "anonymous HEAD $code $href" | tee -a mirror.txt
+            [ "$code" = 200 ] || status=1
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://$OSD_S3_BUCKET.${OSD_S3_ENDPOINT#https://}/")
+          echo "anonymous bucket listing: HTTP $code (403 expected)" | tee -a mirror.txt
+          [ "$code" = 403 ] || status=1
+          { echo '### mirror'; echo '```'; cat mirror.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+      - name: mirror, read only (E07, branch dispatches) - what a dispatch on main would copy; nothing written
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        continue-on-error: true
+        shell: bash
+        env:
+          OSD_S3_ACCESS_KEY: "${{ secrets.OSD_S3_ACCESS_KEY }}"
+          OSD_S3_SECRET_KEY: "${{ secrets.OSD_S3_SECRET_KEY }}"
+          OSD_S3_ENDPOINT: "${{ vars.OSD_S3_ENDPOINT }}"
+          OSD_S3_BUCKET: "${{ vars.OSD_S3_BUCKET }}"
+        run: |
+          set -o pipefail
+          status=0
+          ids=$(uv run osd mirror eligible --vdir build/verification | awk '$1 == "eligible" {print $2}' | tr '\n' ' ')
+          if [ -n "${ids// /}" ]; then
+            uv run osd mirror put $ids --store "s3://$OSD_S3_BUCKET" --vdir build/verification --dry-run | tee mirror.txt || status=1
+          else
+            echo "no eligible record" | tee mirror.txt
+          fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://$OSD_S3_BUCKET.${OSD_S3_ENDPOINT#https://}/")
+          echo "anonymous bucket listing: HTTP $code (403 expected)" | tee -a mirror.txt
+          [ "$code" = 403 ] || status=1
+          { echo '### mirror (read only)'; echo '```'; cat mirror.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
       - name: store results and republish
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         env: { GH_TOKEN: "${{ github.token }}" }
@@ -125,7 +187,7 @@ jobs:
           gh workflow run pages.yml --repo ${{ github.repository }} --ref main
 
   snapshot:   # all-record dispatch: the earlier results every shard reads, fetched once (one state)
-    if: github.event_name == 'workflow_dispatch' && inputs.ids == ''
+    if: github.event_name == 'workflow_dispatch' && inputs.ids == '' && inputs.takedown_sha256 == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions: { contents: read }
@@ -246,6 +308,60 @@ jobs:
         with: { name: verification, path: build/verification }
       - name: make check-full (every all-record dispatch, branches too; the gate validates a sample of Items)
         run: make check-full
+      - name: mirror (E07, dispatches on main) - copy the eligible records to S3, refresh the custody documents
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        continue-on-error: true   # an S3 outage is a finding: the results are still stored, the earlier custody set kept
+        env:
+          OSD_S3_ACCESS_KEY: "${{ secrets.OSD_S3_ACCESS_KEY }}"
+          OSD_S3_SECRET_KEY: "${{ secrets.OSD_S3_SECRET_KEY }}"
+          OSD_S3_ENDPOINT: "${{ vars.OSD_S3_ENDPOINT }}"
+          OSD_S3_BUCKET: "${{ vars.OSD_S3_BUCKET }}"
+        run: |
+          set -o pipefail
+          status=0 store="s3://$OSD_S3_BUCKET"
+          ids=$(uv run osd mirror eligible --vdir build/verification | awk '$1 == "eligible" {print $2}' | tr '\n' ' ')
+          if [ -n "${ids// /}" ]; then
+            uv run osd mirror put $ids --store "$store" --vdir build/verification | tee mirror.txt || status=1
+          else
+            echo "no eligible record" | tee mirror.txt
+          fi
+          uv run osd mirror custody --store "$store" --out build/verification/custody | tee -a mirror.txt || status=1
+          # anonymous reads: every held copy answers without a key; the bucket does not list
+          for f in build/verification/custody/*.json; do
+            case "$f" in *.removed.json) continue ;; esac
+            [ -e "$f" ] && [ ! -e "${f%.json}.removed.json" ] || continue
+            href=$(jq -r .href "$f")
+            code=$(curl -s -o /dev/null -I -w '%{http_code}' "$href")
+            echo "anonymous HEAD $code $href" | tee -a mirror.txt
+            [ "$code" = 200 ] || status=1
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://$OSD_S3_BUCKET.${OSD_S3_ENDPOINT#https://}/")
+          echo "anonymous bucket listing: HTTP $code (403 expected)" | tee -a mirror.txt
+          [ "$code" = 403 ] || status=1
+          { echo '### mirror'; echo '```'; cat mirror.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+      - name: mirror, read only (E07, branch dispatches) - what a dispatch on main would copy; nothing written
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        continue-on-error: true
+        env:
+          OSD_S3_ACCESS_KEY: "${{ secrets.OSD_S3_ACCESS_KEY }}"
+          OSD_S3_SECRET_KEY: "${{ secrets.OSD_S3_SECRET_KEY }}"
+          OSD_S3_ENDPOINT: "${{ vars.OSD_S3_ENDPOINT }}"
+          OSD_S3_BUCKET: "${{ vars.OSD_S3_BUCKET }}"
+        run: |
+          set -o pipefail
+          status=0
+          ids=$(uv run osd mirror eligible --vdir build/verification | awk '$1 == "eligible" {print $2}' | tr '\n' ' ')
+          if [ -n "${ids// /}" ]; then
+            uv run osd mirror put $ids --store "s3://$OSD_S3_BUCKET" --vdir build/verification --dry-run | tee mirror.txt || status=1
+          else
+            echo "no eligible record" | tee mirror.txt
+          fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://$OSD_S3_BUCKET.${OSD_S3_ENDPOINT#https://}/")
+          echo "anonymous bucket listing: HTTP $code (403 expected)" | tee -a mirror.txt
+          [ "$code" = 403 ] || status=1
+          { echo '### mirror (read only)'; echo '```'; cat mirror.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
       - name: store results and republish
         if: github.ref == 'refs/heads/main'
         env: { GH_TOKEN: "${{ github.token }}" }
@@ -255,5 +371,65 @@ jobs:
           git config user.name "osd-verifier"; git config user.email "osd-verifier@users.noreply.github.com"
           git add -A
           git commit -q -m "verification $(date -u +%FT%TZ) run ${{ github.run_id }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" verification-results
+          gh workflow run pages.yml --repo ${{ github.repository }} --ref main
+
+  takedown:   # E07: an approved takedown request removes a mirrored copy (CONTRIBUTING, "Removing a mirrored copy")
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.takedown_sha256 != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions: { contents: write, actions: write, issues: read }
+    defaults: { run: { shell: bash } }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: astral-sh/setup-uv@v3
+        with: { python-version: "3.12" }
+      - run: uv sync
+      - name: the request is approved (label takedown-approved, added by an approver)
+        id: approval
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          GH_REPO: "${{ github.repository }}"
+          REQUEST: "${{ inputs.takedown_request }}"
+          APPROVERS: "tuna-soup"   # CONTRIBUTING names the owner as the approver
+        run: |
+          n=${REQUEST#"https://github.com/$GH_REPO/issues/"}
+          [[ "$n" =~ ^[0-9]+$ ]] || { echo "refused: $REQUEST is not an issue of $GH_REPO"; exit 1; }
+          gh issue view "$n" --json labels --jq '.labels[].name' | grep -qx takedown-approved \
+            || { echo "refused: issue $n does not carry takedown-approved"; exit 1; }
+          by=$(gh api --paginate "repos/$GH_REPO/issues/$n/events" \
+                 --jq '.[] | select(.event == "labeled" and .label.name == "takedown-approved") | .actor.login' | tail -1)
+          [[ " $APPROVERS " == *" $by "* ]] || { echo "refused: takedown-approved was added by '$by', not by $APPROVERS"; exit 1; }
+          echo "approved by $by on $REQUEST"
+          echo "by=$by" >> "$GITHUB_OUTPUT"
+      - name: earlier results (custody/ travels with them)
+        run: |
+          mkdir -p build/verification
+          if git ls-remote --exit-code origin verification-results >/dev/null; then
+            git fetch -q origin verification-results
+            git archive origin/verification-results | tar -x -C build/verification
+          fi
+      - name: remove the copy, write its tombstone, refresh the custody documents
+        env:
+          OSD_S3_ACCESS_KEY: "${{ secrets.OSD_S3_ACCESS_KEY }}"
+          OSD_S3_SECRET_KEY: "${{ secrets.OSD_S3_SECRET_KEY }}"
+          OSD_S3_ENDPOINT: "${{ vars.OSD_S3_ENDPOINT }}"
+          OSD_S3_BUCKET: "${{ vars.OSD_S3_BUCKET }}"
+          SHA: "${{ inputs.takedown_sha256 }}"
+          REQUEST: "${{ inputs.takedown_request }}"
+          BY: "${{ steps.approval.outputs.by }}"
+        run: |
+          uv run osd mirror remove "$SHA" --store "s3://$OSD_S3_BUCKET" --request "$REQUEST" --approved-by "$BY" | tee takedown.txt
+          uv run osd mirror custody --store "s3://$OSD_S3_BUCKET" --out build/verification/custody | tee -a takedown.txt
+          { echo '### takedown'; echo '```'; cat takedown.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: store results and republish (the next build drops the alternate)
+        env: { GH_TOKEN: "${{ github.token }}", SHA: "${{ inputs.takedown_sha256 }}" }
+        run: |
+          cd build/verification
+          git init -q -b verification-results
+          git config user.name "osd-verifier"; git config user.email "osd-verifier@users.noreply.github.com"
+          git add -A
+          git commit -q -m "takedown $SHA run ${{ github.run_id }}"
           git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" verification-results
           gh workflow run pages.yml --repo ${{ github.repository }} --ref main
