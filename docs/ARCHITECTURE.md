@@ -39,6 +39,7 @@ data; Ophiolite will read the same catalogue as a source (its E127; today a cont
 | **Retrieval** (E06) | A manifest from a selection; a fetcher that verifies checksums | Decode proprietary project files (Ophiolite connector doctrine) |
 | **Mirror store** (E07) | Checksummed copies of small or orphaned datasets whose licence allows it | Copy anything with `redistribution: unknown` |
 | **Ophiolite bridge** (E09) | The catalogue as an Ophiolite source; rights-basis from the record; fidelity records | Live outside the Ophiolite monorepo's own conventions |
+| **Starters** (E40; `starters/`, `schema/starter.schema.json`, `src/osd/starters.py`) | One committed document per starter pack, written by its recipe; the nine validity tests; `starters.json` and the pack manifest | Hold artefact bytes (they live in the mirror under custody/2), publish a pack it could not check, or let anyone write a pack by hand |
 
 ## Formats, all standard
 
