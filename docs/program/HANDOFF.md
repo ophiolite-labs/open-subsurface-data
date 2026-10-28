@@ -2,6 +2,12 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 28 Oct 2026, 07:10 CET (planner) — family "Ready for your tools" E40–E44 chartered
+
+- Owner direction 28 Oct (chat): starter projects from open datasets for OpendTect, ResInsight and Python; F3 as the proof of concept, other blocks after; show them on the site from the user's journey; "charter as many epics as you need". Family document `charters/READY-FOR-YOUR-TOOLS-family.md` (rules R-T1 to R-T7, the flow), charters E40 (contract), E41 (deposited origins), E42 (F3 pack and oracle) plus `E42-ophiolite-half.md` to hand to the Ophiolite program as E09-oph was, E43 (site), E44 (deferred). Decisions OSD-D21 to OSD-D24. Codex rounds on E40, E41, E42: three REWORK verdicts (E125 capabilities overstated: odbind 7.0.10 creates no wells, no survey creation; E127 slice 1a and a ResInsight rips demo already exist in Ophiolite; L4 needs the catalogue's own L3; derived artefacts need their own custody), 57 findings all accepted, charters reworked, dispositions under each; no second round (OSD-D8).
+- Owner items to relay (owner-actions file, via the Ophiolite supervisor as items 103 and 107 were): (1) register at TerraNubis and download F3 Demo 2023 to `/mnt/HC_Volume_107082112/osd-deposits/terranubis/f3-demo-2023/` (E41 design 5; the Mac plus scp is fine); (2) reshape item 97 (the dGB conversation) rather than remove it: ask dGB whether a regenerated F3 starter project under CC BY-SA 3.0 with dGB named is welcome, and whether their survey may serve as the public oracle.
+- Ophiolite program: the half in `E42-ophiolite-half.md` needs a charter there (Kernel, one round), queued after E127 or beside it; E125 and E126 are merged, so slices (b) and (d) are small.
+
 ## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
 
 - 28 Oct: first real mirror on main (run 40640910606, opm/norne): 5 objects and 5 custody documents in s3://osd-mirror, 0 tombstones; anonymous HEAD 200 on all five (`https://osd-mirror.fsn1.your-objectstorage.com/mirror/opm/norne/<sha256>/<file>`), anonymous listing 403. Per-object public-read works on Hetzner; no bucket policy needed. All-record verify on main dispatched so Pages republishes with the mirror alternates.
