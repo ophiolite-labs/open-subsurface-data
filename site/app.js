@@ -3,7 +3,8 @@
    wells-z<z>.json, the wells counted on a grid below CLUSTER_BELOW_ZOOM, with the tiles).
    No framework; one file on purpose (ENGINEERING.md, "surface"). The URL hash is the only state.
    Select mode (E06): tick datasets, download an osd.manifest/1 file (/4 when a dataset is sold or
-   states terms, E19) that `osd get` reads. */
+   states terms, E19) that `osd get` reads. Starter projects (E43): a fourth card in the detail panel
+   when the record lists `starters`; data/starters.json is fetched only then. */
 (async function () {
   // Basemap: OSD-D3. Positron until a dark basemap without a key is confirmed; never add a key.
   const BASEMAP = 'https://tiles.openfreemap.org/styles/positron';
@@ -35,6 +36,9 @@
     : (outlines ? outlines.features.filter(f => f.properties.kind === 'wellbore' && f.geometry.type === 'Point') : []);
   const byId = Object.fromEntries(records.map(r => [r.id, r]));
   const LEVEL = s => Number((s || 'L0').slice(1));
+  // E43: the build lists published pack ids in a record's `starters`; with none, nothing of it shows.
+  const hasStarter = r => !!(r.starters && r.starters.length);
+  const anyStarter = records.some(hasStarter);
   const isStale = r => !!r.checked_at && Date.now() - Date.parse(r.checked_at) > STALE_DAYS * 864e5;
   // A blocked origin awards no level (OSD-D9): its badge says so instead of showing L0.
   const levelBadge = r => `${r.blocked_since ? `<span class="blocked" title="${esc(r.reason)}">blocked since ${esc(r.blocked_since.slice(0, 10))}</span>`
@@ -55,8 +59,9 @@
   //   #q=volve&k=field,survey-3d&l=2&ext=0&ph=0&sel=equinor/volve&map=6.2/58.40/2.00
   //   #pick=opm/norne,sodir/factpages   select mode with two datasets ticked (`pick=` alone: none yet)
   //   #t=1990-2000&dated=1   period overlaps 1990 to 2000 (either side may be empty), dated records only (E21)
+  //   #starter=1   only datasets that come with a starter project (E43; ignored while there is none)
   const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null, pick: null,
-    from: null, to: null, dated: false };
+    from: null, to: null, dated: false, starter: false };
   const state = { ...DEFAULTS, kinds: new Set() };
   function readHash() {
     const h = new URLSearchParams(location.hash.slice(1));
@@ -71,6 +76,7 @@
     state.from = t[1] ? Number(t[1]) : null;
     state.to = t[2] ? Number(t[2]) : null;
     state.dated = h.get('dated') === '1';
+    state.starter = anyStarter && h.get('starter') === '1';
     const m = (h.get('map') || '').split('/').map(Number);
     return m.length === 3 && m.every(Number.isFinite) ? { zoom: m[0], center: [m[2], m[1]] } : null;
   }
@@ -81,6 +87,7 @@
     if (state.minLevel) h.set('l', state.minLevel);
     if (state.from !== null || state.to !== null) h.set('t', `${state.from ?? ''}-${state.to ?? ''}`);
     if (state.dated) h.set('dated', '1');
+    if (state.starter) h.set('starter', '1');
     if (!state.extents) h.set('ext', '0');
     if (!state.approx) h.set('ph', '0');
     if (state.sel) h.set('sel', state.sel);
@@ -123,6 +130,7 @@
     if (LEVEL(r.level) < state.minLevel) return false;
     const p = span(r);
     if (state.dated && !p) return false;
+    if (state.starter && !hasStarter(r)) return false;
     if (p && ((state.to !== null && p[0] > state.to) || (state.from !== null && p[1] < state.from))) return false;
     if (state.kinds.size && !r.kinds.some(k => state.kinds.has(k))) return false;
     if (state.q) {
@@ -279,6 +287,8 @@
   $('from').oninput = e => { state.from = yearOf(e.target.value); applyFilters(); };
   $('to').oninput = e => { state.to = yearOf(e.target.value); applyFilters(); };
   $('dated').onchange = e => { state.dated = e.target.checked; applyFilters(); };
+  $('starter').onchange = e => { state.starter = e.target.checked; applyFilters(); };
+  $('starterfilter').hidden = $('starterlink').hidden = !anyStarter;
 
   function syncControls() {
     for (const k of allKinds) chips[k].classList.toggle('on', state.kinds.has(k));
@@ -288,6 +298,7 @@
     if ($('q').value.trim().toLowerCase() !== state.q) $('q').value = state.q;
     for (const k of ['from', 'to']) if (yearOf($(k).value) !== state[k]) $(k).value = state[k] ?? '';
     $('dated').checked = state.dated;
+    $('starter').checked = state.starter;
   }
 
   function renderList(ids) {
@@ -340,9 +351,11 @@
 fc = json.load(urllib.request.urlopen("${esc(geo)}"))
 mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id)}"]</code></div>
         <div class="card"><b>Get the data</b>Follow the origin link above, or press Select above the list, tick datasets and download a manifest for osd get.</div>
+        ${hasStarter(r) ? '<div class="card starter"><b>Starter project</b><span class="hint">…</span></div>' : ''}
       </div>
-      <p class="how"><a href="how.html">What the levels mean, and these three cards explained</a></p>`;
+      <p class="how"><a href="how.html">What the levels mean, and these cards explained</a></p>`;
     d.querySelector('.close').onclick = closeDetail;
+    if (hasStarter(r)) starterCard(d.querySelector('.card.starter'), r);
     if (fly && r.region && r.region.bbox) map.fitBounds(r.region.bbox, { padding: 60, maxZoom: 9, duration: 700 });
   }
 
@@ -458,6 +471,78 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   }
 
   $('pickmode').onclick = () => setPickMode(!state.pick);
+
+  // ---- Starter projects (E43). Deletable: this block, the fourth card in select(), the `starter` hash
+  // key, #starterlink, #starterfilter and site/starters.html. The page holds no pack text of its own:
+  // everything comes from data/starters.json (E40: every published pack whole, with each artefact's
+  // mirror address) and data/starters/ (the pack document and its fidelity record). The manifest is the
+  // one `osd manifest --starter <pack id>` writes (src/osd/manifest.py from_starter); the site test
+  // checks the two agree entry for entry.
+  const APPS = { opendtect: 'OpendTect', resinsight: 'ResInsight', python: 'Python' };
+  let packs = null;
+  const loadPacks = () => packs = packs || fetch('data/starters.json').then(r => r.ok ? r.json() : { starters: [] })
+    .then(d => Object.fromEntries(d.starters.map(p => [p.id, p])), () => ({}));
+  const packFile = id => id.replaceAll('/', '__') + '.json';
+  const packAnchor = id => id.replaceAll('/', '__');
+  const packLicence = l => [l.spdx || l.name, l.attribution === 'required' ? 'attribution required' : '',
+    l.share_alike === true ? 'share-alike' : ''].filter(Boolean).join(' · ');
+  const manifestName = p => p.id.replaceAll('/', '__') + '.manifest.json';
+
+  async function sha256(buf) {
+    return [...new Uint8Array(await crypto.subtle.digest('SHA-256', buf))].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function starterManifest(p) {
+    const r = byId[p.record_id], assets = {};
+    for (const t of p.targets) for (const a of t.artefacts) {
+      const title = assets[a.path] ? assets[a.path].title : `${a.path} (${t.application} ${t.version})`;
+      assets[a.path] = { href: a.href, title, 'file:size': a.bytes, 'file:checksum': '1220' + a.sha256 };
+    }
+    for (const [key, rel, title] of [['starter.json', packFile(p.id), 'the pack document with its decision log (osd.starter/1)'],
+      ['fidelity.json', p.fidelity, 'the fidelity record (osd.fidelity/1)']]) {
+      const buf = await (await fetch('data/starters/' + rel)).arrayBuffer();
+      assets[key] = { href: base + 'data/starters/' + rel, title, 'file:size': buf.byteLength, 'file:checksum': '1220' + await sha256(buf) };
+    }
+    const { sources, ...licence } = p.licence;
+    const entry = { collection_id: collectionId(r.id), record_id: r.id, title: p.title, origin_url: r.origin.url,
+      access: r.origin.access, licence, assets, coverage: 'complete' };
+    if (r.known_issues && r.known_issues.length) entry.known_issues = [...r.known_issues];
+    return { format: MANIFEST_FORMAT_4, created: new Date().toISOString().replace(/\.\d+Z$/, 'Z'),
+      catalog_url: base + 'data/stac/catalog.json', selection: 'collections', entries: [entry], metadata: { catalog: { ...built.catalog } } };
+  }
+
+  function save(doc, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2) + '\n'], { type: 'application/json' }));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // The fourth card: one button per target in the pack's order (the application and the version the
+  // pack was built against), the licence line, the decision log, and the three steps for the chosen one.
+  async function starterCard(card, r) {
+    const all = await loadPacks();
+    if (!card.isConnected) return;
+    const list = r.starters.map(id => all[id]).filter(Boolean);
+    if (!list.length) { card.remove(); return; }
+    card.innerHTML = '<b>Starter project</b>' + list.map(p => `<div class="pack" data-pack="${esc(p.id)}">
+      <div class="apps">${p.targets.map((t, i) => `<button type="button" class="app" data-app="${esc(t.application)}" aria-pressed="${i === 0}">${esc(APPS[t.application] || t.application)} <span>${esc(t.version)}</span></button>`).join('')}</div>
+      <div class="lic">${esc(packLicence(p.licence))} · <a href="starters.html#${esc(packAnchor(p.id))}-decisions">what we decided</a></div>
+      <div class="steps"></div>
+      <button type="button" class="starter-download">Download the pack manifest</button></div>`).join('');
+    for (const el of card.querySelectorAll('.pack')) {
+      const p = all[el.dataset.pack];
+      const steps = app => {
+        const t = p.targets.find(t => t.application === app);
+        el.querySelector('.steps').innerHTML = `1. download the pack manifest · 2. <code>osd get ${esc(manifestName(p))} --dest ${esc(packAnchor(p.record_id))}</code> · 3. run <code>${esc(t.import)}</code> (${esc(APPS[app] || app)} ${esc(t.version)})`;
+        for (const b of el.querySelectorAll('.app')) b.setAttribute('aria-pressed', String(b.dataset.app === app));
+      };
+      el.querySelectorAll('.app').forEach(b => b.onclick = () => steps(b.dataset.app));
+      steps(p.targets[0].application);
+      el.querySelector('.starter-download').onclick = async () => save(await starterManifest(p), manifestName(p));
+    }
+  }
 
   // A pasted or edited hash in the same tab applies too.
   window.addEventListener('hashchange', () => {

@@ -2,6 +2,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
@@ -781,5 +782,202 @@ test('why: how.html lists the reason sentences and what a publisher can do about
   for (const s of ['never verified', 'no file address is published to us', 'names no files', 'robots.txt disallows',
     'answers a browser, not the verifier', 'blocked from this runner', 'HTTP 502', 'files were hashed'])
     assert.ok(text.includes(s), s);
+  await context.close();
+});
+
+// ---- E43: starter projects. E40's fixture packs (tests/fixtures/starters, with the custody snapshot)
+// built by osd.build into build/site-test/e43; the page is served the committed records.json with the
+// two fixture records in place of the committed ones (they carry `starters`), and the fixture build's
+// starters.json and data/starters/. Without these routes the build has no pack (until E42).
+const E43_DIR = join(OUT, 'e43');
+const F3_RECORD = 'terranubis/f3-demo-2020', F3_PACK = 'terranubis/f3-demo-2020/starter', F3_ANCHOR = 'terranubis__f3-demo-2020__starter';
+const FX = join(ROOT, 'tests', 'fixtures', 'starters');
+const starterBuilt = (async () => {
+  await promisify(execFile)(process.env.UV || 'uv', ['run', '--quiet', 'python', '-c',
+    'import sys, shutil; from pathlib import Path; from osd.build import build\n' +
+    'out, fx, custody, mirror = map(Path, sys.argv[1:5])\n' +
+    'shutil.rmtree(mirror, ignore_errors=True); shutil.copytree(custody, mirror / "custody")\n' +
+    'build(out, fx / "verification", mirror_dir=mirror, records_dir=fx / "records", starters_dir=fx / "packs", source_commit="1" * 40, verification_commit="2" * 40)',
+    E43_DIR, FX, join(ROOT, 'tests', 'fixtures', 'custody'), join(OUT, 'e43-mirror')], { cwd: ROOT });
+  const fx = JSON.parse(await readFile(join(E43_DIR, 'records.json'), 'utf8'));
+  return { records: Object.fromEntries(fx.records.map(r => [r.id, r])), starters: JSON.parse(await readFile(join(E43_DIR, 'starters.json'), 'utf8')) };
+})();
+const withStarters = async c => {
+  const fx = await starterBuilt;
+  await c.route('**/data/records.json', async route => {
+    const body = JSON.parse(await (await route.fetch()).text());
+    body.records = body.records.map(r => fx.records[r.id] || r);
+    return route.fulfill({ json: body });
+  });
+  await c.route('**/data/starters.json', route => route.fulfill({ json: fx.starters }));
+  await c.route('**/data/starters/**', route => route.fulfill({ contentType: 'application/json',
+    path: join(E43_DIR, 'starters', decodeURIComponent(new URL(route.request().url()).pathname.replace(/^\/data\/starters\//, ''))) }));
+};
+// The same build with no pack: what the site shows until E42 publishes one.
+const withoutStarters = async c => {
+  await c.route('**/data/records.json', async route => {
+    const body = JSON.parse(await (await route.fetch()).text());
+    for (const r of body.records) delete r.starters;
+    return route.fulfill({ json: body });
+  });
+  await c.route('**/data/starters.json', route => route.fulfill({ json: { starters: [] } }));
+};
+const fixturePack = name => JSON.parse(readFileSync(join(FX, 'packs', name), 'utf8'));
+const asked = (page, path) => { const seen = []; page.on('request', q => { if (new URL(q.url()).pathname === path) seen.push(q.url()); }); return seen; };
+const sheetOverflows = page => page.evaluate(() => { const s = document.getElementById('side'); return s.scrollWidth > s.clientWidth; });
+
+test('starter: the F3-shaped record shows a fourth card with the pack\'s buttons, licence line and decision-log link', async () => {
+  const pack = fixturePack(`${F3_ANCHOR}.json`);
+  const { context, page, errors, unexpected } = await open(`sel=${F3_RECORD}`, { routes: withStarters });
+  const card = page.locator('#detail .card.starter');
+  await card.locator('.app').first().waitFor();
+  assert.deepEqual(await page.locator('#detail .card > b').allInnerTexts(), ['Open in QGIS', 'Read in Python', 'Get the data', 'Starter project']);
+  assert.deepEqual(await card.locator('.app').evaluateAll(bs => bs.map(b => b.dataset.app)), pack.targets.map(t => t.application));
+  assert.deepEqual(await card.locator('.app').allInnerTexts(), ['OpendTect 7.0.10', 'ResInsight 2025.04', 'Python 3.12']);
+  assert.match(await card.locator('.lic').innerText(), /^CC-BY-SA-3\.0 · attribution required · share-alike · what we decided$/);
+  assert.match(await card.locator('.steps').innerText(), /^1\. download the pack manifest · 2\. osd get terranubis__f3-demo-2020__starter\.manifest\.json --dest terranubis__f3-demo-2020 · 3\. run opendtect\/import_f3\.py \(OpendTect 7\.0\.10\)$/);
+  await card.locator('.app[data-app="resinsight"]').click();
+  assert.match(await card.locator('.steps').innerText(), /run resinsight\/import_f3\.py \(ResInsight 2025\.04\)$/);
+  assert.equal(await card.locator('.app[aria-pressed="true"]').innerText(), 'ResInsight 2025.04');
+  assert.equal(await page.locator('#starterlink').isVisible(), true);
+  await page.locator('#detail .card.starter').scrollIntoViewIfNeeded();
+  const [cb, pb] = [await card.boundingBox(), await page.locator('#detail').boundingBox()];
+  assert.ok(cb.x + cb.width <= pb.x + pb.width, 'the card fits the panel');
+  await page.locator('#side').screenshot({ path: join(OUT, 'starter-card-desktop.png') });
+
+  await card.locator('a', { hasText: 'what we decided' }).click();
+  await page.waitForURL(`**/starters.html#${F3_ANCHOR}-decisions`);
+  const log = page.locator(`#${F3_ANCHOR}-decisions`);
+  await log.waitFor();
+  assert.equal(await page.locator(`section#${F3_ANCHOR} #${F3_ANCHOR}-decisions`).count(), 1, 'the anchor is in the pack\'s section');
+  assert.equal(await page.locator(`section#${F3_ANCHOR} table.log tbody tr`).count(), pack.decisions.length);
+  assert.equal(await page.locator(`section#${F3_ANCHOR} table.log tr.chosen`).count(), pack.decisions.filter(d => d.source === 'chosen').length);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
+
+test('starter: with no pack in the build, no fourth card, no header link, no filter, and the page says so', async () => {
+  const { context, page, errors, unexpected } = await open(`sel=${F3_RECORD}&starter=1`, { routes: withoutStarters });
+  const all = await page.evaluate(() => window.osdMap && document.querySelectorAll('#list li').length);
+  assert.ok(all > 100, 'starter=1 is ignored while no dataset has a pack');
+  assert.equal(await page.locator('#detail .card').count(), 3);
+  assert.equal(await page.locator('#detail .card.starter').count(), 0);
+  assert.equal(await page.locator('#starterlink').isVisible(), false);
+  assert.equal(await page.locator('#starterfilter').isVisible(), false);
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /starter=/);
+  for (const p of ['how.html', 'status.html']) {
+    await page.goto(server.url + p);
+    await page.waitForLoadState('networkidle');
+    assert.equal(await page.locator('#starterlink').isVisible(), false, p);
+  }
+  await page.goto(server.url + 'starters.html');
+  await page.locator('#none').waitFor();
+  assert.equal(await page.locator('#none').innerText(), 'No starter projects yet.');
+  assert.equal(await page.locator('section.pack').count(), 0);
+  assert.match(await page.locator('#ask a').getAttribute('href'), /issues\/new\?template=starter-request\.yml$/);
+  await page.screenshot({ path: join(OUT, 'starters-empty.png'), fullPage: true });
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
+
+test('starter: #starter=1 lists exactly the two fixture records; unticking restores the count; starters.json waits for a card', async () => {
+  const context = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+  await offline(context);
+  await withStarters(context);
+  const page = await context.newPage();
+  const errors = errorsOf(page), fetched = asked(page, '/data/starters.json');
+  await page.goto(server.url + '#starter=1');
+  await ready(page);
+  assert.deepEqual((await listed(page)).sort(), ['rmotc/teapot-dome', F3_RECORD]);
+  assert.equal(await page.locator('#starter').isChecked(), true);
+  assert.equal(await page.locator('#starterfilter').isVisible(), true);
+  const total = await page.evaluate(() => document.getElementById('count').textContent.match(/of (\d+)/)[1]);
+  assert.equal(await page.locator('#count').textContent(), `(2 of ${total})`);
+  await page.locator('#starter').uncheck();
+  assert.equal(await page.locator('#count').textContent(), `(${total} of ${total})`);
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /starter=/);
+  await page.locator('#starter').check();
+  assert.match(await page.evaluate(() => location.hash), /starter=1/);
+  assert.deepEqual(fetched, [], 'the map does not load starters.json for the list or the filter');
+  await page.locator(`#list li[data-id="${F3_RECORD}"]`).click();
+  await page.locator('#detail .card.starter .app').first().waitFor();
+  assert.equal(fetched.length, 1, 'starters.json is fetched once a card needs it');
+  await page.screenshot({ path: join(OUT, 'starter-filter.png') });
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+test('starter: "Download the pack manifest" writes the manifest/4 osd manifest --starter writes, artefacts equal by sha256', async () => {
+  const pack = fixturePack(`${F3_ANCHOR}.json`);
+  const { context, page, errors, unexpected } = await open(`sel=${F3_RECORD}`, { routes: withStarters });
+  const button = page.locator('#detail .card.starter .starter-download');
+  await button.waitFor();
+  assert.equal(await button.innerText(), 'Download the pack manifest');
+  const [dl] = await Promise.all([page.waitForEvent('download'), button.click()]);
+  assert.equal(dl.suggestedFilename(), `${F3_ANCHOR}.manifest.json`);
+  const file = join(OUT, `${F3_ANCHOR}.manifest.json`);
+  await dl.saveAs(file);
+  const doc = JSON.parse(await readFile(file, 'utf8'));
+  assert.equal(doc.format, 'osd.manifest/4');
+  // osd.manifest.read accepts it; its entries equal what `osd manifest --starter` writes from the same build
+  const { stdout } = await promisify(execFile)(process.env.UV || 'uv', ['run', '--quiet', 'python', '-c',
+    'import json, sys; from pathlib import Path; from osd import manifest as mf\n' +
+    'page = json.loads(Path(sys.argv[1]).read_text()); m = mf.read(sys.argv[1])\n' +
+    'want = mf.from_starter(sys.argv[3], catalog_dir=Path(sys.argv[2]), catalog_url=page["catalog_url"])\n' +
+    'assert page["format"] == want["format"] and page["entries"] == want["entries"], (page["entries"], want["entries"])\n' +
+    'print(json.dumps({a.key: a.sha256 for e in m.entries for a in e.assets}))',
+    file, E43_DIR, F3_PACK], { cwd: ROOT });
+  const got = JSON.parse(stdout.trim().split('\n').pop());
+  const want = Object.fromEntries(pack.targets.flatMap(t => t.artefacts.map(a => [a.path, a.sha256])));
+  const { 'starter.json': doc256, 'fidelity.json': fid256, ...artefacts } = got;
+  assert.deepEqual(artefacts, want);
+  assert.equal(doc256, createHash('sha256').update(readFileSync(join(FX, 'packs', `${F3_ANCHOR}.json`))).digest('hex'));
+  assert.equal(fid256, createHash('sha256').update(readFileSync(join(FX, 'packs', pack.fidelity))).digest('hex'));
+  console.log(`# pack manifest: ${Object.keys(artefacts).length} artefacts and 2 pack documents, entries equal to osd manifest --starter`);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
+
+test('starter: starters.html at 360 px and on desktop, and the fourth card at phone width: no horizontal scroll, buttons wrap', async () => {
+  for (const [w, h, name] of [[360, 740, 'starters-phone'], [1400, 900, 'starters-desktop']]) {
+    const context = await browser.newContext({ viewport: { width: w, height: h } });
+    const unexpected = [];
+    await offline(context, unexpected);
+    await withStarters(context);
+    const page = await context.newPage();
+    const errors = errorsOf(page);
+    await page.goto(server.url + 'starters.html');
+    await page.locator(`section#${F3_ANCHOR}`).waitFor();
+    assert.equal(await page.locator('section.pack').count(), 2);
+    const sec = page.locator(`section#${F3_ANCHOR}`);
+    assert.match(await sec.locator('h2.ds').innerText(), /^F3 Demo 2020 \(Dutch North Sea\) L2$/);
+    assert.match(await sec.locator('dd.where').innerText(), /Dutch North Sea \(F3 block\), NL/);
+    assert.match(await sec.locator('dd.inside').innerText(), /seismic-3d 1 \(F3\)/);
+    assert.match(await sec.locator('dd.lic').innerText(), /^CC-BY-SA-3\.0 · attribution required · share-alike/);
+    assert.deepEqual(await sec.locator('td.oracle').evaluateAll(ts => ts.map(t => t.firstChild.textContent)),
+      fixturePack(`${F3_ANCHOR}.json`).targets.map(t => `${t.oracle.values} values compared, ${t.oracle.differences} differences`));
+    assert.equal(await sec.locator('ol.steps li').count(), 3);
+    assert.ok(await page.evaluate(w => document.documentElement.scrollWidth <= w, w), `no horizontal scroll at ${w} px`);
+    await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true });
+    assert.deepEqual(errors, []);
+    assert.deepEqual(unexpected, []);
+    await context.close();
+  }
+  const { context, page, errors } = await open(`sel=${F3_RECORD}`, { viewport: { width: 360, height: 800 }, routes: withStarters });
+  const card = page.locator('#detail .card.starter');
+  await card.locator('.app').first().waitFor();
+  await card.scrollIntoViewIfNeeded();
+  const box = await card.boundingBox(), panel = await page.locator('#detail').boundingBox();
+  assert.ok(box.x + box.width <= panel.x + panel.width, 'the card fits the panel');
+  for (const b of await card.locator('.app, .starter-download').all()) {
+    const bb = await b.boundingBox();
+    assert.ok(bb.x >= box.x && bb.x + bb.width <= box.x + box.width + 0.5, 'each button inside the card');
+  }
+  assert.equal(await sheetOverflows(page), false, 'no horizontal overflow in the sheet');
+  await card.screenshot({ path: join(OUT, 'starter-card-phone.png') });
+  assert.deepEqual(errors, []);
   await context.close();
 });

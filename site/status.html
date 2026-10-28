@@ -23,7 +23,7 @@
 </head>
 <body class="page">
 <main>
-<p><a href="./">← Back to the map</a> · <a href="how.html">What the levels mean</a></p>
+<p><a href="./">← Back to the map</a> · <a href="how.html">What the levels mean</a><span id="starterlink" hidden> · <a href="starters.html">Starter projects</a></span></p>
 <h1>Verification status</h1>
 <p class="muted">One row per dataset: the level the verifier reached, when it last checked and why it
 stopped there, in the verifier's words (<a href="how.html#why">what each reason means</a>). A level
@@ -58,6 +58,7 @@ not the same as the data being gone, and it awards no level.</p>
     redistribution: r.licence.redistribution, kinds: r.kinds.join(', '),
     reason: (data.reasons || {})[r.id] || '',   // E27: the sentence `osd status` prints
   }));
+  document.getElementById('starterlink').hidden = !data.records.some(r => r.starters && r.starters.length);   // E43
   document.getElementById('tool').textContent = data.tool_version ? ` (osd ${data.tool_version})` : '';
   const checked = rows.filter(r => r.checked_at).length;
   document.getElementById('count').textContent = `${rows.length} datasets, ${checked} checked at least once.`;

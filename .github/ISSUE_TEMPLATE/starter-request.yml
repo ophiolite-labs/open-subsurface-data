@@ -1,0 +1,34 @@
+name: Ask for a starter project
+description: An open dataset you would like made ready for OpendTect, ResInsight or Python
+title: "starter: <record id or dataset name>"
+labels: [starter-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A starter project is a dataset from the catalogue made ready for your tools by a recipe, with
+        every decision written down (see opensubsurfacedata.org/starters.html). The next datasets are
+        chosen from these requests, so say what you would do with it. Only datasets whose licence
+        allows redistribution can become a starter project.
+  - type: input
+    id: dataset
+    attributes:
+      label: "Which dataset? (the record id from the map, or its name and where it is published)"
+      placeholder: "e.g. equinor/volve"
+    validations: { required: true }
+  - type: checkboxes
+    id: applications
+    attributes:
+      label: "For which applications?"
+      options:
+        - label: OpendTect
+        - label: ResInsight
+        - label: Python (segyio, lasio)
+        - label: Another application (name it below)
+  - type: textarea
+    id: use
+    attributes: { label: "What would you do with it? (study, teaching, testing a tool, other)" }
+    validations: { required: true }
+  - type: textarea
+    id: inside
+    attributes: { label: "What should be inside? (wells, logs, tops, horizons, a seismic volume; optional)" }

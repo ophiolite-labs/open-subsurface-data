@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Starter projects · Open Subsurface Data</title>
+<meta name="description" content="Open datasets made ready for OpendTect, ResInsight and Python, with every decision written down.">
+<link rel="stylesheet" href="style.css">
+<style>
+  .pack { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 8px; }
+  .pack h2.ds { font-size: 18px; text-transform: none; letter-spacing: 0; color: var(--fg); margin: 8px 0 2px; }
+  .pack h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 18px 0 6px; }
+  .pack dl { display: grid; grid-template-columns: 7em 1fr; gap: 4px 10px; margin: 10px 0; }
+  .pack dt { color: var(--muted); } .pack dd { margin: 0; overflow-wrap: anywhere; }
+  .pack table { table-layout: fixed; } .pack td, .pack th { overflow-wrap: anywhere; }
+  .pack td:first-child { white-space: normal; }
+  .pack tr.chosen td { background: #1f2a1a; } .pack tr.chosen td.src { color: #f2c46b; }
+  .pack .apps { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pack .app { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 13px; }
+  .pack .app span { color: var(--muted); }
+  .pack code { overflow-wrap: anywhere; }
+  .pack details { margin: 4px 0; font-size: 13px; } .pack summary { cursor: pointer; color: var(--muted); }
+  .pack ol li { margin: 4px 0; }
+  .oracle { color: #7be0a8; }
+  #ask { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 8px; }
+  /* Phone: the decision log reads as rows of two lines; nothing scrolls sideways. */
+  @media (max-width: 640px) {
+    .pack table thead { display: none; }
+    .pack table.targets tr { display: block; border-bottom: 1px solid var(--line); padding: 6px 0; }
+    .pack table.targets td { display: block; border: 0; padding: 1px 0; }
+    .pack table.log tr { display: grid; grid-template-columns: auto 1fr; gap: 0 8px; border-bottom: 1px solid var(--line); padding: 6px 0; }
+    .pack table.log td { border: 0; padding: 1px 0; }
+    .pack table.log td.val, .pack table.log td.note { grid-column: 1 / -1; }
+    .pack dl { grid-template-columns: 1fr; } .pack dt { margin-top: 6px; }
+  }
+</style>
+</head>
+<body class="page">
+<main>
+<p><a href="./">← Back to the map</a> · <a href="how.html">How to read the map</a> · <a href="status.html">Status</a></p>
+<h1>Starter projects</h1>
+<p class="muted">A starter project is an open dataset made ready for your tools: one coordinate system,
+one depth reference, units and null values settled, logs named, delivered in the form OpendTect,
+ResInsight or Python opens. A recipe writes every file; nobody edits them by hand. Every decision the
+recipe took is written down below with its source: the publisher, the data itself, or chosen by us
+and why. Each pack is compared with a reader that is not ours.</p>
+<div id="packs"><p class="muted">Loading…</p></div>
+
+<section id="ask">
+<h2>Want a starter project for another dataset?</h2>
+<p>Tell us which dataset, which applications and what you would do with it:
+<a href="https://github.com/ophiolite-labs/open-subsurface-data/issues/new?template=starter-request.yml">ask for a starter project</a>.
+The next datasets are chosen from these requests.</p>
+</section>
+</main>
+<script>
+// Reads data/starters.json (every published pack whole, E40) and data/records.json for the region.
+// The page holds no pack text of its own. Each pack's section is #<pack id with / as __>, its
+// decision log #<that>-decisions (the map's fourth card links there).
+(async () => {
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const APPS = { opendtect: 'OpendTect', resinsight: 'ResInsight', python: 'Python' };
+  const SOURCE = { publisher: 'the publisher', data: 'the data', chosen: 'chosen by us' };
+  const size = n => n >= 1e9 ? `${(n / 1e9).toFixed(1)} GB` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : n >= 1e3 ? `${(n / 1e3).toFixed(1)} kB` : `${n} B`;
+  const anchor = id => id.replaceAll('/', '__');
+  const packs = await fetch('data/starters.json').then(r => r.ok ? r.json() : { starters: [] }, () => ({ starters: [] })).then(d => d.starters);
+  const el = document.getElementById('packs');
+  if (!packs.length) { el.innerHTML = '<p id="none">No starter projects yet.</p>'; return; }
+  const recs = await fetch('data/records.json').then(r => r.json()).then(d => Object.fromEntries(d.records.map(r => [r.id, r])), () => ({}));
+  el.innerHTML = packs.map(p => {
+    const r = recs[p.record_id] || {}, reg = r.region || {}, l = p.licence, a = anchor(p.id);
+    const licence = [l.spdx || l.name, l.attribution === 'required' ? 'attribution required' : '', l.share_alike === true ? 'share-alike' : ''].filter(Boolean).join(' · ');
+    const targets = p.targets.map(t => {
+      const bytes = t.artefacts.reduce((s, x) => s + x.bytes, 0);
+      return `<tr data-app="${esc(t.application)}"><td><b>${esc(APPS[t.application] || t.application)}</b> ${esc(t.version)}</td>
+        <td>${t.artefacts.length} files, ${esc(size(bytes))}<details><summary>files</summary>${t.artefacts.map(x => `<div><code>${esc(x.path)}</code> ${esc(size(x.bytes))}</div>`).join('')}</details></td>
+        <td><code>${esc(t.import)}</code></td>
+        <td class="oracle">${t.oracle.values} values compared, ${t.oracle.differences} differences<details><summary>what was compared</summary>${t.oracle.compared.map(c => `<div>${esc(c)}</div>`).join('')}</details></td></tr>`;
+    }).join('');
+    const log = p.decisions.map(d => `<tr class="${d.source === 'chosen' ? 'chosen' : ''}"><td>${esc(d.topic)}</td><td>${esc(d.subject)}</td>
+      <td class="val">${esc(d.value)}</td><td class="src">${esc(SOURCE[d.source] || d.source)}</td><td class="note">${esc(d.note || '')}</td></tr>`).join('');
+    const sources = (l.sources || []).map(s => `<div><code>${esc(s.input)}</code>: ${esc(s.licence.name)}${s.licence.statement ? ' — ' + esc(s.licence.statement) : ''}</div>`).join('');
+    const manifest = `${a}.manifest.json`;
+    return `<section class="pack" id="${esc(a)}">
+      <h2 class="ds">${esc(p.record.title)} <span class="lvl ${esc(p.record.level)}">${esc(p.record.level)}</span></h2>
+      <p><b>${esc(p.title)}</b>. ${esc(p.summary || '')}</p>
+      <dl>
+        <dt>Where</dt><dd class="where">${esc([reg.basin, reg.country].filter(Boolean).join(', ') || '—')}${reg.crs ? ` · ${esc(reg.crs)}` : ''}</dd>
+        <dt>Inside</dt><dd class="inside">${p.contents.map(c => `${esc(c.kind)} ${c.count} (${c.ids.map(esc).join(', ')})`).join('<br>')}</dd>
+        <dt>For</dt><dd><div class="apps">${p.targets.map(t => `<span class="app">${esc(APPS[t.application] || t.application)} <span>${esc(t.version)}</span></span>`).join('')}</div></dd>
+        <dt>Licence</dt><dd class="lic">${esc(licence)}${l.url ? ` · <a href="${esc(l.url)}">${esc(l.name)}</a>` : ''}${l.statement ? `<br>${esc(l.statement)}` : ''}${sources ? `<details><summary>licence of each input</summary>${sources}</details>` : ''}</dd>
+        <dt>Built</dt><dd>${esc(p.built_at.slice(0, 10))} by recipe <code>${esc(p.recipe.id)}</code> at <code>${esc(p.recipe.commit.slice(0, 12))}</code></dd>
+      </dl>
+      <h3>Applications</h3>
+      <table class="targets"><thead><tr><th>Application</th><th>Files</th><th>Import</th><th>Checked against another reader</th></tr></thead><tbody>${targets}</tbody></table>
+      <h3>Open it in three steps</h3>
+      <ol class="steps">
+        <li>Download the pack manifest: on <a href="./#sel=${esc(p.record_id)}">the map</a>, open the dataset and press “Download the pack manifest”
+          (or, from a checkout, <code>osd manifest --starter ${esc(p.id)}</code>).</li>
+        <li><code>osd get ${esc(manifest)} --dest ${esc(anchor(p.record_id))}</code> fetches every file and checks its sha256.</li>
+        <li>Run the import for your application: ${p.targets.map(t => `${esc(APPS[t.application] || t.application)} <code>${esc(t.import)}</code>`).join(', ')}.</li>
+      </ol>
+      <h3 id="${esc(a)}-decisions">What we decided</h3>
+      <table class="log"><thead><tr><th>Topic</th><th>For</th><th>Value</th><th>Source</th><th>Note</th></tr></thead><tbody>${log}</tbody></table>
+    </section>`;
+  }).join('');
+  if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
+})();
+</script>
+</body>
+</html>
