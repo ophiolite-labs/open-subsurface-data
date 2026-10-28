@@ -1,0 +1,34 @@
+{
+  "format": "osd.fidelity/1",
+  "catalog": {
+    "source_commit": "1111111111111111111111111111111111111111",
+    "verification_commit": "2222222222222222222222222222222222222222",
+    "built_at": "2026-10-29T09:00:00Z",
+    "records_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "record": "rmotc/teapot-dome",
+  "inputs": [
+    {
+      "sha256": "63b01def3f1bb93e393587444e891ccf77fbcc0a455245f232068e298db73c70",
+      "name": "filt_mig.sgy",
+      "result": "converted",
+      "output": {
+        "kind": "seismic-3d",
+        "id": "Teapot 3D",
+        "converter": "ophiolite.segy",
+        "version": "0.9.0"
+      }
+    },
+    {
+      "sha256": "cbf580d6ebaa5f001b1afdf04b011462ea2b85afe3ec1a43ef64bc7807bb12e3",
+      "name": "490251051400.las",
+      "result": "converted",
+      "output": {
+        "kind": "wellbore-logs",
+        "id": "48-X-28",
+        "converter": "ophiolite.las",
+        "version": "0.9.0"
+      }
+    }
+  ]
+}

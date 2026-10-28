@@ -141,3 +141,65 @@ def test_verification_6_documents_still_validate():
             assert _errors(VERIFICATION, d) == [], p
             found += 1
     assert found >= 15
+
+
+# --- starter/1 and the fixtures (design 1, 7; acceptance 8) ------------------------------------------
+
+FIXTURES = ROOT / "tests" / "fixtures" / "starters"
+PACKS = FIXTURES / "packs"
+SNAPSHOT = ROOT / "tests" / "fixtures" / "custody"
+F3 = "terranubis__f3-demo-2020__starter.json"
+TEAPOT = "rmotc__teapot-dome__python.json"
+STARTER = _v(paths.SCHEMA_DIR / "starter.schema.json")
+STARTER_1 = _v(FROZEN / "starter-1.schema.json")
+
+
+def pack(name: str = F3) -> dict:
+    return json.loads((PACKS / name).read_text())
+
+
+def test_frozen_starter_pin():
+    assert hashlib.sha256((FROZEN / "starter-1.schema.json").read_bytes()).hexdigest() == (
+        "8e49a769973447b23e12a8f8beb4cac7ea9f99a3a5c40e8a36ffed5a06c87cee")
+    assert STARTER.schema["$id"] == STARTER_1.schema["$id"] == "https://open-subsurface-data.org/schema/starter/1"
+
+
+def test_frozen_schemas_validate_the_fixtures():
+    for name in (F3, TEAPOT):
+        assert _errors(STARTER, pack(name)) == [] and _errors(STARTER_1, pack(name)) == []
+    docs = [json.loads(p.read_text()) for p in sorted(SNAPSHOT.glob("*.json"))]
+    assert {d["format"] for d in docs} == {"osd.custody/1", "osd.custody/2"}
+    assert sum(p.name.endswith(".removed.json") for p in SNAPSHOT.glob("*.json")) == 1
+    assert {("deposit" in d, "derived" in d) for d in docs} == {(False, False), (True, False), (False, True)}
+    for d in docs:
+        assert _errors(CUSTODY_2, d) == []
+    f3v = json.loads((FIXTURES / "verification" / "terranubis__f3-demo-2020.json").read_text())
+    assert [c["name"] for c in f3v["checks"]] == ["origin-reachable", "deposit"]
+    assert _errors(VERIFICATION_7, f3v) == [] and _errors(VERIFICATION_6, f3v)
+
+
+def test_fixture_shapes():
+    """The F3-shaped pack: one cube, four wells, two horizons, three targets, deposited inputs, derived SEG-Y
+    and LAS; the Teapot-shaped pack: one target over verified inputs."""
+    f3, teapot = pack(F3), pack(TEAPOT)
+    assert [(c["kind"], c["count"]) for c in f3["contents"]] == [("seismic-3d", 1), ("wellbore-logs", 4), ("horizons", 2)]
+    assert [t["application"] for t in f3["targets"]] == ["opendtect", "resinsight", "python"]
+    assert {i["held"]["as"] for i in f3["inputs"]} == {"deposited"}
+    assert {Path(d["path"]).suffix for d in f3["derived"]} >= {".sgy", ".las"}
+    assert [t["application"] for t in teapot["targets"]] == ["python"]
+    assert {i["held"]["as"] for i in teapot["inputs"]} == {"verified"}
+
+
+def _artefact(doc: dict) -> dict:
+    return doc["targets"][0]["artefacts"][0]
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda d: d["decisions"][0].update(topic="colour"),
+    lambda d: d["decisions"][0].pop("subject"),
+    lambda d: _artefact(d).pop("key"),
+], ids=["unknown-topic", "missing-subject", "artefact-without-key"])
+def test_starter_schema_is_not_permissive(mutate):
+    doc = pack(F3)
+    mutate(doc)
+    assert _errors(STARTER, doc)

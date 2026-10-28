@@ -1,0 +1,44 @@
+{
+  "format": "osd.custody/2",
+  "record_id": "rmotc/teapot-dome",
+  "path": "python/teapot_starter.ipynb",
+  "origin_href": null,
+  "key": "mirror/rmotc/teapot-dome/de9f06386749a40dc997de0746f2f35827bb7339a02bd30baaffb646c375b608/teapot_starter.ipynb",
+  "href": "https://mirror.example/mirror/rmotc/teapot-dome/de9f06386749a40dc997de0746f2f35827bb7339a02bd30baaffb646c375b608/teapot_starter.ipynb",
+  "sha256": "de9f06386749a40dc997de0746f2f35827bb7339a02bd30baaffb646c375b608",
+  "bytes": 82,
+  "copied_at": "2026-10-29T11:30:00Z",
+  "derived": {
+    "pack_id": "rmotc/teapot-dome/python",
+    "recipe_id": "teapot-dome-python",
+    "from": [
+      "63b01def3f1bb93e393587444e891ccf77fbcc0a455245f232068e298db73c70",
+      "cbf580d6ebaa5f001b1afdf04b011462ea2b85afe3ec1a43ef64bc7807bb12e3"
+    ]
+  },
+  "licence": {
+    "name": "US Government work (public domain)",
+    "spdx": null,
+    "url": "https://www.usa.gov/government-copyright",
+    "redistribution": "allowed",
+    "attribution": "not-required"
+  },
+  "licence_text_sha256": null,
+  "attribution": [
+    "## Teapot Dome 3D survey and wells",
+    "",
+    "- Record: rmotc/teapot-dome (collection rmotc--teapot-dome)",
+    "- Origin: https://edx.netl.doe.gov/dataset/rocky-mountain-oilfield-testing-center-rmotc-teapot-dome-data",
+    "- Licence: US Government work (public domain) (no SPDX identifier), https://www.usa.gov/government-copyright",
+    "- Attribution: not-required",
+    "- Redistribution: allowed",
+    "- Share-alike: not stated",
+    "- Statement: none stated by the publisher in the record",
+    "- Known issue: Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the DOE NETL EDX dataset page; that URL answers 200 but redirects to an EDX login, so the licence field there could not be read (licence below is the US Government works statement, not read from EDX).",
+    "- Known issue: Replaces the former 'wiki page of mirrors' issue: the verifier should record the EDX resource it checksummed."
+  ],
+  "takedown": "https://github.com/ophiolite-labs/open-subsurface-data/issues/new?template=takedown.yml",
+  "removal": {
+    "state": "held"
+  }
+}

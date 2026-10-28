@@ -1,0 +1,573 @@
+{
+  "format": "osd.starter/1",
+  "id": "terranubis/f3-demo-2020/starter",
+  "record_id": "terranubis/f3-demo-2020",
+  "title": "F3 starter project",
+  "summary": "The F3 block cube, four wells and two horizons, ready for OpendTect, ResInsight and Python, with every decision written down.",
+  "recipe": {
+    "id": "f3-demo-2020-starter",
+    "repository": "https://github.com/ophiolite-labs/ophiolite",
+    "commit": "4444444444444444444444444444444444444444",
+    "tools": {
+      "ophiolite": "0.9.0",
+      "odbind": "7.0.10",
+      "segyio": "1.9.12",
+      "lasio": "0.31"
+    }
+  },
+  "contents": [
+    {
+      "kind": "seismic-3d",
+      "ids": [
+        "F3"
+      ],
+      "count": 1
+    },
+    {
+      "kind": "wellbore-logs",
+      "ids": [
+        "F02-1",
+        "F03-2",
+        "F03-4",
+        "F06-1"
+      ],
+      "count": 4
+    },
+    {
+      "kind": "horizons",
+      "ids": [
+        "Truncation",
+        "MFS4"
+      ],
+      "count": 2
+    }
+  ],
+  "inputs": [
+    {
+      "name": "F3_Demo_2023_seismic.zip",
+      "sha256": "98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb",
+      "bytes": 920,
+      "held": {
+        "as": "deposited",
+        "key": "mirror/terranubis/f3-demo-2020/98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb/F3_Demo_2023_seismic.zip"
+      }
+    },
+    {
+      "name": "F3_Demo_2023_wells.zip",
+      "sha256": "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c",
+      "bytes": 420,
+      "held": {
+        "as": "deposited",
+        "key": "mirror/terranubis/f3-demo-2020/cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c/F3_Demo_2023_wells.zip"
+      }
+    }
+  ],
+  "derived": [
+    {
+      "path": "standard/F3.sgy",
+      "sha256": "a6b4ec0d3420d2a2e2563554ca63b084b87ad123882ba2b7b4ea5babdf9954aa",
+      "bytes": 68,
+      "from": "98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb",
+      "how": "SEG-Y rev 1 written from the deposited survey"
+    },
+    {
+      "path": "standard/horizons.xyz",
+      "sha256": "dfc2c8c8dd3dd32243b083b7a91184d57fc064d618c99895d95dd99d4a2c0168",
+      "bytes": 43,
+      "from": "98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb",
+      "how": "both horizons as xyz from the deposited survey"
+    },
+    {
+      "path": "standard/F02-1.las",
+      "sha256": "b4fd569aca779115d69b719b0e5d49af4c638febd3e2a04fb7f9ceb521018b1b",
+      "bytes": 32,
+      "from": "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c",
+      "how": "LAS 2.0 of F02-1 from the deposited well files"
+    },
+    {
+      "path": "standard/F03-2.las",
+      "sha256": "9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b",
+      "bytes": 32,
+      "from": "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c",
+      "how": "LAS 2.0 of F03-2 from the deposited well files"
+    },
+    {
+      "path": "standard/F03-4.las",
+      "sha256": "39f0557e918aa095a83e04232eebb779ff3c713eef5965d89b19240a33ba2fa4",
+      "bytes": 32,
+      "from": "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c",
+      "how": "LAS 2.0 of F03-4 from the deposited well files"
+    },
+    {
+      "path": "standard/F06-1.las",
+      "sha256": "a131aa023c5cf6ac9b34cae9db87d8960551920a520eb6688a68cf660ffb1020",
+      "bytes": 32,
+      "from": "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c",
+      "how": "LAS 2.0 of F06-1 from the deposited well files"
+    }
+  ],
+  "decisions": [
+    {
+      "topic": "crs",
+      "subject": "F3",
+      "value": "EPSG:23031 (ED50 / UTM zone 31N)",
+      "source": "publisher"
+    },
+    {
+      "topic": "domain",
+      "subject": "F3",
+      "value": "time",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "F3",
+      "value": "TWT ms; amplitude unscaled",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "F3",
+      "value": "none: every trace is live",
+      "source": "data"
+    },
+    {
+      "topic": "crs",
+      "subject": "F02-1",
+      "value": "EPSG:23031 (ED50 / UTM zone 31N)",
+      "source": "publisher"
+    },
+    {
+      "topic": "vertical-datum",
+      "subject": "F02-1",
+      "value": "MSL",
+      "source": "publisher"
+    },
+    {
+      "topic": "depth-reference",
+      "subject": "F02-1",
+      "value": "KB 30.0 m above MSL",
+      "source": "data"
+    },
+    {
+      "topic": "depth-kind",
+      "subject": "F02-1",
+      "value": "MD",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "F02-1",
+      "value": "depth m; GR API; DT us/ft; RHOB g/cm3",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "F02-1",
+      "value": "-999.25",
+      "source": "data"
+    },
+    {
+      "topic": "names",
+      "subject": "F02-1",
+      "value": "GR, DT, RHOB, PHIE kept as the LAS names them",
+      "source": "chosen",
+      "note": "the four curves every target reads; no renaming keeps the LAS and the targets aligned"
+    },
+    {
+      "topic": "crs",
+      "subject": "F03-2",
+      "value": "EPSG:23031 (ED50 / UTM zone 31N)",
+      "source": "publisher"
+    },
+    {
+      "topic": "vertical-datum",
+      "subject": "F03-2",
+      "value": "MSL",
+      "source": "publisher"
+    },
+    {
+      "topic": "depth-reference",
+      "subject": "F03-2",
+      "value": "KB 30.0 m above MSL",
+      "source": "data"
+    },
+    {
+      "topic": "depth-kind",
+      "subject": "F03-2",
+      "value": "MD",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "F03-2",
+      "value": "depth m; GR API; DT us/ft; RHOB g/cm3",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "F03-2",
+      "value": "-999.25",
+      "source": "data"
+    },
+    {
+      "topic": "names",
+      "subject": "F03-2",
+      "value": "GR, DT, RHOB, PHIE kept as the LAS names them",
+      "source": "chosen",
+      "note": "the four curves every target reads; no renaming keeps the LAS and the targets aligned"
+    },
+    {
+      "topic": "crs",
+      "subject": "F03-4",
+      "value": "EPSG:23031 (ED50 / UTM zone 31N)",
+      "source": "publisher"
+    },
+    {
+      "topic": "vertical-datum",
+      "subject": "F03-4",
+      "value": "MSL",
+      "source": "publisher"
+    },
+    {
+      "topic": "depth-reference",
+      "subject": "F03-4",
+      "value": "KB 30.0 m above MSL",
+      "source": "data"
+    },
+    {
+      "topic": "depth-kind",
+      "subject": "F03-4",
+      "value": "MD",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "F03-4",
+      "value": "depth m; GR API; DT us/ft; RHOB g/cm3",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "F03-4",
+      "value": "-999.25",
+      "source": "data"
+    },
+    {
+      "topic": "names",
+      "subject": "F03-4",
+      "value": "GR, DT, RHOB, PHIE kept as the LAS names them",
+      "source": "chosen",
+      "note": "the four curves every target reads; no renaming keeps the LAS and the targets aligned"
+    },
+    {
+      "topic": "crs",
+      "subject": "F06-1",
+      "value": "EPSG:23031 (ED50 / UTM zone 31N)",
+      "source": "publisher"
+    },
+    {
+      "topic": "vertical-datum",
+      "subject": "F06-1",
+      "value": "MSL",
+      "source": "publisher"
+    },
+    {
+      "topic": "depth-reference",
+      "subject": "F06-1",
+      "value": "KB 30.0 m above MSL",
+      "source": "data"
+    },
+    {
+      "topic": "depth-kind",
+      "subject": "F06-1",
+      "value": "MD",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "F06-1",
+      "value": "depth m; GR API; DT us/ft; RHOB g/cm3",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "F06-1",
+      "value": "-999.25",
+      "source": "data"
+    },
+    {
+      "topic": "names",
+      "subject": "F06-1",
+      "value": "GR, DT, RHOB, PHIE kept as the LAS names them",
+      "source": "chosen",
+      "note": "the four curves every target reads; no renaming keeps the LAS and the targets aligned"
+    },
+    {
+      "topic": "crs",
+      "subject": "Truncation",
+      "value": "EPSG:23031 (ED50 / UTM zone 31N)",
+      "source": "publisher"
+    },
+    {
+      "topic": "domain",
+      "subject": "Truncation",
+      "value": "time",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "Truncation",
+      "value": "TWT ms",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "Truncation",
+      "value": "1e30 written as missing",
+      "source": "chosen",
+      "note": "OpendTect's undefined value maps to an empty xyz row"
+    },
+    {
+      "topic": "crs",
+      "subject": "MFS4",
+      "value": "EPSG:23031 (ED50 / UTM zone 31N)",
+      "source": "publisher"
+    },
+    {
+      "topic": "domain",
+      "subject": "MFS4",
+      "value": "time",
+      "source": "data"
+    },
+    {
+      "topic": "units",
+      "subject": "MFS4",
+      "value": "TWT ms",
+      "source": "data"
+    },
+    {
+      "topic": "nulls",
+      "subject": "MFS4",
+      "value": "1e30 written as missing",
+      "source": "chosen",
+      "note": "OpendTect's undefined value maps to an empty xyz row"
+    }
+  ],
+  "targets": [
+    {
+      "application": "opendtect",
+      "version": "7.0.10",
+      "artefacts": [
+        {
+          "path": "standard/F3.sgy",
+          "sha256": "a6b4ec0d3420d2a2e2563554ca63b084b87ad123882ba2b7b4ea5babdf9954aa",
+          "bytes": 68,
+          "key": "mirror/terranubis/f3-demo-2020/a6b4ec0d3420d2a2e2563554ca63b084b87ad123882ba2b7b4ea5babdf9954aa/F3.sgy"
+        },
+        {
+          "path": "standard/horizons.xyz",
+          "sha256": "dfc2c8c8dd3dd32243b083b7a91184d57fc064d618c99895d95dd99d4a2c0168",
+          "bytes": 43,
+          "key": "mirror/terranubis/f3-demo-2020/dfc2c8c8dd3dd32243b083b7a91184d57fc064d618c99895d95dd99d4a2c0168/horizons.xyz"
+        },
+        {
+          "path": "standard/F02-1.las",
+          "sha256": "b4fd569aca779115d69b719b0e5d49af4c638febd3e2a04fb7f9ceb521018b1b",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/b4fd569aca779115d69b719b0e5d49af4c638febd3e2a04fb7f9ceb521018b1b/F02-1.las"
+        },
+        {
+          "path": "standard/F03-2.las",
+          "sha256": "9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b/F03-2.las"
+        },
+        {
+          "path": "standard/F03-4.las",
+          "sha256": "39f0557e918aa095a83e04232eebb779ff3c713eef5965d89b19240a33ba2fa4",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/39f0557e918aa095a83e04232eebb779ff3c713eef5965d89b19240a33ba2fa4/F03-4.las"
+        },
+        {
+          "path": "standard/F06-1.las",
+          "sha256": "a131aa023c5cf6ac9b34cae9db87d8960551920a520eb6688a68cf660ffb1020",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/a131aa023c5cf6ac9b34cae9db87d8960551920a520eb6688a68cf660ffb1020/F06-1.las"
+        },
+        {
+          "path": "opendtect/import_f3.py",
+          "sha256": "d182c1880dd86bf8ec442ad84a2445f8b82ec6f6070129c9c20b853c3bed93f7",
+          "bytes": 65,
+          "key": "mirror/terranubis/f3-demo-2020/d182c1880dd86bf8ec442ad84a2445f8b82ec6f6070129c9c20b853c3bed93f7/import_f3.py"
+        }
+      ],
+      "import": "opendtect/import_f3.py",
+      "oracle": {
+        "compared": [
+          "trace samples at 64 seeded positions against dGB's survey read through odbind",
+          "log samples at 32 seeded depths per well against lasio"
+        ],
+        "values": 192,
+        "differences": 0,
+        "seed": 40
+      }
+    },
+    {
+      "application": "resinsight",
+      "version": "2025.04",
+      "artefacts": [
+        {
+          "path": "standard/F3.sgy",
+          "sha256": "a6b4ec0d3420d2a2e2563554ca63b084b87ad123882ba2b7b4ea5babdf9954aa",
+          "bytes": 68,
+          "key": "mirror/terranubis/f3-demo-2020/a6b4ec0d3420d2a2e2563554ca63b084b87ad123882ba2b7b4ea5babdf9954aa/F3.sgy"
+        },
+        {
+          "path": "standard/horizons.xyz",
+          "sha256": "dfc2c8c8dd3dd32243b083b7a91184d57fc064d618c99895d95dd99d4a2c0168",
+          "bytes": 43,
+          "key": "mirror/terranubis/f3-demo-2020/dfc2c8c8dd3dd32243b083b7a91184d57fc064d618c99895d95dd99d4a2c0168/horizons.xyz"
+        },
+        {
+          "path": "standard/F02-1.las",
+          "sha256": "b4fd569aca779115d69b719b0e5d49af4c638febd3e2a04fb7f9ceb521018b1b",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/b4fd569aca779115d69b719b0e5d49af4c638febd3e2a04fb7f9ceb521018b1b/F02-1.las"
+        },
+        {
+          "path": "standard/F03-2.las",
+          "sha256": "9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b/F03-2.las"
+        },
+        {
+          "path": "standard/F03-4.las",
+          "sha256": "39f0557e918aa095a83e04232eebb779ff3c713eef5965d89b19240a33ba2fa4",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/39f0557e918aa095a83e04232eebb779ff3c713eef5965d89b19240a33ba2fa4/F03-4.las"
+        },
+        {
+          "path": "standard/F06-1.las",
+          "sha256": "a131aa023c5cf6ac9b34cae9db87d8960551920a520eb6688a68cf660ffb1020",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/a131aa023c5cf6ac9b34cae9db87d8960551920a520eb6688a68cf660ffb1020/F06-1.las"
+        },
+        {
+          "path": "resinsight/import_f3.py",
+          "sha256": "dde9284611187fb02ee6c3385a828aff753e0d70b3ac1f6fb550cca32e5c445c",
+          "bytes": 33,
+          "key": "mirror/terranubis/f3-demo-2020/dde9284611187fb02ee6c3385a828aff753e0d70b3ac1f6fb550cca32e5c445c/import_f3.py"
+        }
+      ],
+      "import": "resinsight/import_f3.py",
+      "oracle": {
+        "compared": [
+          "trace samples at 64 seeded positions against dGB's survey read through odbind",
+          "log samples at 32 seeded depths per well against lasio"
+        ],
+        "values": 192,
+        "differences": 0,
+        "seed": 40
+      }
+    },
+    {
+      "application": "python",
+      "version": "3.12",
+      "artefacts": [
+        {
+          "path": "standard/F3.sgy",
+          "sha256": "a6b4ec0d3420d2a2e2563554ca63b084b87ad123882ba2b7b4ea5babdf9954aa",
+          "bytes": 68,
+          "key": "mirror/terranubis/f3-demo-2020/a6b4ec0d3420d2a2e2563554ca63b084b87ad123882ba2b7b4ea5babdf9954aa/F3.sgy"
+        },
+        {
+          "path": "standard/horizons.xyz",
+          "sha256": "dfc2c8c8dd3dd32243b083b7a91184d57fc064d618c99895d95dd99d4a2c0168",
+          "bytes": 43,
+          "key": "mirror/terranubis/f3-demo-2020/dfc2c8c8dd3dd32243b083b7a91184d57fc064d618c99895d95dd99d4a2c0168/horizons.xyz"
+        },
+        {
+          "path": "standard/F02-1.las",
+          "sha256": "b4fd569aca779115d69b719b0e5d49af4c638febd3e2a04fb7f9ceb521018b1b",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/b4fd569aca779115d69b719b0e5d49af4c638febd3e2a04fb7f9ceb521018b1b/F02-1.las"
+        },
+        {
+          "path": "standard/F03-2.las",
+          "sha256": "9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/9512410c91ee15f9b92b9b11b5031ac31ac7db929c58da01c16b3bb8d555c52b/F03-2.las"
+        },
+        {
+          "path": "standard/F03-4.las",
+          "sha256": "39f0557e918aa095a83e04232eebb779ff3c713eef5965d89b19240a33ba2fa4",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/39f0557e918aa095a83e04232eebb779ff3c713eef5965d89b19240a33ba2fa4/F03-4.las"
+        },
+        {
+          "path": "standard/F06-1.las",
+          "sha256": "a131aa023c5cf6ac9b34cae9db87d8960551920a520eb6688a68cf660ffb1020",
+          "bytes": 32,
+          "key": "mirror/terranubis/f3-demo-2020/a131aa023c5cf6ac9b34cae9db87d8960551920a520eb6688a68cf660ffb1020/F06-1.las"
+        },
+        {
+          "path": "python/f3_starter.ipynb",
+          "sha256": "d1b93a151ac84bd3c1b3480193e7d4a1cd65170f637d17a7231bd4b6bbb8bb01",
+          "bytes": 78,
+          "key": "mirror/terranubis/f3-demo-2020/d1b93a151ac84bd3c1b3480193e7d4a1cd65170f637d17a7231bd4b6bbb8bb01/f3_starter.ipynb"
+        },
+        {
+          "path": "python/requirements.txt",
+          "sha256": "d42a911551cf76958bb8e2227cd1042dd4424d6a1869fb66b43aa4321c0e3d0f",
+          "bytes": 27,
+          "key": "mirror/terranubis/f3-demo-2020/d42a911551cf76958bb8e2227cd1042dd4424d6a1869fb66b43aa4321c0e3d0f/requirements.txt"
+        }
+      ],
+      "import": "python/f3_starter.ipynb",
+      "oracle": {
+        "compared": [
+          "trace samples at 64 seeded positions against dGB's survey read through odbind",
+          "log samples at 32 seeded depths per well against lasio"
+        ],
+        "values": 192,
+        "differences": 0,
+        "seed": 40
+      }
+    }
+  ],
+  "licence": {
+    "name": "Creative Commons 3.0 (the page links the BY-SA 3.0 deed)",
+    "spdx": "CC-BY-SA-3.0",
+    "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "redistribution": "allowed",
+    "attribution": "required",
+    "share_alike": true,
+    "sources": [
+      {
+        "input": "F3_Demo_2023_seismic.zip",
+        "licence": {
+          "name": "Creative Commons 3.0 (the page links the BY-SA 3.0 deed)",
+          "spdx": "CC-BY-SA-3.0",
+          "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+          "redistribution": "allowed",
+          "attribution": "required",
+          "share_alike": true
+        }
+      },
+      {
+        "input": "F3_Demo_2023_wells.zip",
+        "licence": {
+          "name": "Creative Commons 3.0 (the page links the BY-SA 3.0 deed)",
+          "spdx": "CC-BY-SA-3.0",
+          "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+          "redistribution": "allowed",
+          "attribution": "required",
+          "share_alike": true
+        }
+      }
+    ]
+  },
+  "fidelity": "fidelity/terranubis__f3-demo-2020__starter.json",
+  "built_at": "2026-10-29T11:00:00Z"
+}

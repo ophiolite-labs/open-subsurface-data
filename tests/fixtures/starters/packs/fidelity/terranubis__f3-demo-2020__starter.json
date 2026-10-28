@@ -1,0 +1,34 @@
+{
+  "format": "osd.fidelity/1",
+  "catalog": {
+    "source_commit": "1111111111111111111111111111111111111111",
+    "verification_commit": "2222222222222222222222222222222222222222",
+    "built_at": "2026-10-29T09:00:00Z",
+    "records_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "record": "terranubis/f3-demo-2020",
+  "inputs": [
+    {
+      "sha256": "98cae06f479eb8c9e9084e5e6dcee0ef935005d3c977c514780dade75ed377fb",
+      "name": "F3_Demo_2023_seismic.zip",
+      "result": "converted",
+      "output": {
+        "kind": "seismic-3d",
+        "id": "F3",
+        "converter": "ophiolite.segy",
+        "version": "0.9.0"
+      }
+    },
+    {
+      "sha256": "cca8d65df6402be541f42a6516f73559a9ab21086d1a58ce855e31b2b461f19c",
+      "name": "F3_Demo_2023_wells.zip",
+      "result": "converted",
+      "output": {
+        "kind": "wellbore-logs",
+        "id": "F3 wells",
+        "converter": "ophiolite.las",
+        "version": "0.9.0"
+      }
+    }
+  ]
+}

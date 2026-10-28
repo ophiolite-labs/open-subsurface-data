@@ -14,3 +14,11 @@ re-reads the mutated file before running (`mut.py`, lane scratchpad).
 | verification/7: the reason-sentence pattern on a passing deposit removed | `test_deposit_check_refuses[reason-sentence]` |
 | verification/7: a deposit file without `key` admitted | `test_deposit_check_refuses[file-without-key]` |
 | verification/7: a check named `deposit` no longer selects the deposit shape | `test_deposit_check_shape` |
+
+## C3: starter/1 and the fixtures (design 1, 7; acceptance 8)
+
+| Mutation | Red test |
+|---|---|
+| starter/1: `topic` any string (unknown topic admitted) | `test_starter_schema_is_not_permissive[unknown-topic]` |
+| starter/1: `subject` not required | `test_starter_schema_is_not_permissive[missing-subject]` |
+| starter/1: an artefact without `key` admitted | `test_starter_schema_is_not_permissive[artefact-without-key]` |

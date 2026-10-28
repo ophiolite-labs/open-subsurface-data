@@ -1,0 +1,46 @@
+{
+  "record_id": "rmotc/teapot-dome",
+  "checked_at": "2026-10-29T09:30:00+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "2 files"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "captured"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://edx.netl.doe.gov/dataset/rocky-mountain-oilfield-testing-center-rmotc-teapot-dome-data",
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "teapot/3D_Seismic/filt_mig.sgy",
+      "url": "https://edx.netl.doe.gov/storage/teapot/3D_Seismic/filt_mig.sgy",
+      "bytes": 870,
+      "sha256": "63b01def3f1bb93e393587444e891ccf77fbcc0a455245f232068e298db73c70"
+    },
+    {
+      "path": "teapot/Well_logs/490251051400.las",
+      "url": "https://edx.netl.doe.gov/storage/teapot/Well_logs/490251051400.las",
+      "bytes": 270,
+      "sha256": "cbf580d6ebaa5f001b1afdf04b011462ea2b85afe3ec1a43ef64bc7807bb12e3"
+    }
+  ],
+  "licence_text_sha256": "865ae66f0f57d6a46cf6277b99a3bb36fb4950a37ec77eb1188f6fb4817f324e"
+}
