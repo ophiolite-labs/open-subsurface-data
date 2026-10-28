@@ -8,7 +8,7 @@
   version, keep a test that the old files still validate, name the change in the PR title.
 - The site is surface: one HTML, one JS, one CSS, no build step, no framework. Deletable modules,
   never migrations. A screenshot is its proof.
-- Network only in `osd verify`, the `verify` workflow, the one page `osd new <url>` reads for a title (`--title` skips it), `osd get <manifest>`, which is intentional retrieval by the person running it, and `osd mirror put`, which copies eligible origins into the mirror (run by the verify workflow on main, or by a maintainer). Tests inject a fetcher or transport.
+- Network only in `osd verify`, the `verify` workflow, the one page `osd new <url>` reads for a title (`--title` skips it), `osd get <manifest>`, which is intentional retrieval by the person running it, and `osd mirror put`, which copies eligible origins into the mirror (run by the verify workflow on main, or by a maintainer), and `osd mirror deposit` and `osd mirror put-derived`, which upload files already on the machine to the mirror store and reach nothing else (E41). Tests inject a fetcher or transport.
 - Lanes claim paths in `docs/program/CLAIMS.md` before they start; two open lanes never share a
   path. Branch names are `e<nn>-<slug>`; one squash merge per lane.
 - Program state lives in `docs/program/PROGRAM.md` (queue), `docs/program/charters/` (what each

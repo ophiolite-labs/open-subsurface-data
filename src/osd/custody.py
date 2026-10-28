@@ -2,8 +2,9 @@
 
 `document()` writes what a copy is from the record (publisher facts) and the verification run that
 inventoried it (tool facts), as /1. custody/2 adds two provenances besides that verified download: a
-maintainer's `deposit` and a starter pack's `derived` artefact (written by E41); every reader here
-takes both versions through the live schema, and `provenance()` says which of the three a document is. `problems()` is the schema plus what a schema cannot say: the store key
+maintainer's `deposit` (`deposit_document()`, E41) and a starter pack's `derived` artefact
+(`derived_document()`, E41); every reader here takes both versions through the live schema, and
+`provenance()` says which of the three a document is. `problems()` is the schema plus what a schema cannot say: the store key
 names the record, the digest and the file; a `.removed.json` name holds a tombstone and nothing else
 does; and, given the stored object's size, `bytes` agrees with it.
 """
@@ -81,6 +82,25 @@ def document(rec: dict, verification: dict, f: dict, href: str, now: datetime) -
         "verifier_run": {"checked_at": verification["checked_at"], "tool_version": verification["tool_version"]},
         "licence": {k: rec["licence"][k] for k in LICENCE_FIELDS if k in rec["licence"]},
         "licence_text_sha256": verification.get("licence_text_sha256"),
+        "attribution": entry_attribution(_entry(rec)),
+        "takedown": TAKEDOWN_URL,
+        "removal": {"state": "held"},
+    }
+
+
+def _stamp(now: datetime) -> str:
+    return now.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def deposit_document(rec: dict, path: str, sha256: str, n: int, href: str, now: datetime, deposit: dict) -> dict:
+    """custody/2 for a maintainer's deposit (E41 design 1): the record's licence and attribution, no
+    origin, the deposit block (when, by which role, the page and licence text captured then)."""
+    return {
+        "format": FORMAT_2, "record_id": rec["id"], "path": path, "origin_href": None,
+        "key": object_key(rec["id"], sha256, path), "href": href, "sha256": sha256, "bytes": n,
+        "copied_at": _stamp(now), "deposit": dict(deposit),
+        "licence": {k: rec["licence"][k] for k in LICENCE_FIELDS if k in rec["licence"]},
+        "licence_text_sha256": deposit["licence_text_sha256"],
         "attribution": entry_attribution(_entry(rec)),
         "takedown": TAKEDOWN_URL,
         "removal": {"state": "held"},

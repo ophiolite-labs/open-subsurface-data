@@ -17,6 +17,14 @@ bucket, selected by a `s3://<bucket>` store spec with keys from the environment)
 custody, move (no origin fetch); otherwise stream the origin to staging, compare size and sha256,
 write custody, move. An interrupted run leaves at most a staging object, which the next run checks
 and finishes or replaces. `remove()` writes the tombstone first, then deletes every object of the copy.
+
+Local uploads (E41) take the same staging, digest comparison and custody-before-move from a
+directory instead of an origin: `deposit()` (a maintainer's deposit of a publisher's download,
+custody/2 `deposit`) and `put_derived()` (a starter pack's artefacts, custody/2 `derived`). Both walk
+regular files only (`walk()`: relative paths, a symlink refuses), refuse at the cap from the sizes
+before hashing, hash each file, refuse a tombstoned or otherwise-held digest before writing anything,
+then hash again while streaming to staging: the two digests must agree before the custody document
+is written. No network but the store.
 """
 
 from __future__ import annotations
@@ -27,6 +35,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import tempfile
 import urllib.error
 import urllib.request
@@ -53,6 +62,7 @@ from .verify import (
     _OverBudget,
     _read,
     _Robots,
+    licence_text,
     parse_listing,
 )
 
@@ -644,3 +654,167 @@ def public_index(custody_dir: Path) -> list[dict]:
             raise MirrorError(f"{p}: " + "; ".join(bad))
         out.append({k: doc[k] for k in ("record_id", "path", "sha256", "bytes", "href")})
     return out
+
+
+# --- local uploads: deposits and derived artefacts (E41) -----------------------------------------
+
+@dataclass(frozen=True)
+class LocalFile:
+    path: str           # relative to the walked directory, posix
+    source: Path
+    bytes: int
+    sha256: str = ""
+
+
+def walk(root: Path, exclude: Iterable[Path] = ()) -> list[LocalFile]:
+    """Every regular file under `root` by relative path, sizes from stat; `exclude` (the captured
+    page and licence text when they sit inside) is left out. A symlink or any other entry refuses."""
+    root = Path(root)
+    if root.is_symlink() or not root.is_dir():
+        raise MirrorError(f"{root} is not a directory")
+    skip = {Path(p).resolve() for p in exclude}
+    out = []
+    for d, dirs, files in os.walk(root):
+        dirs.sort()
+        for name in sorted(dirs + files):
+            p = Path(d) / name
+            rel = p.relative_to(root).as_posix()
+            if p.is_symlink():
+                raise MirrorError(f"symlink {rel}: only regular files are uploaded, as downloaded")
+            if name in dirs:
+                continue
+            st = p.lstat()
+            if not stat.S_ISREG(st.st_mode):
+                raise MirrorError(f"{rel}: not a regular file")
+            if p.resolve() not in skip:
+                out.append(LocalFile(rel, p, st.st_size))
+    if not out:
+        raise MirrorError(f"no regular file in {root}")
+    return out
+
+
+def under_cap(files: list[LocalFile]) -> int:
+    total = sum(f.bytes for f in files)
+    if total >= CAP_BYTES:
+        raise NotEligible(f"{len(files)} files, {total} bytes: not under 20 GB (OSD-D6)")
+    return total
+
+
+def _file_chunks(p: Path) -> Iterator[bytes]:
+    with p.open("rb") as f:
+        while chunk := f.read(CHUNK):
+            yield chunk
+
+
+def sha256_file(p: Path) -> tuple[str, int]:
+    h, n = hashlib.sha256(), 0
+    for chunk in _file_chunks(p):
+        h.update(chunk)
+        n += len(chunk)
+    return h.hexdigest(), n
+
+
+def hash_local(files: list[LocalFile]) -> list[LocalFile]:
+    out = []
+    for f in files:
+        sha, n = sha256_file(f.source)
+        if n != f.bytes:
+            raise MirrorError(f"{f.path}: {n} bytes read, {f.bytes} stated by stat: the file is changing")
+        out.append(LocalFile(f.path, f.source, n, sha))
+    return out
+
+
+def _holder(doc: dict) -> tuple:
+    return doc["record_id"], custody.provenance(doc), (doc.get("derived") or {}).get("pack_id")
+
+
+def upload_local(record_id: str, files: list[LocalFile], store, document: Callable[[LocalFile, str], dict]) -> list[Copied]:
+    """Publish hashed local files: every refusal before anything is written, then per file staging,
+    a second digest while streaming, custody (`document(file, href)`), move."""
+    first: dict[str, str] = {}
+    for f in files:
+        if f.sha256 in first:
+            raise MirrorError(f"{first[f.sha256]} and {f.path} are the same bytes ({f.sha256[:12]}…): "
+                              "the mirror holds one copy per digest")
+        first[f.sha256] = f.path
+    todo = []
+    for f in files:
+        k = keys_for(record_id, f.sha256, f.path)
+        if store.exists(k.tombstone):
+            t = store.get_json(k.tombstone)["removal"]
+            raise MirrorError(f"{f.path}: digest {f.sha256[:12]}… was removed {t['removed_at'][:10]} on "
+                              f"{t['request']}: never mirrored again")
+        if store.exists(k.custody):
+            held, want = store.get_json(k.custody), document(f, store.public_url(k.public))
+            if _holder(held) != _holder(want):
+                rid, prov, pack = _holder(held)
+                raise MirrorError(f"{f.path}: digest {f.sha256[:12]}… is held for {rid} as a {prov} copy"
+                                  + (f" of {pack}" if pack else ""))
+            if store.exists(k.public) and held["path"] == f.path:
+                todo.append((f, k, "present"))
+                continue
+        todo.append((f, k, "upload"))
+    out = []
+    for f, k, what in todo:
+        if what == "present":
+            out.append(Copied(f.path, f.sha256, "present", k.public, f.bytes))
+            continue
+        store.delete(k.staging)
+        h, count = hashlib.sha256(), [0]
+        store.upload(k.staging, _hashing(_file_chunks(f.source), h, count))
+        if (h.hexdigest(), count[0]) != (f.sha256, f.bytes):
+            store.delete(k.staging)
+            raise MirrorError(f"{f.path}: streamed {count[0]} bytes sha256 {h.hexdigest()}, hashed before as "
+                              f"{f.bytes} bytes {f.sha256}: nothing published for it")
+        doc = document(f, store.public_url(k.public))
+        bad = custody.problems(doc, k.custody.split("/")[1], store.size(k.staging))
+        if bad:
+            store.delete(k.staging)
+            raise MirrorError(f"{f.path}: custody document refused: " + "; ".join(bad))
+        store.put_json(k.custody, doc)
+        store.move(k.staging, k.public)
+        out.append(Copied(f.path, f.sha256, "published", k.public, f.bytes))
+    return out
+
+
+def obtained_at(value: str) -> str:
+    """A date (the day the download was made) or a UTC date-time, as custody states it."""
+    try:
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            return datetime.strptime(value, "%Y-%m-%d").strftime("%Y-%m-%dT00:00:00Z")
+        t = datetime.fromisoformat(value)
+        if t.tzinfo is None:
+            raise ValueError(value)
+        return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        raise MirrorError(f"--obtained {value}: not a date (YYYY-MM-DD) or a date-time with its offset") from None
+
+
+def deposit(rec: dict, root: Path, store, *, obtained: str, by: str, page_url: str, page: Path,
+            licence: Path, now: datetime | None = None) -> list[Copied]:
+    """A maintainer's deposit of the publisher's download (E41 design 1, OSD-D22). `page` and
+    `licence` are the publisher's page and the licence text as the person saved them; the page is
+    kept as its sha256, the licence text as the sha256 of its visible text (the verifier's own
+    normalisation, so the two digests compare). The record file is never touched."""
+    rights = rec["licence"]["redistribution"]
+    if rights != "allowed":
+        raise NotEligible(f"{rec['id']}: redistribution {rights}, not allowed (OSD-D6)")
+    host = urlsplit(rec["origin"]["url"]).hostname
+    if urlsplit(page_url).hostname != host:
+        raise MirrorError(f"--page-url {page_url} is not on the record's origin host {host}")
+    page, licence = Path(page), Path(licence)
+    for what, p in (("--page", page), ("--licence-text", licence)):
+        if not p.is_file():
+            raise MirrorError(f"{what} {p}: no such file")
+    text = licence_text(licence.read_bytes())
+    if not text:
+        raise MirrorError(f"--licence-text {licence}: no text")
+    block = {"obtained_at": obtained_at(obtained), "by": by, "publisher_page_url": page_url,
+             "publisher_page_sha256": hashlib.sha256(page.read_bytes()).hexdigest(),
+             "licence_text_sha256": hashlib.sha256(text.encode()).hexdigest()}
+    files = walk(root, exclude=(page, licence))
+    under_cap(files)
+    files = hash_local(files)
+    now = now or datetime.now(UTC)
+    return upload_local(rec["id"], files, store, lambda f, href: custody.deposit_document(
+        rec, f.path, f.sha256, f.bytes, href, now, block))

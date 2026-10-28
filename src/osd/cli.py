@@ -277,6 +277,32 @@ def cmd_mirror_put(a: argparse.Namespace, opener=http_open) -> int:
     return 1 if bad else 0
 
 
+def _uploaded(rid: str, out: list, store) -> None:
+    for c in out:
+        print(f"  {c.outcome:11} {rid} {c.path} {c.sha256[:12]}  ({c.bytes} bytes)")
+    print(f"{len(out)} files, {sum(c.bytes for c in out)} bytes in {store.root}: "
+          f"{sum(c.outcome == 'published' for c in out)} published, {sum(c.outcome == 'present' for c in out)} present")
+
+
+def cmd_mirror_deposit(a: argparse.Namespace) -> int:
+    """E41: no network but the store; the page and the licence text are files the person saved."""
+    recs = load_records()
+    if a.record_id not in recs:
+        print(f"refused: no record {a.record_id}")
+        return 1
+    try:
+        store = _store(a)
+        if hasattr(store, "check"):
+            store.check()
+        out = mirror_mod.deposit(recs[a.record_id], Path(a.dir), store, obtained=a.obtained, by=a.by,
+                                 page_url=a.page_url, page=Path(a.page), licence=Path(a.licence_text))
+    except mirror_mod.MirrorError as e:
+        print(f"refused: {e}")
+        return 1
+    _uploaded(a.record_id, out, store)
+    return 0
+
+
 def cmd_mirror_custody(a: argparse.Namespace) -> int:
     try:
         names = mirror_mod.sync_custody(_store(a), Path(a.out))
@@ -369,6 +395,18 @@ def main(argv: list[str] | None = None) -> int:
     mp.add_argument("--vdir", default=str(paths.VERIFICATION_DIR))
     mp.add_argument("--dry-run", action="store_true", help="read the store, say what would be copied, write nothing")
     mp.set_defaults(fn=cmd_mirror_put)
+    md = msub.add_parser("deposit", parents=[store_args],
+                         help="upload a publisher's download a maintainer obtained, with custody/2 deposit (E41;"
+                              " no network but the store)")
+    md.add_argument("record_id")
+    md.add_argument("dir", help="the download as obtained, unmodified (regular files only)")
+    md.add_argument("--obtained", required=True, help="when the files were obtained: YYYY-MM-DD or a UTC date-time")
+    md.add_argument("--by", required=True, help="a role, never a name (maintainer)")
+    md.add_argument("--page-url", required=True, help="the publisher's page the download came from")
+    md.add_argument("--page", required=True, help="that page as the person saved it (page.html); kept as its sha256")
+    md.add_argument("--licence-text", required=True,
+                    help="the licence page or text as the person saved it; kept as the sha256 of its visible text")
+    md.set_defaults(fn=cmd_mirror_deposit)
     mc = msub.add_parser("custody", parents=[store_args],
                          help="copy the store's custody documents and tombstones into a directory (for the build)")
     mc.add_argument("--out", required=True)

@@ -5,6 +5,7 @@ mirror are fake openers keyed by URL, so nothing leaves the machine."""
 import copy
 import hashlib
 import json
+import shutil
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -951,3 +952,174 @@ def test_workflow_keys_only_on_dispatch():
                 assert "github.ref != 'refs/heads/main'" in cond, (name, step["name"])
     assert with_keys == 5 and writes == 3        # put in verify and finish, read-only in both, takedown
     assert "secrets." not in (ROOT / ".github" / "workflows" / "pages.yml").read_text()
+
+
+# --- E41: deposits (design 1; acceptance 1 and 2) ------------------------------------------------
+
+DEPOSIT_DIR = ROOT / "tests" / "fixtures" / "deposits" / "f3-demo-2023"
+F3 = "terranubis/f3-demo-2020"
+DEPOSITED = ["F3_Demo_2023.zip", "docs/README.txt", "wells/F02-1.las"]
+PAGE_URL = "https://terranubis.com/datainfo/F3-Demo-2023"
+
+
+def f3_record(**licence) -> dict:
+    rec = load_record(ROOT / "records" / "terranubis" / "f3-demo-2020.yaml")
+    rec["licence"].update(licence)
+    return rec
+
+
+def deposit(s, rec=None, root=DEPOSIT_DIR, **kw):
+    return mirror.deposit(rec or f3_record(), root, s, obtained="2026-10-29", by="maintainer", page_url=PAGE_URL,
+                          page=root / "page.html", licence=root / "licence.html", now=NOW, **kw)
+
+
+def deposit_copy(tmp_path) -> Path:
+    d = tmp_path / "download"
+    shutil.copytree(DEPOSIT_DIR, d)
+    return d
+
+
+def test_deposit_three_files_read_back_equal_sha256sum_and_stat(tmp_path):
+    import subprocess
+    s = store(tmp_path)
+    out = deposit(s)
+    assert [(c.path, c.outcome) for c in out] == [(p, "published") for p in DEPOSITED]
+    sums = dict(reversed(line.split("  ", 1)) for line in subprocess.run(
+        ["sha256sum", *DEPOSITED], cwd=DEPOSIT_DIR, capture_output=True, text=True, check=True).stdout.splitlines())
+    sizes = {p: int(subprocess.run(["stat", "-c", "%s", p], cwd=DEPOSIT_DIR, capture_output=True, text=True,
+                                   check=True).stdout) for p in DEPOSITED}
+    docs = [s.get_json(k) for k in s.keys("custody/")]
+    assert len(docs) == 3 and len(s.keys("mirror/")) == 3 and not s.keys("staging/")
+    for doc in docs:      # path -> digest -> bytes, each bound to the stored object
+        p = doc["path"]
+        assert (doc["sha256"], doc["bytes"]) == (sums[p], sizes[p])
+        assert mirror._hash_object(s, doc["key"]) == (sums[p], sizes[p])
+        assert doc["key"] == custody.object_key(F3, sums[p], p) and doc["href"] == MIRROR + doc["key"]
+        assert custody.problems(doc, f"{doc['sha256']}.json", s.size(doc["key"])) == []
+        assert doc["format"] == "osd.custody/2" and doc["origin_href"] is None and custody.provenance(doc) == "deposit"
+        assert doc["deposit"] == {
+            "obtained_at": "2026-10-29T00:00:00Z", "by": "maintainer", "publisher_page_url": PAGE_URL,
+            "publisher_page_sha256": _sha((DEPOSIT_DIR / "page.html").read_bytes()),
+            "licence_text_sha256": _sha(b"Attribution-ShareAlike 3.0 Unported You are free to: Share - copy and "
+                                        b"redistribute the material in any medium or format.")}
+        assert doc["licence_text_sha256"] == doc["deposit"]["licence_text_sha256"]
+        assert "- Share-alike: derived work must carry CC-BY-SA-3.0" in doc["attribution"]
+    assert [c.outcome for c in deposit(s)] == ["present"] * 3               # a rerun writes nothing
+
+
+def test_deposit_swapped_digests_refused(tmp_path, monkeypatch):
+    real = mirror.hash_local
+
+    def swapped(files):
+        out = real(files)
+        a, b = out[0], out[1]
+        return [mirror.LocalFile(a.path, a.source, a.bytes, b.sha256), mirror.LocalFile(b.path, b.source, b.bytes, a.sha256),
+                *out[2:]]
+    monkeypatch.setattr(mirror, "hash_local", swapped)
+    s = store(tmp_path)
+    with pytest.raises(mirror.MirrorError, match="F3_Demo_2023.zip: streamed .* hashed before as"):
+        deposit(s)
+    assert not s.keys("mirror/") and not s.keys("custody/") and not s.keys("staging/")
+
+
+def test_deposit_broken_hashing_refused(tmp_path, monkeypatch):
+    monkeypatch.setattr(mirror, "sha256_file", lambda p: (_sha(p.name.encode()), p.stat().st_size))  # the name, not the bytes
+    s = store(tmp_path)
+    with pytest.raises(mirror.MirrorError, match="nothing published for it"):
+        deposit(s)
+    assert not s.keys("mirror/") and not s.keys("custody/")
+
+
+def test_deposit_symlink_refused_by_name(tmp_path):
+    d = deposit_copy(tmp_path)
+    (d / "wells" / "F03-2.las").symlink_to(d / "wells" / "F02-1.las")
+    with pytest.raises(mirror.MirrorError, match="symlink wells/F03-2.las"):
+        deposit(store(tmp_path), root=d)
+    (d / "wells" / "F03-2.las").unlink()
+    (d / "linked").symlink_to(d / "docs", target_is_directory=True)
+    with pytest.raises(mirror.MirrorError, match="symlink linked"):
+        deposit(store(tmp_path), root=d)
+
+
+@pytest.mark.parametrize("rights", ["restricted", "unknown"])
+def test_deposit_refuses_rights(tmp_path, rights):
+    s = store(tmp_path)
+    with pytest.raises(mirror.NotEligible, match=f"redistribution {rights}, not allowed"):
+        deposit(s, rec=f3_record(redistribution=rights))
+    assert not s.keys("")
+
+
+def test_deposit_refuses_exactly_the_cap(tmp_path, monkeypatch):
+    d = deposit_copy(tmp_path)
+    rest = sum(f.stat().st_size for f in d.rglob("*") if f.is_file() and f.suffix != ".html")
+    with (d / "sparse.bin").open("wb") as f:      # sparse: the cap refuses from stat, before hashing
+        f.truncate(mirror.CAP_BYTES - rest)
+    monkeypatch.setattr(mirror, "sha256_file", lambda p: pytest.fail("hashed before the cap refused"))
+    with pytest.raises(mirror.NotEligible, match=f"{mirror.CAP_BYTES} bytes: not under 20 GB"):
+        deposit(store(tmp_path), root=d)
+    files = [mirror.LocalFile("a", d / "a", mirror.CAP_BYTES - 1)]
+    assert mirror.under_cap(files) == mirror.CAP_BYTES - 1
+
+
+def test_deposit_refuses_empty_directory(tmp_path):
+    d = tmp_path / "empty"
+    (d / "sub").mkdir(parents=True)
+    page = tmp_path / "page.html"
+    page.write_text("<p>page</p>")
+    with pytest.raises(mirror.MirrorError, match="no regular file in"):
+        mirror.deposit(f3_record(), d, store(tmp_path), obtained="2026-10-29", by="maintainer", page_url=PAGE_URL,
+                       page=page, licence=DEPOSIT_DIR / "licence.html")
+
+
+def test_deposit_refuses_a_tombstoned_digest(tmp_path):
+    s = store(tmp_path)
+    deposit(s)
+    readme = next(s.get_json(k) for k in s.keys("custody/") if s.get_json(k)["path"] == "docs/README.txt")
+    mirror.remove(readme["sha256"], s, "https://github.com/ophiolite-labs/open-subsurface-data/issues/9",
+                  "tuna-soup", now=NOW)
+    before = sorted(s.keys(""))
+    with pytest.raises(mirror.MirrorError, match="docs/README.txt: digest .* was removed 2026-10-23 .* never mirrored again"):
+        deposit(s)
+    assert sorted(s.keys("")) == before          # refused before anything was written
+
+
+def test_deposit_refuses_a_digest_held_elsewhere_and_a_foreign_page(tmp_path):
+    s = store(tmp_path)
+    deposit(s)
+    other = dict(f3_record(), id="terranubis/f3-demo-2023")
+    other["origin"] = dict(other["origin"])
+    with pytest.raises(mirror.MirrorError, match="is held for terranubis/f3-demo-2020 as a deposit copy"):
+        deposit(s, rec=other)
+    with pytest.raises(mirror.MirrorError, match="not on the record's origin host terranubis.com"):
+        mirror.deposit(f3_record(), DEPOSIT_DIR, s, obtained="2026-10-29", by="maintainer",
+                       page_url="https://example.org/f3", page=DEPOSIT_DIR / "page.html",
+                       licence=DEPOSIT_DIR / "licence.html")
+
+
+def test_deposit_refuses_duplicate_bytes(tmp_path):
+    d = deposit_copy(tmp_path)
+    shutil.copy(d / "docs" / "README.txt", d / "README-copy.txt")
+    with pytest.raises(mirror.MirrorError, match="README-copy.txt and docs/README.txt are the same bytes"):
+        deposit(store(tmp_path), root=d)
+
+
+def test_deposit_on_s3(tmp_path):
+    s, fake = s3_store()
+    assert [c.outcome for c in deposit(s)] == ["published"] * 3
+    held = [k for k in fake.objects if k.startswith("custody/")]
+    assert len(held) == 3 and all(fake.objects[k][1] == "public-read" for k in held)
+    assert not [k for k in fake.objects if k.startswith("staging/")]
+
+
+def test_cli_deposit(tmp_path, capsys):
+    from osd.cli import main
+    args = ["mirror", "deposit", F3, str(DEPOSIT_DIR), "--obtained", "2026-10-29", "--by", "maintainer",
+            "--page-url", PAGE_URL, "--page", str(DEPOSIT_DIR / "page.html"),
+            "--licence-text", str(DEPOSIT_DIR / "licence.html"), "--store", str(tmp_path / "store"),
+            "--public-url", MIRROR]
+    assert main(args) == 0
+    out = capsys.readouterr().out
+    assert "3 files, 3833 bytes" in out and "3 published, 0 present" in out
+    assert main([*args[:2], "acme/none", *args[3:]]) == 1
+    assert main([*args[:5], "29 October", *args[6:]]) == 1
+    assert "--obtained 29 October: not a date" in capsys.readouterr().out
