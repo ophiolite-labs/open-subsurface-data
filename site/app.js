@@ -3,7 +3,8 @@
    wells-z<z>.json, the wells counted on a grid below CLUSTER_BELOW_ZOOM, with the tiles).
    No framework; one file on purpose (ENGINEERING.md, "surface"). The URL hash is the only state.
    Select mode (E06): tick datasets, download an osd.manifest/1 file (/4 when a dataset is sold or
-   states terms, E19) that `osd get` reads. */
+   states terms, E19) that `osd get` reads. Starter projects (E43): a fourth card in the detail panel
+   when the record lists `starters`; data/starters.json is fetched only then. */
 (async function () {
   // Basemap: OSD-D3. Positron until a dark basemap without a key is confirmed; never add a key.
   const BASEMAP = 'https://tiles.openfreemap.org/styles/positron';
@@ -35,6 +36,9 @@
     : (outlines ? outlines.features.filter(f => f.properties.kind === 'wellbore' && f.geometry.type === 'Point') : []);
   const byId = Object.fromEntries(records.map(r => [r.id, r]));
   const LEVEL = s => Number((s || 'L0').slice(1));
+  // E43: the build lists published pack ids in a record's `starters`; with none, nothing of it shows.
+  const hasStarter = r => !!(r.starters && r.starters.length);
+  const anyStarter = records.some(hasStarter);
   const isStale = r => !!r.checked_at && Date.now() - Date.parse(r.checked_at) > STALE_DAYS * 864e5;
   // A blocked origin awards no level (OSD-D9): its badge says so instead of showing L0.
   const levelBadge = r => `${r.blocked_since ? `<span class="blocked" title="${esc(r.reason)}">blocked since ${esc(r.blocked_since.slice(0, 10))}</span>`
@@ -279,6 +283,7 @@
   $('from').oninput = e => { state.from = yearOf(e.target.value); applyFilters(); };
   $('to').oninput = e => { state.to = yearOf(e.target.value); applyFilters(); };
   $('dated').onchange = e => { state.dated = e.target.checked; applyFilters(); };
+  $('starterlink').hidden = !anyStarter;
 
   function syncControls() {
     for (const k of allKinds) chips[k].classList.toggle('on', state.kinds.has(k));
@@ -340,9 +345,11 @@
 fc = json.load(urllib.request.urlopen("${esc(geo)}"))
 mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id)}"]</code></div>
         <div class="card"><b>Get the data</b>Follow the origin link above, or press Select above the list, tick datasets and download a manifest for osd get.</div>
+        ${hasStarter(r) ? '<div class="card starter"><b>Starter project</b><span class="hint">…</span></div>' : ''}
       </div>
-      <p class="how"><a href="how.html">What the levels mean, and these three cards explained</a></p>`;
+      <p class="how"><a href="how.html">What the levels mean, and these cards explained</a></p>`;
     d.querySelector('.close').onclick = closeDetail;
+    if (hasStarter(r)) starterCard(d.querySelector('.card.starter'), r);
     if (fly && r.region && r.region.bbox) map.fitBounds(r.region.bbox, { padding: 60, maxZoom: 9, duration: 700 });
   }
 
@@ -458,6 +465,42 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   }
 
   $('pickmode').onclick = () => setPickMode(!state.pick);
+
+  // ---- Starter projects (E43). Deletable: this block, the fourth card in select(), #starterlink and site/starters.html. The page holds no pack text of its own:
+  // everything comes from data/starters.json (E40: every published pack whole, with each artefact's
+  // mirror address) and data/starters/ (the pack document and its fidelity record).
+  const APPS = { opendtect: 'OpendTect', resinsight: 'ResInsight', python: 'Python' };
+  let packs = null;
+  const loadPacks = () => packs = packs || fetch('data/starters.json').then(r => r.ok ? r.json() : { starters: [] })
+    .then(d => Object.fromEntries(d.starters.map(p => [p.id, p])), () => ({}));
+  const packFile = id => id.replaceAll('/', '__') + '.json';
+  const packAnchor = id => id.replaceAll('/', '__');
+  const packLicence = l => [l.spdx || l.name, l.attribution === 'required' ? 'attribution required' : '',
+    l.share_alike === true ? 'share-alike' : ''].filter(Boolean).join(' · ');
+  const manifestName = p => p.id.replaceAll('/', '__') + '.manifest.json';
+
+  // The fourth card: one button per target in the pack's order (the application and the version the
+  // pack was built against), the licence line, the decision log, and the three steps for the chosen one.
+  async function starterCard(card, r) {
+    const all = await loadPacks();
+    if (!card.isConnected) return;
+    const list = r.starters.map(id => all[id]).filter(Boolean);
+    if (!list.length) { card.remove(); return; }
+    card.innerHTML = '<b>Starter project</b>' + list.map(p => `<div class="pack" data-pack="${esc(p.id)}">
+      <div class="apps">${p.targets.map((t, i) => `<button type="button" class="app" data-app="${esc(t.application)}" aria-pressed="${i === 0}">${esc(APPS[t.application] || t.application)} <span>${esc(t.version)}</span></button>`).join('')}</div>
+      <div class="lic">${esc(packLicence(p.licence))} · <a href="starters.html#${esc(packAnchor(p.id))}-decisions">what we decided</a></div>
+      <div class="steps"></div></div>`).join('');
+    for (const el of card.querySelectorAll('.pack')) {
+      const p = all[el.dataset.pack];
+      const steps = app => {
+        const t = p.targets.find(t => t.application === app);
+        el.querySelector('.steps').innerHTML = `1. download the pack manifest · 2. <code>osd get ${esc(manifestName(p))} --dest ${esc(packAnchor(p.record_id))}</code> · 3. run <code>${esc(t.import)}</code> (${esc(APPS[app] || app)} ${esc(t.version)})`;
+        for (const b of el.querySelectorAll('.app')) b.setAttribute('aria-pressed', String(b.dataset.app === app));
+      };
+      el.querySelectorAll('.app').forEach(b => b.onclick = () => steps(b.dataset.app));
+      steps(p.targets[0].application);
+    }
+  }
 
   // A pasted or edited hash in the same tab applies too.
   window.addEventListener('hashchange', () => {

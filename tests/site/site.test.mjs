@@ -2,6 +2,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
@@ -781,5 +782,77 @@ test('why: how.html lists the reason sentences and what a publisher can do about
   for (const s of ['never verified', 'no file address is published to us', 'names no files', 'robots.txt disallows',
     'answers a browser, not the verifier', 'blocked from this runner', 'HTTP 502', 'files were hashed'])
     assert.ok(text.includes(s), s);
+  await context.close();
+});
+
+// ---- E43: starter projects. E40's fixture packs (tests/fixtures/starters, with the custody snapshot)
+// built by osd.build into build/site-test/e43; the page is served the committed records.json with the
+// two fixture records in place of the committed ones (they carry `starters`), and the fixture build's
+// starters.json and data/starters/. Without these routes the build has no pack (until E42).
+const E43_DIR = join(OUT, 'e43');
+const F3_RECORD = 'terranubis/f3-demo-2020', F3_PACK = 'terranubis/f3-demo-2020/starter', F3_ANCHOR = 'terranubis__f3-demo-2020__starter';
+const FX = join(ROOT, 'tests', 'fixtures', 'starters');
+const starterBuilt = (async () => {
+  await promisify(execFile)(process.env.UV || 'uv', ['run', '--quiet', 'python', '-c',
+    'import sys, shutil; from pathlib import Path; from osd.build import build\n' +
+    'out, fx, custody, mirror = map(Path, sys.argv[1:5])\n' +
+    'shutil.rmtree(mirror, ignore_errors=True); shutil.copytree(custody, mirror / "custody")\n' +
+    'build(out, fx / "verification", mirror_dir=mirror, records_dir=fx / "records", starters_dir=fx / "packs", source_commit="1" * 40, verification_commit="2" * 40)',
+    E43_DIR, FX, join(ROOT, 'tests', 'fixtures', 'custody'), join(OUT, 'e43-mirror')], { cwd: ROOT });
+  const fx = JSON.parse(await readFile(join(E43_DIR, 'records.json'), 'utf8'));
+  return { records: Object.fromEntries(fx.records.map(r => [r.id, r])), starters: JSON.parse(await readFile(join(E43_DIR, 'starters.json'), 'utf8')) };
+})();
+const withStarters = async c => {
+  const fx = await starterBuilt;
+  await c.route('**/data/records.json', async route => {
+    const body = JSON.parse(await (await route.fetch()).text());
+    body.records = body.records.map(r => fx.records[r.id] || r);
+    return route.fulfill({ json: body });
+  });
+  await c.route('**/data/starters.json', route => route.fulfill({ json: fx.starters }));
+  await c.route('**/data/starters/**', route => route.fulfill({ contentType: 'application/json',
+    path: join(E43_DIR, 'starters', decodeURIComponent(new URL(route.request().url()).pathname.replace(/^\/data\/starters\//, ''))) }));
+};
+// The same build with no pack: what the site shows until E42 publishes one.
+const withoutStarters = async c => {
+  await c.route('**/data/records.json', async route => {
+    const body = JSON.parse(await (await route.fetch()).text());
+    for (const r of body.records) delete r.starters;
+    return route.fulfill({ json: body });
+  });
+  await c.route('**/data/starters.json', route => route.fulfill({ json: { starters: [] } }));
+};
+const fixturePack = name => JSON.parse(readFileSync(join(FX, 'packs', name), 'utf8'));
+const asked = (page, path) => { const seen = []; page.on('request', q => { if (new URL(q.url()).pathname === path) seen.push(q.url()); }); return seen; };
+const sheetOverflows = page => page.evaluate(() => { const s = document.getElementById('side'); return s.scrollWidth > s.clientWidth; });
+
+test('starter: the F3-shaped record shows a fourth card with the pack\'s buttons, licence line and decision-log link', async () => {
+  const pack = fixturePack(`${F3_ANCHOR}.json`);
+  const { context, page, errors, unexpected } = await open(`sel=${F3_RECORD}`, { routes: withStarters });
+  const card = page.locator('#detail .card.starter');
+  await card.locator('.app').first().waitFor();
+  assert.deepEqual(await page.locator('#detail .card > b').allInnerTexts(), ['Open in QGIS', 'Read in Python', 'Get the data', 'Starter project']);
+  assert.deepEqual(await card.locator('.app').evaluateAll(bs => bs.map(b => b.dataset.app)), pack.targets.map(t => t.application));
+  assert.deepEqual(await card.locator('.app').allInnerTexts(), ['OpendTect 7.0.10', 'ResInsight 2025.04', 'Python 3.12']);
+  assert.match(await card.locator('.lic').innerText(), /^CC-BY-SA-3\.0 · attribution required · share-alike · what we decided$/);
+  assert.match(await card.locator('.steps').innerText(), /^1\. download the pack manifest · 2\. osd get terranubis__f3-demo-2020__starter\.manifest\.json --dest terranubis__f3-demo-2020 · 3\. run opendtect\/import_f3\.py \(OpendTect 7\.0\.10\)$/);
+  await card.locator('.app[data-app="resinsight"]').click();
+  assert.match(await card.locator('.steps').innerText(), /run resinsight\/import_f3\.py \(ResInsight 2025\.04\)$/);
+  assert.equal(await card.locator('.app[aria-pressed="true"]').innerText(), 'ResInsight 2025.04');
+  assert.equal(await page.locator('#starterlink').isVisible(), true);
+  await page.locator('#detail .card.starter').scrollIntoViewIfNeeded();
+  const [cb, pb] = [await card.boundingBox(), await page.locator('#detail').boundingBox()];
+  assert.ok(cb.x + cb.width <= pb.x + pb.width, 'the card fits the panel');
+  await page.locator('#side').screenshot({ path: join(OUT, 'starter-card-desktop.png') });
+
+  await card.locator('a', { hasText: 'what we decided' }).click();
+  await page.waitForURL(`**/starters.html#${F3_ANCHOR}-decisions`);
+  const log = page.locator(`#${F3_ANCHOR}-decisions`);
+  await log.waitFor();
+  assert.equal(await page.locator(`section#${F3_ANCHOR} #${F3_ANCHOR}-decisions`).count(), 1, 'the anchor is in the pack\'s section');
+  assert.equal(await page.locator(`section#${F3_ANCHOR} table.log tbody tr`).count(), pack.decisions.length);
+  assert.equal(await page.locator(`section#${F3_ANCHOR} table.log tr.chosen`).count(), pack.decisions.filter(d => d.source === 'chosen').length);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
   await context.close();
 });
