@@ -5,7 +5,8 @@ in verifier/samples.yaml. The verifier writes the inventory (`inventory()`, call
 `osd verify` for records with a rule): every listing entry the rule selects, hashed, so a mirror
 copies exactly what a verification run checksummed, never a whole-dataset claim beyond it.
 
-Store layout, one transport interface (slice 1: `LocalDirectory`; slice 2: S3):
+Store layout, one transport interface (`LocalDirectory` for tests and dry runs; `S3`, slice 2, for the
+bucket, selected by a `s3://<bucket>` store spec with keys from the environment):
 
   staging/<sha256>/<name>              an upload in progress, never public
   mirror/<record id>/<sha256>/<name>   the public copy
@@ -21,16 +22,20 @@ and finishes or replaces. `remove()` writes the tombstone first, then deletes ev
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import os
 import re
 import tempfile
-from collections.abc import Iterable, Iterator
+import urllib.error
+import urllib.request
+import xml.etree.ElementTree as ET
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from fnmatch import fnmatchcase
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import parse_qsl, quote, urlsplit
 
 import yaml
 
@@ -233,6 +238,250 @@ class LocalDirectory:
         return self.base + quote(key)
 
 
+# --- S3 transport (slice 2) ----------------------------------------------------------------------
+
+PART = 16 * 2**20             # multipart above this; one part held in memory at a time
+COPY_LIMIT = 5 * 2**30        # CopyObject's limit; above it UploadPartCopy in COPY_PART ranges
+COPY_PART = 2**30
+EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
+PUBLIC_PREFIXES = ("mirror/", "custody/")   # public-read objects; staging/ stays private
+ENV_KEYS = ("OSD_S3_ENDPOINT", "OSD_S3_ACCESS_KEY", "OSD_S3_SECRET_KEY")
+
+
+@dataclass(frozen=True)
+class Reply:
+    status: int
+    headers: Mapping[str, str]      # lower-case names
+    read: Callable[..., bytes]      # read() all, read(n) up to n bytes
+
+
+Send = Callable[[str, str, dict, bytes], Reply]
+
+
+def _urlopen(method: str, url: str, headers: dict, body: bytes) -> Reply:
+    req = urllib.request.Request(url, data=body if method in ("PUT", "POST") else None,
+                                 headers=headers, method=method)
+    try:
+        r = urllib.request.urlopen(req, timeout=120)
+        status = r.status
+    except urllib.error.HTTPError as e:
+        r, status = e, e.code
+    except (urllib.error.URLError, OSError) as e:
+        raise MirrorError(f"S3 {method} {urlsplit(url).path}: {e}") from None
+    return Reply(status, {k.lower(): v for k, v in r.headers.items()}, r.read)
+
+
+def _hmac(key: bytes, msg: str) -> bytes:
+    return hmac.new(key, msg.encode(), hashlib.sha256).digest()
+
+
+def sigv4(method: str, url: str, headers: dict, payload_sha256: str, access_key: str, secret_key: str,
+          region: str, now: datetime) -> dict:
+    """AWS Signature Version 4 for S3: the request's headers plus x-amz-date, x-amz-content-sha256 and
+    Authorization. `url` is already percent-encoded; it is the canonical URI as sent."""
+    u = urlsplit(url)
+    amz_date = now.strftime("%Y%m%dT%H%M%SZ")
+    h = {k.lower(): " ".join(str(v).split()) for k, v in headers.items()}
+    h.update({"host": u.netloc, "x-amz-date": amz_date, "x-amz-content-sha256": payload_sha256})
+    signed = sorted(k for k in h if k in ("host", "range", "content-md5") or k.startswith("x-amz-"))
+    query = "&".join(f"{quote(k, safe='-_.~')}={quote(v, safe='-_.~')}"
+                     for k, v in sorted(parse_qsl(u.query, keep_blank_values=True)))
+    canonical = "\n".join([method, u.path or "/", query, "".join(f"{k}:{h[k]}\n" for k in signed),
+                           ";".join(signed), payload_sha256])
+    scope = f"{amz_date[:8]}/{region}/s3/aws4_request"
+    to_sign = "\n".join(["AWS4-HMAC-SHA256", amz_date, scope, hashlib.sha256(canonical.encode()).hexdigest()])
+    key = _hmac(_hmac(_hmac(_hmac(("AWS4" + secret_key).encode(), amz_date[:8]), region), "s3"), "aws4_request")
+    signature = hmac.new(key, to_sign.encode(), hashlib.sha256).hexdigest()
+    out = {k: v for k, v in headers.items()}
+    out.update({"x-amz-date": amz_date, "x-amz-content-sha256": payload_sha256,
+                "Authorization": f"AWS4-HMAC-SHA256 Credential={access_key}/{scope}, "
+                                 f"SignedHeaders={';'.join(signed)}, Signature={signature}"})
+    return out
+
+
+def _xml_text(body: bytes, tag: str) -> list[str]:
+    try:
+        return [e.text or "" for e in ET.fromstring(body).iter() if e.tag.rsplit("}", 1)[-1] == tag]
+    except ET.ParseError:
+        return []
+
+
+class S3:
+    """The store as an S3 bucket (Hetzner Object Storage), the same methods as `LocalDirectory`.
+    Path-style requests signed with SigV4 over the payload's sha256; `send` is the one network seam
+    (tests inject an in-memory S3). Objects under mirror/ and custody/ are written public-read, staging/
+    private; the bucket itself is never listable anonymously. The keys are never printed."""
+
+    def __init__(self, bucket: str, endpoint: str, access_key: str, secret_key: str,
+                 public_url: str | None = None, region: str | None = None, send: Send | None = None,
+                 clock: Callable[[], datetime] | None = None):
+        if not re.fullmatch(r"[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]", bucket):
+            raise MirrorError(f"{bucket!r} is not a bucket name")
+        u = urlsplit(endpoint)
+        self.bucket, self.endpoint = bucket, f"{u.scheme}://{u.netloc}"
+        self.region = region or u.netloc.split(".")[0]      # fsn1: Hetzner refuses a mismatched region
+        self._keys = (access_key, secret_key)
+        self.base = (public_url or f"{u.scheme}://{bucket}.{u.netloc}").rstrip("/") + "/"
+        self.root = f"s3://{bucket}"
+        self._send = send or _urlopen
+        self._now = clock or (lambda: datetime.now(UTC))
+
+    def __repr__(self) -> str:
+        return f"S3({self.root} at {self.endpoint})"
+
+    @classmethod
+    def from_env(cls, bucket: str, public_url: str | None = None, environ: Mapping[str, str] = os.environ,
+                 send: Send | None = None) -> S3:
+        missing = [k for k in ENV_KEYS if not environ.get(k)]
+        if missing:
+            raise MirrorError("the S3 store needs " + ", ".join(missing) + " in the environment")
+        return cls(bucket, environ["OSD_S3_ENDPOINT"], environ["OSD_S3_ACCESS_KEY"],
+                   environ["OSD_S3_SECRET_KEY"], public_url, environ.get("OSD_S3_REGION"), send)
+
+    def _call(self, method: str, key: str = "", query: str = "", headers: dict | None = None,
+              body: bytes = b"", ok: tuple[int, ...] = (200,)) -> Reply:
+        url = f"{self.endpoint}/{self.bucket}/{quote(key, safe='/-_.~')}" + (f"?{query}" if query else "")
+        signed = sigv4(method, url, dict(headers or {}), hashlib.sha256(body).hexdigest() if body else
+                       EMPTY_SHA256, *self._keys, self.region, self._now())
+        r = self._send(method, url, signed, body)
+        if r.status not in ok:
+            detail = "" if method == "HEAD" else " ".join(_xml_text(r.read(), "Code"))
+            raise MirrorError(f"S3 {method} {key or '(bucket)'}{'?' + query if query else ''}: "
+                              f"HTTP {r.status} {detail}".rstrip())
+        return r
+
+    @staticmethod
+    def _acl(key: str) -> dict:
+        return {"x-amz-acl": "public-read"} if key.startswith(PUBLIC_PREFIXES) else {}
+
+    def check(self) -> None:
+        """HEAD on the bucket: the keys reach it (reads only)."""
+        self._call("HEAD")
+
+    def exists(self, key: str) -> bool:
+        return self.size(key) is not None
+
+    def size(self, key: str) -> int | None:
+        r = self._call("HEAD", key, ok=(200, 404))
+        return int(r.headers["content-length"]) if r.status == 200 else None
+
+    def open(self, key: str) -> Iterator[bytes]:
+        r = self._call("GET", key)
+        while chunk := r.read(CHUNK):
+            yield chunk
+
+    def upload(self, key: str, chunks: Iterable[bytes]) -> None:
+        """Streams: one PutObject below PART, multipart above; any error aborts the multipart upload,
+        so a failed stream leaves no object."""
+        buf, upload_id, parts = bytearray(), None, []
+        try:
+            for chunk in chunks:
+                buf += chunk
+                while len(buf) >= PART:
+                    upload_id = upload_id or self._create(key)
+                    parts.append(self._part(key, upload_id, len(parts) + 1, bytes(buf[:PART])))
+                    del buf[:PART]
+            if upload_id is None:
+                self._call("PUT", key, headers=self._acl(key), body=bytes(buf))
+                return
+            if buf:
+                parts.append(self._part(key, upload_id, len(parts) + 1, bytes(buf)))
+            self._complete(key, upload_id, parts)
+        except BaseException:
+            if upload_id is not None:
+                try:
+                    self._call("DELETE", key, f"uploadId={quote(upload_id, safe='')}", ok=(200, 204, 404))
+                except MirrorError:
+                    pass
+            raise
+
+    def _create(self, key: str, headers: dict | None = None) -> str:
+        r = self._call("POST", key, "uploads", headers={**self._acl(key), **(headers or {})})
+        ids = _xml_text(r.read(), "UploadId")
+        if not ids:
+            raise MirrorError(f"S3 POST {key}?uploads: no UploadId")
+        return ids[0]
+
+    def _part(self, key: str, upload_id: str, n: int, body: bytes = b"", headers: dict | None = None) -> str:
+        r = self._call("PUT", key, f"partNumber={n}&uploadId={quote(upload_id, safe='')}",
+                       headers=headers, body=body)
+        if headers:      # UploadPartCopy: the ETag is in the body, and an error may come with 200
+            payload = r.read()
+            if _xml_text(payload, "Code"):
+                raise MirrorError(f"S3 copy part {n} of {key}: " + " ".join(_xml_text(payload, "Code")))
+            etag = (_xml_text(payload, "ETag") or [""])[0]
+        else:
+            etag = r.headers.get("etag", "")
+        if not etag:
+            raise MirrorError(f"S3 part {n} of {key}: no ETag")
+        return etag
+
+    def _complete(self, key: str, upload_id: str, etags: list[str]) -> None:
+        body = "<CompleteMultipartUpload>" + "".join(
+            f"<Part><PartNumber>{i}</PartNumber><ETag>{e}</ETag></Part>" for i, e in enumerate(etags, 1)
+        ) + "</CompleteMultipartUpload>"
+        r = self._call("POST", key, f"uploadId={quote(upload_id, safe='')}", body=body.encode())
+        payload = r.read()
+        if _xml_text(payload, "Code"):    # S3 may report a failed completion inside a 200
+            raise MirrorError(f"S3 complete {key}: " + " ".join(_xml_text(payload, "Code")))
+
+    def move(self, src: str, dst: str) -> None:
+        """Server-side copy, then delete the source. A copy error inside a 200 is an error."""
+        n = self.size(src)
+        if n is None:
+            raise MirrorError(f"S3 move: {src} does not exist")
+        source = {"x-amz-copy-source": quote(f"/{self.bucket}/{src}", safe="/-_.~")}
+        if n <= COPY_LIMIT:
+            payload = self._call("PUT", dst, headers={**source, **self._acl(dst)}).read()
+            if _xml_text(payload, "Code"):
+                raise MirrorError(f"S3 copy {src} -> {dst}: " + " ".join(_xml_text(payload, "Code")))
+        else:
+            upload_id = self._create(dst)
+            try:
+                etags = [self._part(dst, upload_id, i, headers={
+                    **source, "x-amz-copy-source-range": f"bytes={a}-{min(a + COPY_PART, n) - 1}"})
+                    for i, a in enumerate(range(0, n, COPY_PART), 1)]
+                self._complete(dst, upload_id, etags)
+            except BaseException:
+                self._call("DELETE", dst, f"uploadId={quote(upload_id, safe='')}", ok=(200, 204, 404))
+                raise
+        self.delete(src)
+
+    def delete(self, key: str) -> None:
+        self._call("DELETE", key, ok=(200, 204, 404))
+
+    def put_json(self, key: str, doc: dict) -> None:
+        self._call("PUT", key, headers={"Content-Type": "application/json", **self._acl(key)},
+                   body=(json.dumps(doc, indent=2) + "\n").encode())
+
+    def get_json(self, key: str) -> dict:
+        return json.loads(self._call("GET", key).read())
+
+    def keys(self, prefix: str) -> list[str]:
+        out, token = [], None
+        while True:
+            q = f"list-type=2&prefix={quote(prefix, safe='')}"
+            if token:
+                q += f"&continuation-token={quote(token, safe='')}"
+            body = self._call("GET", query=q).read()
+            out += _xml_text(body, "Key")
+            token = (_xml_text(body, "NextContinuationToken") or [None])[0]
+            if (_xml_text(body, "IsTruncated") or ["false"])[0] != "true" or not token:
+                return sorted(out)
+
+    def public_url(self, key: str) -> str:
+        return self.base + quote(key)
+
+
+def open_store(spec: str, public_url: str | None, environ: Mapping[str, str] = os.environ):
+    """`s3://<bucket>` is the bucket (keys from the environment); anything else a local directory."""
+    if spec.startswith("s3://"):
+        return S3.from_env(spec.removeprefix("s3://").strip("/"), public_url, environ)
+    if not public_url:
+        raise MirrorError("a local store needs --public-url (where the directory is served)")
+    return LocalDirectory(Path(spec), public_url)
+
+
 # --- publication ---------------------------------------------------------------------------------
 
 @dataclass(frozen=True)
@@ -255,6 +504,7 @@ class Copied:
     sha256: str
     outcome: str      # published | present | refused | mismatch | origin-dead
     detail: str = ""
+    bytes: int = 0
 
 
 def _hash_object(store, key: str) -> tuple[str, int]:
@@ -285,7 +535,7 @@ def _publish(rec, v, f, k: Keys, store, now) -> None:
 def _put_one(rec: dict, v: dict, f: dict, store, opener: Opener, now: datetime) -> Copied:
     sha, n = f["sha256"], f["bytes"]
     k = keys_for(rec["id"], sha, f["path"])
-    c = lambda outcome, detail="": Copied(f["path"], sha, outcome, detail)
+    c = lambda outcome, detail="": Copied(f["path"], sha, outcome, detail, n)
     if store.exists(k.tombstone):
         t = store.get_json(k.tombstone)["removal"]
         return c("refused", f"removed {t['removed_at'][:10]} on {t['request']}: never mirrored again")
