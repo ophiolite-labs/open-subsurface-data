@@ -203,3 +203,42 @@ def test_starter_schema_is_not_permissive(mutate):
     doc = pack(F3)
     mutate(doc)
     assert _errors(STARTER, doc)
+
+
+# --- custody/2 readers (design 2) ------------------------------------------------------------------
+
+def test_mixed_custody_set_through_index_sync_and_build(tmp_path):
+    """The snapshot (/1 verified, /2 deposit and derived, one tombstone) through the store's sync, the
+    public index and the build: every held document is indexed once, the tombstoned digest never."""
+    from osd import mirror
+    from osd.build import build
+
+    store = mirror.LocalDirectory(tmp_path / "store", "https://mirror.example")
+    for p in SNAPSHOT.glob("*.json"):
+        store.put_json(f"custody/{p.name}", json.loads(p.read_text()))
+    synced = tmp_path / "mirror" / "custody"
+    names = mirror.sync_custody(store, synced)
+    assert names == sorted(p.name for p in SNAPSHOT.glob("*.json"))
+    index = mirror.public_index(synced)
+    held = [json.loads(p.read_text()) for p in sorted(SNAPSHOT.glob("*.json")) if not p.name.endswith(".removed.json")]
+    assert [c["sha256"] for c in index] == [d["sha256"] for d in held]
+    assert sorted(custody.provenance(d) for d in held) == ["deposit"] * 2 + ["derived"] * 13 + ["verified"]
+    tomb = next(SNAPSHOT.glob("*.removed.json")).name.removesuffix(".removed.json")
+    assert tomb not in {c["sha256"] for c in index}
+    out = tmp_path / "catalog"
+    build(out, FIXTURES / "verification", mirror_dir=tmp_path / "mirror", records_dir=FIXTURES / "records")
+    assert json.loads((out / "mirror.json").read_text())["copies"] == index
+
+
+def test_takedown_of_a_derived_artefact(tmp_path):
+    from osd import mirror
+
+    store = mirror.LocalDirectory(tmp_path / "store", "https://mirror.example")
+    art = _artefact(pack(F3))
+    doc = json.loads((SNAPSHOT / f"{art['sha256']}.json").read_text())
+    store.put_json(f"custody/{art['sha256']}.json", doc)
+    store.upload(art["key"], [b"x"])
+    gone = mirror.remove(art["sha256"], store, request="https://github.com/o/r/issues/1", approved_by="tuna-soup")
+    assert art["key"] in gone
+    tombstone = store.get_json(f"custody/{art['sha256']}.removed.json")
+    assert tombstone["derived"] == doc["derived"] and custody.problems(tombstone, f"{art['sha256']}.removed.json") == []

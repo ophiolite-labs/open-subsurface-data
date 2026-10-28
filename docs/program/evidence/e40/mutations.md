@@ -22,3 +22,11 @@ re-reads the mutated file before running (`mut.py`, lane scratchpad).
 | starter/1: `topic` any string (unknown topic admitted) | `test_starter_schema_is_not_permissive[unknown-topic]` |
 | starter/1: `subject` not required | `test_starter_schema_is_not_permissive[missing-subject]` |
 | starter/1: an artefact without `key` admitted | `test_starter_schema_is_not_permissive[artefact-without-key]` |
+
+## C4: custody/2 readers (design 2)
+
+| Mutation | Red test |
+|---|---|
+| live custody schema admits only /1 (readers refuse /2) | `test_mixed_custody_set_through_index_sync_and_build` |
+| `mirror.public_index` stops excluding tombstoned digests | `test_mixed_custody_set_through_index_sync_and_build` |
+| `custody.provenance` never says `derived` | `test_mixed_custody_set_through_index_sync_and_build` |
