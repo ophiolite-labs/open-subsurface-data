@@ -38,10 +38,11 @@ fills each artefact key from the custody/2 `derived` document that matches its s
    verifier's digest when its fetch of `licence.url` captured text, else the deposit's (the
    `licence-text-captured` check then fails and the level stays L1). No schema change.
 2. **The verifier reads `<vdir>/custody/`** (the custody documents that travel with the results):
-   offline, injected in tests by pointing at a directory. Consequence: the dispatch right after a
-   deposit has no deposit custody yet (its mirror step syncs at the end), so acceptance 6 counts the
-   two dispatches after the first sync. Moving the sync before the verify step is a `verify.yml`
-   change outside this claim (inbox).
+   offline, injected in tests by pointing at a directory. Supervisor answer 2 (28 Oct) granted
+   `verify.yml`: on a dispatch on main naming ids, one step copies the bucket's custody into
+   `build/verification/custody` before the verify step, so the first such dispatch after a deposit
+   already awards L2 and acceptance 6 counts it. All-record dispatches (shards) keep reading the
+   custody their snapshot carries, synced at the end of the previous dispatch on main.
 3. **Deposit assets** carry `href` = custody `href`, `file:size`, `file:checksum`, `roles: [data]`, a
    `description` sentence and the provenance as asset fields `osd:provenance: deposit`,
    `osd:obtained_at`, `osd:deposited_by`, `osd:publisher_page_sha256`. Documenting them in
@@ -55,7 +56,8 @@ fills each artefact key from the custody/2 `derived` document that matches its s
 5. **Key allocation** is `custody.object_key` for every route: `mirror/<record id>/<sha256>/<last
    segment of the relative path, path-safe>`; `custody/<sha256>.json` beside it. One custody document
    per digest: two files with the same bytes in one deposit refuse naming both paths, and a digest
-   already held for another record, pack or provenance refuses naming the holder.
+   already held for another record, pack or provenance refuses naming the holder. A rerun with the
+   same holder and bytes reports `present` and writes nothing (supervisor answer 5).
 6. **The pack document gives the lineage.** `put-derived <pack id> <dir> [--pack <document>]` reads
    the starter/1 document (default `starters/<file name>`; E129 passes the one it wrote with
    `unpublished: true`): `recipe_id` = `recipe.id`; each file must be an artefact of the pack with the
@@ -100,6 +102,7 @@ build: STAC assets from the deposit check x mirror index -> manifest -> osd get
 | C4 | 4 | STAC deposit assets, eligibility over a deposit, `put` on deposited files; mixed /1 and /2 through sync, index and build | 4, 5 |
 | C5 | 5 | `custody.derived_document`, `mirror.put_derived`, `osd mirror put-derived`; the verifier ignores derived | 7 |
 | C6 | — | mutation record, gate timing | evidence |
+| C7 | 2, 5 | supervisor answers: custody sync before verify in `verify.yml`; idempotent `put-derived` rerun test | 6, 7 |
 
 Acceptance 6 (real data) waits on owner item 112; the supervisor runs it when the files arrive
 (PR body names the commands).

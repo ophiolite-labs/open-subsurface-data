@@ -49,3 +49,10 @@ is committed. "red" is the expected result.
 | `src/osd/mirror.py` | a missing artefact is not refused | red | test_put_derived_refusals |
 | `src/osd/mirror.py` | a restricted pack licence is not refused by name | red | test_put_derived_refusals |
 | `src/osd/mirror.py` | another pack's held digest taken as this pack's (`_holder` without the pack id) | red | test_put_derived_refuses_a_digest_another_pack_holds |
+
+## C7, supervisor answers 2 and 5 (custody before verify; idempotent put-derived)
+
+| File | Mutation | Result | First red test |
+|---|---|---|---|
+| `src/osd/mirror.py` | a held artefact of the same pack is uploaded again on a rerun | red | test_put_derived_rerun_same_pack_is_idempotent |
+| `.github/workflows/verify.yml` | the custody step before verify no longer syncs | red | test_workflow_syncs_custody_before_verifying_on_main |

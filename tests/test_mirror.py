@@ -950,7 +950,7 @@ def test_workflow_keys_only_on_dispatch():
                 assert "github.ref == 'refs/heads/main'" in cond, (name, step["name"])
             if "osd mirror put" in run and "--dry-run" in run:
                 assert "github.ref != 'refs/heads/main'" in cond, (name, step["name"])
-    assert with_keys == 5 and writes == 3        # put in verify and finish, read-only in both, takedown
+    assert with_keys == 6 and writes == 3        # put in verify and finish, read-only in both, takedown, custody before verify (E41)
     assert "secrets." not in (ROOT / ".github" / "workflows" / "pages.yml").read_text()
 
 
@@ -1363,3 +1363,34 @@ def test_cli_put_derived(tmp_path, capsys):
     assert "10 published, 0 present" in capsys.readouterr().out
     assert main(["mirror", "put-derived", "terranubis/f3-demo-2020/other", *args[3:]]) == 1
     assert "its id is terranubis/f3-demo-2020/starter, not terranubis/f3-demo-2020/other" in capsys.readouterr().out
+
+
+def test_workflow_syncs_custody_before_verifying_on_main():
+    """E41 (supervisor answer 2): on a dispatch on main naming ids, the custody documents come from the
+    bucket before the verify step, so the first dispatch after a deposit already awards L2."""
+    import yaml
+    steps = yaml.safe_load((ROOT / ".github" / "workflows" / "verify.yml").read_text())["jobs"]["verify"]["steps"]
+    names = [s.get("name", "") for s in steps]
+    sync = next(i for i, n in enumerate(names) if n.startswith("custody documents from the bucket before verifying"))
+    assert sync < names.index("verify the picked records") and sync > names.index("earlier results (so a partial run keeps the others)")
+    step = steps[sync]
+    assert step["if"] == "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"
+    assert step["run"] == 'uv run osd mirror custody --store "s3://$OSD_S3_BUCKET" --out build/verification/custody'
+    assert "--dry-run" not in step["run"] and "put" not in step["run"]       # reads the bucket, writes nothing to it
+
+
+def test_put_derived_rerun_same_pack_is_idempotent(tmp_path, capsys):
+    """Supervisor answer 5: the same pack with the same bytes again reports present and exits 0."""
+    from osd.cli import main
+    doc = tmp_path / "terranubis__f3-demo-2020__starter.json"
+    doc.write_text(json.dumps(unpublished_pack()))
+    args = ["mirror", "put-derived", PACK_ID, str(ARTEFACTS), "--pack", str(doc),
+            "--store", str(tmp_path / "store"), "--public-url", MIRROR]
+    assert main(args) == 0
+    before = {k: (tmp_path / "store" / k).read_bytes() for k in mirror.LocalDirectory(tmp_path / "store", MIRROR).keys("")}
+    capsys.readouterr()
+    assert main(args) == 0
+    out = capsys.readouterr().out
+    assert "0 published, 10 present" in out and out.count("  present ") == 10
+    after = {k: (tmp_path / "store" / k).read_bytes() for k in mirror.LocalDirectory(tmp_path / "store", MIRROR).keys("")}
+    assert after == before                       # nothing rewritten, custody copied_at unchanged

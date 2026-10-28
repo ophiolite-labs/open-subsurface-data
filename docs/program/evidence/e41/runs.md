@@ -55,11 +55,10 @@ Run by the supervisor on the VPS when the download is in
 printed):
 
 1. Read the licence files inside the archive (stop rule); quote them in `terms.md`.
-2. `curl -sL https://creativecommons.org/licenses/by-sa/3.0/ -o .../f3-demo-2023/licence.html`
+2. `licence.html` (the BY-SA 3.0 deed) is already saved beside `page.html` (supervisor answer 1).
 3. `uv run osd mirror deposit terranubis/f3-demo-2020 /mnt/HC_Volume_107082112/osd-deposits/terranubis/f3-demo-2023 --obtained <day of the download> --by maintainer --page-url https://terranubis.com/datainfo/F3-Demo-2023 --page .../page.html --licence-text .../licence.html --store s3://osd-mirror`
-4. One verify dispatch on main with ids `terranubis/f3-demo-2020`: its mirror step brings the new
-   custody into `verification-results` (inbox note 2).
-5. Two more dispatches on main: both show `terranubis/f3-demo-2020` at L2 with "deposited by a
+4. Two verify dispatches on main with ids `terranubis/f3-demo-2020` (each copies the bucket's
+   custody before verifying, supervisor answer 2, so the first already counts): both show `terranubis/f3-demo-2020` at L2 with "deposited by a
    maintainer from the publisher's download, <date>" (map detail panel and status page,
    screenshot); `osd mirror eligible --vdir build/verification` lists it; `osd manifest
    terranubis/f3-demo-2020` from the published catalogue, cut to one asset, and `osd get` fetch one
