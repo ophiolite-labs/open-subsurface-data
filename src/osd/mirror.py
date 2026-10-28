@@ -1,7 +1,7 @@
 """The mirror store (E07): eligible files copied once, verified, held under a custody document.
 
 Eligibility (OSD-D6) is a pure function of a record, its latest verification and its `mirror:` rule
-in verifier/samples.yaml. The verifier writes the inventory (`inventory()`, called from
+in verifier/samples.yaml, or, for a deposit (E41), the verification's `deposit` check in place of the rule. The verifier writes the inventory (`inventory()`, called from
 `osd verify` for records with a rule): every listing entry the rule selects, hashed, so a mirror
 copies exactly what a verification run checksummed, never a whole-dataset claim beyond it.
 
@@ -150,7 +150,13 @@ def eligibility(rec: dict, verification: dict | None, rule: list[str] | None) ->
         reasons.append(f"origin {reach}")
     inv = v.get("inventory")
     files: list[dict] = []
-    if not rule:
+    dep = next((c for c in v.get("checks", []) if c["name"] == "deposit" and c["outcome"] == "pass"), None)
+    if dep:      # E41: a deposit is its own inventory, held already; no mirror: rule needed
+        files = list(dep["files"])
+        total = sum(f["bytes"] for f in files)
+        if total >= CAP_BYTES:
+            reasons.append(f"deposit {total / 1e9:.1f} GB, not under 20 GB")
+    elif not rule:
         reasons.append("no mirror: rule in verifier/samples.yaml")
     elif not inv:
         reasons.append("no inventory in the latest verification")
@@ -556,6 +562,8 @@ def _put_one(rec: dict, v: dict, f: dict, store, opener: Opener, now: datetime, 
             return c("refused", f"this digest is held for {held}")
         if store.exists(k.public):
             return c("present", k.public)
+    if not f.get("url"):     # a deposited file (E41): nothing to fetch it from
+        return c("refused", "a deposited file the store does not hold: osd mirror deposit it again")
     if dry_run:      # reads only: what a real run would do from here
         if store.exists(k.staging):
             return c("would-finish", f"{n} bytes in staging, checked and finished by the real run")

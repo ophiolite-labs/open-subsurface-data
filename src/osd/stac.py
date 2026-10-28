@@ -102,7 +102,9 @@ def _union(boxes: list[list[float]]) -> list[float] | None:
 def _assets(verification: dict | None, mirrored: dict[str, str] | None = None) -> dict:
     """E02's checksummed files that carry a fetch address; collection-level, since which Item a
     file belongs to is not established. A file the mirror holds (E07, by sha256) keeps one logical
-    asset and one checksum and gains the mirror as an alternate location."""
+    asset and one checksum and gains the mirror as an alternate location. A deposited file (E41)
+    has no publisher address: its asset is the mirror copy itself, with the deposit's provenance;
+    a copy the mirror no longer holds has no asset."""
     out = {}
     for f in (verification or {}).get("files", []):
         if f.get("url"):
@@ -110,6 +112,15 @@ def _assets(verification: dict | None, mirrored: dict[str, str] | None = None) -
                               "file:size": f["bytes"], "file:checksum": "1220" + f["sha256"]}
             if f["sha256"] in (mirrored or {}):
                 out[f["path"]]["alternate"] = {"mirror": {"href": mirrored[f["sha256"]], "title": MIRROR_TITLE}}
+    dep = next((c for c in (verification or {}).get("checks", [])
+                if c["name"] == "deposit" and c["outcome"] == "pass"), None)
+    for f in (dep or {}).get("files", []):
+        if f["sha256"] in (mirrored or {}) and f["path"] not in out:
+            out[f["path"]] = {"href": mirrored[f["sha256"]], "title": f["path"],
+                              "description": f"{dep['detail'][0].upper()}{dep['detail'][1:]}; held in the {MIRROR_TITLE}",
+                              "roles": ["data"], "file:size": f["bytes"], "file:checksum": "1220" + f["sha256"],
+                              "osd:provenance": "deposit", "osd:obtained_at": dep["obtained_at"],
+                              "osd:deposited_by": dep["by"], "osd:publisher_page_sha256": dep["publisher_page_sha256"]}
     return out
 
 
