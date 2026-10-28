@@ -26,6 +26,7 @@ import hmac
 import json
 import os
 import re
+import shutil
 import tempfile
 import urllib.error
 import urllib.request
@@ -502,7 +503,7 @@ def keys_for(record_id: str, sha256: str, path: str) -> Keys:
 class Copied:
     path: str
     sha256: str
-    outcome: str      # published | present | refused | mismatch | origin-dead
+    outcome: str      # published | present | refused | mismatch | origin-dead; dry run: would-copy | would-finish
     detail: str = ""
     bytes: int = 0
 
@@ -532,7 +533,7 @@ def _publish(rec, v, f, k: Keys, store, now) -> None:
     store.move(k.staging, k.public)
 
 
-def _put_one(rec: dict, v: dict, f: dict, store, opener: Opener, now: datetime) -> Copied:
+def _put_one(rec: dict, v: dict, f: dict, store, opener: Opener, now: datetime, dry_run: bool = False) -> Copied:
     sha, n = f["sha256"], f["bytes"]
     k = keys_for(rec["id"], sha, f["path"])
     c = lambda outcome, detail="": Copied(f["path"], sha, outcome, detail, n)
@@ -545,6 +546,10 @@ def _put_one(rec: dict, v: dict, f: dict, store, opener: Opener, now: datetime) 
             return c("refused", f"this digest is held for {held}")
         if store.exists(k.public):
             return c("present", k.public)
+    if dry_run:      # reads only: what a real run would do from here
+        if store.exists(k.staging):
+            return c("would-finish", f"{n} bytes in staging, checked and finished by the real run")
+        return c("would-copy", f"{n} bytes from {f['url']}")
     if store.exists(k.staging):
         if _hash_object(store, k.staging) == (sha, n):
             _publish(rec, v, f, k, store, now)
@@ -564,12 +569,13 @@ def _put_one(rec: dict, v: dict, f: dict, store, opener: Opener, now: datetime) 
 
 
 def put(rec: dict, verification: dict | None, rule: list[str] | None, store, opener: Opener,
-        now: datetime | None = None) -> list[Copied]:
+        now: datetime | None = None, dry_run: bool = False) -> list[Copied]:
+    """Copy the record's inventory into the store. `dry_run` reads the store and writes nothing."""
     e = eligibility(rec, verification, rule)
     if not e.eligible:
         raise NotEligible(f"{rec['id']}: " + "; ".join(e.reasons))
     now = now or datetime.now(UTC)
-    return [_put_one(rec, verification, f, store, opener, now) for f in e.files]
+    return [_put_one(rec, verification, f, store, opener, now, dry_run) for f in e.files]
 
 
 def remove(sha256: str, store, request: str, approved_by: str, now: datetime | None = None) -> list[str]:
@@ -596,6 +602,32 @@ def remove(sha256: str, store, request: str, approved_by: str, now: datetime | N
     for k in gone + [live]:
         store.delete(k)
     return gone + [live]
+
+
+def sync_custody(store, out: Path) -> list[str]:
+    """Every custody document and tombstone the store holds, written to `out` (replaced whole), so the
+    build reads what the store holds without anyone listing the bucket publicly. Each document is
+    checked before anything is replaced; a failed read keeps the previous set."""
+    docs = {}
+    for k in store.keys("custody/"):
+        name = k.removeprefix("custody/")
+        if "/" in name or not name.endswith(".json"):
+            continue
+        doc = store.get_json(k)
+        bad = custody.problems(doc, name)
+        if bad:
+            raise MirrorError(f"{k}: " + "; ".join(bad))
+        docs[name] = doc
+    tmp = out.with_name(out.name + ".partial")
+    if tmp.exists():
+        shutil.rmtree(tmp)
+    tmp.mkdir(parents=True)
+    for name, doc in docs.items():
+        (tmp / name).write_text(json.dumps(doc, indent=2) + "\n")
+    if out.exists():
+        shutil.rmtree(out)
+    tmp.rename(out)
+    return sorted(docs)
 
 
 def public_index(custody_dir: Path) -> list[dict]:

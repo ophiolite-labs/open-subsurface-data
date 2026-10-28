@@ -211,27 +211,50 @@ def cmd_mirror_eligible(a: argparse.Namespace) -> int:
     return 0
 
 
-def _store(a: argparse.Namespace) -> mirror_mod.LocalDirectory:
-    return mirror_mod.LocalDirectory(Path(a.store), a.public_url)
+def _store(a: argparse.Namespace):
+    return mirror_mod.open_store(a.store, a.public_url)
 
 
 def cmd_mirror_put(a: argparse.Namespace, opener=http_open) -> int:
-    recs, rules, store, bad = load_records(), mirror_mod.load_rules(), _store(a), False
+    recs, rules, bad, to_copy = load_records(), mirror_mod.load_rules(), False, []
+    dry = getattr(a, "dry_run", False)
+    try:
+        store = _store(a)
+        if hasattr(store, "check"):
+            store.check()               # HEAD on the bucket: the keys reach it
+    except mirror_mod.MirrorError as e:
+        print(f"refused: {e}")
+        return 1
     for rid in a.ids:
         try:
             out = mirror_mod.put(recs[rid], build_mod.latest_verification(rid, Path(a.vdir)), rules.get(rid),
-                                 store, opener)
-        except mirror_mod.NotEligible as e:
+                                 store, opener, dry_run=dry)
+        except mirror_mod.MirrorError as e:     # NotEligible, or the store refused
             print(f"refused: {e}")
             bad = True
             continue
         for c in out:
             print(f"  {c.outcome:11} {rid} {c.path} {c.sha256[:12]}  ({c.detail})")
             bad |= c.outcome in ("mismatch", "origin-dead")
+            to_copy += [c] if c.outcome in ("would-copy", "would-finish") else []
+    if dry:
+        print(f"dry run: {len(to_copy)} files, {sum(c.bytes for c in to_copy)} bytes would be copied;"
+              f" nothing written to {store.root}")
     tombs = sum(k.endswith(".removed.json") for k in store.keys("custody/"))
     print(f"store {store.root}: {len(store.keys('mirror/'))} objects, "
           f"{len(store.keys('custody/')) - tombs} custody documents, {tombs} tombstones")
     return 1 if bad else 0
+
+
+def cmd_mirror_custody(a: argparse.Namespace) -> int:
+    try:
+        names = mirror_mod.sync_custody(_store(a), Path(a.out))
+    except mirror_mod.MirrorError as e:
+        print(f"refused: {e}")
+        return 1
+    tombs = sum(n.endswith(".removed.json") for n in names)
+    print(f"{len(names) - tombs} custody documents, {tombs} tombstones -> {a.out}")
+    return 0
 
 
 def cmd_mirror_remove(a: argparse.Namespace) -> int:
@@ -296,13 +319,21 @@ def main(argv: list[str] | None = None) -> int:
     me.add_argument("--vdir", default=str(paths.VERIFICATION_DIR))
     me.set_defaults(fn=cmd_mirror_eligible)
     store_args = argparse.ArgumentParser(add_help=False)
-    store_args.add_argument("--store", default=str(mirror_mod.MIRROR_DIR), help="local store directory (slice 1)")
-    store_args.add_argument("--public-url", required=True,
-                            help="http(s) address the store is served at; custody hrefs start here")
+    store_args.add_argument("--store", default=str(mirror_mod.MIRROR_DIR),
+                            help="a local store directory, or s3://<bucket> (OSD_S3_ENDPOINT, OSD_S3_ACCESS_KEY,"
+                                 " OSD_S3_SECRET_KEY from the environment)")
+    store_args.add_argument("--public-url",
+                            help="http(s) address the store is served at; custody hrefs start here (required"
+                                 " for a local store; S3 default https://<bucket>.<endpoint host>/)")
     mp = msub.add_parser("put", parents=[store_args], help="network: copy eligible records' inventories")
     mp.add_argument("ids", nargs="+")
     mp.add_argument("--vdir", default=str(paths.VERIFICATION_DIR))
+    mp.add_argument("--dry-run", action="store_true", help="read the store, say what would be copied, write nothing")
     mp.set_defaults(fn=cmd_mirror_put)
+    mc = msub.add_parser("custody", parents=[store_args],
+                         help="copy the store's custody documents and tombstones into a directory (for the build)")
+    mc.add_argument("--out", required=True)
+    mc.set_defaults(fn=cmd_mirror_custody)
     mr = msub.add_parser("remove", parents=[store_args], help="takedown: delete a copy, write its tombstone")
     mr.add_argument("sha256")
     mr.add_argument("--request", required=True, help="the approved takedown issue")

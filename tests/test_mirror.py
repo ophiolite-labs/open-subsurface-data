@@ -842,3 +842,88 @@ def test_s3_takedown():
                          approved_by="tuna-soup", now=NOW)
     assert gone and [k for k in fake.objects if sha in k] == [f"custody/{sha}.removed.json"]
     assert mirror.put(record(), verification(), RULE, s, Net(), now=NOW)[0].outcome == "refused"
+
+
+def test_put_dry_run_writes_nothing(tmp_path):
+    s, fake = s3_store()
+    net = Net()
+    mirror.put(record(), verification(files={"survey/a.sgy": FILES["survey/a.sgy"]}, selected=["survey/a.sgy"]),
+               RULE, s, net, now=NOW)
+    before, net.requests = dict(fake.objects), Counter()
+    fake.requests.clear()
+    out = mirror.put(record(), verification(), RULE, s, net, now=NOW, dry_run=True)
+    assert [(c.outcome, c.bytes) for c in out] == [
+        ("present", 5000), ("would-copy", len(FILES["survey/b.las"])), ("would-copy", len(FILES["survey/c.csv"]))]
+    assert fake.objects == before and net.requests == Counter()
+    assert {m for m, _, _ in fake.requests} <= {"HEAD", "GET"}
+
+
+def test_cli_dry_run_and_custody_on_s3(tmp_path, capsys, monkeypatch):
+    from osd import cli
+    rule = mirror.load_rules()["opm/norne"]
+    vdir = tmp_path / "v"
+    vdir.mkdir()
+    (vdir / "opm__norne.json").write_text(json.dumps(verification("opm/norne", NORNE_LISTING, rule=rule)))
+    fake = FakeS3()
+    real = mirror.S3.from_env
+    monkeypatch.setattr(mirror.S3, "from_env", classmethod(
+        lambda cls, bucket, public_url=None, environ=None, send=None: real(
+            bucket, public_url, {"OSD_S3_ENDPOINT": S3_ENDPOINT, "OSD_S3_ACCESS_KEY": S3_ACCESS,
+                                 "OSD_S3_SECRET_KEY": S3_SECRET}, fake)))
+    net = Net(files={})
+    net.body = lambda url: NORNE_LISTING[url[len(ORIGIN):]]
+    store = ["--store", "s3://osd-mirror"]
+    args = cli.argparse.Namespace(ids=["opm/norne"], vdir=str(vdir), store="s3://osd-mirror", public_url=None,
+                                  dry_run=True)
+    assert cli.cmd_mirror_put(args, opener=net) == 0
+    out = capsys.readouterr().out
+    total = sum(len(b) for b in NORNE_LISTING.values())
+    assert f"dry run: 5 files, {total} bytes would be copied; nothing written to s3://osd-mirror" in out
+    assert fake.objects == {} and net.requests == Counter()
+    args.dry_run = False
+    assert cli.cmd_mirror_put(args, opener=net) == 0
+    assert "store s3://osd-mirror: 5 objects, 5 custody documents, 0 tombstones" in capsys.readouterr().out
+    assert all(c["href"].startswith("https://osd-mirror.fsn1.objects.test/mirror/opm/norne/")
+               for c in (json.loads(b) for k, (b, _) in fake.objects.items() if k.startswith("custody/")))
+    out_dir = tmp_path / "verification" / "custody"
+    assert cli.main(["mirror", "custody", *store, "--out", str(out_dir)]) == 0
+    assert "5 custody documents, 0 tombstones" in capsys.readouterr().out
+    assert len(list(out_dir.glob("*.json"))) == 5
+
+
+def test_custody_sync_feeds_the_build(tmp_path, records_subset):
+    rec = load_record(paths.RECORDS_DIR / "opm" / "norne.yaml")
+    rule = mirror.load_rules()["opm/norne"]
+    s, _ = s3_store()
+    net = Net(files={})
+    net.body = lambda url: NORNE_LISTING[url[len(ORIGIN):]]
+    v = verification("opm/norne", NORNE_LISTING, rule=rule)
+    mirror.put(rec, v, rule, s, net, now=NOW)
+    sha = _sha(NORNE_LISTING["norne/README"])
+    mirror.remove(sha, s, request="https://github.com/ophiolite-labs/open-subsurface-data/issues/9",
+                  approved_by="tuna-soup", now=NOW)
+    mirror_dir = tmp_path / "mirror"
+    (mirror_dir / "custody").mkdir(parents=True)
+    (mirror_dir / "custody" / ("ab" * 32 + ".json")).write_text("{}")       # stale: replaced whole
+    names = mirror.sync_custody(s, mirror_dir / "custody")
+    assert len(names) == 5 and f"{sha}.removed.json" in names and "ab" * 32 + ".json" not in names
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    (vdir / "opm__norne.json").write_text(json.dumps(v))
+    out = tmp_path / "catalog"
+    build(out, vdir, mirror_dir=mirror_dir, records_dir=records_subset(["opm/norne"]))
+    index = json.loads((out / "mirror.json").read_text())["copies"]
+    assert sorted(c["path"] for c in index) == sorted(set(NORNE_LISTING) - {"norne/README"})
+    assert all(c["href"].startswith(MIRROR + "mirror/opm/norne/") for c in index)
+
+
+def test_custody_sync_keeps_the_old_set_when_a_document_is_bad(tmp_path):
+    s, _ = s3_store()
+    mirror.put(record(), verification(), RULE, s, Net(), now=NOW)
+    out = tmp_path / "custody"
+    mirror.sync_custody(s, out)
+    before = sorted(p.name for p in out.iterdir())
+    s.put_json("custody/" + "ef" * 32 + ".json", {"format": "osd.custody/1"})
+    with pytest.raises(mirror.MirrorError):
+        mirror.sync_custody(s, out)
+    assert sorted(p.name for p in out.iterdir()) == before
