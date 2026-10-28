@@ -640,8 +640,8 @@ def sync_custody(store, out: Path) -> list[str]:
     return sorted(docs)
 
 
-def public_index(custody_dir: Path) -> list[dict]:
-    """The copies held, from the custody documents (never hand-written); tombstoned digests excluded."""
+def held_custody(custody_dir: Path) -> list[dict]:
+    """The custody documents of the copies held, each checked; tombstoned digests excluded."""
     out = []
     if not custody_dir.is_dir():
         return out
@@ -652,8 +652,20 @@ def public_index(custody_dir: Path) -> list[dict]:
         bad = custody.problems(doc, p.name)
         if bad:
             raise MirrorError(f"{p}: " + "; ".join(bad))
-        out.append({k: doc[k] for k in ("record_id", "path", "sha256", "bytes", "href")})
+        out.append(doc)
     return out
+
+
+def public_index(custody_dir: Path) -> list[dict]:
+    """The copies held, from the custody documents (never hand-written); tombstoned digests excluded."""
+    return [{k: doc[k] for k in ("record_id", "path", "sha256", "bytes", "href")} for doc in held_custody(custody_dir)]
+
+
+def deposits_of(held: list[dict], record_id: str) -> list[dict]:
+    """The record's held deposits, when every copy the mirror holds of its own files is a deposit
+    (E41 design 2); derived artefacts are never the record's files and are not counted."""
+    mine = [d for d in held if d["record_id"] == record_id and custody.provenance(d) != "derived"]
+    return mine if mine and all(custody.provenance(d) == "deposit" for d in mine) else []
 
 
 # --- local uploads: deposits and derived artefacts (E41) -----------------------------------------
