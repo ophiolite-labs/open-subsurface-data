@@ -160,7 +160,7 @@ def pack(name: str = F3) -> dict:
 
 def test_frozen_starter_pin():
     assert hashlib.sha256((FROZEN / "starter-1.schema.json").read_bytes()).hexdigest() == (
-        "8e49a769973447b23e12a8f8beb4cac7ea9f99a3a5c40e8a36ffed5a06c87cee")
+        "f38b9bbce3adbeecc4aecacd1a1f367b6bdb2acaa157d68c200455becd766250")
     assert STARTER.schema["$id"] == STARTER_1.schema["$id"] == "https://open-subsurface-data.org/schema/starter/1"
 
 
@@ -242,3 +242,17 @@ def test_takedown_of_a_derived_artefact(tmp_path):
     assert art["key"] in gone
     tombstone = store.get_json(f"custody/{art['sha256']}.removed.json")
     assert tombstone["derived"] == doc["derived"] and custody.problems(tombstone, f"{art['sha256']}.removed.json") == []
+
+
+def test_keys_come_later_while_unpublished():
+    """Ophiolite E129 writes a pack before its upload with `unpublished: true` and no keys, then fills each
+    key from the held derived custody document; a published pack without a key stays refused."""
+    doc = pack(F3)
+    for t in doc["targets"]:
+        for a in t["artefacts"]:
+            a.pop("key")
+    assert _errors(STARTER, doc)
+    doc["unpublished"] = True
+    assert _errors(STARTER, doc) == [] and _errors(STARTER_1, doc) == []
+    doc["unpublished"] = False
+    assert _errors(STARTER, doc)

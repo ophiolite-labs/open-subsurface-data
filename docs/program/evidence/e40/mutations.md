@@ -30,3 +30,10 @@ re-reads the mutated file before running (`mut.py`, lane scratchpad).
 | live custody schema admits only /1 (readers refuse /2) | `test_mixed_custody_set_through_index_sync_and_build` |
 | `mirror.public_index` stops excluding tombstoned digests | `test_mixed_custody_set_through_index_sync_and_build` |
 | `custody.provenance` never says `derived` | `test_mixed_custody_set_through_index_sync_and_build` |
+
+## C3b: keys come last while unpublished (supervisor answer 6, Ophiolite E129)
+
+| Mutation | Red test |
+|---|---|
+| starter/1: the `else` requiring `key` on a published pack removed | `test_starter_schema_is_not_permissive[artefact-without-key]` |
+| starter/1: the `if` loses `required: [unpublished]` (an absent flag counts as unpublished) | `test_starter_schema_is_not_permissive[artefact-without-key]` |

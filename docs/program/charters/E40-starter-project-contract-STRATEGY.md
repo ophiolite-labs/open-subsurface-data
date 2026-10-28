@@ -50,6 +50,17 @@ fetch a pack with its ATTRIBUTION.md.
    (`<site>/data/starters/…`, digest of the committed bytes). In `starters.json` each artefact gains
    `href` from its custody document, so E43 needs no second file.
 8. **Fidelity path** is relative to `starters/` (`fidelity/<pack file name>`), confined to it.
+9. **Keys come last while unpublished (supervisor answer 6, from Ophiolite E129, which pins the
+   merge commit).** E129 writes a pack in two steps: `build` with `unpublished: true` and no
+   artefact keys; after E41's derived upload, `finalise` fills each key from the held derived custody
+   document (digest and size) and reruns the validator. starter/1 therefore requires `key` on every
+   artefact unless `unpublished: true`; rule (f) reports a keyless artefact as unchecked, never
+   passed. Acceptance 8's "artefact without key" stays a refusal on a published pack.
+10. **One document by path.** E129 runs the validator as a subprocess: `osd validate <file>.json`
+   checks that document alone (anywhere on disk; its fidelity path resolves against the document's
+   directory; the file-name rule applies only inside `starters/`) against `records/`, the
+   verifications in `--vdir` and the custody documents in `--custody`, exit 0 or 1. The command is
+   stated in `starters/README.md`.
 
 ## Commits (one per design point, each with its tests and mutations in `evidence/e40/mutations.md`)
 
@@ -57,9 +68,9 @@ fetch a pack with its ATTRIBUTION.md.
 |---|---|---|---|
 | C1 | — | this strategy | — |
 | C2 | 2, 3, 7 | `custody.schema.json` → /2, `verification.schema.json` → /7; frozen custody-1, custody-2, verification-6, verification-7 with hash pins; old files validate | 8 (part) |
-| C3 | 1, 7 | `starter.schema.json` (starter/1), frozen copy, fixtures (F3-shaped, Teapot-shaped, custody snapshot /1 + /2 + tombstone, fidelity per pack, generator), `starters/README.md` | 8 |
+| C3 | 1, 7 | `starter.schema.json` (starter/1; C3b: keyless while unpublished, decision 9), frozen copy, fixtures (F3-shaped, Teapot-shaped, custody snapshot /1 + /2 + tombstone, fidelity per pack, generator), `starters/README.md` | 8 |
 | C4 | 2 | readers: `custody.py` both versions, mixed set through `public_index`, `sync_custody` and build | design 2 |
-| C5 | 4 | `src/osd/starters.py` validator (a–i), `osd validate` over `starters/` | 1–5 |
+| C5 | 4 | `src/osd/starters.py` validator (a–i), `osd validate` over `starters/` and on one document by path | 1–5 |
 | C6 | 5 | `starters.json`, `records.json` `starters[]`, document copies; build refuses invalid packs | 1, 6 |
 | C7 | 6 | `osd manifest --starter`, `osd get` over a `LocalDirectory` store | 7 |
 | C8 | — | ARCHITECTURE row, mutation record | evidence |
