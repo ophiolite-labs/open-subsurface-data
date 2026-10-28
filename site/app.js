@@ -59,8 +59,9 @@
   //   #q=volve&k=field,survey-3d&l=2&ext=0&ph=0&sel=equinor/volve&map=6.2/58.40/2.00
   //   #pick=opm/norne,sodir/factpages   select mode with two datasets ticked (`pick=` alone: none yet)
   //   #t=1990-2000&dated=1   period overlaps 1990 to 2000 (either side may be empty), dated records only (E21)
+  //   #starter=1   only datasets that come with a starter project (E43; ignored while there is none)
   const DEFAULTS = { q: '', kinds: [], minLevel: 0, extents: true, approx: true, sel: null, pick: null,
-    from: null, to: null, dated: false };
+    from: null, to: null, dated: false, starter: false };
   const state = { ...DEFAULTS, kinds: new Set() };
   function readHash() {
     const h = new URLSearchParams(location.hash.slice(1));
@@ -75,6 +76,7 @@
     state.from = t[1] ? Number(t[1]) : null;
     state.to = t[2] ? Number(t[2]) : null;
     state.dated = h.get('dated') === '1';
+    state.starter = anyStarter && h.get('starter') === '1';
     const m = (h.get('map') || '').split('/').map(Number);
     return m.length === 3 && m.every(Number.isFinite) ? { zoom: m[0], center: [m[2], m[1]] } : null;
   }
@@ -85,6 +87,7 @@
     if (state.minLevel) h.set('l', state.minLevel);
     if (state.from !== null || state.to !== null) h.set('t', `${state.from ?? ''}-${state.to ?? ''}`);
     if (state.dated) h.set('dated', '1');
+    if (state.starter) h.set('starter', '1');
     if (!state.extents) h.set('ext', '0');
     if (!state.approx) h.set('ph', '0');
     if (state.sel) h.set('sel', state.sel);
@@ -127,6 +130,7 @@
     if (LEVEL(r.level) < state.minLevel) return false;
     const p = span(r);
     if (state.dated && !p) return false;
+    if (state.starter && !hasStarter(r)) return false;
     if (p && ((state.to !== null && p[0] > state.to) || (state.from !== null && p[1] < state.from))) return false;
     if (state.kinds.size && !r.kinds.some(k => state.kinds.has(k))) return false;
     if (state.q) {
@@ -283,7 +287,8 @@
   $('from').oninput = e => { state.from = yearOf(e.target.value); applyFilters(); };
   $('to').oninput = e => { state.to = yearOf(e.target.value); applyFilters(); };
   $('dated').onchange = e => { state.dated = e.target.checked; applyFilters(); };
-  $('starterlink').hidden = !anyStarter;
+  $('starter').onchange = e => { state.starter = e.target.checked; applyFilters(); };
+  $('starterfilter').hidden = $('starterlink').hidden = !anyStarter;
 
   function syncControls() {
     for (const k of allKinds) chips[k].classList.toggle('on', state.kinds.has(k));
@@ -293,6 +298,7 @@
     if ($('q').value.trim().toLowerCase() !== state.q) $('q').value = state.q;
     for (const k of ['from', 'to']) if (yearOf($(k).value) !== state[k]) $(k).value = state[k] ?? '';
     $('dated').checked = state.dated;
+    $('starter').checked = state.starter;
   }
 
   function renderList(ids) {
@@ -466,7 +472,8 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
 
   $('pickmode').onclick = () => setPickMode(!state.pick);
 
-  // ---- Starter projects (E43). Deletable: this block, the fourth card in select(), #starterlink and site/starters.html. The page holds no pack text of its own:
+  // ---- Starter projects (E43). Deletable: this block, the fourth card in select(), the `starter` hash
+  // key, #starterlink, #starterfilter and site/starters.html. The page holds no pack text of its own:
   // everything comes from data/starters.json (E40: every published pack whole, with each artefact's
   // mirror address) and data/starters/ (the pack document and its fidelity record).
   const APPS = { opendtect: 'OpendTect', resinsight: 'ResInsight', python: 'Python' };

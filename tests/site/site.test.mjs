@@ -881,3 +881,30 @@ test('starter: with no pack in the build, no fourth card, no header link, no fil
   assert.deepEqual(unexpected, []);
   await context.close();
 });
+
+test('starter: #starter=1 lists exactly the two fixture records; unticking restores the count; starters.json waits for a card', async () => {
+  const context = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+  await offline(context);
+  await withStarters(context);
+  const page = await context.newPage();
+  const errors = errorsOf(page), fetched = asked(page, '/data/starters.json');
+  await page.goto(server.url + '#starter=1');
+  await ready(page);
+  assert.deepEqual((await listed(page)).sort(), ['rmotc/teapot-dome', F3_RECORD]);
+  assert.equal(await page.locator('#starter').isChecked(), true);
+  assert.equal(await page.locator('#starterfilter').isVisible(), true);
+  const total = await page.evaluate(() => document.getElementById('count').textContent.match(/of (\d+)/)[1]);
+  assert.equal(await page.locator('#count').textContent(), `(2 of ${total})`);
+  await page.locator('#starter').uncheck();
+  assert.equal(await page.locator('#count').textContent(), `(${total} of ${total})`);
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /starter=/);
+  await page.locator('#starter').check();
+  assert.match(await page.evaluate(() => location.hash), /starter=1/);
+  assert.deepEqual(fetched, [], 'the map does not load starters.json for the list or the filter');
+  await page.locator(`#list li[data-id="${F3_RECORD}"]`).click();
+  await page.locator('#detail .card.starter .app').first().waitFor();
+  assert.equal(fetched.length, 1, 'starters.json is fetched once a card needs it');
+  await page.screenshot({ path: join(OUT, 'starter-filter.png') });
+  assert.deepEqual(errors, []);
+  await context.close();
+});
