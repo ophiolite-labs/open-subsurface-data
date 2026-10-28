@@ -664,6 +664,23 @@ def check_licence(rec: dict, opener: Opener, previous: dict | None) -> tuple[dic
 
 # --- the record ------------------------------------------------------------------------------
 
+DEPOSIT_DETAIL = "deposited by a maintainer from the publisher's download, {}"
+
+
+def deposit_check(deposits: list[dict], licence_sha: str | None) -> dict:
+    """E41 design 2: the verification/7 `deposit` check, rebuilt every run from the record's held
+    custody/2 deposit documents (the evidence lives in the bucket, not on the machine that deposited).
+    The latest deposit's files; `licence_text_sha256` is this run's capture of `licence.url`, else
+    the one captured at deposit (the licence-text check then holds the level at L1)."""
+    latest = max(d["deposit"]["obtained_at"] for d in deposits)
+    mine = sorted((d for d in deposits if d["deposit"]["obtained_at"] == latest), key=lambda d: d["path"])
+    block = mine[0]["deposit"]
+    return {"name": "deposit", "level": "L2", "outcome": "pass", "detail": DEPOSIT_DETAIL.format(latest[:10]),
+            "files": [{k: d[k] for k in ("path", "sha256", "bytes", "key")} for d in mine],
+            "obtained_at": latest, "by": block["by"], "publisher_page_sha256": block["publisher_page_sha256"],
+            "licence_text_sha256": licence_sha or block["licence_text_sha256"]}
+
+
 def level_from_checks(checks: list[dict]) -> str:
     """The highest level whose every check passed, with no gaps below it."""
     level = "L0"
@@ -686,7 +703,8 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
                   budget: ByteBudget | None = None, sample: list[str] | None = None,
                   outline_rule: dict | None = None, stored: dict[str, str] | None = None,
                   refused: str | None = None, mirror_rule: list[str] | None = None,
-                  browser_probe: BrowserProbe | None = None) -> dict:
+                  browser_probe: BrowserProbe | None = None, deposits: list[dict] | None = None) -> dict:
+    """`deposits`: the record's held custody/2 deposit documents (mirror.deposits_of), E41."""
     checks: list[dict] = []
     extra: dict = {}
 
@@ -728,6 +746,14 @@ def verify_record(rec: dict, fetch: Fetcher, outline: dict | None, now: datetime
         if sha:
             extra["licence_text_sha256"] = sha
             extra["licence_text"] = text
+
+    if deposits:   # E41: the deposit is the L2 file evidence; a files check that only skipped gives way
+        i = next(i for i, c in enumerate(checks) if c["name"] == "files-checksummed")
+        dc = deposit_check(deposits, extra.get("licence_text_sha256"))
+        if checks[i]["outcome"] == "skip":
+            checks[i] = dc
+        else:
+            checks.insert(i + 1, dc)
 
     if outline is None:
         checks.append({"name": "outline-present", "level": "L3", "outcome": "fail",
@@ -863,18 +889,22 @@ def derive_outline(rec: dict, rules: dict, opener: Opener, inputs_dir: Path, out
 def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opener: Opener | None = None,
                out_dir: Path = paths.VERIFICATION_DIR, budget: ByteBudget | None = None,
                derive: bool = False, fetch_inputs: bool = False, inputs_dir: Path = outlines.INPUTS_DIR,
-               outlines_dir: Path = paths.OUTLINES_DIR, browser_probe: BrowserProbe | None = None) -> list[dict]:
+               outlines_dir: Path = paths.OUTLINES_DIR, browser_probe: BrowserProbe | None = None,
+               custody_dir: Path | None = None) -> list[dict]:
     """Defaults are the network, paced; tests inject both and are not paced. `derive` (osd verify
     --outlines) refetches the inputs of records that have outline rules and rewrites their outlines;
-    `fetch_inputs` (--outline-inputs) refetches them and checks the committed outlines against them."""
+    `fetch_inputs` (--outline-inputs) refetches them and checks the committed outlines against them.
+    `custody_dir` (default `<out_dir>/custody`, the documents that travel with the stored results)
+    gives each record its held deposits (E41)."""
     if fetch is None and opener is None:
         pacer = Pacer()
         fetch, opener = paced(http_fetch, http_open, pacer)
         browser_probe = browser_probe or paced_probe(http_browser_probe, pacer)
     recs = load_records()
     samples = load_samples()
-    from .mirror import load_rules
+    from .mirror import deposits_of, held_custody, load_rules
     mirror_rules = load_rules()
+    held = held_custody(out_dir / "custody" if custody_dir is None else custody_dir)
     rules = outlines.load_rules()
     out_dir.mkdir(parents=True, exist_ok=True)
     budget = budget or ByteBudget()
@@ -892,7 +922,8 @@ def verify_all(ids: list[str] | None = None, fetch: Fetcher | None = None, opene
         v = verify_record(rec, fetch, outline, opener=opener, previous=previous, budget=budget,
                           sample=samples.get(rid), outline_rule=rules.get(rid),
                           stored=outlines.stored_inputs(rid, inputs_dir), refused=refused,
-                          mirror_rule=mirror_rules.get(rid), browser_probe=browser_probe)
+                          mirror_rule=mirror_rules.get(rid), browser_probe=browser_probe,
+                          deposits=deposits_of(held, rid))
         _validator().validate(v)  # never write a record the schema refuses
         out.write_text(json.dumps(v, indent=2) + "\n")
         results.append(v)

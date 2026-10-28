@@ -277,6 +277,62 @@ def cmd_mirror_put(a: argparse.Namespace, opener=http_open) -> int:
     return 1 if bad else 0
 
 
+def _uploaded(rid: str, out: list, store) -> None:
+    for c in out:
+        print(f"  {c.outcome:11} {rid} {c.path} {c.sha256[:12]}  ({c.bytes} bytes)")
+    print(f"{len(out)} files, {sum(c.bytes for c in out)} bytes in {store.root}: "
+          f"{sum(c.outcome == 'published' for c in out)} published, {sum(c.outcome == 'present' for c in out)} present")
+
+
+def cmd_mirror_deposit(a: argparse.Namespace) -> int:
+    """E41: no network but the store; the page and the licence text are files the person saved."""
+    recs = load_records()
+    if a.record_id not in recs:
+        print(f"refused: no record {a.record_id}")
+        return 1
+    try:
+        store = _store(a)
+        if hasattr(store, "check"):
+            store.check()
+        out = mirror_mod.deposit(recs[a.record_id], Path(a.dir), store, obtained=a.obtained, by=a.by,
+                                 page_url=a.page_url, page=Path(a.page), licence=Path(a.licence_text))
+    except mirror_mod.MirrorError as e:
+        print(f"refused: {e}")
+        return 1
+    _uploaded(a.record_id, out, store)
+    return 0
+
+
+def cmd_mirror_put_derived(a: argparse.Namespace) -> int:
+    """E41: a starter pack's artefacts; no network but the store. Prints, per artefact, the custody
+    key a recipe fills into its pack (matched on sha256 and bytes)."""
+    path = Path(a.pack) if a.pack else starters_mod.STARTERS_DIR / starters_mod.file_name(a.pack_id)
+    try:
+        pack = json.loads(path.read_text())
+    except (OSError, ValueError) as e:
+        print(f"refused: the pack document {path}: {e}")
+        return 1
+    bad = [f"{'/'.join(map(str, e.absolute_path)) or '(root)'}: {e.message}"
+           for e in starters_mod._validator().iter_errors(pack)]
+    if bad or pack["id"] != a.pack_id:
+        print(f"refused: {path}: " + ("; ".join(bad) if bad else f"its id is {pack['id']}, not {a.pack_id}"))
+        return 1
+    recs = load_records()
+    if pack["record_id"] not in recs:
+        print(f"refused: no record {pack['record_id']}")
+        return 1
+    try:
+        store = _store(a)
+        if hasattr(store, "check"):
+            store.check()
+        out = mirror_mod.put_derived(pack, recs[pack["record_id"]], Path(a.dir), store)
+    except mirror_mod.MirrorError as e:
+        print(f"refused: {e}")
+        return 1
+    _uploaded(pack["record_id"], out, store)
+    return 0
+
+
 def cmd_mirror_custody(a: argparse.Namespace) -> int:
     try:
         names = mirror_mod.sync_custody(_store(a), Path(a.out))
@@ -369,6 +425,24 @@ def main(argv: list[str] | None = None) -> int:
     mp.add_argument("--vdir", default=str(paths.VERIFICATION_DIR))
     mp.add_argument("--dry-run", action="store_true", help="read the store, say what would be copied, write nothing")
     mp.set_defaults(fn=cmd_mirror_put)
+    md = msub.add_parser("deposit", parents=[store_args],
+                         help="upload a publisher's download a maintainer obtained, with custody/2 deposit (E41;"
+                              " no network but the store)")
+    md.add_argument("record_id")
+    md.add_argument("dir", help="the download as obtained, unmodified (regular files only)")
+    md.add_argument("--obtained", required=True, help="when the files were obtained: YYYY-MM-DD or a UTC date-time")
+    md.add_argument("--by", required=True, help="a role, never a name (maintainer)")
+    md.add_argument("--page-url", required=True, help="the publisher's page the download came from")
+    md.add_argument("--page", required=True, help="that page as the person saved it (page.html); kept as its sha256")
+    md.add_argument("--licence-text", required=True,
+                    help="the licence page or text as the person saved it; kept as the sha256 of its visible text")
+    md.set_defaults(fn=cmd_mirror_deposit)
+    mpd = msub.add_parser("put-derived", parents=[store_args],
+                          help="upload a starter pack's artefacts with custody/2 derived (E41; no network but the store)")
+    mpd.add_argument("pack_id", help="<record id>/<pack>, the starter/1 id")
+    mpd.add_argument("dir", help="the artefacts as the recipe wrote them, by their pack paths")
+    mpd.add_argument("--pack", help="the pack document (default starters/<record id with / as __>__<pack>.json)")
+    mpd.set_defaults(fn=cmd_mirror_put_derived)
     mc = msub.add_parser("custody", parents=[store_args],
                          help="copy the store's custody documents and tombstones into a directory (for the build)")
     mc.add_argument("--out", required=True)

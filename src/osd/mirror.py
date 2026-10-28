@@ -1,7 +1,7 @@
 """The mirror store (E07): eligible files copied once, verified, held under a custody document.
 
 Eligibility (OSD-D6) is a pure function of a record, its latest verification and its `mirror:` rule
-in verifier/samples.yaml. The verifier writes the inventory (`inventory()`, called from
+in verifier/samples.yaml, or, for a deposit (E41), the verification's `deposit` check in place of the rule. The verifier writes the inventory (`inventory()`, called from
 `osd verify` for records with a rule): every listing entry the rule selects, hashed, so a mirror
 copies exactly what a verification run checksummed, never a whole-dataset claim beyond it.
 
@@ -17,6 +17,14 @@ bucket, selected by a `s3://<bucket>` store spec with keys from the environment)
 custody, move (no origin fetch); otherwise stream the origin to staging, compare size and sha256,
 write custody, move. An interrupted run leaves at most a staging object, which the next run checks
 and finishes or replaces. `remove()` writes the tombstone first, then deletes every object of the copy.
+
+Local uploads (E41) take the same staging, digest comparison and custody-before-move from a
+directory instead of an origin: `deposit()` (a maintainer's deposit of a publisher's download,
+custody/2 `deposit`) and `put_derived()` (a starter pack's artefacts, custody/2 `derived`). Both walk
+regular files only (`walk()`: relative paths, a symlink refuses), refuse at the cap from the sizes
+before hashing, hash each file, refuse a tombstoned or otherwise-held digest before writing anything,
+then hash again while streaming to staging: the two digests must agree before the custody document
+is written. No network but the store.
 """
 
 from __future__ import annotations
@@ -27,6 +35,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import tempfile
 import urllib.error
 import urllib.request
@@ -53,6 +62,7 @@ from .verify import (
     _OverBudget,
     _read,
     _Robots,
+    licence_text,
     parse_listing,
 )
 
@@ -140,7 +150,13 @@ def eligibility(rec: dict, verification: dict | None, rule: list[str] | None) ->
         reasons.append(f"origin {reach}")
     inv = v.get("inventory")
     files: list[dict] = []
-    if not rule:
+    dep = next((c for c in v.get("checks", []) if c["name"] == "deposit" and c["outcome"] == "pass"), None)
+    if dep:      # E41: a deposit is its own inventory, held already; no mirror: rule needed
+        files = list(dep["files"])
+        total = sum(f["bytes"] for f in files)
+        if total >= CAP_BYTES:
+            reasons.append(f"deposit {total / 1e9:.1f} GB, not under 20 GB")
+    elif not rule:
         reasons.append("no mirror: rule in verifier/samples.yaml")
     elif not inv:
         reasons.append("no inventory in the latest verification")
@@ -546,6 +562,8 @@ def _put_one(rec: dict, v: dict, f: dict, store, opener: Opener, now: datetime, 
             return c("refused", f"this digest is held for {held}")
         if store.exists(k.public):
             return c("present", k.public)
+    if not f.get("url"):     # a deposited file (E41): nothing to fetch it from
+        return c("refused", "a deposited file the store does not hold: osd mirror deposit it again")
     if dry_run:      # reads only: what a real run would do from here
         if store.exists(k.staging):
             return c("would-finish", f"{n} bytes in staging, checked and finished by the real run")
@@ -630,8 +648,8 @@ def sync_custody(store, out: Path) -> list[str]:
     return sorted(docs)
 
 
-def public_index(custody_dir: Path) -> list[dict]:
-    """The copies held, from the custody documents (never hand-written); tombstoned digests excluded."""
+def held_custody(custody_dir: Path) -> list[dict]:
+    """The custody documents of the copies held, each checked; tombstoned digests excluded."""
     out = []
     if not custody_dir.is_dir():
         return out
@@ -642,5 +660,215 @@ def public_index(custody_dir: Path) -> list[dict]:
         bad = custody.problems(doc, p.name)
         if bad:
             raise MirrorError(f"{p}: " + "; ".join(bad))
-        out.append({k: doc[k] for k in ("record_id", "path", "sha256", "bytes", "href")})
+        out.append(doc)
     return out
+
+
+def public_index(custody_dir: Path) -> list[dict]:
+    """The copies held, from the custody documents (never hand-written); tombstoned digests excluded."""
+    return [{k: doc[k] for k in ("record_id", "path", "sha256", "bytes", "href")} for doc in held_custody(custody_dir)]
+
+
+def deposits_of(held: list[dict], record_id: str) -> list[dict]:
+    """The record's held deposits, when every copy the mirror holds of its own files is a deposit
+    (E41 design 2); derived artefacts are never the record's files and are not counted."""
+    mine = [d for d in held if d["record_id"] == record_id and custody.provenance(d) != "derived"]
+    return mine if mine and all(custody.provenance(d) == "deposit" for d in mine) else []
+
+
+# --- local uploads: deposits and derived artefacts (E41) -----------------------------------------
+
+@dataclass(frozen=True)
+class LocalFile:
+    path: str           # relative to the walked directory, posix
+    source: Path
+    bytes: int
+    sha256: str = ""
+
+
+def walk(root: Path, exclude: Iterable[Path] = ()) -> list[LocalFile]:
+    """Every regular file under `root` by relative path, sizes from stat; `exclude` (the captured
+    page and licence text when they sit inside) is left out. A symlink or any other entry refuses."""
+    root = Path(root)
+    if root.is_symlink() or not root.is_dir():
+        raise MirrorError(f"{root} is not a directory")
+    skip = {Path(p).resolve() for p in exclude}
+    out = []
+    for d, dirs, files in os.walk(root):
+        dirs.sort()
+        for name in sorted(dirs + files):
+            p = Path(d) / name
+            rel = p.relative_to(root).as_posix()
+            if p.is_symlink():
+                raise MirrorError(f"symlink {rel}: only regular files are uploaded, as downloaded")
+            if name in dirs:
+                continue
+            st = p.lstat()
+            if not stat.S_ISREG(st.st_mode):
+                raise MirrorError(f"{rel}: not a regular file")
+            if p.resolve() not in skip:
+                out.append(LocalFile(rel, p, st.st_size))
+    if not out:
+        raise MirrorError(f"no regular file in {root}")
+    return out
+
+
+def under_cap(files: list[LocalFile]) -> int:
+    total = sum(f.bytes for f in files)
+    if total >= CAP_BYTES:
+        raise NotEligible(f"{len(files)} files, {total} bytes: not under 20 GB (OSD-D6)")
+    return total
+
+
+def _file_chunks(p: Path) -> Iterator[bytes]:
+    with p.open("rb") as f:
+        while chunk := f.read(CHUNK):
+            yield chunk
+
+
+def sha256_file(p: Path) -> tuple[str, int]:
+    h, n = hashlib.sha256(), 0
+    for chunk in _file_chunks(p):
+        h.update(chunk)
+        n += len(chunk)
+    return h.hexdigest(), n
+
+
+def hash_local(files: list[LocalFile]) -> list[LocalFile]:
+    out = []
+    for f in files:
+        sha, n = sha256_file(f.source)
+        if n != f.bytes:
+            raise MirrorError(f"{f.path}: {n} bytes read, {f.bytes} stated by stat: the file is changing")
+        out.append(LocalFile(f.path, f.source, n, sha))
+    return out
+
+
+def _holder(doc: dict) -> tuple:
+    return doc["record_id"], custody.provenance(doc), (doc.get("derived") or {}).get("pack_id")
+
+
+def upload_local(record_id: str, files: list[LocalFile], store, document: Callable[[LocalFile, str], dict]) -> list[Copied]:
+    """Publish hashed local files: every refusal before anything is written, then per file staging,
+    a second digest while streaming, custody (`document(file, href)`), move."""
+    first: dict[str, str] = {}
+    for f in files:
+        if f.sha256 in first:
+            raise MirrorError(f"{first[f.sha256]} and {f.path} are the same bytes ({f.sha256[:12]}…): "
+                              "the mirror holds one copy per digest")
+        first[f.sha256] = f.path
+    todo = []
+    for f in files:
+        k = keys_for(record_id, f.sha256, f.path)
+        if store.exists(k.tombstone):
+            t = store.get_json(k.tombstone)["removal"]
+            raise MirrorError(f"{f.path}: digest {f.sha256[:12]}… was removed {t['removed_at'][:10]} on "
+                              f"{t['request']}: never mirrored again")
+        if store.exists(k.custody):
+            held, want = store.get_json(k.custody), document(f, store.public_url(k.public))
+            if _holder(held) != _holder(want):
+                rid, prov, pack = _holder(held)
+                raise MirrorError(f"{f.path}: digest {f.sha256[:12]}… is held for {rid} as a {prov} copy"
+                                  + (f" of {pack}" if pack else ""))
+            if store.exists(k.public) and held["path"] == f.path:
+                todo.append((f, k, "present"))
+                continue
+        todo.append((f, k, "upload"))
+    out = []
+    for f, k, what in todo:
+        if what == "present":
+            out.append(Copied(f.path, f.sha256, "present", k.public, f.bytes))
+            continue
+        store.delete(k.staging)
+        h, count = hashlib.sha256(), [0]
+        store.upload(k.staging, _hashing(_file_chunks(f.source), h, count))
+        if (h.hexdigest(), count[0]) != (f.sha256, f.bytes):
+            store.delete(k.staging)
+            raise MirrorError(f"{f.path}: streamed {count[0]} bytes sha256 {h.hexdigest()}, hashed before as "
+                              f"{f.bytes} bytes {f.sha256}: nothing published for it")
+        doc = document(f, store.public_url(k.public))
+        bad = custody.problems(doc, k.custody.split("/")[1], store.size(k.staging))
+        if bad:
+            store.delete(k.staging)
+            raise MirrorError(f"{f.path}: custody document refused: " + "; ".join(bad))
+        store.put_json(k.custody, doc)
+        store.move(k.staging, k.public)
+        out.append(Copied(f.path, f.sha256, "published", k.public, f.bytes))
+    return out
+
+
+def obtained_at(value: str) -> str:
+    """A date (the day the download was made) or a UTC date-time, as custody states it."""
+    try:
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            return datetime.strptime(value, "%Y-%m-%d").strftime("%Y-%m-%dT00:00:00Z")
+        t = datetime.fromisoformat(value)
+        if t.tzinfo is None:
+            raise ValueError(value)
+        return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        raise MirrorError(f"--obtained {value}: not a date (YYYY-MM-DD) or a date-time with its offset") from None
+
+
+def deposit(rec: dict, root: Path, store, *, obtained: str, by: str, page_url: str, page: Path,
+            licence: Path, now: datetime | None = None) -> list[Copied]:
+    """A maintainer's deposit of the publisher's download (E41 design 1, OSD-D22). `page` and
+    `licence` are the publisher's page and the licence text as the person saved them; the page is
+    kept as its sha256, the licence text as the sha256 of its visible text (the verifier's own
+    normalisation, so the two digests compare). The record file is never touched."""
+    rights = rec["licence"]["redistribution"]
+    if rights != "allowed":
+        raise NotEligible(f"{rec['id']}: redistribution {rights}, not allowed (OSD-D6)")
+    host = urlsplit(rec["origin"]["url"]).hostname
+    if urlsplit(page_url).hostname != host:
+        raise MirrorError(f"--page-url {page_url} is not on the record's origin host {host}")
+    page, licence = Path(page), Path(licence)
+    for what, p in (("--page", page), ("--licence-text", licence)):
+        if not p.is_file():
+            raise MirrorError(f"{what} {p}: no such file")
+    text = licence_text(licence.read_bytes())
+    if not text:
+        raise MirrorError(f"--licence-text {licence}: no text")
+    block = {"obtained_at": obtained_at(obtained), "by": by, "publisher_page_url": page_url,
+             "publisher_page_sha256": hashlib.sha256(page.read_bytes()).hexdigest(),
+             "licence_text_sha256": hashlib.sha256(text.encode()).hexdigest()}
+    files = walk(root, exclude=(page, licence))
+    under_cap(files)
+    files = hash_local(files)
+    now = now or datetime.now(UTC)
+    return upload_local(rec["id"], files, store, lambda f, href: custody.deposit_document(
+        rec, f.path, f.sha256, f.bytes, href, now, block))
+
+
+def put_derived(pack: dict, rec: dict, root: Path, store, now: datetime | None = None) -> list[Copied]:
+    """A starter pack's artefacts (E41 design 5), from the directory the recipe wrote them to. Every
+    file must be an artefact of `pack` (a starter/1 document, possibly `unpublished: true` without
+    keys) with the size and digest the pack states, and every artefact must be there. Lineage:
+    `recipe.id`, and `from` the input a derived file was made from, else every input. The custody
+    document is matched by (sha256, bytes) to fill the pack's keys (Ophiolite E129); derived copies
+    are never the record's files (no inventory, no level)."""
+    if pack["record_id"] != rec["id"]:
+        raise MirrorError(f"pack {pack['id']} is of record {pack['record_id']}, not {rec['id']}")
+    licence = {k: v for k, v in pack["licence"].items() if k != "sources"}
+    if licence["redistribution"] != "allowed":
+        raise NotEligible(f"{pack['id']}: redistribution {licence['redistribution']}, not allowed (OSD-D6)")
+    stated = {a["path"]: a for t in pack["targets"] for a in t["artefacts"]}
+    files = walk(root)
+    under_cap(files)
+    on_disk = {f.path for f in files}
+    if extra := sorted(on_disk - set(stated)):
+        raise MirrorError(f"{', '.join(extra)}: not an artefact of {pack['id']}")
+    if missing := sorted(set(stated) - on_disk):
+        raise MirrorError(f"artefact {', '.join(missing)} of {pack['id']} not in {root}")
+    files = hash_local(files)
+    for f in files:
+        a = stated[f.path]
+        if (f.sha256, f.bytes) != (a["sha256"], a["bytes"]):
+            raise MirrorError(f"{f.path}: {f.bytes} bytes sha256 {f.sha256[:12]}…, the pack states "
+                              f"{a['bytes']} bytes {a['sha256'][:12]}…")
+    made_from = {d["path"]: [d["from"]] for d in pack["derived"]}
+    inputs = list(dict.fromkeys(i["sha256"] for i in pack["inputs"]))
+    now = now or datetime.now(UTC)
+    return upload_local(rec["id"], files, store, lambda f, href: custody.derived_document(
+        rec, licence, f.path, f.sha256, f.bytes, href, now,
+        {"pack_id": pack["id"], "recipe_id": pack["recipe"]["id"], "from": made_from.get(f.path, inputs)}))

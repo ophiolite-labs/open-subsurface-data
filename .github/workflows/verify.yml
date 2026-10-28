@@ -8,7 +8,8 @@
 # results on the `verification-results` branch (OSD-D5) and republishes.
 # The mirror (E07): a dispatch on main copies the eligible records to the S3 bucket and refreshes the
 # custody documents, which travel on `verification-results` under custody/ for the build (pages.yml);
-# a branch dispatch only reads the bucket (`--dry-run`). A dispatch naming `takedown_sha256` runs only
+# a branch dispatch only reads the bucket (`--dry-run`). A dispatch on main naming ids also copies the
+# custody documents before verifying (E41), so a deposit made since the last run counts in this run. A dispatch naming `takedown_sha256` runs only
 # the takedown job (main, an approved request). The S3 keys reach no pull-request run.
 name: verify
 on:
@@ -48,6 +49,15 @@ jobs:
             git archive origin/verification-results | tar -x -C build/verification
           fi
           mkdir -p build/verification && cp -r build/verification build/verification-before
+      - name: custody documents from the bucket before verifying (E41, dispatches on main) - a deposit made since the last run counts in this one
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        continue-on-error: true   # an S3 outage keeps the custody set the earlier results carry (sync_custody replaces it whole or not at all)
+        env:
+          OSD_S3_ACCESS_KEY: "${{ secrets.OSD_S3_ACCESS_KEY }}"
+          OSD_S3_SECRET_KEY: "${{ secrets.OSD_S3_SECRET_KEY }}"
+          OSD_S3_ENDPOINT: "${{ vars.OSD_S3_ENDPOINT }}"
+          OSD_S3_BUCKET: "${{ vars.OSD_S3_BUCKET }}"
+        run: uv run osd mirror custody --store "s3://$OSD_S3_BUCKET" --out build/verification/custody
       - name: pick ids
         id: ids
         run: |

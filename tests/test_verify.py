@@ -7,6 +7,7 @@ import re
 import subprocess
 import urllib.error
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator, ValidationError
@@ -1139,3 +1140,110 @@ def test_robots_404_allows(tmp_path):
     rec = l2_fixture(tmp_path)
     v = verify_record(rec, fetch_ok, None, now=NOW, opener=dir_opener(tmp_path), sample=SAMPLE)
     assert outcome(v, "files-checksummed")["outcome"] == "pass" and v["level"] == "L2"
+
+
+# --- E41: the deposit check from custody (designs 2 and 3; acceptance 3) ------------------------
+
+DEPOSIT_DIR = paths.ROOT / "tests" / "fixtures" / "deposits" / "f3-demo-2023"
+DEED = b"<html><body><h1>Attribution-ShareAlike 3.0 Unported</h1><p>You are free to share.</p></body></html>"
+
+
+def deposited_custody(tmp_path) -> Path:
+    """The fixture deposit put into a local store and synced, as `osd mirror custody` writes it."""
+    from osd import mirror
+    s = mirror.LocalDirectory(tmp_path / "store", "https://mirror.test/")
+    mirror.deposit(copy.deepcopy(REC), DEPOSIT_DIR, s, obtained="2026-10-29", by="maintainer",
+                   page_url="https://terranubis.com/datainfo/F3-Demo-2023", page=DEPOSIT_DIR / "page.html",
+                   licence=DEPOSIT_DIR / "licence.html", now=NOW)
+    mirror.sync_custody(s, tmp_path / "custody")
+    return tmp_path / "custody"
+
+
+def deposits(tmp_path) -> list[dict]:
+    from osd import mirror
+    return mirror.deposits_of(mirror.held_custody(deposited_custody(tmp_path)), REC["id"])
+
+
+def licence_opener(ok: bool):
+    def open_(url):
+        if ok and url == REC["licence"]["url"]:
+            return iter([DEED])
+        raise FetchError(url, 503)
+    return open_
+
+
+def verified_deposit(tmp_path, fetch=fetch_ok, licence_ok=True, held=None):
+    from osd.reasons import reason
+    v = verify_record(copy.deepcopy(REC), fetch, None, now=NOW, opener=licence_opener(licence_ok),
+                      deposits=deposits(tmp_path) if held is None else held)
+    Draft202012Validator(json.loads((paths.SCHEMA_DIR / "verification.schema.json").read_text())).validate(v)
+    return v, reason(v, REC)
+
+
+def test_deposit_check_lists_the_files_and_gives_L2(tmp_path):
+    v, why = verified_deposit(tmp_path)
+    d = outcome(v, "deposit")
+    assert [f["path"] for f in d["files"]] == ["F3_Demo_2023.zip", "docs/README.txt", "wells/F02-1.las"]
+    for f in d["files"]:
+        assert hashlib.sha256((DEPOSIT_DIR / f["path"]).read_bytes()).hexdigest() == f["sha256"]
+        assert f["key"] == f"mirror/terranubis/f3-demo-2020/{f['sha256']}/{f['path'].rsplit('/', 1)[-1]}"
+    assert "files-checksummed" not in [c["name"] for c in v["checks"]]     # the skip gave way to the deposit
+    assert d["licence_text_sha256"] == v["licence_text_sha256"]           # this run's capture of licence.url
+    assert (d["obtained_at"], d["by"]) == ("2026-10-29T00:00:00Z", "maintainer")
+    assert level_from_checks(v["checks"]) == v["level"] == "L2"
+    assert why == "deposited by a maintainer from the publisher's download, 2026-10-29"
+
+
+def test_deposit_without_licence_text_stays_L1(tmp_path):
+    v, why = verified_deposit(tmp_path, licence_ok=False)
+    assert (outcome(v, "licence-text-captured")["outcome"], v["level"]) == ("fail", "L1")
+    assert outcome(v, "deposit")["licence_text_sha256"] == deposits(tmp_path)[0]["deposit"]["licence_text_sha256"]
+    assert why.startswith("deposited, licence text not captured: licence page https://creativecommons.org")
+
+
+@pytest.mark.parametrize("answer,level,needle", [
+    (Fetched(404, "https://terranubis.com/x", "", 5), "L0", "origin-reachable: HTTP 404"),
+    (Fetched(403, "https://terranubis.com/x", "text/html", 5, body=CHALLENGE), "L0", "origin-reachable: blocked"),
+], ids=["dead", "blocked"])
+def test_deposit_with_origin_failing_names_the_deposit(tmp_path, answer, level, needle):
+    v, why = verified_deposit(tmp_path, fetch=lambda url: answer)
+    assert v["level"] == level and outcome(v, "deposit")["outcome"] == "pass"
+    assert why.startswith(needle) and why.endswith(
+        "files deposited 2026-10-29, held in the mirror; L1 needs the origin to answer")
+
+
+def test_no_custody_no_deposit_check(tmp_path):
+    v, why = verified_deposit(tmp_path, held=[])
+    assert "deposit" not in [c["name"] for c in v["checks"]] and v["level"] == "L1"
+    assert outcome(v, "files-checksummed")["detail"] == "no origin.manifest_url"
+    assert why.startswith("files-checksummed: no file address is published to us")
+
+
+def test_verify_all_reads_the_custody_beside_the_results(tmp_path, monkeypatch):
+    """The workflow's layout: results and custody/ in one directory; two runs, the same check."""
+    out = tmp_path / "verification"
+    out.mkdir()
+    deposited_custody(tmp_path).rename(out / "custody")
+    monkeypatch.setattr("osd.verify.load_samples", dict)
+    runs = [verify_all([REC["id"]], fetch=fetch_ok, opener=licence_opener(True), out_dir=out)[0] for _ in range(2)]
+    assert [v["level"] for v in runs] == ["L2", "L2"]
+    assert outcome(runs[0], "deposit")["files"] == outcome(runs[1], "deposit")["files"]
+
+
+def test_verifier_ignores_derived_custody(tmp_path):
+    """A derived artefact is never the record's file: alone it writes no check; beside a deposit it
+    is not listed and the level is the deposit's (acceptance 7)."""
+    from osd import mirror
+    starters = paths.ROOT / "tests" / "fixtures" / "starters"
+    pack = json.loads((starters / "packs" / "terranubis__f3-demo-2020__starter.json").read_text())
+    s = mirror.LocalDirectory(tmp_path / "store", "https://mirror.test/")
+    mirror.put_derived(pack, copy.deepcopy(REC), starters / "artefacts" / "terranubis__f3-demo-2020__starter", s, now=NOW)
+    mirror.sync_custody(s, tmp_path / "derived-only")
+    held = mirror.held_custody(tmp_path / "derived-only")
+    assert held and mirror.deposits_of(held, REC["id"]) == []
+    v, _ = verified_deposit(tmp_path / "a", held=mirror.deposits_of(held, REC["id"]))
+    assert "deposit" not in [c["name"] for c in v["checks"]] and v["level"] == "L1"
+    both = mirror.held_custody(deposited_custody(tmp_path / "b")) + held
+    v, why = verified_deposit(tmp_path / "c", held=mirror.deposits_of(both, REC["id"]))
+    assert len(outcome(v, "deposit")["files"]) == 3 and v["level"] == "L2"
+    assert why == "deposited by a maintainer from the publisher's download, 2026-10-29"

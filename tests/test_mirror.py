@@ -5,6 +5,7 @@ mirror are fake openers keyed by URL, so nothing leaves the machine."""
 import copy
 import hashlib
 import json
+import shutil
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -949,5 +950,447 @@ def test_workflow_keys_only_on_dispatch():
                 assert "github.ref == 'refs/heads/main'" in cond, (name, step["name"])
             if "osd mirror put" in run and "--dry-run" in run:
                 assert "github.ref != 'refs/heads/main'" in cond, (name, step["name"])
-    assert with_keys == 5 and writes == 3        # put in verify and finish, read-only in both, takedown
+    assert with_keys == 6 and writes == 3        # put in verify and finish, read-only in both, takedown, custody before verify (E41)
     assert "secrets." not in (ROOT / ".github" / "workflows" / "pages.yml").read_text()
+
+
+# --- E41: deposits (design 1; acceptance 1 and 2) ------------------------------------------------
+
+DEPOSIT_DIR = ROOT / "tests" / "fixtures" / "deposits" / "f3-demo-2023"
+F3 = "terranubis/f3-demo-2020"
+DEPOSITED = ["F3_Demo_2023.zip", "docs/README.txt", "wells/F02-1.las"]
+PAGE_URL = "https://terranubis.com/datainfo/F3-Demo-2023"
+
+
+def f3_record(**licence) -> dict:
+    rec = load_record(ROOT / "records" / "terranubis" / "f3-demo-2020.yaml")
+    rec["licence"].update(licence)
+    return rec
+
+
+def deposit(s, rec=None, root=DEPOSIT_DIR, **kw):
+    return mirror.deposit(rec or f3_record(), root, s, obtained="2026-10-29", by="maintainer", page_url=PAGE_URL,
+                          page=root / "page.html", licence=root / "licence.html", now=NOW, **kw)
+
+
+def deposit_copy(tmp_path) -> Path:
+    d = tmp_path / "download"
+    shutil.copytree(DEPOSIT_DIR, d)
+    return d
+
+
+def test_deposit_three_files_read_back_equal_sha256sum_and_stat(tmp_path):
+    import subprocess
+    s = store(tmp_path)
+    out = deposit(s)
+    assert [(c.path, c.outcome) for c in out] == [(p, "published") for p in DEPOSITED]
+    sums = dict(reversed(line.split("  ", 1)) for line in subprocess.run(
+        ["sha256sum", *DEPOSITED], cwd=DEPOSIT_DIR, capture_output=True, text=True, check=True).stdout.splitlines())
+    sizes = {p: int(subprocess.run(["stat", "-c", "%s", p], cwd=DEPOSIT_DIR, capture_output=True, text=True,
+                                   check=True).stdout) for p in DEPOSITED}
+    docs = [s.get_json(k) for k in s.keys("custody/")]
+    assert len(docs) == 3 and len(s.keys("mirror/")) == 3 and not s.keys("staging/")
+    for doc in docs:      # path -> digest -> bytes, each bound to the stored object
+        p = doc["path"]
+        assert (doc["sha256"], doc["bytes"]) == (sums[p], sizes[p])
+        assert mirror._hash_object(s, doc["key"]) == (sums[p], sizes[p])
+        assert doc["key"] == custody.object_key(F3, sums[p], p) and doc["href"] == MIRROR + doc["key"]
+        assert custody.problems(doc, f"{doc['sha256']}.json", s.size(doc["key"])) == []
+        assert doc["format"] == "osd.custody/2" and doc["origin_href"] is None and custody.provenance(doc) == "deposit"
+        assert doc["deposit"] == {
+            "obtained_at": "2026-10-29T00:00:00Z", "by": "maintainer", "publisher_page_url": PAGE_URL,
+            "publisher_page_sha256": _sha((DEPOSIT_DIR / "page.html").read_bytes()),
+            "licence_text_sha256": _sha(b"Attribution-ShareAlike 3.0 Unported You are free to: Share - copy and "
+                                        b"redistribute the material in any medium or format.")}
+        assert doc["licence_text_sha256"] == doc["deposit"]["licence_text_sha256"]
+        assert "- Share-alike: derived work must carry CC-BY-SA-3.0" in doc["attribution"]
+    assert [c.outcome for c in deposit(s)] == ["present"] * 3               # a rerun writes nothing
+
+
+def test_deposit_swapped_digests_refused(tmp_path, monkeypatch):
+    real = mirror.hash_local
+
+    def swapped(files):
+        out = real(files)
+        a, b = out[0], out[1]
+        return [mirror.LocalFile(a.path, a.source, a.bytes, b.sha256), mirror.LocalFile(b.path, b.source, b.bytes, a.sha256),
+                *out[2:]]
+    monkeypatch.setattr(mirror, "hash_local", swapped)
+    s = store(tmp_path)
+    with pytest.raises(mirror.MirrorError, match="F3_Demo_2023.zip: streamed .* hashed before as"):
+        deposit(s)
+    assert not s.keys("mirror/") and not s.keys("custody/") and not s.keys("staging/")
+
+
+def test_deposit_broken_hashing_refused(tmp_path, monkeypatch):
+    monkeypatch.setattr(mirror, "sha256_file", lambda p: (_sha(p.name.encode()), p.stat().st_size))  # the name, not the bytes
+    s = store(tmp_path)
+    with pytest.raises(mirror.MirrorError, match="nothing published for it"):
+        deposit(s)
+    assert not s.keys("mirror/") and not s.keys("custody/")
+
+
+def test_deposit_symlink_refused_by_name(tmp_path):
+    d = deposit_copy(tmp_path)
+    (d / "wells" / "F03-2.las").symlink_to(d / "wells" / "F02-1.las")
+    with pytest.raises(mirror.MirrorError, match="symlink wells/F03-2.las"):
+        deposit(store(tmp_path), root=d)
+    (d / "wells" / "F03-2.las").unlink()
+    (d / "linked").symlink_to(d / "docs", target_is_directory=True)
+    with pytest.raises(mirror.MirrorError, match="symlink linked"):
+        deposit(store(tmp_path), root=d)
+
+
+@pytest.mark.parametrize("rights", ["restricted", "unknown"])
+def test_deposit_refuses_rights(tmp_path, rights):
+    s = store(tmp_path)
+    with pytest.raises(mirror.NotEligible, match=f"redistribution {rights}, not allowed"):
+        deposit(s, rec=f3_record(redistribution=rights))
+    assert not s.keys("")
+
+
+def test_deposit_refuses_exactly_the_cap(tmp_path, monkeypatch):
+    d = deposit_copy(tmp_path)
+    rest = sum(f.stat().st_size for f in d.rglob("*") if f.is_file() and f.suffix != ".html")
+    with (d / "sparse.bin").open("wb") as f:      # sparse: the cap refuses from stat, before hashing
+        f.truncate(mirror.CAP_BYTES - rest)
+    monkeypatch.setattr(mirror, "sha256_file", lambda p: pytest.fail("hashed before the cap refused"))
+    with pytest.raises(mirror.NotEligible, match=f"{mirror.CAP_BYTES} bytes: not under 20 GB"):
+        deposit(store(tmp_path), root=d)
+    files = [mirror.LocalFile("a", d / "a", mirror.CAP_BYTES - 1)]
+    assert mirror.under_cap(files) == mirror.CAP_BYTES - 1
+
+
+def test_deposit_refuses_empty_directory(tmp_path):
+    d = tmp_path / "empty"
+    (d / "sub").mkdir(parents=True)
+    page = tmp_path / "page.html"
+    page.write_text("<p>page</p>")
+    with pytest.raises(mirror.MirrorError, match="no regular file in"):
+        mirror.deposit(f3_record(), d, store(tmp_path), obtained="2026-10-29", by="maintainer", page_url=PAGE_URL,
+                       page=page, licence=DEPOSIT_DIR / "licence.html")
+
+
+def test_deposit_refuses_a_tombstoned_digest(tmp_path):
+    s = store(tmp_path)
+    deposit(s)
+    readme = next(s.get_json(k) for k in s.keys("custody/") if s.get_json(k)["path"] == "docs/README.txt")
+    mirror.remove(readme["sha256"], s, "https://github.com/ophiolite-labs/open-subsurface-data/issues/9",
+                  "tuna-soup", now=NOW)
+    before = sorted(s.keys(""))
+    with pytest.raises(mirror.MirrorError, match="docs/README.txt: digest .* was removed 2026-10-23 .* never mirrored again"):
+        deposit(s)
+    assert sorted(s.keys("")) == before          # refused before anything was written
+
+
+def test_deposit_refuses_a_digest_held_elsewhere_and_a_foreign_page(tmp_path):
+    s = store(tmp_path)
+    deposit(s)
+    other = dict(f3_record(), id="terranubis/f3-demo-2023")
+    other["origin"] = dict(other["origin"])
+    with pytest.raises(mirror.MirrorError, match="is held for terranubis/f3-demo-2020 as a deposit copy"):
+        deposit(s, rec=other)
+    with pytest.raises(mirror.MirrorError, match="not on the record's origin host terranubis.com"):
+        mirror.deposit(f3_record(), DEPOSIT_DIR, s, obtained="2026-10-29", by="maintainer",
+                       page_url="https://example.org/f3", page=DEPOSIT_DIR / "page.html",
+                       licence=DEPOSIT_DIR / "licence.html")
+
+
+def test_deposit_refuses_duplicate_bytes(tmp_path):
+    d = deposit_copy(tmp_path)
+    shutil.copy(d / "docs" / "README.txt", d / "README-copy.txt")
+    with pytest.raises(mirror.MirrorError, match="README-copy.txt and docs/README.txt are the same bytes"):
+        deposit(store(tmp_path), root=d)
+
+
+def test_deposit_on_s3(tmp_path):
+    s, fake = s3_store()
+    assert [c.outcome for c in deposit(s)] == ["published"] * 3
+    held = [k for k in fake.objects if k.startswith("custody/")]
+    assert len(held) == 3 and all(fake.objects[k][1] == "public-read" for k in held)
+    assert not [k for k in fake.objects if k.startswith("staging/")]
+
+
+def test_cli_deposit(tmp_path, capsys):
+    from osd.cli import main
+    args = ["mirror", "deposit", F3, str(DEPOSIT_DIR), "--obtained", "2026-10-29", "--by", "maintainer",
+            "--page-url", PAGE_URL, "--page", str(DEPOSIT_DIR / "page.html"),
+            "--licence-text", str(DEPOSIT_DIR / "licence.html"), "--store", str(tmp_path / "store"),
+            "--public-url", MIRROR]
+    assert main(args) == 0
+    out = capsys.readouterr().out
+    assert "3 files, 3833 bytes" in out and "3 published, 0 present" in out
+    assert main([*args[:2], "acme/none", *args[3:]]) == 1
+    assert main([*args[:5], "29 October", *args[6:]]) == 1
+    assert "--obtained 29 October: not a date" in capsys.readouterr().out
+
+
+# --- E41: deposits through custody sync, the index, the build, STAC, manifest, get (acceptance 4, 5)
+
+DEED = b"<html><body><h1>Attribution-ShareAlike 3.0 Unported</h1></body></html>"
+
+
+def f3_verified(s) -> dict:
+    """The verifier's run over the store's custody: origin answers, the deed is captured."""
+    from osd.verify import verify_record
+    tmp = s.root.parent / "synced"
+    mirror.sync_custody(s, tmp)
+    rec = f3_record()
+
+    def opener(url):
+        if url == rec["licence"]["url"]:
+            return iter([DEED])
+        raise FetchError(url, 404)
+    return verify_record(rec, lambda url: Fetched(200, url, "text/html", 5), None, now=NOW, opener=opener,
+                         deposits=mirror.deposits_of(mirror.held_custody(tmp), F3))
+
+
+def mixed_store(tmp_path):
+    """Norne copied as custody/1 and F3 deposited as custody/2, in one store."""
+    s = store(tmp_path)
+    norne = load_record(paths.RECORDS_DIR / "opm" / "norne.yaml")
+    rule = mirror.load_rules()["opm/norne"]
+    files = {"norne/README": b"r" * 687}
+    net = Net(files={})
+    net.body = lambda url: files[url[len(ORIGIN):]]
+    nv = verification("opm/norne", files, rule=rule)
+    mirror.put(norne, nv, rule, s, net, now=NOW)
+    deposit(s)
+    mirror.put_derived(unpublished_pack(), f3_record(), ARTEFACTS, s, now=NOW)
+    return s, nv
+
+
+def test_mixed_custody_versions_through_sync_index_and_build(tmp_path, records_subset):
+    s, nv = mixed_store(tmp_path)
+    mirror_dir = tmp_path / "mirror"
+    names = mirror.sync_custody(s, mirror_dir / "custody")
+    docs = [json.loads((mirror_dir / "custody" / n).read_text()) for n in names]
+    assert sorted((d["format"], custody.provenance(d)) for d in docs) == (
+        [("osd.custody/1", "verified")] + [("osd.custody/2", "deposit")] * 3 + [("osd.custody/2", "derived")] * 10)
+    vdir = tmp_path / "verification"
+    vdir.mkdir()
+    (vdir / "opm__norne.json").write_text(json.dumps(nv))
+    (vdir / "terranubis__f3-demo-2020.json").write_text(json.dumps(f3_verified(s)))
+    out = tmp_path / "catalog"
+    build(out, vdir, mirror_dir=mirror_dir, records_dir=records_subset(["opm/norne", F3]))
+    index = json.loads((out / "mirror.json").read_text())["copies"]
+    assert sorted((c["record_id"], c["path"]) for c in index) == sorted([("opm/norne", "norne/README")] + [
+        (F3, p) for p in DEPOSITED] + [(F3, p.relative_to(ARTEFACTS).as_posix()) for p in ARTEFACTS.rglob("*") if p.is_file()])
+    col = json.loads((out / "stac" / "terranubis--f3-demo-2020" / "collection.json").read_text())
+    assert sorted(col["assets"]) == DEPOSITED          # derived artefacts are no asset of the record
+    built = json.loads((out / "records.json").read_text())
+    assert {r["id"]: r["level"] for r in built["records"]}[F3] == "L2"
+    assert built["reasons"][F3] == "deposited by a maintainer from the publisher's download, 2026-10-29"
+
+
+@pytest.mark.parametrize("change,needle", [
+    (lambda d: d.pop("deposit"), "is not valid under any of the given schemas"),
+    (lambda d: d.update(derived={"pack_id": "terranubis/f3-demo-2020/starter", "recipe_id": "r",
+                                 "from": ["1" * 64]}), "is not valid under any of the given schemas"),
+], ids=["null-origin-no-block", "two-blocks"])
+def test_custody_without_one_provenance_refused_by_sync_and_index(tmp_path, change, needle):
+    s = store(tmp_path)
+    deposit(s)
+    k = s.keys("custody/")[0]
+    doc = s.get_json(k)
+    change(doc)
+    assert any(needle in p for p in custody.problems(doc, k.split("/")[1]))
+    s.put_json(k, doc)
+    with pytest.raises(mirror.MirrorError, match=needle):
+        mirror.sync_custody(s, tmp_path / "custody")
+    d = tmp_path / "copied"
+    d.mkdir()
+    (d / k.split("/")[1]).write_text(json.dumps(doc))
+    with pytest.raises(mirror.MirrorError, match=needle):
+        mirror.public_index(d)
+
+
+def f3_catalogue(tmp_path, s, v=None) -> Path:
+    v = v or f3_verified(s)
+    out, vdir, odir = tmp_path / "catalog", tmp_path / "verification", tmp_path / "outlines"
+    for d in (out, vdir, odir):
+        d.mkdir(exist_ok=True)
+    (vdir / "terranubis__f3-demo-2020.json").write_text(json.dumps(v))
+    joined = dict(f3_record(), level=v["level"], checked_at=v["checked_at"], stale=False, blocked_since=None)
+    stac.write_catalog(out, [joined], vdir, odir, mirror_index=mirror.public_index(s.root / "custody"))
+    (out / "records.json").write_text(json.dumps({"count": 1, "records": [joined]}))
+    return out
+
+
+def test_deposit_stac_assets_manifest_and_get(tmp_path, monkeypatch):
+    s = store(tmp_path)
+    deposit(s)
+    cat = f3_catalogue(tmp_path, s)
+    col_path = cat / "stac" / "terranubis--f3-demo-2020" / "collection.json"
+    col = json.loads(col_path.read_text())
+    assert sorted(col["assets"]) == DEPOSITED and col["osd:level"] == "L2"
+    for p, a in col["assets"].items():
+        sha = _sha((DEPOSIT_DIR / p).read_bytes())
+        assert a["href"] == MIRROR + custody.object_key(F3, sha, p) and "alternate" not in a
+        assert (a["file:checksum"], a["file:size"]) == ("1220" + sha, (DEPOSIT_DIR / p).stat().st_size)
+        assert (a["osd:provenance"], a["osd:obtained_at"], a["osd:deposited_by"]) == (
+            "deposit", "2026-10-29T00:00:00Z", "maintainer")
+        assert a["osd:publisher_page_sha256"] == _sha((DEPOSIT_DIR / "page.html").read_bytes())
+        assert a["description"] == ("Deposited by a maintainer from the publisher's download, 2026-10-29; "
+                                    "held in the Open Subsurface Data mirror")
+    monkeypatch.setattr("stac_validator.utilities.urlopen", lambda *a, **k: (_ for _ in ()).throw(OSError("net")))
+    ok, msgs = stac.validate(col_path, recursive=False)
+    assert ok, msgs
+    doc = mf.from_catalog([F3], cat, now=NOW)
+    assert mf.problems(doc) == [] and doc["entries"][0]["licence"]["share_alike"] is True
+    m = mf.read(mf.write(doc, tmp_path / "manifest.json"))
+    net = Net(s.root)
+    out = get_mod.get(m, tmp_path / "dest", opener=net)
+    assert [r.outcome for r in out] == ["verified"] * 3 and net.origin_requests() == 0
+    for p in DEPOSITED:
+        assert _sha((tmp_path / "dest" / "terranubis--f3-demo-2020" / p).read_bytes()) == _sha((DEPOSIT_DIR / p).read_bytes())
+    (tmp_path / "dest" / "ATTRIBUTION.md").write_text(get_mod.attribution(m))
+    text = (tmp_path / "dest" / "ATTRIBUTION.md").read_text()
+    assert "- Attribution: required" in text and "- Share-alike: derived work must carry CC-BY-SA-3.0" in text
+
+
+def test_deposit_eligible_and_put_present(tmp_path, capsys):
+    s = store(tmp_path)
+    deposit(s)
+    v = f3_verified(s)
+    e = mirror.eligibility(f3_record(), v, None)
+    assert e.eligible and e.bytes == 3833 and [f["path"] for f in e.files] == DEPOSITED
+    assert [c.outcome for c in mirror.put(f3_record(), v, None, s, Net(), now=NOW)] == ["present"] * 3
+    s.delete(e.files[0]["key"])
+    out = mirror.put(f3_record(), v, None, s, Net(), now=NOW, dry_run=True)
+    assert out[0].outcome == "refused" and "osd mirror deposit it again" in out[0].detail
+    assert not mirror.eligibility(f3_record(redistribution="restricted"), v, None).eligible
+    assert not mirror.eligibility(f3_record(), dict(v, level="L1"), None).eligible
+
+
+def outcome_files(v):
+    return next(c for c in v["checks"] if c["name"] == "deposit")["files"]
+
+
+def test_deposit_asset_gone_after_takedown(tmp_path):
+    s = store(tmp_path)
+    deposit(s)
+    before = f3_verified(s)          # the latest verification still lists the file the takedown removes
+    readme = _sha((DEPOSIT_DIR / "docs" / "README.txt").read_bytes())
+    mirror.remove(readme, s, "https://github.com/ophiolite-labs/open-subsurface-data/issues/9", "tuna-soup", now=NOW)
+    assert len(outcome_files(before)) == 3
+    col = json.loads((f3_catalogue(tmp_path, s, before) / "stac" / "terranubis--f3-demo-2020" / "collection.json").read_text())
+    assert sorted(col["assets"]) == ["F3_Demo_2023.zip", "wells/F02-1.las"]   # no publisher address to fall back on
+
+
+# --- E41: derived uploads (design 5; acceptance 7) -----------------------------------------------
+
+STARTERS = ROOT / "tests" / "fixtures" / "starters"
+PACK_ID = "terranubis/f3-demo-2020/starter"
+ARTEFACTS = STARTERS / "artefacts" / "terranubis__f3-demo-2020__starter"
+
+
+def unpublished_pack() -> dict:
+    """The F3 fixture pack as Ophiolite E129's build step writes it: unpublished, no artefact keys."""
+    pack = json.loads((STARTERS / "packs" / "terranubis__f3-demo-2020__starter.json").read_text())
+    pack["unpublished"] = True
+    for t in pack["targets"]:
+        for a in t["artefacts"]:
+            del a["key"]
+    return pack
+
+
+def test_put_derived_custody_lineage_and_e129_key_fill(tmp_path):
+    from osd import starters
+    s, pack = store(tmp_path), unpublished_pack()
+    out = mirror.put_derived(pack, f3_record(), ARTEFACTS, s, now=NOW)
+    paths_ = sorted({a["path"] for t in pack["targets"] for a in t["artefacts"]})
+    assert sorted(c.path for c in out) == paths_ and {c.outcome for c in out} == {"published"}
+    docs = {(d["sha256"], d["bytes"]): d for d in (s.get_json(k) for k in s.keys("custody/"))}
+    made_from = {d["path"]: d["from"] for d in pack["derived"]}
+    for d in docs.values():
+        assert custody.provenance(d) == "derived" and d["origin_href"] is None and d["format"] == "osd.custody/2"
+        assert d["derived"]["pack_id"] == PACK_ID and d["derived"]["recipe_id"] == pack["recipe"]["id"]
+        assert d["derived"]["from"] == ([made_from[d["path"]]] if d["path"] in made_from
+                                        else [i["sha256"] for i in pack["inputs"]])
+        assert d["licence"] == {k: v for k, v in pack["licence"].items() if k != "sources"}
+        assert d["licence_text_sha256"] is None and "deposit" not in d
+        assert mirror._hash_object(s, d["key"]) == (d["sha256"], d["bytes"])
+    for t in pack["targets"]:          # E129 finalise: each key from the held document matching (sha256, bytes)
+        for a in t["artefacts"]:
+            a["key"] = docs[(a["sha256"], a["bytes"])]["key"]
+    del pack["unpublished"]
+    mirror.sync_custody(s, tmp_path / "custody")
+    ev = starters.Evidence(load_records(STARTERS / "records"), STARTERS / "verification", tmp_path / "custody")
+    res = starters.check(pack, ev, STARTERS / "packs")
+    assert not [p for p in res.problems if p.startswith("artefact")], res.problems
+    assert [c.outcome for c in mirror.put_derived(unpublished_pack(), f3_record(), ARTEFACTS, s)] == ["present"] * len(out)
+
+
+def test_put_derived_refusals(tmp_path):
+    s, pack = store(tmp_path), unpublished_pack()
+    d = tmp_path / "artefacts"
+    shutil.copytree(ARTEFACTS, d)
+    (d / "notes.txt").write_text("not in the pack")
+    with pytest.raises(mirror.MirrorError, match="notes.txt: not an artefact of terranubis/f3-demo-2020/starter"):
+        mirror.put_derived(pack, f3_record(), d, s)
+    (d / "notes.txt").unlink()
+    (d / "python" / "requirements.txt").unlink()
+    with pytest.raises(mirror.MirrorError, match="artefact python/requirements.txt of .* not in"):
+        mirror.put_derived(pack, f3_record(), d, s)
+    shutil.copy(ARTEFACTS / "python" / "requirements.txt", d / "python" / "requirements.txt")
+    (d / "standard" / "F02-1.las").write_bytes(b"other bytes")
+    with pytest.raises(mirror.MirrorError, match="standard/F02-1.las: 11 bytes sha256 .*, the pack states"):
+        mirror.put_derived(pack, f3_record(), d, s)
+    restricted = copy.deepcopy(pack)
+    restricted["licence"]["redistribution"] = "restricted"
+    with pytest.raises(mirror.NotEligible, match="redistribution restricted, not allowed"):
+        mirror.put_derived(restricted, f3_record(), ARTEFACTS, s)
+    assert not s.keys("")
+
+
+def test_put_derived_refuses_a_digest_another_pack_holds(tmp_path):
+    s = store(tmp_path)
+    mirror.put_derived(unpublished_pack(), f3_record(), ARTEFACTS, s, now=NOW)
+    other = dict(unpublished_pack(), id="terranubis/f3-demo-2020/other")
+    with pytest.raises(mirror.MirrorError, match="is held for terranubis/f3-demo-2020 as a derived copy of "
+                                                 "terranubis/f3-demo-2020/starter"):
+        mirror.put_derived(other, f3_record(), ARTEFACTS, s)
+
+
+def test_cli_put_derived(tmp_path, capsys):
+    from osd.cli import main
+    doc = tmp_path / "terranubis__f3-demo-2020__starter.json"
+    doc.write_text(json.dumps(unpublished_pack()))
+    args = ["mirror", "put-derived", PACK_ID, str(ARTEFACTS), "--pack", str(doc),
+            "--store", str(tmp_path / "store"), "--public-url", MIRROR]
+    assert main(args) == 0
+    assert "10 published, 0 present" in capsys.readouterr().out
+    assert main(["mirror", "put-derived", "terranubis/f3-demo-2020/other", *args[3:]]) == 1
+    assert "its id is terranubis/f3-demo-2020/starter, not terranubis/f3-demo-2020/other" in capsys.readouterr().out
+
+
+def test_workflow_syncs_custody_before_verifying_on_main():
+    """E41 (supervisor answer 2): on a dispatch on main naming ids, the custody documents come from the
+    bucket before the verify step, so the first dispatch after a deposit already awards L2."""
+    import yaml
+    steps = yaml.safe_load((ROOT / ".github" / "workflows" / "verify.yml").read_text())["jobs"]["verify"]["steps"]
+    names = [s.get("name", "") for s in steps]
+    sync = next(i for i, n in enumerate(names) if n.startswith("custody documents from the bucket before verifying"))
+    assert sync < names.index("verify the picked records") and sync > names.index("earlier results (so a partial run keeps the others)")
+    step = steps[sync]
+    assert step["if"] == "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"
+    assert step["run"] == 'uv run osd mirror custody --store "s3://$OSD_S3_BUCKET" --out build/verification/custody'
+    assert "--dry-run" not in step["run"] and "put" not in step["run"]       # reads the bucket, writes nothing to it
+
+
+def test_put_derived_rerun_same_pack_is_idempotent(tmp_path, capsys):
+    """Supervisor answer 5: the same pack with the same bytes again reports present and exits 0."""
+    from osd.cli import main
+    doc = tmp_path / "terranubis__f3-demo-2020__starter.json"
+    doc.write_text(json.dumps(unpublished_pack()))
+    args = ["mirror", "put-derived", PACK_ID, str(ARTEFACTS), "--pack", str(doc),
+            "--store", str(tmp_path / "store"), "--public-url", MIRROR]
+    assert main(args) == 0
+    before = {k: (tmp_path / "store" / k).read_bytes() for k in mirror.LocalDirectory(tmp_path / "store", MIRROR).keys("")}
+    capsys.readouterr()
+    assert main(args) == 0
+    out = capsys.readouterr().out
+    assert "0 published, 10 present" in out and out.count("  present ") == 10
+    after = {k: (tmp_path / "store" / k).read_bytes() for k in mirror.LocalDirectory(tmp_path / "store", MIRROR).keys("")}
+    assert after == before                       # nothing rewritten, custody copied_at unchanged
