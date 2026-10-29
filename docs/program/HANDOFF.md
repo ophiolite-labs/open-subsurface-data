@@ -10,6 +10,7 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 
 ## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
 
+- 29 Oct: E42 acceptance 2 amended for Ophiolite E129 (d): ResInsight 2026.09.0 or later; two-part station proof (deviation file exact, read-back within a stated tolerance in metres, shifted head fails).
 - 29 Oct: E42 design 6 frozen from Ophiolite E129 (d): ResInsight target is a rips script writing the project locally, `cube: false`; no starter/1 change.
 - 29 Oct: H7 merged (PR #88, main 606dc24): starters rule (g) also refuses one digest under two paths (matches put-derived); reported by Ophiolite E129 (c).
 - 29 Oct: H6 merged (PR #87, main 0a92c5e), ruling (a) for Ophiolite E129 stop rule 3 (intake limit 100,000 points, F3 horizons 619,101 nodes): a fidelity row `failed` with its reason covers its file as a note (`osd validate` exit 0, publication not blocked); `skipped` and an all-failed record still refuse; L4 unchanged (canonical-conversion still needs every file converted). No schema change.

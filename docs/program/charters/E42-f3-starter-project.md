@@ -112,6 +112,12 @@ fidelity record; F3 reaches L3 from its data and L4 from the fidelity record. Th
 2. ResInsight v2026.09.1: the rips script imports the pack; read-back through rips gives four well
    paths whose station counts and first and last stations equal the frozen values, logs whose 50
    seeded samples equal; the cube is present if and only if the pack says `cube: true` (test).
+   Amended 29 Oct (Ophiolite E129 (d)): ResInsight 2026.09.0 or later, measured at 2026.09.0 (rips
+   2026.9.0.2). If rips does not expose the original stations (ResInsight resamples on read-back),
+   the station proof is two parts: the script-written deviation file holds exactly the pack's
+   stations (count and coordinates), and the read-back geometry agrees with the pack's file at
+   ResInsight's own sample positions within a tolerance stated in metres in the `compared` line,
+   and a shifted well head fails that comparison (test).
 3. Python: the notebook runs top to bottom with network disabled against the pack directory and its
    assertions hold; corrupting one trace in the SEG-Y copy fails it; shifting one well head fails it.
 4. Catalogue: on the fixture build, the committed outline, fidelity and starter documents give F3
