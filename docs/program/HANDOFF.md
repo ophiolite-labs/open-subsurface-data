@@ -10,6 +10,7 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 
 ## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
 
+- 29 Oct: H7 merged (PR #88, main 606dc24): starters rule (g) also refuses one digest under two paths (matches put-derived); reported by Ophiolite E129 (c).
 - 29 Oct: H6 merged (PR #87, main 0a92c5e), ruling (a) for Ophiolite E129 stop rule 3 (intake limit 100,000 points, F3 horizons 619,101 nodes): a fidelity row `failed` with its reason covers its file as a note (`osd validate` exit 0, publication not blocked); `skipped` and an all-failed record still refuse; L4 unchanged (canonical-conversion still needs every file converted). No schema change.
 - 29 Oct: two E42 rulings for Ophiolite E129 (c), asked by ophiolite-13 via ophiolite-e8, recorded in E42 designs 1 and 2: horizons are written as points-csv/1 (x, y, z, inline, crossline; z empty for no value), not OpendTect ASCII; the F3 outline is the record outline `outlines/terranubis__f3-demo-2020.geojson`, never a `derived[]` entry or artefact, so it needs no fidelity row and no "outline" contents kind (no schema change).
 - 29 Oct: H5 merged (PR #85, main db80352): starters rule (h) covers an archive input by results for each of its derived files (asked by Ophiolite E129 slice (b) via ophiolite-e8); fidelity/1 and starter/1 unchanged. Done by the supervisor, no lane.
