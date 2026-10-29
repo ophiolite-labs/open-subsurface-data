@@ -18,7 +18,9 @@ here:
   (f) each artefact is a held custody/2 `derived` document of this pack, size and digest agreeing
       (an unpublished pack may carry no key yet: unchecked, never passed);
   (g) each target's `import` is one of its artefacts, and a path has one digest in the pack;
-  (h) the fidelity record covers exactly the inputs, converted or partial, into contents kinds;
+  (h) the fidelity record covers every input, converted or partial, into contents kinds; an input
+      with derived entries (an archive) is covered by a result for it or for each of its derived files,
+      and a result names a pack input or a derived file, nothing else;
   (i) each oracle compared values and found no difference, unless the pack is `unpublished`.
 
 (b) and (f) read the latest verifications and the custody documents, which `make check` does not
@@ -313,13 +315,24 @@ def _fidelity(doc: dict, starters_dir: Path, out: list[str]) -> None:
         out.append(f"{what}: record {fd['record']}, the pack is of {doc['record_id']}")
     pack_inputs = {i["sha256"]: i["name"] for i in doc["inputs"]}
     results = {i["sha256"]: i for i in fd["inputs"]}
+    # An input the recipe expanded (an archive with derived entries `from` it) is landed as its derived
+    # files: each derived entry needs a result, the input itself may have one or not.
+    derived = {d["sha256"]: d["path"] for d in doc["derived"]}
+    expanded = {d["from"] for d in doc["derived"] if d["from"] in pack_inputs}
     for sha, name in pack_inputs.items():
-        if sha not in results:
+        if sha in results:
+            continue
+        if sha not in expanded:
             out.append(f"{what}: no result for input {name} ({_short(sha)})")
+            continue
+        missing = [d["path"] for d in doc["derived"] if d["from"] == sha and d["sha256"] not in results]
+        if missing:
+            out.append(f"{what}: no result for input {name} ({_short(sha)}) nor for its derived "
+                       f"{', '.join(missing)}")
     kinds = {c["kind"] for c in doc["contents"]}
     for sha, i in results.items():
-        if sha not in pack_inputs:
-            out.append(f"{what}: input {i['name']} ({_short(sha)}) is not a pack input")
+        if sha not in pack_inputs and sha not in derived:
+            out.append(f"{what}: input {i['name']} ({_short(sha)}) is not a pack input or derived file")
         if i["result"] not in ("converted", "partial"):
             out.append(f"{what}: input {i['name']} is {i['result']}")
         elif i["output"]["kind"] not in kinds:
