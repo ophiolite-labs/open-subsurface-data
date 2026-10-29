@@ -52,6 +52,8 @@ def cmd_validate(a: argparse.Namespace) -> int:
             print(f"  {p}: {line}")
         for line in r.unchecked:
             print(f"  {p}: unchecked here: {line}")
+        for line in r.notes:
+            print(f"  {p}: note: {line}")
     if a.documents:
         print(f"{len(checked)} starter documents, {bad} problems")
     else:
