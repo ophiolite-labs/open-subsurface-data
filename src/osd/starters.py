@@ -17,7 +17,8 @@ here:
   (e) every (topic, object) its contents need is decided, once;
   (f) each artefact is a held custody/2 `derived` document of this pack, size and digest agreeing
       (an unpublished pack may carry no key yet: unchecked, never passed);
-  (g) each target's `import` is one of its artefacts, and a path has one digest in the pack;
+  (g) each target's `import` is one of its artefacts, a path has one digest and a digest one path in
+      the pack (the targets share a file by naming its one path);
   (h) the fidelity record covers every input, converted or partial, into contents kinds, or failed
       with its reason (a stated limit of the workspace, e.g. a horizon over its point limit: a note,
       not a refusal; at least one result converts); an input
@@ -271,6 +272,9 @@ def _artefacts(doc: dict, ev: Evidence, res: Result) -> None:
     out = res.problems
     digests: dict[str, str] = {d["path"]: d["sha256"] for d in doc["derived"]}
     seen, clashes = set(), set()
+    where: dict[str, str] = {}   # digest -> its one path (custody holds one document per digest)
+    for d in doc["derived"]:
+        where.setdefault(d["sha256"], d["path"])
     for t in doc["targets"]:
         paths_ = [a["path"] for a in t["artefacts"]]
         if t["import"] not in paths_:
@@ -279,6 +283,10 @@ def _artefacts(doc: dict, ev: Evidence, res: Result) -> None:
             if digests.setdefault(a["path"], a["sha256"]) != a["sha256"] and a["path"] not in clashes:
                 clashes.add(a["path"])
                 out.append(f"artefact {a['path']}: two digests for one path in the pack")
+            first = where.setdefault(a["sha256"], a["path"])
+            if first != a["path"] and (a["path"], first) not in clashes:
+                clashes.add((a["path"], first))
+                out.append(f"artefact {a['path']}: the same bytes as {first}; one path per file in the pack")
             what = f"artefact {a['path']}"
             if "key" not in a:   # admitted by the schema only while unpublished (E129 fills it at finalise)
                 res.unchecked.append(f"{what}: no custody key yet (unpublished)")

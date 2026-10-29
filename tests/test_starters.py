@@ -600,6 +600,15 @@ def test_fidelity_failed_with_reason_is_a_note(tmp_path):
     assert r.notes == [f"fidelity fidelity/{F3}: F3_Demo_2023_wells.zip not landed by the workspace: unreadable"]
 
 
+def test_one_path_per_file():
+    """put-derived holds one custody document per digest, so a copy of a file under a second path refuses."""
+    doc = pack(F3)
+    a = doc["targets"][0]["artefacts"][0]
+    doc["targets"][1]["artefacts"].append(dict(a, path="copy/" + a["path"].rsplit("/", 1)[-1]))
+    assert f"artefact copy/{a['path'].rsplit('/', 1)[-1]}: the same bytes as {a['path']}; one path per file in the pack" \
+        in problems(doc)
+
+
 def test_fidelity_path_stays_in_starters(tmp_path):
     doc = pack(F3)
     doc["fidelity"] = "fidelity/absent.json"
