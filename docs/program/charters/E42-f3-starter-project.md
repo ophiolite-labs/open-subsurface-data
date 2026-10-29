@@ -88,7 +88,11 @@ fidelity record; F3 reaches L3 from its data and L4 from the fidelity record. Th
 6. *ResInsight target, frozen.* The Ophiolite half establishes at its lane open whether rips imports
    SEG-Y headless; the pack definition then says `cube: true|false` and the acceptance below tests
    what it says, with numeric read-back through rips (well path stations, log samples), not a
-   screenshot alone.
+   screenshot alone. Frozen 29 Oct by Ophiolite E129 (d) on ResInsight 2026.09.0 / rips 2026.9.0.2:
+   `cube: false` (rips has no seismic API), and the target's `import` is a rips script that writes
+   the project on the user's computer (well paths from the deviation files, LAS logs attached by well
+   name), never a saved `.rsp` (it holds absolute host paths). starter/1 needs no change: `import` is
+   already "the script or notebook artefact"; the oracle's `compared` lines say wells and logs only.
 7. *Python target, standalone.* The notebook reads the pack's SEG-Y and LAS from the pack directory
    with segyio and lasio, network disabled, no Ophiolite service, and writes the inline image with
    the wells projected by the pack's CRS; it asserts the inline number, three sample values and the
