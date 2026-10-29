@@ -4,7 +4,7 @@ Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two codi
 one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
 Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
 
-## Queue (23 Oct 2026; family "Ready for your tools" E40–E44 added 28 Oct, `charters/READY-FOR-YOUR-TOOLS-family.md`)
+## Queue (23 Oct 2026; family "Ready for your tools" E40–E44 added 28 Oct, `charters/READY-FOR-YOUR-TOOLS-family.md`; E45 tasks on open data added 29 Oct)
 
 | # | Epic | Class | Status | Depends on | Outcome a user can observe |
 |---|---|---|---|---|---|
@@ -56,6 +56,7 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 42 | E42 The F3 starter project, judged against dGB's own survey | Kernel, cross-repo | QUEUED (28 Oct; after E41 and the Ophiolite half `charters/E42-ophiolite-half.md`, handed to the Ophiolite program; Codex round closed, REWORK reworked, 21 dispositions) | E40, E41, E03, Ophiolite half | A person downloads F3 for OpendTect, ResInsight or Python and it opens in place, in metres, in time, with dGB named; F3 at L3 from its data and L4 from the fidelity record |
 | 43 | E43 Ready for your tools on the site | Surface | MERGED on fixture packs (PR #84, 28 Oct; main bb65da2; acceptance 6 with the real F3 pack after E42) QUEUED (28 Oct; after E40 on fixture packs; DONE after E42) | E40 | A fourth card per dataset, a Starter projects page, a filter; nothing shows until a real pack exists |
 | 44 | E44 Packs after the proof: the next datasets, chosen by the owner | Records, Kernel | DEFERRED (until E42 publishes and OSD-D24 is answered) | E42, E43 | Two or three more packs: Dutch wells, a Dutch 3D survey, Drogon for ResInsight |
+| 45 | E45 Tasks on open data: a graded exercise beside a starter pack, taken in Ophiolite, its result counted here | Kernel (task/1, result check), Surface (pages) | QUEUED (29 Oct; after E42 publishes a real pack; cross-repo with Ophiolite E135, chartered there 29 Oct after E134; `charters/E45-tasks-on-open-data.md`) | E40, E43, E42; Ophiolite E135 | A person takes a task from a pack's page in Ophiolite, sends the result back by issue form, and the page counts received and accepted, never who |
 
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
 map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0

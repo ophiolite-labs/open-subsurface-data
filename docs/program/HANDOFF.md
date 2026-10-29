@@ -2,6 +2,12 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 29 Oct 2026 (Ophiolite planner ophiolite-1e) — E45 tasks on open data chartered, the catalogue half of Ophiolite E135
+
+- Owner direction 26 and 29 Oct (Ophiolite D79–D81, family "Learning from the record" E132–E136): graded tasks beside starter packs; the Ophiolite half (E135) makes the project from the pack with the task's outcome declared and assembles the result; this half owns `task/1`, the task list on the starter pages, and the result check by issue form (no server, AGENTS.md). Counts only, never names; free (OSD-D23, OSD-D25).
+- Queue row 45; depends on E42's real pack for anything public; Ophiolite E135 is queued there after E134, so the kernel part (`task/1`, `osd task-result check`) may land against E135's charter fields before Ophiolite codes; one Codex round for the kernel part at lane open.
+- For the OSD supervisor: a docs-only pull request from branch `e45-charter-tasks-on-open-data`; nothing to run.
+
 ## 28 Oct 2026, 07:10 CET (planner) — family "Ready for your tools" E40–E44 chartered
 
 - Owner direction 28 Oct (chat): starter projects from open datasets for OpendTect, ResInsight and Python; F3 as the proof of concept, other blocks after; show them on the site from the user's journey; "charter as many epics as you need". Family document `charters/READY-FOR-YOUR-TOOLS-family.md` (rules R-T1 to R-T7, the flow), charters E40 (contract), E41 (deposited origins), E42 (F3 pack and oracle) plus `E42-ophiolite-half.md` to hand to the Ophiolite program as E09-oph was, E43 (site), E44 (deferred). Decisions OSD-D21 to OSD-D24. Codex rounds on E40, E41, E42: three REWORK verdicts (E125 capabilities overstated: odbind 7.0.10 creates no wells, no survey creation; E127 slice 1a and a ResInsight rips demo already exist in Ophiolite; L4 needs the catalogue's own L3; derived artefacts need their own custody), 57 findings all accepted, charters reworked, dispositions under each; no second round (OSD-D8).

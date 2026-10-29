@@ -26,6 +26,7 @@ Open items are for the owner. A default is applied under the standing delegation
 | OSD-D22 | Deposited origins: may a maintainer deposit files a publisher hands only to registered persons, when the licence allows redistribution? | Yes, as a verification fact with who/when/licence text captured, never for `restricted` or `unknown`, under the OSD-D6 caps (E41). The person registers; the tool never does | DEFAULT 28 Oct (planner), owner may overturn |
 | OSD-D23 | Paid starter projects | Free, no account, no key (R-T6). A paid tier (currency, support, a target nobody else builds) is reopened only on evidence of use: a design partner asking, or request issues (E43) naming a willingness to pay | DEFAULT 28 Oct (planner); the owner raised the idea and accepted "free first" |
 | OSD-D24 | Which datasets follow F3 (E44) | Planner's candidates: NLOG wells for one Dutch area, one NLOG-released 3D survey, Drogon for ResInsight; Volve as a fourth | OPEN for the owner, asked after E42 publishes |
+| OSD-D25 | Tasks on open data (E45): who may be named, and is anything paid | Nobody is named or ranked on the site; results arrive by issue form under a pseudonym Ophiolite assigns; free, with OSD-D23's reopening evidence; tasks only over packs whose licence allows redistribution (Ophiolite R-L5) | DEFAULT 29 Oct (Ophiolite planner, with Ophiolite D80) |
 
 ## OSD-D18 (23 Oct 2026, supervisor): the gate validates every Collection and a sample of Items; the full STAC tree validates in the verify workflow
 
