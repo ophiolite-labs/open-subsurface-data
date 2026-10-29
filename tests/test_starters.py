@@ -549,9 +549,10 @@ def _failed(fd: dict) -> None:
 
 @pytest.mark.parametrize("mutate,expected", [
     (lambda fd: fd["inputs"].pop(), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: no result for input "
-                                    "F3_Demo_2023_wells.zip (cca8d65df640…)")),
+                                    "F3_Demo_2023_wells.zip (cca8d65df640…) nor for its derived standard/F02-1.las, "
+                                    "standard/F03-2.las, standard/F03-4.las, standard/F06-1.las")),
     (_extra, ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: input extra.zip (eeeeeeeeeeee…) is not a pack "
-             "input")),
+             "input or derived file")),
     (_failed, "fidelity fidelity/terranubis__f3-demo-2020__starter.json: input F3_Demo_2023_wells.zip is failed"),
     (lambda fd: fd.update(record="opm/norne"), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: record "
                                                "opm/norne, the pack is of terranubis/f3-demo-2020")),
@@ -562,6 +563,31 @@ def _failed(fd: dict) -> None:
 ], ids=["input-missing", "input-extra", "failed", "wrong-record", "kind", "schema"])
 def test_fidelity_refusals(tmp_path, mutate, expected):
     assert problems(pack(F3), starters_dir=_fidelity(tmp_path, mutate)) == [expected]
+
+
+def _expanded(fd: dict, doc: dict) -> None:
+    """The wells archive is landed as its four derived LAS files, not as itself (Ophiolite E129)."""
+    wells = next(i for i in fd["inputs"] if i["name"] == "F3_Demo_2023_wells.zip")
+    fd["inputs"].remove(wells)
+    for d in doc["derived"]:
+        if d["from"] == wells["sha256"]:
+            fd["inputs"].append(dict(wells, sha256=d["sha256"], name=d["path"].rsplit("/", 1)[-1]))
+
+
+def test_fidelity_over_the_derived_files_of_an_archive(tmp_path):
+    doc = pack(F3)
+    assert problems(doc, starters_dir=_fidelity(tmp_path, lambda fd: _expanded(fd, doc))) == []
+
+
+def test_fidelity_over_derived_files_needs_every_one(tmp_path):
+    doc = pack(F3)
+
+    def mutate(fd):
+        _expanded(fd, doc)
+        fd["inputs"].pop()
+    assert problems(doc, starters_dir=_fidelity(tmp_path, mutate)) == [
+        (f"fidelity fidelity/{F3}: no result for input F3_Demo_2023_wells.zip (cca8d65df640…) nor for its "
+         "derived standard/F06-1.las")]
 
 
 def test_fidelity_path_stays_in_starters(tmp_path):
