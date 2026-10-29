@@ -18,7 +18,9 @@ here:
   (f) each artefact is a held custody/2 `derived` document of this pack, size and digest agreeing
       (an unpublished pack may carry no key yet: unchecked, never passed);
   (g) each target's `import` is one of its artefacts, and a path has one digest in the pack;
-  (h) the fidelity record covers every input, converted or partial, into contents kinds; an input
+  (h) the fidelity record covers every input, converted or partial, into contents kinds, or failed
+      with its reason (a stated limit of the workspace, e.g. a horizon over its point limit: a note,
+      not a refusal; at least one result converts); an input
       with derived entries (an archive) is covered by a result for it or for each of its derived files,
       and a result names a pack input or a derived file, nothing else;
   (i) each oracle compared values and found no difference, unless the pack is `unpublished`.
@@ -116,6 +118,7 @@ class Evidence:
 class Result:
     problems: list[str] = field(default_factory=list)
     unchecked: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)   # stated limits; they neither refuse nor block publication
 
 
 def _short(sha: str) -> str:
@@ -296,7 +299,8 @@ def _artefacts(doc: dict, ev: Evidence, res: Result) -> None:
             _agrees(what, a, None, d, "its custody document", out)
 
 
-def _fidelity(doc: dict, starters_dir: Path, out: list[str]) -> None:
+def _fidelity(doc: dict, starters_dir: Path, res: Result) -> None:
+    out = res.problems
     what = f"fidelity {doc['fidelity']}"
     p = (starters_dir / doc["fidelity"]).resolve()
     if not p.is_relative_to(starters_dir.resolve()) or not p.is_file():
@@ -333,10 +337,14 @@ def _fidelity(doc: dict, starters_dir: Path, out: list[str]) -> None:
     for sha, i in results.items():
         if sha not in pack_inputs and sha not in derived:
             out.append(f"{what}: input {i['name']} ({_short(sha)}) is not a pack input or derived file")
-        if i["result"] not in ("converted", "partial"):
+        if i["result"] == "failed":
+            res.notes.append(f"{what}: {i['name']} not landed by the workspace: {i['reason']}")
+        elif i["result"] not in ("converted", "partial"):
             out.append(f"{what}: input {i['name']} is {i['result']}")
         elif i["output"]["kind"] not in kinds:
             out.append(f"{what}: input {i['name']} became {i['output']['kind']}, not a contents kind")
+    if results and not any(i["result"] in ("converted", "partial") for i in results.values()):
+        out.append(f"{what}: no input or derived file was landed")
 
 
 def _oracle(doc: dict, out: list[str]) -> None:
@@ -373,7 +381,7 @@ def check(doc: dict, ev: Evidence, starters_dir: Path = STARTERS_DIR, name: str 
     _licence(doc, licences, out)
     _decisions(doc, out)
     _artefacts(doc, ev, res)
-    _fidelity(doc, starters_dir, out)
+    _fidelity(doc, starters_dir, res)
     _oracle(doc, out)
     return res
 

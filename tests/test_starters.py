@@ -553,14 +553,17 @@ def _failed(fd: dict) -> None:
                                     "standard/F03-2.las, standard/F03-4.las, standard/F06-1.las")),
     (_extra, ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: input extra.zip (eeeeeeeeeeee…) is not a pack "
              "input or derived file")),
-    (_failed, "fidelity fidelity/terranubis__f3-demo-2020__starter.json: input F3_Demo_2023_wells.zip is failed"),
+    (lambda fd: [i.update(result="failed", reason="limit") or i.pop("output") for i in fd["inputs"]],
+     "fidelity fidelity/terranubis__f3-demo-2020__starter.json: no input or derived file was landed"),
+    (lambda fd: fd["inputs"][1].update(result="skipped"),
+     "fidelity fidelity/terranubis__f3-demo-2020__starter.json: input F3_Demo_2023_wells.zip is skipped"),
     (lambda fd: fd.update(record="opm/norne"), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: record "
                                                "opm/norne, the pack is of terranubis/f3-demo-2020")),
     (lambda fd: fd["inputs"][0]["output"].update(kind="faults"), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: input "
                                                                  "F3_Demo_2023_seismic.zip became faults, not a contents kind")),
     (lambda fd: fd.pop("catalog"), ("fidelity fidelity/terranubis__f3-demo-2020__starter.json: (root): 'catalog' is a "
                                    "required property")),
-], ids=["input-missing", "input-extra", "failed", "wrong-record", "kind", "schema"])
+], ids=["input-missing", "input-extra", "all-failed", "skipped", "wrong-record", "kind", "schema"])
 def test_fidelity_refusals(tmp_path, mutate, expected):
     assert problems(pack(F3), starters_dir=_fidelity(tmp_path, mutate)) == [expected]
 
@@ -588,6 +591,13 @@ def test_fidelity_over_derived_files_needs_every_one(tmp_path):
     assert problems(doc, starters_dir=_fidelity(tmp_path, mutate)) == [
         (f"fidelity fidelity/{F3}: no result for input F3_Demo_2023_wells.zip (cca8d65df640…) nor for its "
          "derived standard/F06-1.las")]
+
+
+def test_fidelity_failed_with_reason_is_a_note(tmp_path):
+    """Ophiolite E129: a horizon over the workspace's point limit is failed with its reason; the pack holds."""
+    r = starters.check(pack(F3), evidence(), starters_dir=_fidelity(tmp_path, _failed))
+    assert r.problems == []
+    assert r.notes == [f"fidelity fidelity/{F3}: F3_Demo_2023_wells.zip not landed by the workspace: unreadable"]
 
 
 def test_fidelity_path_stays_in_starters(tmp_path):
