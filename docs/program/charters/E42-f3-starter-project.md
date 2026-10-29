@@ -117,7 +117,9 @@ fidelity record; F3 reaches L3 from its data and L4 from the fidelity record. Th
    the station proof is two parts: the script-written deviation file holds exactly the pack's
    stations (count and coordinates), and the read-back geometry agrees with the pack's file at
    ResInsight's own sample positions within a tolerance stated in metres in the `compared` line,
-   and a shifted well head fails that comparison (test).
+   and a shifted well head fails that comparison (test). Known limit: rips returns only a 1 m resampled
+   trajectory, so a bend entirely between two sample positions is not seen by the read-back; the
+   deviation-file part catches dropped stations.
 3. Python: the notebook runs top to bottom with network disabled against the pack directory and its
    assertions hold; corrupting one trace in the SEG-Y copy fails it; shifting one well head fails it.
 4. Catalogue: on the fixture build, the committed outline, fidelity and starter documents give F3
