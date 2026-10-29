@@ -49,15 +49,20 @@ fidelity record; F3 reaches L3 from its data and L4 from the fidelity record. Th
 
 1. *The archive is the input; exports are derived.* The deposited F3 Demo 2023 download (E41) is the
    pack's one input (`held: deposited`, custody key). The recipe reads it only through odbind (R-T2)
-   and exports the cube as SEG-Y, each well as LAS plus a deviation file, each horizon as OpendTect
-   ASCII; these are `derived[]` entries with `from` the archive digest and are also the artefacts of
-   the Python target. The fidelity/1 document names the archive as its input with result converted or
-   partial and `output` the kinds produced; so E09's inventory rule holds. If the lane finds the F3
+   and exports the cube as SEG-Y, each well as LAS plus a deviation file, each horizon as
+   points-csv/1 (x, y, z, inline, crossline; z empty for no value; ruling 29 Oct, Ophiolite's intake
+   and E125's horizon get refuse OpendTect's "X Y Inline Crossline Z" ASCII); these are `derived[]`
+   entries with `from` the archive digest and are also the artefacts of the Python target. The
+   fidelity/1 document names either the archive as its input with result converted or partial and
+   `output` the kinds produced, or one result per derived file (rule (h) after H5, main db80352); so
+   E09's inventory rule holds. If the lane finds the F3
    SEG-Y and wells on an anonymous origin whose terms allow it, that record's verified files become
    inputs beside the archive.
 2. *L3 before L4.* The recipe writes the survey outline (the cube's inline and crossline corners,
    through odbind, transformed from EPSG:23031 to WGS84) and the four well positions as
-   `outlines/terranubis__f3-demo-2020.geojson` with `derivation` naming the deposit; the verifier's
+   `outlines/terranubis__f3-demo-2020.geojson` with `derivation` naming the deposit (the outline is
+   the record's outline, not a `derived[]` entry or an artefact, so rule (h) and the contents kinds do
+   not apply to it; ruling 29 Oct, no schema change); the verifier's
    outline check gives L3; then `osd verify terranubis/f3-demo-2020 --fidelity-from` gives L4. The
    placeholder outline goes.
 3. *The recipe is the Ophiolite half.* One command there takes the pack definition
