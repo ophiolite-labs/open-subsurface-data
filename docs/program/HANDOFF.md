@@ -10,6 +10,7 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 
 ## 23 Oct 2026, evening (supervisor) — E15 merged, E07 slice 1 and E06 slice 2 in lane, OSD-D18
 
+- 30 Oct: Ophiolite E129 complete: slice (f), the last, merged at Integration main e47057c9e (OpendTect finalisation places every LAS curve on the same-name survey well, exact per-curve oracle, refuses on any difference; well paths via the stated GUI step). E42's Ophiolite half is done; E42 now waits only on owner item 112 (F3 download; deposit folder still holds only page.html and licence.html). Ophiolite owner item 116 (optional OpendTect GUI check) blocks nothing.
 - 30 Oct: Ophiolite E129 (d) merged (arraybridge main 1efd36e40): `ophiolite starter resinsight`; the pack runs `python PACK/files/targets/resinsight/import.py PACK PROJECT_OUT`, writes PROJECT_OUT/starter.rsp locally; measured on ResInsight 2026.09.0 / rips 2026.9.0.2: headless yes, SEG-Y no (`cube: false`), wells and LAS yes with numeric read-back, original stations not exposed (two-part proof: .dev exact; read-back at 1 m within fixture tolerances x 0.031 m, y 4e-6 m, z 3e-5 m; shifted head fails). Evidence for E42 acceptance 2 when E42 runs.
 - 29 Oct: E42 acceptance 2 amended for Ophiolite E129 (d): ResInsight 2026.09.0 or later; two-part station proof (deviation file exact, read-back within a stated tolerance in metres, shifted head fails).
 - 29 Oct: E42 design 6 frozen from Ophiolite E129 (d): ResInsight target is a rips script writing the project locally, `cube: false`; no starter/1 change.
