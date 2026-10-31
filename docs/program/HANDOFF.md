@@ -19,6 +19,10 @@ listing) and R-44.7 (packs publish at the level earned, L4 waits on capacity); E
 twelve tests of section D and the Q-E9 odbind probe go to Ophiolite (E137 slice 0, E129, E125, E138);
 OSD adds none beyond R-44.6, which E42's acceptance 4 already exercises through the fidelity document.
 Section E lists nine questions the remaining three listings answer when the copy finishes.
+*Addendum (same day):* Ophiolite answered: E139 horizon capacity (Kernel), E137 slice 4 well tops, Fault3D
+refused by name in E137 slice 0, 2D horizons → E137 slice 5 pending the listings; E138 is on Ophiolite
+main `806814fea` (D86–D92). Correction: F3's `Rawdata/` does hold the source SEG-Y (699 MB) and one LAS
+(listing lines 248 and 259); the earlier "no SEG-Y/LAS" note was wrong. E44 table amended.
 
 ## 31 Oct 2026 — E138 recorded in E44 (round-trip epic number and two constraints)
 

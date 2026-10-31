@@ -14,7 +14,7 @@ all these datasets; all need to be able to translate to Ophiolite data types / o
 
 | Dataset | Record | Archive (bytes on the owner's Mac, 31 Oct) | Licence as the record reads it | Content kinds |
 |---|---|---|---|---|
-| F3 Demo 2023 | `terranubis/f3-demo-2020` | `F3_Demo_2023.zip` 4,782,432,978 | CC-BY-SA-3.0, redistribution allowed | seismic-3d, wellbore-logs, wellbore-headers, horizons; from the archive listing (31 Oct, `evidence/e44/f3-demo-2023-listing.txt`): also seismic-2d (10 lines), faults (one Fault3D), tops (4 marker files), time-depth (well `.wlt` files and one standard DT file) |
+| F3 Demo 2023 | `terranubis/f3-demo-2020` | `F3_Demo_2023.zip` 4,782,432,978 | CC-BY-SA-3.0, redistribution allowed | seismic-3d, wellbore-logs, wellbore-headers, horizons; from the archive listing (31 Oct, `evidence/e44/f3-demo-2023-listing.txt`): also seismic-2d (10 lines), faults (one Fault3D), tops (4 marker files), time-depth (well `.wlt` files and one standard DT file); `Rawdata/` holds the source SEG-Y (`Seismic_data.sgy`, 699,003,060 bytes), one LAS (`F02-01_logs.las`), marker/TD/well-track text files, `All_wells_RawData.zip` and velocity functions — an earlier supervisor note "no SEG-Y/LAS" was wrong, corrected 31 Oct after the Ophiolite E138 drafting agent's recount |
 | OGA Mid North Sea High | `terranubis/oga-mnsh` | `MNSH_OGA_2016_v1.zip` 11,537,303,224 | OGL-UK-3.0, allowed | seismic-2d, wellbore-logs, horizons, faults |
 | OGA Rockall Trough | `terranubis/oga-rockall-trough` | `Rockall_Trough_OGA_2016_v1.zip` 9,961,960,412 | OGL-UK-3.0, allowed | seismic-2d, wellbore-logs, horizons, faults |
 | USGS Central Alaska 2023 | `terranubis/usgs-central-alaska-2023` | `USGS_Central_Alaska_2023.zip` 167,571,826 | CC-BY-SA-3.0, allowed | seismic-2d |
@@ -27,7 +27,12 @@ Rules added by the ruling:
   have a translation into Ophiolite's data types; a kind no writer handles is a defect of the
   Ophiolite half, not a pack that quietly omits it. The two new kinds against E129 are seismic-2d
   (lines, not a cube) and faults (sticks); the Ophiolite half charters them as an E129 follow-on with
-  its own Codex round.
+  its own Codex round. *Ophiolite's answers, 31 Oct:* horizon capacity beyond 100,000 points is **E139**
+  (Kernel); well tops are **E137 slice 4** ("well tops in a starter pack", `well-tops-csv/1`); Fault3D is
+  refused by name in E137 slice 0 (the faults kind is the FaultStickSet form), whether `Fault3D.getstick`
+  enters is slice 2's decision measured read-only on F3's `Fault_A.flt`; 2D horizons become E137 slice 5
+  if the MNSH/Rockall listings show Horizon2D objects (OSD confirms from the listings). The gap
+  assessment's twelve tests go to E137 and E138; the E129/E125 matrix items are recorded findings.
 - R-44.2 *Deposits first.* All five archives are deposited (E41 design 6, directories
   `/mnt/HC_Volume_107082112/osd-deposits/terranubis/<dataset>/` with `page.html` beside each; the
   supervisor pulled them from the Mac on 31 Oct) and reach L2 from custody before any pack; E41's
@@ -40,7 +45,7 @@ Rules added by the ruling:
   projects, so they are the test cases for Ophiolite's interoperability journeys (OpendTect -> Ophiolite
   workspace import -> ResInsight, QGIS, Python). The deposits on the VPS serve as those fixtures; the
   connector doctrine holds (read through odbind, never decode project files). The Ophiolite planner
-  chartered the round-trip epic as **E138** "OpendTect round trips" (31 Oct; one journey per dataset,
+  chartered the round-trip epic as **E138** "OpendTect round trips" (Ophiolite main `806814fea`, 31 Oct, decisions D86–D92; one journey per dataset,
   odbind only, Ophiolite workspace import, then ResInsight/QGIS/Python SDK with E129's numeric
   read-back; F3 cube/wells/horizons on today's code, 2D lines/faults/time-depth after the matching E137
   slices). Two constraints E138 asks E44 to carry: (1) the deposits stay in place under
