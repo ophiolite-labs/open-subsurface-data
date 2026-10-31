@@ -40,7 +40,14 @@ Rules added by the ruling:
   projects, so they are the test cases for Ophiolite's interoperability journeys (OpendTect -> Ophiolite
   workspace import -> ResInsight, QGIS, Python). The deposits on the VPS serve as those fixtures; the
   connector doctrine holds (read through odbind, never decode project files). The Ophiolite planner
-  charters the round-trip epic; its number is recorded here when known.
+  chartered the round-trip epic as **E138** "OpendTect round trips" (31 Oct; one journey per dataset,
+  odbind only, Ophiolite workspace import, then ResInsight/QGIS/Python SDK with E129's numeric
+  read-back; F3 cube/wells/horizons on today's code, 2D lines/faults/time-depth after the matching E137
+  slices). Two constraints E138 asks E44 to carry: (1) the deposits stay in place under
+  `/mnt/HC_Volume_107082112/osd-deposits/terranubis/`, Ophiolite only reads there; (2) no byte or
+  literal of them enters the Ophiolite repository or any public Ophiolite artefact (share-alike and
+  attribution make them live-run evidence in validation records, synthetic fixtures in CI). The packs
+  of this epic are OSD's to publish, under each dataset's own licence, never Ophiolite's.
 - R-44.4 *Oracles.* F3: dGB's survey (E42). The others: the archive's own OpendTect survey where one
   is shipped (TerraNubis archives are OpendTect projects), read through odbind, as E42 design 4 does.
 

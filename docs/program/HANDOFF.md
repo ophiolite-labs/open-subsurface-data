@@ -2,6 +2,17 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 31 Oct 2026 — E138 recorded in E44 (round-trip epic number and two constraints)
+
+The Ophiolite planner chartered E138 "OpendTect round trips: five public OpendTect-native projects go
+OpendTect → Ophiolite → another tool, judged by numeric read-back" (one Codex round; its commit follows
+when it is in Ophiolite EPICS.md). E44 R-44.5 now names it and carries the two constraints: deposits
+stay under `/mnt/HC_Volume_107082112/osd-deposits/terranubis/` and are only read there; no byte or
+literal of the archives enters the Ophiolite repository or a public Ophiolite artefact. An in-depth gap
+assessment (owner question: limitations, missing epics, tests, unsupported formats) is being written to
+`docs/program/evidence/e44/interop-gap-assessment.md`; findings and any charters follow in a separate
+entry. Archive copy state: F3 and USGS complete, MNSH copying, Rockall Trough and Poseidon pending.
+
 ## 28 Oct 2026, 07:10 CET (planner) — family "Ready for your tools" E40–E44 chartered
 
 - Owner direction 28 Oct (chat): starter projects from open datasets for OpendTect, ResInsight and Python; F3 as the proof of concept, other blocks after; show them on the site from the user's journey; "charter as many epics as you need". Family document `charters/READY-FOR-YOUR-TOOLS-family.md` (rules R-T1 to R-T7, the flow), charters E40 (contract), E41 (deposited origins), E42 (F3 pack and oracle) plus `E42-ophiolite-half.md` to hand to the Ophiolite program as E09-oph was, E43 (site), E44 (deferred). Decisions OSD-D21 to OSD-D24. Codex rounds on E40, E41, E42: three REWORK verdicts (E125 capabilities overstated: odbind 7.0.10 creates no wells, no survey creation; E127 slice 1a and a ResInsight rips demo already exist in Ophiolite; L4 needs the catalogue's own L3; derived artefacts need their own custody), 57 findings all accepted, charters reworked, dispositions under each; no second round (OSD-D8).
