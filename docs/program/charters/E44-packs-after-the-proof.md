@@ -27,8 +27,10 @@ Rules added by the ruling:
   have a translation into Ophiolite's data types; a kind no writer handles is a defect of the
   Ophiolite half, not a pack that quietly omits it. The two new kinds against E129 are seismic-2d
   (lines, not a cube) and faults (sticks); the Ophiolite half charters them as an E129 follow-on with
-  its own Codex round. *Ophiolite's answers, 31 Oct:* horizon capacity beyond 100,000 points is **E139**
-  (Kernel); well tops are **E137 slice 4** ("well tops in a starter pack", `well-tops-csv/1`); Fault3D is
+  its own Codex round. *Ophiolite's answers, 31 Oct:* horizon capacity beyond 100,000 points is **E139** "Big
+  horizons" (Kernel; Ophiolite main `75dfff509`, D93–D97: point set kept with one f64 point-columns form above
+  100,000 nodes, never resampled, refusal by number, bound default 1,000,000 raised in its slice 2, ResInsight
+  horizon row unsupported; E138 slice 1 reports F3's 619,101-node horizons as "not-yet" until E139 s2); well tops are **E137 slice 4** ("a pack carries the project's well tops", F3 `.wlm` markers through odbind's well API only, same commit `75dfff509`; the verification slice is now slice 5, a 2D-horizon slice would follow it); Fault3D is
   refused by name in E137 slice 0 (the faults kind is the FaultStickSet form), whether `Fault3D.getstick`
   enters is slice 2's decision measured read-only on F3's `Fault_A.flt`; 2D horizons become E137 slice 5
   if the MNSH/Rockall listings show Horizon2D objects (OSD confirms from the listings). The gap
