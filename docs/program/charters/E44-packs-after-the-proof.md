@@ -36,6 +36,11 @@ Rules added by the ruling:
   naming the deposit, the five deposits run. Then packs in the order F3 (E42, the proof), USGS Central
   Alaska (smallest, first seismic-2d), OGA MNSH, OGA Rockall Trough, Poseidon; a pack opens only when
   its kinds have writers.
+- R-44.5 *Fixtures for interoperability.* Owner direction 31 Oct: the five archives are OpendTect-native
+  projects, so they are the test cases for Ophiolite's interoperability journeys (OpendTect -> Ophiolite
+  workspace import -> ResInsight, QGIS, Python). The deposits on the VPS serve as those fixtures; the
+  connector doctrine holds (read through odbind, never decode project files). The Ophiolite planner
+  charters the round-trip epic; its number is recorded here when known.
 - R-44.4 *Oracles.* F3: dGB's survey (E42). The others: the archive's own OpendTect survey where one
   is shipped (TerraNubis archives are OpendTect projects), read through odbind, as E42 design 4 does.
 
