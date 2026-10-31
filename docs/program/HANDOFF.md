@@ -2,6 +2,22 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 31 Oct 2026 — Poseidon archive complete: all five TerraNubis archives on the VPS; listing, licence file, D85 answer
+
+`Poseidon_3D.zip` (14,236,435,784 bytes, sha256 `78a08897…973cd`) is deposited; the sftp copy of all five
+archives ended "ALL DONE" at 19:42Z. Names-only listing at
+`docs/program/evidence/e44/nw-shelf-australia-poseidon-3d-listing.txt` (248 files, 24.8 GB uncompressed).
+Facts: one OpendTect cube, the 8-bit full stack (21.9 GB, time-domain per the processing report), the
+near/mid/far stacks are SEG-Y definitions without their SEG-Y; 10 wells with logs, markers and time-depth
+models; RawData with 10 deviation surveys, 8 decimated LAS, **7 checkshot text files** (so D85's standard
+time-depth files exist for 7 of 10 Poseidon wells), 5 well completion reports, a tops spreadsheet; 4
+picksets (two are fault-stick picks, no odbind class → R-44.6 omission rows); no horizons, no faults.
+Stop rule met: the archive carries `AAA readme_license.txt` (GA data CC BY 3.0 AU; dGB's 8-bit conversion
+and well import named) and Occam Technology's README (spliced logs CC-BY, acknowledge). The page label
+BY-SA 3.0 stays the recorded licence as the stricter one (record known_issues updated, kinds now add
+wellbore-logs and tops, deposit sha recorded). E44 table row and the gap assessment's Q-E1/Q-E2 updated;
+Ophiolite planner told. Deposits into the mirror still wait on owner item 117.
+
 ## 31 Oct 2026 — Rockall Trough archive complete: listing; its faults are Fault3D only
 
 `Rockall_Trough_OGA_2016_v1.zip` (9,961,960,412 bytes, equal to the Mac) is deposited; names-only listing

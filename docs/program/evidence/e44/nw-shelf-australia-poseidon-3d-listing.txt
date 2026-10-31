@@ -1,0 +1,253 @@
+Archive:  /mnt/HC_Volume_107082112/osd-deposits/terranubis/nw-shelf-australia-poseidon-3d/Poseidon_3D.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2018-02-19 11:18   Poseidon_3D/
+     1130  2018-02-21 20:48   Poseidon_3D/.defs
+      355  2017-10-30 10:32   Poseidon_3D/.omf
+      333  2017-10-30 10:32   Poseidon_3D/.omf.bak
+     2027  2018-01-29 11:19   Poseidon_3D/.survey
+     1749  2017-11-21 18:41   Poseidon_3D/.survey.bak
+        0  2018-02-28 15:19   Poseidon_3D/2DGeom/
+     1389  2018-01-29 11:19   Poseidon_3D/AAA readme_license.txt
+        0  2017-10-30 10:22   Poseidon_3D/Attribs/
+      135  2017-10-12 08:54   Poseidon_3D/Attribs/.omf
+        0  2017-10-30 10:22   Poseidon_3D/Features/
+      144  2017-10-12 08:54   Poseidon_3D/Features/.omf
+        0  2017-10-30 10:22   Poseidon_3D/Geometry/
+      142  2017-10-12 08:54   Poseidon_3D/Geometry/.omf
+        0  2017-10-30 10:32   Poseidon_3D/GMT/
+      132  2017-10-30 10:32   Poseidon_3D/GMT/.omf
+        0  2017-11-20 18:06   Poseidon_3D/Locations/
+      849  2017-11-20 18:06   Poseidon_3D/Locations/.omf
+      834  2017-11-20 18:06   Poseidon_3D/Locations/.omf.bak
+   165132  2017-11-20 18:06   Poseidon_3D/Locations/horizontal_small_faults_50m_spacing.pck
+       65  2017-11-21 16:32   Poseidon_3D/Locations/psdn11_TbsdmF_full_-_CubeOutline.note
+    51527  2017-11-07 14:33   Poseidon_3D/Locations/psdn11_TbsdmF_full_-_CubeOutline.pck
+   827083  2017-11-20 18:06   Poseidon_3D/Locations/semivertical_fault_sticks_10_spacing.pck
+      116  2017-11-07 17:32   Poseidon_3D/Locations/Seringapatam_Reef.note
+     2245  2017-11-07 17:23   Poseidon_3D/Locations/Seringapatam_Reef.pck
+        0  2017-10-30 10:32   Poseidon_3D/Madagascar/
+      146  2017-10-30 10:32   Poseidon_3D/Madagascar/.omf
+        0  2018-02-19 13:31   Poseidon_3D/Misc/
+      264  2018-01-29 11:21   Poseidon_3D/Misc/.omf
+      395  2018-01-29 11:03   Poseidon_3D/Misc/.omf.bak
+    44121  2018-02-19 14:42   Poseidon_3D/Misc/Image_for_OSR.sess
+  5527221  2018-01-02 11:08   Poseidon_3D/Misc/Poseidon_3D-Seismic_and_Wells.jpg
+  5817835  2018-02-19 14:40   Poseidon_3D/Misc/Poseidon_3D-Seismic_and_Wells_Logs.jpg
+        0  2017-10-30 10:22   Poseidon_3D/Models/
+      135  2017-10-12 08:54   Poseidon_3D/Models/.omf
+        0  2017-10-30 10:22   Poseidon_3D/NLAs/
+      137  2017-10-12 08:54   Poseidon_3D/NLAs/.omf
+    51787  2017-11-22 16:53   Poseidon_3D/NWShelfAustralia_Poseidon_3D.kml
+        0  2018-02-13 16:05   Poseidon_3D/Proc/
+     2028  2017-10-12 08:54   Poseidon_3D/Proc/hor_multi_shift.odcmd
+      998  2017-10-30 10:57   Poseidon_3D/Proc/Import_SEG-Y__psdn11_TbsdmF_full_w_AGC_Nov11_8bit_.par
+    11438  2017-10-30 11:31   Poseidon_3D/Proc/Import_SEG-Y__psdn11_TbsdmF_full_w_AGC_Nov11_8bit__log.txt
+     3946  2018-02-19 15:35   Poseidon_3D/Proc/odcmdlog.txt
+      684  2017-11-14 18:00   Poseidon_3D/Proc/psdn11_TbsdmF_Far_Nov_11_8bit.par
+    23099  2017-11-14 19:12   Poseidon_3D/Proc/psdn11_TbsdmF_Far_Nov_11_8bit_log.txt
+      673  2017-11-14 16:51   Poseidon_3D/Proc/psdn11_TbsdmF_full_w_AGC_Nov11_8bit_-_dGB.par
+     2930  2017-11-14 17:07   Poseidon_3D/Proc/psdn11_TbsdmF_full_w_AGC_Nov11_8bit_-_dGB_log.txt
+      684  2017-11-14 18:01   Poseidon_3D/Proc/psdn11_TbsdmF_Mid_Nov_11_8bit.par
+    23098  2017-11-14 19:13   Poseidon_3D/Proc/psdn11_TbsdmF_Mid_Nov_11_8bit_log.txt
+      685  2017-11-14 18:02   Poseidon_3D/Proc/psdn11_TbsdmF_Near_Nov_11_8bit.par
+    23159  2017-11-14 19:13   Poseidon_3D/Proc/psdn11_TbsdmF_Near_Nov_11_8bit_log.txt
+      813  2017-10-12 08:54   Poseidon_3D/Proc/readme.txt
+      995  2017-11-06 16:09   Poseidon_3D/Proc/Scan_SEG-Y__psdn11_TbsdmF_Far_Nov_11_32bit_.par
+    29251  2017-11-06 17:55   Poseidon_3D/Proc/Scan_SEG-Y__psdn11_TbsdmF_Far_Nov_11_32bit__log.txt
+      995  2017-11-06 16:08   Poseidon_3D/Proc/Scan_SEG-Y__psdn11_TbsdmF_Mid_Nov_11_32bit_.par
+    29383  2017-11-06 17:55   Poseidon_3D/Proc/Scan_SEG-Y__psdn11_TbsdmF_Mid_Nov_11_32bit__log.txt
+      997  2017-11-06 16:07   Poseidon_3D/Proc/Scan_SEG-Y__psdn11_TbsdmF_Near_Nov_11_32bit_.par
+    27972  2017-11-06 17:53   Poseidon_3D/Proc/Scan_SEG-Y__psdn11_TbsdmF_Near_Nov_11_32bit__log.txt
+        0  2018-04-11 12:58   Poseidon_3D/RawData/
+   183561  2017-11-06 18:22   Poseidon_3D/RawData/horizontal small faults 50m spacing.dat
+  4198953  2017-10-30 11:44   Poseidon_3D/RawData/malenov user guide.pdf
+ 15711448  2017-10-23 10:47   Poseidon_3D/RawData/Poseidon 3D Interpretation Report_Rev.pdf
+  1870714  2017-10-23 10:47   Poseidon_3D/RawData/Processing_Report_Poseidon3D.pdf
+   924146  2017-11-06 18:22   Poseidon_3D/RawData/semivertical fault sticks 10 spacing.dat
+     2176  2017-11-07 17:30   Poseidon_3D/RawData/Seringapatam Reef.txt
+        0  2018-04-11 12:57   Poseidon_3D/RawData/Spliced well logs provided by occam technology/
+  1115490  2018-01-31 23:41   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Boreas1Decim.LAS
+        0  2018-02-19 10:48   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/
+     4743  2018-02-13 18:30   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/Boreas1-Checkshot.txt
+     7182  2018-02-14 17:18   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/Kronos1-Checkshot.txt
+     4603  2018-02-14 17:19   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/Pharos1-Checkshot.txt
+     3602  2018-02-14 17:20   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/Poseidon1-Checkshot.txt
+     4943  2018-02-14 17:21   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/Poseidon2-Checkshot.txt
+     5193  2018-02-14 17:28   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/Proteus1-Checkshot.txt
+     2743  2018-02-14 17:32   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Checkshots/Torosa1-Checkshot.txt
+  1070630  2018-02-01 01:05   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Kronos1Decim.LAS
+   943140  2018-01-31 23:42   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Pharos1Decim.LAS
+  1119115  2018-01-31 23:41   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Poseidon1Decim.LAS
+  1083261  2018-01-31 23:41   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Poseidon2Decim.LAS
+  1058391  2018-01-31 23:41   Poseidon_3D/RawData/Spliced well logs provided by occam technology/PoseidonNorth1Decim.LAS
+  1062753  2018-02-19 11:05   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Proteus1Decim.LAS
+     6745  2018-02-01 23:58   Poseidon_3D/RawData/Spliced well logs provided by occam technology/README FIRST.docx
+   918942  2018-01-31 23:42   Poseidon_3D/RawData/Spliced well logs provided by occam technology/Torosa1Decim.LAS
+        0  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/
+    20491  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Boreas 1.deviation
+    20056  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Kronos 1.deviation
+    21802  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Pharos 1.deviation
+    19629  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Poseidon 1.deviation
+    19043  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Poseidon 2.deviation
+    22390  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Poseidon North 1.deviation
+     6155  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Proteus 1.deviation
+    21383  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Proteus 1ST1.deviation
+    23540  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Proteus 1ST2.deviation
+    19934  2018-01-02 10:46   Poseidon_3D/RawData/Wells_DeviationSurveys/Torosa 1.deviation
+        0  2018-04-11 12:57   Poseidon_3D/RawData/Wells_Reports/
+223779735  2016-09-20 02:32   Poseidon_3D/RawData/Wells_Reports/Boreas-1 WCR_Volume_2_Interpretive_Data.pdf
+242054107  2018-02-19 16:35   Poseidon_3D/RawData/Wells_Reports/Kronos-1 WCR_Volume_2_Interpretive_Data.pdf
+408328761  2018-02-19 17:03   Poseidon_3D/RawData/Wells_Reports/Poseidon-2 WCR_Volume_2_Interpretive_Data.pdf
+ 28321673  2018-02-19 16:55   Poseidon_3D/RawData/Wells_Reports/Poseidon_1_WCR_Volume_2_Interpretive_Data.pdf
+185151604  2018-02-19 18:06   Poseidon_3D/RawData/Wells_Reports/Torosa-1 WCR_Volume_2_Interpretive_Data.pdf
+    12497  2018-02-28 20:04   Poseidon_3D/RawData/WellTopsFromWellReports.xlsx
+        0  2017-11-29 15:50   Poseidon_3D/Seismics/
+     2223  2017-11-21 13:31   Poseidon_3D/Seismics/.omf
+     2223  2017-11-21 13:30   Poseidon_3D/Seismics/.omf.bak
+      309  2017-12-13 15:26   Poseidon_3D/Seismics/FarStack_8bit.note
+      159  2017-11-15 17:36   Poseidon_3D/Seismics/FarStack_8bit.par
+21913026169  2017-11-14 17:07   Poseidon_3D/Seismics/FullStack_w_AGC_8bit.cbvs
+       86  2017-12-13 15:26   Poseidon_3D/Seismics/FullStack_w_AGC_8bit.note
+      159  2017-11-15 17:36   Poseidon_3D/Seismics/FullStack_w_AGC_8bit.par
+      309  2017-11-22 17:19   Poseidon_3D/Seismics/MidStack_8bit.note
+      159  2017-11-15 17:36   Poseidon_3D/Seismics/MidStack_8bit.par
+      310  2017-11-22 17:19   Poseidon_3D/Seismics/NearStack_8bit.note
+      159  2017-11-15 17:36   Poseidon_3D/Seismics/NearStack_8bit.par
+     4118  2017-12-13 15:26   Poseidon_3D/Seismics/psdn11_TbsdmF_Far_Nov_11_32bit.note
+      163  2017-11-06 18:09   Poseidon_3D/Seismics/psdn11_TbsdmF_Far_Nov_11_32bit.par
+434304193  2017-11-06 17:55   Poseidon_3D/Seismics/psdn11_TbsdmF_Far_Nov_11_32bit.sgydef
+     4135  2017-11-27 12:40   Poseidon_3D/Seismics/psdn11_TbsdmF_full_w_AGC_Nov11_8bit.note
+      172  2017-11-06 18:09   Poseidon_3D/Seismics/psdn11_TbsdmF_full_w_AGC_Nov11_8bit.par
+434303853  2017-10-30 10:47   Poseidon_3D/Seismics/psdn11_TbsdmF_full_w_AGC_Nov11_8bit.sgydef
+     4118  2017-11-27 12:40   Poseidon_3D/Seismics/psdn11_TbsdmF_Mid_Nov_11_32bit.note
+      163  2017-11-06 18:09   Poseidon_3D/Seismics/psdn11_TbsdmF_Mid_Nov_11_32bit.par
+434304193  2017-11-06 17:55   Poseidon_3D/Seismics/psdn11_TbsdmF_Mid_Nov_11_32bit.sgydef
+     4118  2017-11-22 17:18   Poseidon_3D/Seismics/psdn11_TbsdmF_Near_Nov_11_32bit.note
+      163  2017-11-06 18:09   Poseidon_3D/Seismics/psdn11_TbsdmF_Near_Nov_11_32bit.par
+434304196  2017-11-06 17:53   Poseidon_3D/Seismics/psdn11_TbsdmF_Near_Nov_11_32bit.sgydef
+        0  2018-02-19 11:18   Poseidon_3D/SITFAL/
+        0  2018-02-19 12:18   Poseidon_3D/SITFAL/CLAS/
+        0  2017-11-22 16:40   Poseidon_3D/Surfaces/
+      146  2017-11-22 16:39   Poseidon_3D/Surfaces/.omf
+        0  2018-02-19 12:23   Poseidon_3D/WellInfo/
+     2505  2017-11-01 19:36   Poseidon_3D/WellInfo/.omf
+     2385  2017-11-01 19:36   Poseidon_3D/WellInfo/.omf.bak
+     4921  2018-02-14 17:50   Poseidon_3D/WellInfo/Boreas_1.csmdl
+     4484  2018-02-19 12:59   Poseidon_3D/WellInfo/Boreas_1.disp
+     7122  2017-11-06 16:12   Poseidon_3D/WellInfo/Boreas_1.well
+       70  2017-11-01 19:34   Poseidon_3D/WellInfo/Boreas_1.wlm
+      147  2017-11-01 19:34   Poseidon_3D/WellInfo/Boreas_1.wlt
+    77817  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^1.wll
+    74332  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^2.wll
+    74324  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^3.wll
+    19270  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^4.wll
+    19253  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^5.wll
+    37823  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^6.wll
+     6863  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^7.wll
+    19476  2018-02-19 12:20   Poseidon_3D/WellInfo/Boreas_1^8.wll
+     6462  2018-02-14 17:54   Poseidon_3D/WellInfo/Kronos_1.csmdl
+     4483  2018-02-19 12:59   Poseidon_3D/WellInfo/Kronos_1.disp
+     6929  2017-11-06 16:12   Poseidon_3D/WellInfo/Kronos_1.well
+       70  2017-11-01 19:34   Poseidon_3D/WellInfo/Kronos_1.wlm
+      148  2017-11-01 19:34   Poseidon_3D/WellInfo/Kronos_1.wlt
+    74897  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^1.wll
+    75772  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^2.wll
+    75924  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^3.wll
+    19645  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^4.wll
+    19630  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^5.wll
+    19628  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^6.wll
+     9775  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^7.wll
+     9775  2018-02-19 12:21   Poseidon_3D/WellInfo/Kronos_1^8.wll
+     4770  2018-02-14 17:55   Poseidon_3D/WellInfo/Pharos_1.csmdl
+     4485  2018-02-19 12:59   Poseidon_3D/WellInfo/Pharos_1.disp
+     7590  2017-11-06 16:12   Poseidon_3D/WellInfo/Pharos_1.well
+       70  2017-11-01 19:34   Poseidon_3D/WellInfo/Pharos_1.wlm
+      158  2017-11-01 19:34   Poseidon_3D/WellInfo/Pharos_1.wlt
+    19022  2018-02-19 12:21   Poseidon_3D/WellInfo/Pharos_1^1.wll
+    19253  2018-02-19 12:21   Poseidon_3D/WellInfo/Pharos_1^2.wll
+    75874  2018-02-19 12:21   Poseidon_3D/WellInfo/Pharos_1^3.wll
+    74934  2018-02-19 12:21   Poseidon_3D/WellInfo/Pharos_1^4.wll
+    74934  2018-02-19 12:21   Poseidon_3D/WellInfo/Pharos_1^5.wll
+    18838  2018-02-19 12:21   Poseidon_3D/WellInfo/Pharos_1^6.wll
+    18822  2018-02-19 12:21   Poseidon_3D/WellInfo/Pharos_1^7.wll
+     3659  2018-02-14 17:55   Poseidon_3D/WellInfo/Poseidon_1.csmdl
+     4482  2018-02-19 13:34   Poseidon_3D/WellInfo/Poseidon_1.disp
+     6814  2017-11-06 16:12   Poseidon_3D/WellInfo/Poseidon_1.well
+       70  2017-11-01 19:34   Poseidon_3D/WellInfo/Poseidon_1.wlm
+      147  2017-11-01 19:34   Poseidon_3D/WellInfo/Poseidon_1.wlt
+    67409  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^1.wll
+    72670  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^2.wll
+    72670  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^3.wll
+    20093  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^4.wll
+    18676  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^5.wll
+    19764  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^6.wll
+    19750  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^7.wll
+     9423  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^8.wll
+     9423  2018-02-19 12:22   Poseidon_3D/WellInfo/Poseidon_1^9.wll
+     5025  2018-02-14 17:56   Poseidon_3D/WellInfo/Poseidon_2.csmdl
+     4476  2018-02-19 13:01   Poseidon_3D/WellInfo/Poseidon_2.disp
+     6644  2017-11-06 16:12   Poseidon_3D/WellInfo/Poseidon_2.well
+       70  2017-11-01 19:35   Poseidon_3D/WellInfo/Poseidon_2.wlm
+      148  2017-11-01 19:35   Poseidon_3D/WellInfo/Poseidon_2.wlt
+    77896  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^1.wll
+    77920  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^2.wll
+    77920  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^3.wll
+    46378  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^4.wll
+    10259  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^5.wll
+    20040  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^6.wll
+    19522  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^7.wll
+    20239  2018-02-19 11:12   Poseidon_3D/WellInfo/Poseidon_2^8.wll
+     4482  2018-02-19 13:01   Poseidon_3D/WellInfo/Poseidon_North_1.disp
+       13  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1.note
+     7852  2017-11-06 16:12   Poseidon_3D/WellInfo/Poseidon_North_1.well
+       70  2017-11-01 19:35   Poseidon_3D/WellInfo/Poseidon_North_1.wlm
+      147  2017-11-01 19:35   Poseidon_3D/WellInfo/Poseidon_North_1.wlt
+    76488  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^1.wll
+    75524  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^2.wll
+    75524  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^3.wll
+    18542  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^4.wll
+    18565  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^5.wll
+    25327  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^6.wll
+    23287  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^7.wll
+    23596  2018-02-19 12:23   Poseidon_3D/WellInfo/Poseidon_North_1^8.wll
+      441  2018-02-19 10:36   Poseidon_3D/WellInfo/Proteus_1.csmdl
+     4470  2018-02-19 13:02   Poseidon_3D/WellInfo/Proteus_1.disp
+       32  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1.note
+     2010  2017-11-06 16:12   Poseidon_3D/WellInfo/Proteus_1.well
+       70  2017-11-01 19:35   Poseidon_3D/WellInfo/Proteus_1.wlm
+      157  2017-11-01 19:35   Poseidon_3D/WellInfo/Proteus_1.wlt
+     5018  2018-02-19 10:38   Poseidon_3D/WellInfo/Proteus_1ST1.csmdl
+     4472  2018-02-19 14:37   Poseidon_3D/WellInfo/Proteus_1ST1.disp
+       32  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST1.note
+     7640  2017-11-06 16:12   Poseidon_3D/WellInfo/Proteus_1ST1.well
+       70  2017-11-01 19:36   Poseidon_3D/WellInfo/Proteus_1ST1.wlm
+      157  2017-11-01 19:36   Poseidon_3D/WellInfo/Proteus_1ST1.wlt
+     5472  2018-02-14 18:04   Poseidon_3D/WellInfo/Proteus_1ST2.csmdl
+     4479  2018-02-19 14:37   Poseidon_3D/WellInfo/Proteus_1ST2.disp
+     7584  2017-11-06 16:12   Poseidon_3D/WellInfo/Proteus_1ST2.well
+       70  2017-11-01 19:36   Poseidon_3D/WellInfo/Proteus_1ST2.wlm
+      157  2017-11-01 19:36   Poseidon_3D/WellInfo/Proteus_1ST2.wlt
+    76047  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^1.wll
+    75300  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^2.wll
+    75300  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^3.wll
+    41071  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^4.wll
+     2607  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^5.wll
+     5300  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^6.wll
+     5302  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^7.wll
+     5605  2018-02-19 12:23   Poseidon_3D/WellInfo/Proteus_1ST2^8.wll
+     2933  2018-02-14 18:01   Poseidon_3D/WellInfo/Torosa_1.csmdl
+     4478  2018-02-19 13:04   Poseidon_3D/WellInfo/Torosa_1.disp
+     6897  2017-11-06 16:12   Poseidon_3D/WellInfo/Torosa_1.well
+       70  2017-11-01 19:36   Poseidon_3D/WellInfo/Torosa_1.wlm
+      158  2017-11-01 19:36   Poseidon_3D/WellInfo/Torosa_1.wlt
+    66191  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^1.wll
+    66160  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^2.wll
+    66160  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^3.wll
+    17571  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^4.wll
+    19416  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^5.wll
+    18536  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^6.wll
+    64356  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^7.wll
+    34706  2018-02-19 11:13   Poseidon_3D/WellInfo/Torosa_1^8.wll
+---------                     -------
+24784822705                     248 files
