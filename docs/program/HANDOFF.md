@@ -2,6 +2,17 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 31 Oct 2026 — Rockall Trough archive complete: listing; its faults are Fault3D only
+
+`Rockall_Trough_OGA_2016_v1.zip` (9,961,960,412 bytes, equal to the Mac) is deposited; names-only listing
+at `docs/program/evidence/e44/oga-rockall-trough-listing.txt` (722 files). 168 2D line datasets with 158
+geometries, 5 3D horizons, 8 2D horizons (E137 slice 6 gets a second dataset), 20 wells with time-depth,
+tops and 125 logs, 4 well ties, 2 wavelets. Finding: the two faults are Fault3D objects (`.flt`), there is
+no FaultStickSet — E137 slice 0 refuses Fault3D by name and slice 2 decides whether `Fault3D.getstick`
+enters, so the Rockall faults kind (E44 table) depends on that decision; F3's single fault is the same
+form. Sent to the Ophiolite planner. No licence or terms file inside; OGL-UK-3.0 from the page stands.
+Poseidon copying (101 MB of 14.2 GB).
+
 ## 31 Oct 2026 — MNSH archive complete: listing, Horizon2D confirmed, no licence file inside
 
 `MNSH_OGA_2016_v1.zip` (11,537,303,224 bytes, equal to the Mac) is in the deposit directory; names-only
