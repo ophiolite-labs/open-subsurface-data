@@ -9,8 +9,9 @@ at `docs/program/evidence/e44/oga-rockall-trough-listing.txt` (722 files). 168 2
 geometries, 5 3D horizons, 8 2D horizons (E137 slice 6 gets a second dataset), 20 wells with time-depth,
 tops and 125 logs, 4 well ties, 2 wavelets. Finding: the two faults are Fault3D objects (`.flt`), there is
 no FaultStickSet — E137 slice 0 refuses Fault3D by name and slice 2 decides whether `Fault3D.getstick`
-enters, so the Rockall faults kind (E44 table) depends on that decision; F3's single fault is the same
-form. Sent to the Ophiolite planner. No licence or terms file inside; OGL-UK-3.0 from the page stands.
+enters, so the Rockall faults kind (E44 table) depended on that decision; F3's single fault is the same
+form. Ophiolite decided the same day (main `27c891189`): slice 2 reads sticks from both forms, both as
+`opendtect-faultsticks/1`, no triangulation; `Fault3D.getstick` already measured on F3 (13 sticks). No licence or terms file inside; OGL-UK-3.0 from the page stands.
 Poseidon copying (101 MB of 14.2 GB).
 
 ## 31 Oct 2026 — MNSH archive complete: listing, Horizon2D confirmed, no licence file inside
