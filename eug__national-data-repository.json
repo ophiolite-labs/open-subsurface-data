@@ -1,0 +1,45 @@
+{
+  "record_id": "eug/national-data-repository",
+  "checked_at": "2026-10-28T07:08:25+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://eug.petroleum.gov.eg/dp/jsp/new_live/PleaseLogin.jsp?redirected=true"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://eug.petroleum.gov.eg/dp/jsp/new_live/PleaseLogin.jsp?redirected=true",
+    "content_type": "text/html;charset=UTF-8",
+    "elapsed_ms": 2724,
+    "reachability": "ok"
+  }
+}

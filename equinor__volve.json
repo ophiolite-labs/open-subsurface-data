@@ -1,0 +1,53 @@
+{
+  "record_id": "equinor/volve",
+  "checked_at": "2026-10-28T07:06:24+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.equinor.com/energy/volve-data-sharing"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1978 characters captured from https://www.equinor.com/energy/volve-data-sharing"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "1 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "1 approximate features"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.equinor.com/energy/volve-data-sharing",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 866,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "0498f092d37155371e28d112774abd78bda11208855692f3c8a3147674e652e5",
+  "licence_text": "Skip to main content Explore Investors Careers Sustainability About us Contact us Connect Facebook Instagram LinkedIn Youtube Site Privacy policy Cookie policy Accessibility statement Terms and conditions Site info Copyright 2026 Equinor ASA Volve field data set download - Equinor Search English (UK) en Norwegian no Menu Volve field data set The M\u00e6rsk Inspirer platform at the Volve field Photo: Colin Dobinson Home Energy Data sharing Volve data sharing Equinor has offically made a complete set of data from a North Sea oil field available for research, study and development purposes. Find out more about this unique initiative here \u2014 and follow the instructions to download the files. We hereby grant all academic institutions, students and researchers permission to use this dataset in accordance with the Equinor Open Data Licence below, without any need for further written permission from us. This page is sufficient documentation and additional letters of permission are not required. Open data Access open data (Databricks Marketplace) How to get access Background: Disclosing all Volve data For the first time, all subsurface and production data from a field on the Norwegian continental shelf (NCS) will be disclosed. Together with the Volve licence partners, we have decided to disclose all subsurface and operating data from the Volve field. This will be the most comprehensive NCS data release ever made. We wish to support the energy innovators of the future, and therefore announced in June 2018 that we would be sharing a complete set of data from the Norwegian continental shelf for research and study purposes. Read the press release (14 June 2018) 40,000 data files The dataset comprises approximately 40,000 files from the Volve field, which was in production from 2008 to 2016. The data has been released to give students and scientists a realistic case to study. Our intention is to support learning, innovation and new solutions for the energy future."
+}

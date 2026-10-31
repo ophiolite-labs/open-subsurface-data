@@ -1,0 +1,47 @@
+{
+  "record_id": "ppepdr/national-data-repository",
+  "checked_at": "2026-10-28T07:07:16+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://ppepdr.net/subscribe"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1890 characters captured from https://ppepdr.net/subscribe"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://ppepdr.net/subscribe",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 1198,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "47eaed11a868c644432f56b65b2f12bf4206334c05504fc0b88739532418cbd3",
+  "licence_text": "Skip to main content About Us Policies Agreements Rules Bids (opens in a new tab) Subscribe Contact Us Member Login Toggle navigation Subscribe Choose a membership tier for PetroBank online access to Pakistan's E&P data repository. Select a plan to open the request form \u2014 our team will follow up on onboarding and DGPC requirements. Membership Access plans Compare benefits, then request the plan that fits your organisation. Pricing is annual unless noted otherwise. Most complete Full Members US$ 22,050 / annum Full membership for companies Free access to Pakistan digital database Free online data review Free access to hardcopy data for review 04 free subscriptions of PPIS 02 user annual license access for Power Explorer Request this plan Associate Members US$ 13,230 / annum Associate membership for companies Free access to Pakistan digital database Free online data review Free access to hardcopy data for review 02 free subscriptions of PPIS Single user annual license access for Power Explorer Request this plan Non Members US$ 110 / hour Hourly rate for non-member companies within Pakistan A subscription fee of US$ 110 per hour to access database Request this plan Temporary Members Free Free subscription for companies with foreign operations registering interest with DGPC for potential investment Free subscription allowing access to database Request this plan Usage fees Online data downloading charges Download fees apply in addition to membership. All data sales are subject to DGPC approval. Seismic data US$ 4 per line kilometer Well data US$ 56 per well National petroleum exploration & production data, online. A centralized digital repository for seismic, well, and physical data supporting Pakistan's E&P industry. Navigate About Us Policies Agreements Rules Bids (opens in a new tab) Subscribe Contact Us Copyright \u00a9 2026 PPEPDR. All rights reserved. Contact us"
+}

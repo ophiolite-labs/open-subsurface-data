@@ -1,0 +1,47 @@
+{
+  "record_id": "nsta/ndr",
+  "checked_at": "2026-10-28T07:06:32+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://ndr.nstauthority.co.uk"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5230 characters captured from https://www.nstauthority.co.uk/data-centre/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://ndr.nstauthority.co.uk",
+    "content_type": "text/html",
+    "elapsed_ms": 138,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "f2690c7b457cf1586ed61f74961328aa31e3749ef044028e6c9e2c7627cbd34f",
+  "licence_text": "Skip to main content Search Search Close search Popular searches Net zero Decommissioning What we do NSTA Overview NSTA Corporate Plan OGA Plan - Emissions Guidance Latest news 26 Oct 2026 DESNZ update on interim arrangements 23 Oct 2026 Reserves and Resources Report as at end 2025 21 Oct 2026 NSTA grants consent for Jackdaw North Sea Transition Authority Toggle Search Toggle Menu Energy Pathfinder Energy Portal Careers Contact us About us Toggle Menu View About us Ambition, priorities and performance NSTA Overview Careers Contact us Feedback and complaints Freedom of information requests Register for updates Our role and values View Our role and values Organisational structure Leadership and governance View Leadership and governance Board of Directors and Leadership Team Board committees Board minutes Plans, reports and accounts Our relationship with the UK government and other public bodies in the UK Financial transparency Performance View Performance Business impact target (BIT) Measuring success North Sea Transition Forum and task forces View North Sea Transition Forum and task forces What we do Toggle Menu Energy production and security Emissions reduction Accelerating the energy transition Licensing and consents system Asset stewardship Carbon capture and storage Supporting the supply chain Decommissioning and repurposing Hydrogen Investing in the UKCS Technology stewardship The move to net zero Toggle Menu View The move to net zero Energy integration Offshore hydrogen Bacton Energy Hub The North Sea Transition Deal Interactive energy map for the UKCS Corporate Governance Case studies Net zero benchmarking and analysis Environmental, Social and Governance (ESG) View Environmental, Social and Governance (ESG) Reducing emissions View Reducing emissions CCS View CCS UKCS oil and gas terminals View UKCS oil and gas terminals Regulatory information Toggle Menu View Regulatory information Exploration and production Carbon storage Guidance Technology Gas storage and unloading Licensing and consents View Licensing and consents Consents Licensing Types of licence Licensing system Supply chain View Supply chain Supply chain and exports strategy Energy Pathfinder Asset stewardship reviews Supply Chain Action Plans Stewardship Expectation 12 Decommissioning View Decommissioning Well decommissioning Wellhead severance charter Cost estimate Benchmarking report Tree and Wellhead Information for Subsea Tooling Decommissioning data visibility dashboard Asset Transition Process Reuse and repurposing Decommissioning programme consultation Regulatory framework View Regulatory framework Legislative context The OGA Strategy OGA Plan - Emissions Reduction Licensing regime Investigations & Enforcement Statutory notice Charging regime and fees Data and insights Toggle Menu View Data and insights Data and insights Insights and analysis View Insights and analysis Analysis Maps and dashboards Income and expenditure Production and expenditure projections Printable maps Data View Data Themes Energy systems UK National Data Repository About NSTA data View About NSTA data Data regulations FAQs Documentation How to access our data Improvements and change log Contacts News and publications Energy Pathfinder Energy Portal Careers Contact us Toggle Search Home Data and insights Data and insights Open menu Data and insights Insights and analysis Open Menu Back Insights and analysis Analysis Interactive maps and dashboards Income and expenditure Production and expenditure projections Printable maps Data Open Menu Back Data Themes Open Menu Back Themes Wells Open Menu Back Wells Exploration and appraisal well results Production Seismic Infrastructure Fields Exploration Licences Energy systems UK National Data Repository Open Menu Back UK National Data Repository NDR user group and updates Reporting and disclosure of information About NSTA data Open Menu Back About NSTA data Data regulations FAQs Documentation How to access our data Improvements and change log Contacts UKCS data portals Explore NSTA\u2019s data and dashboards covering information across oil and gas, carbon storage lifecycle and energy transition activities Search and download data Search hundreds of datasets for offshore activity, geoscience studies, onshore petroleum information, and maps Search Open Data National Data Repository Accessing data Insights and analysis Explore data catalogue Maps and dashboards Offshore activity map Find out more NSTA Data and Digital Strategy Find out more Production data Find out more Energy lease map Find out more NSTA virtual map gallery tour Take a look at some of our most popular and newest maps; and get some hint and tips on how to use them. NSTA virtual map gallery Back to top Menu Procurement Access to Information Accessibility statement Glossary of Terms Sitemap Terms and Conditions Privacy Statement NSTA Tax Policy Cookie Policy Approach to consulting LinkedIn X Bluesky North Sea Transition Authority is a business name of the Oil and Gas Authority. Oil and Gas Authority is a limited company registered in England and Wales with registered number 09666504 and VAT registered number 249433979. \u00a9 Intellectual property and copyright 2026 North Sea Transition Authority"
+}

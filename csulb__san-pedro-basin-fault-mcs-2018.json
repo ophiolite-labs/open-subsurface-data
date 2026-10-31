@@ -1,0 +1,60 @@
+{
+  "record_id": "csulb/san-pedro-basin-fault-mcs-2018",
+  "checked_at": "2026-10-28T07:07:42+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 202 from https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/EGB21M"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (7310240 bytes); 160 entries listed; publisher checksums match for 1 of 1"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "3976 characters captured from http://creativecommons.org/publicdomain/zero/1.0"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 202,
+    "final_url": "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/EGB21M",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 36,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "SPB_MCS/migr_segy/SPB_104a_fkmigr_1500_50_150hz.sgy",
+      "url": "https://dataverse.harvard.edu/api/access/datafile/5251204",
+      "bytes": 7310240,
+      "sha256": "670e250f6fefd93ce3f1af5211d49abaac460eafbf572544246499187e257131",
+      "publisher_checksum": {
+        "algorithm": "MD5",
+        "digest": "1e7d819b1565cf26fac3f3ce815f039c"
+      },
+      "compared": true
+    }
+  ],
+  "licence_text_sha256": "ffc00597ec2c1777fbde58c18966272aa012b76d251fe5d970bad860ac533e1d",
+  "licence_text": "Skip to content Languages available aragon\u00e9s Az\u0259rbaycanca Bahasa Indonesia Basque catal\u00e0 dansk Deutsch eesti English espa\u00f1ol Esperanto fran\u00e7ais frysk Gaeilge galego Hrvatski italiano latvie\u0161u Lietuvi\u0161kai Magyar Melayu Nederlands norsk polski Portugu\u00eas Portugu\u00eas Brasileiro Rom\u00e2n\u0103 slovensky Sloven\u0161\u010dina srpski (latinica) suomi svenska T\u00fcrk\u00e7e \u00cdslenska \u010desky \u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac \u0431\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 \u0420\u0443\u0441\u0441\u043a\u0438\u0439 \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u0627\u0644\u0639\u0631\u0628\u064a\u0651\u0629 \u0641\u0627\u0631\u0633\u06cc \u0939\u093f\u0902\u0926\u0940 \u09ac\u09be\u0982\u09b2\u09be \u65e5\u672c\u8a9e \u7b80\u4f53\u4e2d\u6587 \u7e41\u9ad4\u4e2d\u6587 \ud55c\uad6d\uc5b4 Creative Commons Menu Who We Are Expand Strategic Plan Team Governance Opportunities Annual Reports & Financials History Press What We Do Expand Build Open Infrastructure Expand CC Licenses CC Signals Public Domain Chooser FAQs Implement the Commons Expand Where CC Makes An Impact Resources Search the Commons Engage the People Expand Training + Webinars Advocacy Community Events Blog Support Us Expand Make a Gift Open Infrastructure Circle Donor FAQ Donate CC0 1.0 Universal CC0 1.0 Deed Canonical URL https://creativecommons.org/publicdomain/zero/1.0/ See the legal code No Copyright The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law. You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission. See Other Information below. Other Information In no way are the patent or trademark rights of any person affected by CC0, nor are the rights that other persons may have in the work or in how the work is used, such as publicity or privacy rights. Unless expressly stated otherwise, the person who associated a work with this deed makes no warranties about the work, and disclaims liability for all uses of the work, to the fullest extent permitted by applicable law. When using or citing the work, you should not imply endorsement by the author or the affirmer. Notice The Commons Deed is not a legal instrument. It is simply a handy reference for understanding the CC0 Legal Code, a human-readable expression of some of its key terms. Think of it as the user-friendly interface to the CC0 Legal Code beneath. This Deed itself has no legal value, and its contents do not appear in CC0. Creative Commons is not a law firm and does not provide legal services. Distributing, displaying, or linking to this Commons Deed does not create an attorney-client relationship. Creative Commons has not verified the copyright status of any work to which CC0 has been applied. CC makes no warranties about any work or its copyright status in any jurisdiction, and disclaims all liability for all uses of any work. Creative Commons is the nonprofit behind the open licenses and other legal tools that allow creators to share their work. Our legal tools are free to use. Learn more about our work Learn more about CC Licensing Support our work Use the license for your own material. Licenses List Public Domain List Footnotes return to reference publicity or privacy \u2014 The use of a work free of known copyright restrictions may be otherwise regulated or limited. The work or its use may be subject to personal data protection laws, publicity, image, or privacy rights that allow a person to control how their voice, image or likeness is used, or other restrictions or limitations under applicable law. More info return to reference endorsement \u2014 In some jurisdictions, wrongfully implying that an author, publisher or anyone else endorses your use of a work may be unlawful. More info Creative Commons submit Who we are What we do Blog Support us Store Contact Privacy Policies Terms Contact Us Creative Commons PO Box 1866, Mountain View, CA 94042 info@creativecommons.org Bluesky Mastodon LinkedIn Subscribe to our newsletter Subscribe Except where otherwise noted , content on this site is licensed under a Creative Commons Attribution 4.0 International license . Icons by Font Awesome ."
+}

@@ -1,0 +1,47 @@
+{
+  "record_id": "liag/geotis",
+  "checked_at": "2026-10-28T07:08:31+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.geotis.de/homepage/basics"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5631 characters captured from https://www.geotis.de/homepage/terms"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.geotis.de/homepage/basics",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 880,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "68b6d5aee78218f2f8dca01655daba06320b263abb7dd7dbf93d29c92c906f59",
+  "licence_text": "Geothermisches Informationssystem Aktuelle Forschungsdaten zu Potential und Nutzung geothermischer Energie Anwendungen GeotIS starten Profile feature Statistiken WMS Kartenservice FIS Geophysik \u00dcber Geothermie E-Learning Portal Publikationen \u00dcbersichtskarten Glossar Links \u00dcber GeotIS Grundlagen Quellen Projekte GeotIS-Team FAQ/Hilfe Start GeotIS Weiter auf Deutsch Change language to English FAQ/Hilfe nach oben \u25b4 Nutzungsbedingungen f\u00fcr GeotIS Bitte lesen Sie die Nutzungsbedingungen sorgf\u00e4ltig durch. Sie enthalten Regeln f\u00fcr die Verwendung von GeotIS und die gesetzlichen Vorgaben f\u00fcr die Verarbeitung geologischer und geophysikalischer Daten \u00fcber Deutschland. Allgemeine Pflichten Die unter der URL https://www.geotis.de ver\u00f6ffentlichten Karten, 3D-Daten und Datenbanken wurden vom LIAG-Institut f\u00fcr Angewandte Geophysik (LIAG), den Staatlichen Geologischen Diensten Deutschlands und weiteren Partnern erstellt und unterliegen dem Schutz des Urheberrechts. Der*die Nutzer*in ist verpflichtet, bei Ver\u00f6ffentlichungen, in die unter Nutzung der Daten generierte Ergebnisse eingeflossen sind, auf das LIAG und das GeotIS als die Quelle der zugrundeliegenden Daten hinzuweisen und der Datensatz ist unter Angabe zugeordneter Publikationen (siehe Quellen ) und der DOI, falls vorhanden, zu zitieren. Au\u00dferdem ist als Referenzzitat zu nennen: AGEMAR, T., ALTEN, J., GANZ, B., KUDER, J., K\u00dcHNE, K., SCHUMACHER, S. & SCHULZ, R. (2014): The Geothermal Information System for Germany - GeotIS - ZDGG Band 165 Heft 2, 129-144 Bei der Publikation der unter Nutzung der Daten generierten Ergebnisse in graphischer Form oder von Interpretationen der Daten (z. B. Karten, Profile) ist die Herkunft der Daten wie folgt zu zitieren: \"Datenquelle: Datensatzbezeichnung, \u00a9 LIAG-Institut f\u00fcr Angewandte Geophysik, Ort, Jahr\". Sollten Sie GeotIS-Daten z. B. f\u00fcr Kartenwerke benutzen, finden Sie hier unser Logo in verschiedenen Varianten zum Download: Logo (weiss) Logo (transparent) Die Weitergabe an Dritte oder die Ver\u00f6ffentlichung von Raumdaten aus GeotIS (z. B. Rasterdaten, Konturlinien etc.) oder eines abgeleiteten Werkes ist nur in begrenztem Umfang gestattet. Ohne vorherige Zustimmung der Rechteinhaber*innen darf von jeder Karte und jedem Datensatz in der Summe nicht mehr als ein F\u00fcnftel der Landesfl\u00e4che Deutschlands in einer Ver\u00f6ffentlichung verwendet werden. Dar\u00fcber hinaus k\u00f6nnen f\u00fcr einzelne Karten in GeotIS weitergehende Nutzungseinschr\u00e4nkungen gelten, die von den jeweiligen Rechteinhaber*innen festgelegt wurden (z. B. Nutzungsbedingungen des Bundesamts f\u00fcr Kartographie und Geod\u00e4sie - BKG). Zur Verbesserung der Bewertungsf\u00e4higkeit und Vergleichbarkeit der Datenbest\u00e4nde in GeotIS beh\u00e4lt sich das LIAG das Recht vor, von Nutzer*innen bearbeitete Daten aus GeotIS in geeigneter Form einzufordern. Pflichten aus dem Geologiedatengesetz Die Nachweisdaten der verwendeten Daten aus GeotIS m\u00fcssen 2 Wochen vor einer Neubearbeitung der zust\u00e4ndigen Beh\u00f6rde oder den zust\u00e4ndigen Beh\u00f6rden mitgeteilt werden. (GeolDG \u00a7 8 Nr. 6) Wenn mit technischen Mitteln Daten \u00fcber das deutsche Hoheitsgebiet aus dem GeotIS zu bewertungsf\u00e4higen und vergleichbaren Daten aufbereitet werden, m\u00fcssen sp\u00e4testens 3 Monate nach Abschluss der Neubearbeitung der zust\u00e4ndigen Beh\u00f6rde oder den zust\u00e4ndigen Beh\u00f6rden diese neuen Fachdaten \u00fcbermittelt werden. (GeolDG \u00a7 9 Abs. 1 Nr. 6) Gutachten, Studien, r\u00e4umliche Modelle (inkl. Dokumentation), Vorrats- und Nutzungspotenzialeinsch\u00e4tzungen und vergleichbare Produkte, die auf GeotIS-Daten \u00fcber deutsches Hoheitsgebiet basieren und die f\u00fcr die geologische Landesaufnahme oder andere \u00f6ffentliche Aufgaben relevant sind, m\u00fcssen auf Verlangen der zust\u00e4ndigen Beh\u00f6rde sp\u00e4testens 6 Monate nach Abschluss der Arbeiten der zust\u00e4ndigen Beh\u00f6rde oder den zust\u00e4ndigen Beh\u00f6rden \u00fcbermittelt werden. (GeolDG \u00a7 10 Abs. 2) Bei Neubearbeitungen, die ein Jahr oder l\u00e4nger in Anspruch nehmen, sind j\u00e4hrliche \u00fcbermittlungen vorzunehmen. (GeolDG \u00a7 15 Abs. 2) Datenqualit\u00e4t, Haftung und Gew\u00e4hrleistung Das LIAG f\u00fchrt die Aufbereitung der Daten mit der \u00fcblichen und angemessenen Sorgfalt durch. Es wird vom LIAG aber keine Gew\u00e4hr f\u00fcr die Fehlerfreiheit der Daten \u00fcbernommen. Eine Gew\u00e4hrleistung f\u00fcr die inhaltliche Richtigkeit der Daten sowie f\u00fcr deren Eignung f\u00fcr die von dem*der Nutzer*in intendierten Zweck wird vom LIAG nicht \u00fcbernommen. Das LIAG haftet nur f\u00fcr vors\u00e4tzliches oder grob fahrl\u00e4ssiges Handeln. Diese Haftungsbeschr\u00e4nkung gilt nicht bei Sch\u00e4den aus der Verletzung des Lebens, des K\u00f6rpers oder der Gesundheit sowie bei Sch\u00e4den aus der Verletzung wesentlicher Vertragspflichten (sog. Kardinalpflichten). Verletzt das LIAG wesentliche Vertragspflichten (Kardinalpflichten), so haftet es auch bei leichter Fahrl\u00e4ssigkeit, jedoch beschr\u00e4nkt auf typische voraussehbare Sach- und Verm\u00f6genssch\u00e4den, nicht jedoch f\u00fcr entgangenen Gewinn, nicht eingetretene Einsparungen, mittelbare Sch\u00e4den und Mangelfolgesch\u00e4den. Schlussbestimmungen Es besteht keine Verpflichtung des LIAG, der*dem Nutzer*in bestimmte Daten zur Verf\u00fcgung zu stellen oder eine M\u00f6glichkeit zum Herunterladen von Daten bereitzustellen. Das LIAG ist berechtigt, die Bereitstellung von Daten und die Nutzung von GeotIS jederzeit einzuschr\u00e4nken oder zu beenden. Das LIAG sichert den Nutzern*innen keine Erreichbarkeit oder Nutzbarkeit von GeotIS zu. Nebenabreden zu diesen Nutzungsbedingungen bestehen nicht. Nebenabreden, Erg\u00e4nzungen oder \u00c4nderungen bed\u00fcrfen der Schriftform. Ausschlie\u00dflicher Gerichtsstand f\u00fcr alle Streitigkeiten ist Hannover. Es gilt deutsches Recht unter Ausschluss des deutschen Kollisionsrechts. Impressum \u2022 Datenschutz \u2022 Nutzungsbedingungen"
+}

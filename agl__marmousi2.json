@@ -1,0 +1,55 @@
+{
+  "record_id": "agl/marmousi2",
+  "checked_at": "2026-10-28T07:05:42+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://www.agl.uh.edu/downloads/downloads.htm"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (1766045 bytes); 16 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1889 characters captured from https://www.agl.uh.edu/downloads/downloads.htm"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://www.agl.uh.edu/downloads/downloads.htm",
+    "content_type": "text/html",
+    "elapsed_ms": 163,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "vp_marmousi-ii.segy.gz",
+      "url": "https://www.agl.uh.edu/downloads/vp_marmousi-ii.segy.gz",
+      "bytes": 1766045,
+      "sha256": "2c7a0c4170c95a15620c2146573711c61a4cef8dc27338ef6c211a81ffa68920"
+    }
+  ],
+  "licence_text_sha256": "6c230590b4ff5abbf20de52ad38d106f388f80f3bb7611196416fbe8763352ad",
+  "licence_text": ":: Downloads - Marmousi2 :: Marmousi2 Model Definition vs_marmousi-ii.segy.gz (1728 KB) vp_marmousi-ii.segy.gz (1725 KB) density_marmousi-ii.segy.gz (1693 KB) Layer Properties Final Horizons Final Horizons GX2 Modeling Grids: model_s-wave_velocity_1.25m.segy.zip (2126 KB) model_p-wave_velocity _1.25m.segy.zip (2306 KB) model _density_1.25m.segy.zip (2143 KB) Modeled Data To request modeled data please contact Michael Welch at the AGL obc_curl_v_1.segy obc_curl_v_2.segy obc_div_v_1.segy obc_div_v_2.segy obc_vx_1.segy obc_vx_2.segy obc_vz_1.segy obc_vz_2.segy surface_p1.segy surface_p2.segy vsp_all_1.sgy vsp_all_2.sgy vsp_all_4g.sgy Processed Data SEGY Time Kirchhoff_PoSTM_time.segy.zip (8848 KB) Kirchhoff_PreSTM_time.segy.zip (7543 KB) SYNTHETIC_time.segy.zip (6476 KB) NMOstack_time.segy.zip (6936 KB) NMOstack_SRME_time.segy.zip (6726 KB) SEGY Depth Density.segy.zip (281 KB) Kirchhoff_PoSDM.segy.zip (5806 KB) Kirchhoff_PoSTM.segy.zip (5882 KB) Kirchhoff_PreSDM.segy.zip (6085 KB) Kirchhoff_PreSTM.segy.zip (6264 KB) NMOstack.segy.zip (4953 KB) NMOstack_SRME.segy.zip (4802 KB) SYNTHETIC.segy.zip (6237 KB) Vp.segy.zip (252 KB) Vs.segy.zip (271 KB) WE_PreSDM.segy.zip (5783 KB) Reports Gary Martin Thesis (2004): Abstract Chapter 1 - Introduction Chapter 2a - Elastic Model Chapter 2b - Elastic Model - Figures (part 1) Chapter 2c - Elastic Model - Figures (part 2) Chapter 2d - Elastic Model - Properties Table Chapter 3a - Synthetic Data Chapter 3b - Synthetic Data - Figures (part 1) Chapter 3c - Synthetic Data - Figures (part 2) Chapter 3d - Synthetic Data - Figures (snapshots) Chapter 4a - Processing Chapter 4b - Processing - Figures (part 1) Chapter 4c - Processing - Figures (part 2) Chapter 5a - AVO Chapter 5b - AVO - Figures (part 1) Chapter 5c - AVO - Figures (part 2) Chapter 6 - Conclusion Chapter 7 - References Web Maintained by: Anoop Williams & Jay Krishnan"
+}

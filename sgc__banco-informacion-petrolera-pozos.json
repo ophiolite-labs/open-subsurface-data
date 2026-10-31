@@ -1,0 +1,65 @@
+{
+  "record_id": "sgc/banco-informacion-petrolera-pozos",
+  "checked_at": "2026-10-28T07:08:42+00:00",
+  "tool_version": "0.1.0",
+  "level": "L3",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://datos-sgcolombiano.opendata.arcgis.com/datasets/55f871d861624b9996e865349ef67253_0"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "whole layer checked (25013 features, esri-json), not a downloadable file; edit date 2022-10-20T15:36:57+00:00 unchanged during paging; listing dated 2022-10-20"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4486 characters captured from http://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "25013 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "25013 features derived from 1 inputs, every input sha256 equal to the stored bytes (min_features 25013)"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://datos-sgcolombiano.opendata.arcgis.com/datasets/55f871d861624b9996e865349ef67253_0",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 150,
+    "reachability": "ok"
+  },
+  "layer_exports": [
+    {
+      "layer": "https://services1.arcgis.com/Og2nrTKe5bptW02d/arcgis/rest/services/Banco_de_Informaci%C3%B3n_Petrolera_Pozos/FeatureServer/0",
+      "format": "esri-json",
+      "features": 25013,
+      "count": 25013,
+      "bytes": 12054174,
+      "sha256": "47a45145d5cf72563832ec3bb99af408e7044667fb877e4067e8232584a64877",
+      "edit_date_before": 1666280217499,
+      "edit_date_after": 1666280217499
+    }
+  ],
+  "licence_text_sha256": "cce65b025f3631a6f1c3cf50c690aa4a9776a4ec72e08d1c572492a084c53b37",
+  "licence_text": "Skip to content Languages available aragon\u00e9s Az\u0259rbaycanca Bahasa Indonesia Basque catal\u00e0 dansk Deutsch eesti English espa\u00f1ol Esperanto fran\u00e7ais frysk Gaeilge galego Hrvatski italiano latvie\u0161u Lietuvi\u0161kai Magyar Melayu Nederlands norsk polski Portugu\u00eas Portugu\u00eas Brasileiro Rom\u00e2n\u0103 slovensky Sloven\u0161\u010dina srpski (latinica) suomi svenska T\u00fcrk\u00e7e \u00cdslenska \u010desky \u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac \u0431\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 \u0420\u0443\u0441\u0441\u043a\u0438\u0439 \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u0627\u0644\u0639\u0631\u0628\u064a\u0651\u0629 \u0641\u0627\u0631\u0633\u06cc \u0939\u093f\u0902\u0926\u0940 \u09ac\u09be\u0982\u09b2\u09be \u65e5\u672c\u8a9e \u7b80\u4f53\u4e2d\u6587 \u7e41\u9ad4\u4e2d\u6587 \ud55c\uad6d\uc5b4 Creative Commons Menu Who We Are Expand Strategic Plan Team Governance Opportunities Annual Reports & Financials History Press What We Do Expand Build Open Infrastructure Expand CC Licenses CC Signals Public Domain Chooser FAQs Implement the Commons Expand Where CC Makes An Impact Resources Search the Commons Engage the People Expand Training + Webinars Advocacy Community Events Blog Support Us Expand Make a Gift Open Infrastructure Circle Donor FAQ Donate Attribution 4.0 International CC BY 4.0 Deed Canonical URL https://creativecommons.org/licenses/by/4.0/ See the legal code You are free to: Share \u2014 copy and redistribute the material in any medium or format for any purpose, even commercially. Adapt \u2014 remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms. Under the following terms: Attribution \u2014 You must give appropriate credit , provide a link to the license, and indicate if changes were made . You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use. No additional restrictions \u2014 You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits. Notices: You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation . No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material. Notice This deed highlights only some of the key features and terms of the actual license. It is not a license and has no legal value. You should carefully review all of the terms and conditions of the actual license before using the licensed material. Creative Commons is not a law firm and does not provide legal services. Distributing, displaying, or linking to this deed or the license that it summarizes does not create a lawyer-client or any other relationship. Creative Commons is the nonprofit behind the open licenses and other legal tools that allow creators to share their work. Our legal tools are free to use. Learn more about our work Learn more about CC Licensing Support our work Use the license for your own material. Licenses List Public Domain List Footnotes return to reference appropriate credit \u2014 If supplied, you must provide the name of the creator and attribution parties, a copyright notice, a license notice, a disclaimer notice, and a link to the material. CC licenses prior to Version 4.0 also require you to provide the title of the material if supplied, and may have other slight differences. More info return to reference indicate if changes were made \u2014 In 4.0, you must indicate if you modified the material and retain an indication of previous modifications. In 3.0 and earlier license versions, the indication of changes is only required if you create a derivative. Marking guide More info return to reference technological measures \u2014 The license prohibits application of effective technological measures, defined with reference to Article 11 of the WIPO Copyright Treaty. More info return to reference exception or limitation \u2014 The rights of users under exceptions and limitations, such as fair use and fair dealing, are not affected by the CC licenses. More info return to reference publicity, privacy, or moral rights \u2014 You may need to get additional permissions before using the material as you intend. More info Creative Commons submit Who we are What we do Blog Support us Store Contact Privacy Policies Terms Contact Us Creative Commons PO Box 1866, Mountain View, CA 94042 info@creativecommons.org Bluesky Mastodon LinkedIn Subscribe to our newsletter Subscribe Except where otherwise noted , content on this site is licensed under a Creative Commons Attribution 4.0 International license . Icons by Font Awesome ."
+}

@@ -1,0 +1,65 @@
+{
+  "record_id": "nd-dmr/wells",
+  "checked_at": "2026-10-28T07:17:22+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.dmr.nd.gov/oilgas/subscriptionservice.asp"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "whole layer checked (44025 features, esri-json), not a downloadable file; stability unknown (the layer states no edit date)"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1148 characters captured from https://www.dmr.nd.gov/oilgas/disclaimer.asp"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "44022 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "derived from bytes that differ from the stored input https://gis.dmr.nd.gov/dmrpublicservices/rest/services/Wells/FeatureServer/0: rerun --outlines, review the diff"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.dmr.nd.gov/oilgas/subscriptionservice.asp",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 201,
+    "reachability": "ok"
+  },
+  "layer_exports": [
+    {
+      "layer": "https://gis.dmr.nd.gov/dmrpublicservices/rest/services/Wells/FeatureServer/0",
+      "format": "esri-json",
+      "features": 44025,
+      "count": 44025,
+      "bytes": 22049989,
+      "sha256": "f9734f4c0ac7e8cabef6826533f1ceeb66bd5c16fbdbfda76428056b14c7bfd9",
+      "edit_date_before": null,
+      "edit_date_after": null
+    }
+  ],
+  "licence_text_sha256": "4601cab0e1c642784899119a58f806da25a534dc403bcab9d71353c1700070bf",
+  "licence_text": "[ ] [ ] Legal Disclaimer Notice: Although we try to keep this information up-to-date and accurate, neither the State of North Dakota, nor any agency, officer, or employee of the State of North Dakota warrants the accuracy, reliability or timeliness of any information published by this system, nor endorses any content, viewpoints, products, or services linked from this system, and shall not be held responsible for any losses caused by reliance on the accuracy, reliability or timeliness of such information. Portions of such information may be incorrect or out of date. Any person or entity that relies on any information obtained from this system does so at his or her own risk. The State of North Dakota makes every effort to provide virus-free files but does not guarantee uncorrupted files Contact Information: If you have any questions about this disclaimer, the practices of this site, or your dealings with this Web site, please contact us at: NDIC Oil & Gas Division 600 E. Blvd. Ave. Dept. 405 Bismarck, ND 58505-0840 telephone: 701.328.8020 e-mail: oilandgasinfo@nd.gov [ DMR Home ] [ Disclaimer ] [ Privacy ] [ Security ] [ Feedback ]"
+}

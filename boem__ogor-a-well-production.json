@@ -1,0 +1,55 @@
+{
+  "record_id": "boem/ogor-a-well-production",
+  "checked_at": "2026-10-28T07:06:12+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.data.boem.gov/Main/OGOR-A.aspx"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (632057 bytes); 235 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "871 characters captured from https://www.data.boem.gov/Main/HtmlPage.aspx?page=Disclaimer"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.data.boem.gov/Main/OGOR-A.aspx",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 634,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "/Production/Files/ogoradelimit.zip",
+      "url": "https://www.data.boem.gov/Production/Files/ogoradelimit.zip",
+      "bytes": 632057,
+      "sha256": "54b4928c6767c3f2bf06d90d70ca670f08e86287c1f92ae78eb98afc379b5335"
+    }
+  ],
+  "licence_text_sha256": "7c957d6a234a242d2e8383e2da295e43b77859eae7eaf077c64eea65ea30c628",
+  "licence_text": "Data Center >> Disclaimer This accessible computer data is from a working database which is derived by entering data from documents submitted to the Federal Government from oil companies, other Government Agencies, and/or the public. Some errors may exist in this data and we are constantly working to find and eliminate them. Copies of the original documents are available for your inspection and copying at our Public Information Office. This computer data is not intended as a legal document and should not be constructed as such. This data is not for navigational use. If you discover problems with this data, please advise and we will address this in our priority schedule to correct our data. Please mail to: GulfPublicInfo@bsee.gov to report such discrepancies. DOI.GOV USA.GOV Inspector General Fees for Services Disclaimers FOIA No Fear Act Accessibility Privacy"
+}

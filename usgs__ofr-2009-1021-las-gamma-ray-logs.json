@@ -1,0 +1,53 @@
+{
+  "record_id": "usgs/ofr-2009-1021-las-gamma-ray-logs",
+  "checked_at": "2026-10-28T07:08:58+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://pubs.usgs.gov/of/2009/1021/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (982712 bytes); 20 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "licence page https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits did not answer (timeout)"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://pubs.usgs.gov/of/2009/1021/",
+    "content_type": "text/html",
+    "elapsed_ms": 485,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "C-Cfiles.zip",
+      "url": "https://pubs.usgs.gov/of/2009/1021/C-Cfiles.zip",
+      "bytes": 982712,
+      "sha256": "b570e62c3da307b10fcbed2ceaf1c29d962a6ebeaf73986a4a9a49efb515959b"
+    }
+  ]
+}

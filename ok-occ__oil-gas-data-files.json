@@ -1,0 +1,55 @@
+{
+  "record_id": "ok-occ/oil-gas-data-files",
+  "checked_at": "2026-10-28T07:08:53+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://oklahoma.gov/occ/divisions/oil-gas/oil-gas-data.html"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (45902533 bytes); 152 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "394 characters captured from https://oklahoma.gov/about/policy-disclaimers.html"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://oklahoma.gov/occ/divisions/oil-gas/oil-gas-data.html",
+    "content_type": "text/html;charset=utf-8",
+    "elapsed_ms": 86,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "/content/dam/ok/en/occ/documents/og/esri/files/RBDMS_WELLS.zip",
+      "url": "https://oklahoma.gov/content/dam/ok/en/occ/documents/og/esri/files/RBDMS_WELLS.zip",
+      "bytes": 45902533,
+      "sha256": "35d7d78855977cee9a21b9a40f32183916be2f202c3512e4b4e9ca5ab50466a8"
+    }
+  ],
+  "licence_text_sha256": "b48309cebbcb336b82b65d146e1ff0249d00595a87b588410b3774537270f87e",
+  "licence_text": "Skip to main content State Agencies Oklahoma.gov Home About Policy Disclaimers Previous Next Pause Play Policy Disclaimers Privacy Policy Accessibility Policy Linking Policy State of Oklahoma Information Security Policy, Procedures, and Guidelines Payment and Refund Policy Copyright Act and Protection Acts Back to Top Oklahoma.gov Policies Accessibility Feedback Copyright \u00a9 State of Oklahoma"
+}

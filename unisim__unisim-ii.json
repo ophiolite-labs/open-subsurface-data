@@ -1,0 +1,53 @@
+{
+  "record_id": "unisim/unisim-ii",
+  "checked_at": "2026-10-28T07:14:17+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/overview"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (3540807 bytes); 44 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "licence page http://opendatacommons.org/licenses/odbl/1.0/ did not answer (timeout)"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.unisim.cepetro.unicamp.br/benchmarks/en/unisim-ii/overview",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 1126,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://www.unisim.cepetro.unicamp.br/benchmarks/files/UNISIM-II-D-BO_deterministic.ZIP",
+      "url": "https://www.unisim.cepetro.unicamp.br/benchmarks/files/UNISIM-II-D-BO_deterministic.ZIP",
+      "bytes": 3540807,
+      "sha256": "dc6bd58649cbf1c82ccaf7f77ac39c9451f7e2473ccd2226c248654cf5ab7646"
+    }
+  ]
+}

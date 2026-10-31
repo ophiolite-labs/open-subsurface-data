@@ -1,0 +1,55 @@
+{
+  "record_id": "ispra/boreholes",
+  "checked_at": "2026-10-28T07:16:12+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://catalogosgi.isprambiente.it/geoportalAdm2/rest/document?id=ispra_rm%3ABoreholes_DT"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (824982 bytes); 1 entries listed; the manifest_url is the file itself"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "5393 characters captured from https://creativecommons.org/licenses/by/4.0/deed.it"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://catalogosgi.isprambiente.it/geoportalAdm2/rest/document?id=ispra_rm%3ABoreholes_DT",
+    "content_type": "text/xml;charset=UTF-8",
+    "elapsed_ms": 752,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "Boreholes_INSPIRE.zip",
+      "url": "https://sgi3.isprambiente.it/download/gml_zip/Boreholes_INSPIRE.zip",
+      "bytes": 824982,
+      "sha256": "cd6c7f4e89d1363cf9d7c6d2aa8217fb89ae6cf6b015b61e38ea68cf5a396fa8"
+    }
+  ],
+  "licence_text_sha256": "d8c19e51b4ae4370f83bf013231d574beef6f731347fbbe5c268070b7979c085",
+  "licence_text": "Vai ai contenuti Lingue disponibili aragon\u00e9s Az\u0259rbaycanca Bahasa Indonesia Basque catal\u00e0 dansk Deutsch eesti English espa\u00f1ol Esperanto fran\u00e7ais frysk Gaeilge galego Hrvatski italiano latvie\u0161u Lietuvi\u0161kai Magyar Melayu Nederlands norsk polski Portugu\u00eas Portugu\u00eas Brasileiro Rom\u00e2n\u0103 slovensky Sloven\u0161\u010dina srpski (latinica) suomi svenska T\u00fcrk\u00e7e \u00cdslenska \u010desky \u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac \u0431\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f \u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 \u0420\u0443\u0441\u0441\u043a\u0438\u0439 \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u0627\u0644\u0639\u0631\u0628\u064a\u0651\u0629 \u0641\u0627\u0631\u0633\u06cc \u0939\u093f\u0902\u0926\u0940 \u09ac\u09be\u0982\u09b2\u09be \u65e5\u672c\u8a9e \u7b80\u4f53\u4e2d\u6587 \u7e41\u9ad4\u4e2d\u6587 \ud55c\uad6d\uc5b4 Creative Commons Menu Who We Are Expand Strategic Plan Team Governance Opportunities Annual Reports & Financials History Press What We Do Expand Build Open Infrastructure Expand CC Licenses CC Signals Public Domain Chooser FAQs Implement the Commons Expand Where CC Makes An Impact Resources Search the Commons Engage the People Expand Training + Webinars Advocacy Community Events Blog Support Us Expand Make a Gift Open Infrastructure Circle Donor FAQ Donate Attribuzione 4.0 Internazionale CC BY 4.0 Atto URL canonico https://creativecommons.org/licenses/by/4.0/ Vedi il codice giuridico Tu sei libero di: Condividere \u2014 riprodurre, distribuire, comunicare al pubblico, esporre in pubblico, rappresentare, eseguire e recitare questo materiale con qualsiasi mezzo e formato per qualsiasi fine, anche commerciale. Modificare \u2014 remixare, trasformare il materiale e basarti su di esso per le tue opere per qualsiasi fine, anche commerciale. Il licenziante non pu\u00f2 revocare questi diritti fintanto che tu rispetti i termini della licenza. Alle seguenti condizioni: Attribuzione \u2014 Devi riconoscere una menzione di paternit\u00e0 adeguata , fornire un link alla licenza e indicare se sono state effettuate delle modifiche . Puoi fare ci\u00f2 in qualsiasi maniera ragionevole possibile, ma non con modalit\u00e0 tali da suggerire che il licenziante avalli te o il tuo utilizzo del materiale. Divieto di restrizioni aggiuntive \u2014 Non puoi applicare termini legali o misure tecnologiche che impongano ad altri soggetti dei vincoli giuridici su quanto la licenza consente loro di fare. Note: Non sei tenuto a rispettare i termini della licenza per quelle componenti del materiale che siano in pubblico dominio o nei casi in cui il tuo utilizzo sia consentito da una eccezione o limitazione prevista dalla legge. Non sono fornite garanzie. La licenza pu\u00f2 non conferirti tutte le autorizzazioni necessarie per l'utilizzo che ti prefiggi. Ad esempio, diritti di terzi come i diritti all'immagine, alla riservatezza e i diritti morali potrebbero restringere gli usi che ti prefiggi sul materiale. Avviso Questo riassunto illustra solo alcuni degli elementi e dei termini chiave della licenza vera e propria. Non \u00e8 una licenza ed \u00e8 privo di valore legale. Devi leggere attentamente tutti i termini e le condizioni della licenza vera e propria prima di utilizzare il materiale concesso in licenza. Creative Commons non \u00e8 uno studio legale e non fornisce servizi legali. La distribuzione, l'esposizione o il collegamento a questo riassunto o alla licenza che esso illustra non instaura un rapporto avvocato-cliente n\u00e9 rapporti di altro tipo. Creative Commons \u00e8 la no profit dietro le licenze libere e altri strumenti legali che permettono ai creator di condividere il proprio lavoro. I nostri strumenti legali possono essere utilizzati gratuitamente. Scopri di pi\u00f9 sul nostro lavoro Scopri di pi\u00f9 su sulle Licenze CC Sostieni il nostro lavoro Utilizza la licenza per il tuo materiale Lista licenze Elenco di pubblico dominio Note a pi\u00e8 pagina return to reference una menzione di paternit\u00e0 adeguata \u2014 Se forniti, devi indicare il nome del creatore e delle altre parti designate a ricevere l'attribuzione di paternit\u00e0, l'informativa sul diritto d'autore, l'informativa sulla licenza, l'informativa sull'esonero da responsabilit\u00e0 e un link al materiale. Le licenze CC antecedenti alla Versione 4.0 richiedono inoltre di indicare il titolo del materiale, se fornito, e possono presentare altre lievi differenze. Maggiori informazioni return to reference indicare se sono state effettuate delle modifiche \u2014 La versione 4.0 delle licenze richiede che tu indichi se il materiale \u00e8 stato modificato e mantenga un'indicazione circa le modifiche antecedenti. La versione 3.0 e quelle precedenti richiedono l'indicazione dei cambiamenti solo nel caso in cui tu abbia creato un'opera derivata. Guida alla marcatura Maggiori informazioni return to reference misure tecnologiche \u2014 La licenza proibisce l'applicazione di misure tecnologiche, come definite dall'articolo 11 del Trattato OMPI sul diritto d'autore. Maggiori informazioni return to reference eccezione o limitazione \u2014 I diritti degli utenti derivanti da eccezioni o limitazioni al diritto d'autore, tra i quali \"fair use\" e \"fair dealing\", non sono pregiudicati dalle licenze CC. Maggiori informazioni return to reference i diritti all'immagine, alla riservatezza e i diritti morali \u2014 Potresti aver bisogno di autorizzazioni aggiuntive prima di utilizzare il materiale nei modi che ti sei prefisso. Maggiori informazioni Creative Commons submit Who we are What we do Blog Support us Store Contact Privacy Policies Terms Contact Us Creative Commons PO Box 1866, Mountain View, CA 94042 info@creativecommons.org Bluesky Mastodon LinkedIn Subscribe to our newsletter Subscribe Except where otherwise noted , content on this site is licensed under a Creative Commons Attribution 4.0 International license . Icons by Font Awesome ."
+}

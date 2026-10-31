@@ -1,0 +1,53 @@
+{
+  "record_id": "fl-dep/oil-gas-permit-database",
+  "checked_at": "2026-10-28T07:09:23+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://floridadep.gov/water/oil-gas/documents/oil-and-gas-permit-database"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (703015 bytes); 135 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "no text at https://www.arcgis.com/home/item.html?id=b63958cdd6ff4c679a2086d6994ef183"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://floridadep.gov/water/oil-gas/documents/oil-and-gas-permit-database",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 444,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://floridadep.gov/sites/default/files/OG_WELLS_WEBSITE_4.xlsx",
+      "url": "https://floridadep.gov/sites/default/files/OG_WELLS_WEBSITE_4.xlsx",
+      "bytes": 703015,
+      "sha256": "d69d530d5efc173780435cdf7e4c2d772b7c0684e03e8fa756fb70a6b960ae2e"
+    }
+  ]
+}

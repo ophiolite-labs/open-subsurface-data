@@ -1,0 +1,61 @@
+{
+  "record_id": "nlog/nlog",
+  "checked_at": "2026-10-28T07:11:31+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.nlog.nl/en/data"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (56704710 bytes); 65 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "7114 characters captured from https://www.nlog.nl/disclaimer"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "7220 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "derived from bytes that differ from the stored input https://www.gdngeoservices.nl/geoserver/nlog/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=nlog:gdw_ng_smc_grid_utm: rerun --outlines, review the diff"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.nlog.nl/en/data",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1214,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://www.nlog.nl/sites/default/files/2026-09/thematische_data_boringen.zip",
+      "url": "https://www.nlog.nl/sites/default/files/2026-09/thematische_data_boringen.zip",
+      "bytes": 56704710,
+      "sha256": "fd90d756df002a42a86306e49a5b704877f1e2104aeb6c9c6a984fab31070a4b"
+    }
+  ],
+  "licence_text_sha256": "2e9eb9a733aee843ada248155a1bb1b70ecbb7a0bed8a1082c1159710e4ae8aa",
+  "licence_text": "Overslaan en naar de inhoud gaan Overslaan en naar de footer gaan NLOG Nederlands ondergrondportaal Menu collapsed Hoofdnavigatie Home Data Boringen Seismische data Productie en injectie data Gasvelden Modellen, kaarten en datasets Dashboards Kernhuis van de Geologische Dienst Wetenschappelijke artikelen Activiteiten Olie en gas Aardwarmte Ondergrondse opslag Zout CO2 opslag Wet- en regelgeving Wetgeving Administratieve procedures Data aanleveren op het Innameportaal Vergunningen Olie en gas vergunningen Activiteitenniveau Aardwarmte vergunningen Omgevingsvergunningen mijnbouw Handreiking aanvraag vergunningen Mijnbouweffecten Publieke SDRA Groningen SDRA Geothermie & Integriteit afdichtend pakket Seismisch respons en beheerssysteem voor geothermie Bodemdaling Ge\u00efnduceerde seismiciteit Kennisbank Disclaimer De voorwaarden van deze disclaimer zijn van toepassing op deze website (http://www.nlog.nl), de website is een samenwerkingsverband van het Ministerie van Economische Zaken en TNO-AGE, NLOG.NL en de TNO-adviesgroep economische zaken van de Nederlandse Organisatie voor toegepast-natuurwetenschappelijk onderzoek TNO. Waar op de website NLOG.NL wordt genoemd wordt steeds dit samenwerkingsverband bedoeld, alsmede elk van de deelnemers aan dit samenwerkingsverband afzonderlijk. Door de website te gebruiken stemt u in met deze disclaimer. Gebruik Ongeautoriseerd of oneigenlijk gebruik van de website of de inhoud daarvan kan een inbreuk op intellectuele eigendomsrechten, regelgeving m.b.t. privacy, publicatie en/of communicatie in de breedste zin van het woord opleveren. U bent verantwoordelijk voor al hetgeen u vanuit de website verzendt. Het is niet toegestaan om de normale werking van deze site te verstoren of de integriteit daarvan te schenden. Hieronder wordt mede begrepen het veranderen van de inhoud, evenals het kraken en hacken van de website. NLOG.NL behoudt zich het recht voor, om welke reden dan ook, het ter beschikking stellen van de website en/of van bepaalde diensten die op de webpagina zijn aangeboden, te be\u00ebindigen of de toegang daartoe te beperken. Hoewel NLOG.NL zorgvuldigheid heeft betracht om de juistheid van de informatie zoals vermeld op de website te verzekeren, aanvaardt NLOG.NL geen verantwoordelijkheid daarvoor. Alle inhoud wordt verstrekt \u201cin staat waarin het zich bevindt\u201d en \u201czoals beschikbaar\u201d. Beslissingen die u neemt op basis van deze informatie zijn voor uw eigen rekening en risico. NLOG.NL geeft geen garantie met betrekking tot de beveiliging van deze website. Hoewel NLOG.NL redelijkerwijs al het mogelijke doet om deze website virusvrij te houden, kan hiervoor geen garantie worden gegeven. NLOG.NL garandeert niet dat deze website foutloos of ononderbroken zal functioneren. Uitsluiting van aansprakelijkheid In geen enkel geval zijn NLOG.NL, de individuele deelnemers aan dit samenwerkingsverband, haar bestuurders, directeuren en/of medewerkers aansprakelijk ten aanzien van directe en/of indirecte, immateri\u00eble of gevolgschade met inbegrip van gederfde winst of inkomsten en verlies aan contracten of orders, die op enigerlei wijze voortvloeit of verband houdt maar niet beperkt hoeft te zijn tot: Defecten, virussen of overige onvolkomenheden aan apparatuur en andere software in verband met de toegang tot of het gebruik van deze website; Het onderscheppen, wijzigen of oneigenlijk gebruik van informatie die aan NLOG.NL of aan u wordt gezonden; De werking of het niet-beschikbaar zijn van deze website; Misbruik van deze website; Verlies van gegevens; Het downloaden of gebruiken van software die via deze website beschikbaar wordt gesteld; of aanspraken van derden in verband met gebruik van deze website. De uitsluiting van aansprakelijkheid geldt ook indien NLOG.NL op de hoogte is gesteld van de mogelijkheid van het optreden van dergelijke schade. Intellectuele eigendomsrechten NLOG.NL claimt geen rechten (behalve domeinnamen, merkenrechten, octrooien en andere intellectuele eigendomsrechten) met betrekking tot de op of via deze website aangeboden informatie. Het is toegestaan informatie op deze website te kopi\u00ebren, te downloaden of op enigerlei wijze openbaar te maken, te verspreiden of te vereenvoudigen zonder voorafgaande schriftelijke toestemming van NLOG.NL of de rechtmatige toestemming van de rechthebbende. Het is, mits met bronvermelding, tevens toegestaan om de informatie en/of vormgeving te kopi\u00ebren, te vermenigvuldigen of te bewerken. Informatie van derden Deze website kan hyperlinks naar andere websites bevatten die niet onder de controle staan van NLOG.NL. Deze hyperlinks zijn enkel voor uw gemak opgenomen en betekenen niet dat op of via deze websites aangeboden informatie, producten of diensten door NLOG.NL worden aanbevolen. Het gebruik van dergelijke hyperlinks is volledig voor eigen risico. NLOG.NL aanvaardt geen enkele verantwoordelijkheid of aansprakelijkheid met betrekking tot de inhoud, het gebruik of de beschikbaarheid van dergelijke websites. Gebruik software Op software die kan worden gedownload van deze website is de toepasselijke licentieovereenkomst van toepassing. Behoudens voor zover anders bepaald in de toepasselijke licentieovereenkomst, wordt de software verstrekt enkel voor gebruik door eindgebruikers en is het maken van enige verdere kopie\u00ebn, reproducties of het verder distribueren van de software uitdrukkelijk verboden. Met betrekking tot de software gelden uitsluitend garanties voor zover uitdrukkelijk bepaald in de toepasselijke licentieovereenkomst. NLOG.NL wijst nadrukkelijk enige andere garantie van welke aard dan ook, daaronder mede inbegrepen garanties met betrekking tot de verkoopbaarheid, geschiktheid voor een bepaald doel of een garantie dat de software niet inbreuk maakt op enig recht, van de hand. Wijzigingen De voorwaarden van de disclaimer kunnen door NLOG.NL te allen tijde gewijzigd worden. Wijzigingen treden in werking vanaf het moment dat ze op deze website gepubliceerd zijn. NLOG.NL behoudt zich het recht voor de website naar eigen inzicht en op ieder door haar gewenst moment te veranderen of te be\u00ebindigen, zonder voorafgaande waarschuwing. NLOG.NL is niet aansprakelijk voor de gevolgen van verandering of be\u00ebindiging. Diversen Deze disclaimer is vertaald in het Engels. Indien de Engelse versie discrepanties vertoont of tot interpretatieverschillen leidt, is de versie in de Nederlandse taal doorslaggevend. Op deze website en disclaimer is Nederlands recht van toepassing. Alle geschillen, verband houdend met deze website of disclaimer, zullen ter uitsluitende beslechting worden voorgelegd aan de bevoegde rechter te \u2019s-Gravenhage. Persoonlijke gegevens verstrekt of verzameld via of in verband met deze website, zullen uitsluitend worden gebruikt overeenkomstig de voorwaarden van \u2019het privacy statement van TNO. Vragen en klachten die betrekking hebben tot de website dienen gericht te worden tot NLOG.NL. U kunt online contact met ons opnemen via support@geologischedienst.nl Versie 9 augustus 2016 Afbeelding Service Contact Veelgestelde vragen English Over deze site Disclaimer Toegankelijkheid Privacy statement Cookies"
+}

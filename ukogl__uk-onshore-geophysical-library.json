@@ -1,0 +1,55 @@
+{
+  "record_id": "ukogl/uk-onshore-geophysical-library",
+  "checked_at": "2026-10-28T07:08:42+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://ukogl.org.uk/blog/archives/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (214639 bytes); 43 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "3986 characters captured from https://ukogl.org.uk/blog/about/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://ukogl.org.uk/blog/archives/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 2335,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://ukogl.org.uk/blog/wp-content/uploads/2024/04/UK-Onshore-BHT-Bottom-Hole.xlsx",
+      "url": "https://ukogl.org.uk/blog/wp-content/uploads/2024/04/UK-Onshore-BHT-Bottom-Hole.xlsx",
+      "bytes": 214639,
+      "sha256": "051571dcbe2b5602e74d319d77b35b1c022c4776a5c601b28f144fcc7801e4c9"
+    }
+  ],
+  "licence_text_sha256": "b67adf9e0ae16a2b42dc8d4ebde317c9c5821b95ccd7ab4868ff603ffa2b054c",
+  "licence_text": "UK Onshore Geophysical Library A charitable body providing a substantial open-access resource of commercial data on the deep geology beneath our feet \u2013 promoting education, research and development Menu Skip to content Home About Us Archives Web Map Publications Academic Support Contact Us About Us History The UK Onshore Geophysical Library (UKOGL or the Library) was established as registered charity in 1994 to manage the archive and official release of 2D and 3D seismic recorded over landward areas of the UK. At the time UKOGL was set up these data were dispersed, held on deteriorating media and were in real danger of being lost to the nation. UKOGL was founded to ensure that this resource was located, recovered, reconciled and saved for the national archive, an objective which has now been achieved. The scope of UKOGL has expanded to include the archiving of other geological and geophysical data. The main charitable objectives of UKOGL are to advance education for the public benefit converning the geological and geophysical data relating to the subsirface of the United Kingdom by establishing and maintaining a national collection of such data, making such data available to the general public and promoting and facilitating research into the deep geology and underground resources of landward areas of the United Kingdom. UKOGL data are used to support varied commercial and government projects including minerals, oil and gas, water, geothermal energy, carbon capture and storage, hydrogen storage and environmental work. The Library constitutes a very important source of data for academic research. The Library invests in the next generation of geoscientists and has provided direct funding for related graduate and teach training schemes, educational websites, talks and special events. Originally funded by revenues raised from data licensing, Government funding for specific projects and donations, following the transfer of copies of English data to the NSTA\u2019s National Data Repository, the Library now provides data free of charge* to all interested parties and is a self-sustaining independent charity funded by donations. Administration UKOGL itself has no permanent members of staff. The activities and policies of the Library are implemented by a non-renumerated executive Chair, overseen by a Board of Trustees selected to represent the interests of both industry and academia. The Board meets at quarterly intervals throughout the year to review activity and formulate new initiatives. Board of Trustees Mr Mark Abbott \u2013 Chair \u2013 Egdon Resources Dr Malcolm Butler \u2013 (former Chair) \u2013 retired Mr Graham Heard \u2013 Horizon Energy Partners Prof Mads Huuse \u2013 University of Manchester Mr Eric King \u2013 retired Dr Tim Pharaoh \u2013 retired Prof John Underhill \u2013 University of Aberdeen Dr Dorothy Satterfield \u2013 retired Dr Jonathon Turner \u2013 retired Lynx Information Systems Ltd provide ad-hoc technical management, archiving, data retrieval, sales and day-to-day administration of the Library. Lynx staff report directly to the Trustees on UKOGL matters, ensuring that the policies of the Board are fully implemented. * Charges apply for output of digital pre-stack data UKOGL is an independent charity now funded by donations from supporters of the services provided DONATE Search for: Supplemental Resources Industry Activity Reports Regional and Government Studies Prospecting Licence History Local Geological Groups William Smith\u2019s Maps Recent News Beneath Britain Academic Paper Publications 22 July 2026 Licence Relinquishment Reports \u2013 Data Release 22 April 2026 UKOGL makes available field statics reports from onshore seismic surveys 30 January 2026 UK Onshore Relinquishment Reports Release 7 January 2026 UKOGL makes major additions to its online oil and gas well archive 21 March 2025 News Archives UKOGL's Mastodon Feed @ukogl@mastodon.world Copyright \u00a9 2026 UK Onshore Geophysical Library. All Rights Reserved. Privacy and Cookie Policy Powered by WordPress"
+}

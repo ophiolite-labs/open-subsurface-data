@@ -1,0 +1,47 @@
+{
+  "record_id": "co2datashare/sleipner-2019-benchmark-model",
+  "checked_at": "2026-10-28T07:05:59+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://co2datashare.org/dataset/sleipner-2019-benchmark-model"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1559 characters captured from https://co2datashare.org/view/license/5c681b1f-04af-4c09-8ec0-febb16ce6fc8"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://co2datashare.org/dataset/sleipner-2019-benchmark-model",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 1191,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "022d0ef13890322e449795429fdc8dff8e79343737ecd515d2ba209c468edeb0",
+  "licence_text": "Skip to main content Log in Register Datasets Organizations About Search Datasets... License view page License information License name SLEIPNER CO2 REFERENCE DATASET LICENSE Description SLEIPNER CO2 REFERENCE DATASET LICENSE THIS IS A HUMAN-READABLE SUMMARY OF AND NOT A SUBSTITUTE FOR THE LICENSE (link to full license provided below) You are free to: Download and use the Licensed Material for non-commercial and commercial purposes Create, produce and reproduce Adapt ed Material Share the Licensed Material and/or the Adapted Material Under the following terms: You may not sell the Licensed Material. You must give the Sleipner Group credit (see the Sleipner CO2 Reference Dataset License for Sleipner group members), and provide a link to these terms and conditions, as well as a copyright notice if applicable. You may not share Adapted Material under a license that prevents recipients from complying with these terms and conditions. You shall not use the Licensed Material in a manner that appears misleading nor present the Licensed Material in a distorted or incorrect manner. This license is based on CC BY 4.0 license, two important changes are: - The licensed material may not be sold - The license covers all data in the dataset whether or not it is by law covered by copyright Link https://co2datashare.org/sleipner-2019-benchmark-model/static/license.pdf Is referenced by the following dataset(s): sleipner-4d-seismic-dataset sleipner-2019-benchmark-model sleipner-gravity-data Powered by CKAN Hosted by Sigma2 Managed by SINTEF Part of NCCS"
+}

@@ -1,0 +1,66 @@
+{
+  "record_id": "sgudds/register-geotermalnych-vrtov",
+  "checked_at": "2026-10-28T07:21:18+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "skip",
+      "detail": "blocked from this runner (HTTP 403, HTTP 403 from https://www.geology.sk/geoinfoportal/mapovy-portal/registre-geofondu/vrty/); blocked since 2026-10-23"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "whole layer checked (307 features, esri-json), not a downloadable file; stability unknown (the layer states no edit date)"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "7502 characters captured from https://www.geology.sk/licencie-a-citacie-2/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "307 features"
+    },
+    {
+      "name": "outline-derived",
+      "level": "L3",
+      "outcome": "pass",
+      "detail": "307 features derived from 1 inputs, every input sha256 equal to the stored bytes (min_features 307)"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 403,
+    "final_url": "https://www.geology.sk/geoinfoportal/mapovy-portal/registre-geofondu/vrty/",
+    "content_type": "text/html; charset=iso-8859-1",
+    "elapsed_ms": 700,
+    "reachability": "blocked",
+    "blocked_since": "2026-10-23T16:31:40+00:00"
+  },
+  "layer_exports": [
+    {
+      "layer": "https://ags.geology.sk/arcgis/rest/services/Geofond/Vrty_all/MapServer/2",
+      "format": "esri-json",
+      "features": 307,
+      "count": 307,
+      "bytes": 337971,
+      "sha256": "ee4b13d182e3b245c5974f54fbb6d13528c7549a53599b992da9fd20ca44bb3c",
+      "edit_date_before": null,
+      "edit_date_after": null
+    }
+  ],
+  "licence_text_sha256": "3ea7b086897682b75bc009de44be470067529a15f692440d47dca39de9c0899e",
+  "licence_text": "Skip to content Facebook page opens in new window Search: \u20ac 0.00 0 View Cart Checkout No products in the cart. Subtotal: \u20ac 0.00 View Cart Checkout Mapa stranok \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara zabezpe\u010duje v\u00fdkon \u0161t\u00e1tnej geologickej slu\u017eby v Slovenskej republike MENU MENU Aktivity Medzin\u00e1rodn\u00e1 spolupr\u00e1ca Aktuality Geologick\u00e9 \u00falohy | Projekty Veda a v\u00fdskum Monitoring, informatika a dokument\u00e1cia Edi\u010dn\u00e1, propaga\u010dn\u00e1 a vzdel\u00e1vacia \u010dinnos\u0165 Projekty medzin\u00e1rodnej spolupr\u00e1ce PROJEKTY SPOLUFINANCOVAN\u00c9 E\u00da Prebiehaj\u00face projekty Ukon\u010den\u00e9 projekty Mapy a d\u00e1ta Mapov\u00e9 aplik\u00e1cie Geologick\u00e9 mapy Geofyzik\u00e1lne mapy N\u00e1u\u010dn\u00e1 geol\u00f3gia Atlasy Tematick\u00e9 aplik\u00e1cie Registre Geofondu Geoport\u00e1l REPowerEU \u2013 podpora udr\u017eate\u013enej energetiky Monitoring environment\u00e1lnych z\u00e1\u0165a\u017e\u00ed Dekora\u010dn\u00e9 kamene Star\u00e9 geologick\u00e9 mapy eGeo.sk Ohlasovanie geologick\u00fdch pr\u00e1c N\u00e1vrh na ur\u010denie prieskumn\u00e9ho \u00fazemia Stanovisko k \u00fazemn\u00e9mu pl\u00e1novaniu S\u00fahrnn\u00e1 bilancia z\u00e1sob Poskytovanie \u00fadajov Licencie a cit\u00e1cie Novinky Slu\u017eby Laborat\u00f3ri\u00e1 Geoanalytick\u00e9 laborat\u00f3ri\u00e1 Laborat\u00f3rium elektr\u00f3novej mikroanal\u00fdzy Laborat\u00f3rium izotopovej geol\u00f3gie Laborat\u00f3rium aplikovanej technol\u00f3gie nerastn\u00fdch surov\u00edn Laborat\u00f3rium in\u017einierskej geol\u00f3gie Digit\u00e1lny arch\u00edv \u00dastredn\u00e1 geologick\u00e1 kni\u017enica Katal\u00f3g \u00fastrednej geologickej kni\u017enice Publika\u010dn\u00e1 \u010dinnos\u0165 pracovn\u00edkov \u0160G\u00daD\u0160 Geofond Vydavate\u013esk\u00e1 \u010dinnos\u0165 Geol\u00f3gia pre v\u00e1s Sp\u00fdtajte sa geol\u00f3ga Slovensk\u00e1 chronostratigrafick\u00e1 tabu\u013eka SK \u2013 EN geologick\u00fd slovn\u00edk Stiahnite si E-shop O n\u00e1s Profil \u00fastavu Preh\u013ead \u010dinnosti \u0160G\u00daD\u0160 Z\u00e1kladn\u00e9 dokumenty Kontrakt V\u00fdro\u010dn\u00e9 spr\u00e1vy Organiza\u010dn\u00e1 \u0161trukt\u00fara Hist\u00f3ria Dion\u00fdz \u0160t\u00far Riaditelia \u0160G\u00daD\u0160 Ro\u010denky Geologick\u00e9 mapy \u0160G\u00daD\u0160 Objedn\u00e1vky, fakt\u00fary a VO Centr\u00e1lna evidencia majetku Logo na stiahnutie Pracovn\u00e9 ponuky Kontakty Kontakty Pracovisk\u00e1 Infoservis Korupcia S\u0165a\u017enosti a pet\u00edcie Aktivity Aktuality Geologick\u00e9 \u00falohy | Projekty Veda a v\u00fdskum Monitoring, informatika a dokument\u00e1cia Edi\u010dn\u00e1, propaga\u010dn\u00e1 a vzdel\u00e1vacia \u010dinnos\u0165 Projekty medzin\u00e1rodnej spolupr\u00e1ce Medzin\u00e1rodn\u00e1 spolupr\u00e1ca PROJEKTY SPOLUFINANCOVAN\u00c9 E\u00da Prebiehaj\u00face projekty Ukon\u010den\u00e9 projekty Mapy a d\u00e1ta Mapov\u00e9 aplik\u00e1cie Geologick\u00e9 mapy Geofyzik\u00e1lne mapy N\u00e1u\u010dn\u00e1 geol\u00f3gia Atlasy Tematick\u00e9 aplik\u00e1cie Registre Geofondu Geoport\u00e1l REPowerEU \u2013 podpora udr\u017eate\u013enej energetiky Monitoring environment\u00e1lnych z\u00e1\u0165a\u017e\u00ed Dekora\u010dn\u00e9 kamene Star\u00e9 geologick\u00e9 mapy eGeo.sk Ohlasovanie geologick\u00fdch pr\u00e1c N\u00e1vrh na ur\u010denie prieskumn\u00e9ho \u00fazemia Stanovisko k \u00fazemn\u00e9mu pl\u00e1novaniu S\u00fahrnn\u00e1 bilancia z\u00e1sob Poskytovanie \u00fadajov Licencie a cit\u00e1cie Novinky Slu\u017eby Laborat\u00f3ri\u00e1 Geoanalytick\u00e9 laborat\u00f3ri\u00e1 Laborat\u00f3rium elektr\u00f3novej mikroanal\u00fdzy Laborat\u00f3rium izotopovej geol\u00f3gie Laborat\u00f3rium aplikovanej technol\u00f3gie nerastn\u00fdch surov\u00edn Laborat\u00f3rium in\u017einierskej geol\u00f3gie Digit\u00e1lny arch\u00edv \u00dastredn\u00e1 geologick\u00e1 kni\u017enica Katal\u00f3g \u00fastrednej geologickej kni\u017enice Publika\u010dn\u00e1 \u010dinnos\u0165 pracovn\u00edkov \u0160G\u00daD\u0160 Geofond Vydavate\u013esk\u00e1 \u010dinnos\u0165 E-shop Geol\u00f3gia pre v\u00e1s Sp\u00fdtajte sa geol\u00f3ga Slovensk\u00e1 chronostratigrafick\u00e1 tabu\u013eka SK \u2013 EN geologick\u00fd slovn\u00edk Stiahnite si O n\u00e1s Profil \u00fastavu Preh\u013ead \u010dinnosti \u0160G\u00daD\u0160 Z\u00e1kladn\u00e9 dokumenty Kontrakt V\u00fdro\u010dn\u00e9 spr\u00e1vy Organiza\u010dn\u00e1 \u0161trukt\u00fara Hist\u00f3ria Dion\u00fdz \u0160t\u00far Riaditelia \u0160G\u00daD\u0160 Ro\u010denky Geologick\u00e9 mapy \u0160G\u00daD\u0160 Objedn\u00e1vky, fakt\u00fary a VO Centr\u00e1lna evidencia majetku Logo na stiahnutie Pracovn\u00e9 ponuky Kontakty Kontakty Pracovisk\u00e1 Infoservis Korupcia S\u0165a\u017enosti a pet\u00edcie Licencie a cit\u00e1cie \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara (\u0160G\u00daD\u0160) spr\u00edstup\u0148uje inform\u00e1cie na tomto port\u00e1li v zmysle platnej legislat\u00edvy vo\u013ene a bezplatne prostredn\u00edctvom sie\u0165ov\u00fdch slu\u017eieb a webov\u00fdch aplik\u00e1ci\u00ed. Ukladacie slu\u017eby (pod\u013ea direkt\u00edvy INSPIRE) umo\u017e\u0148uj\u00fa priamy pr\u00edstup ku v\u0161etk\u00fdm dostupn\u00fdm \u00fadajom a tam, kde je to technicky mo\u017en\u00e9, aj stiahnutie \u00fapln\u00fdch s\u00faborov alebo ich \u010dast\u00ed. \ud83d\udcc4 Otvoren\u00e1 licencia Creative Commons V\u0161etky \u00fadaje, ktor\u00e9 s\u00fa na port\u00e1li k dispoz\u00edcii na stiahnutie, podliehaj\u00fa medzin\u00e1rodnej licencii Creative Commons BY 4.0 . Stiahnut\u00edm a n\u00e1sledn\u00fdm pou\u017eit\u00edm \u00fadajov automaticky vyjadrujete s\u00fahlas s podmienkami tejto licencie. Z licencie pre v\u00e1s vypl\u00fdvaj\u00fa tieto povinnosti: Uvies\u0165 autora: Pri ka\u017edom pou\u017eit\u00ed a roz\u0161irovan\u00ed \u00fadajov ste povinn\u00ed jasne uvies\u0165 p\u00f4vod: \u00a9 \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara . Uvies\u0165 zmeny: Ak ste d\u00e1ta akoko\u013evek upravovali \u010di spracov\u00e1vali, mus\u00edte uvies\u0165 sp\u00f4sob a rozsah tejto \u00fapravy. \u26a0\ufe0f D\u00f4le\u017eit\u00e9 upozornenie: V\u0161etky poskytovan\u00e9 d\u00e1ta a inform\u00e1cie maj\u00fa v\u00fdhradne informat\u00edvny charakter . \u0160G\u00daD\u0160 v \u017eiadnom rozsahu nezodpoved\u00e1 za sp\u00f4sob, spr\u00e1vnos\u0165 interpret\u00e1cie ani \u00fa\u010dely, na ktor\u00e9 boli tieto \u00fadaje pou\u017eit\u00e9. \ud83d\udcdd Ako spr\u00e1vne citova\u0165 na\u0161e v\u00fdstupy? Pri pou\u017eit\u00ed d\u00e1t vo va\u0161ich projektoch, \u0161t\u00fadi\u00e1ch alebo vedeck\u00fdch pr\u00e1cach postupujte pod\u013ea nasleduj\u00facich vzorov cit\u00e1ci\u00ed: 1. Cit\u00e1cia celej webovej aplik\u00e1cie \u0160abl\u00f3na: <N\u00e1zov aplik\u00e1cie> [online]. Bratislava: \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara, <Rok internete na spr\u00edstupnenia>. Dostupn\u00e9 na internete: <Webov\u00e1 adresa aplik\u00e1cie>. Pr\u00edklad z praxe: Geologick\u00e1 mapa Slovenska M 1:50 000 [online]. Bratislava: \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara, 2013. Dostupn\u00e9 na internete: https://app.geology.sk/gm50 . 2. Cit\u00e1cia konkr\u00e9tnej mapovej vrstvy / mapy \u0160abl\u00f3na: <Autor>: <N\u00e1zov diela> [online]. Bratislava: \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara, <Rok vydania>. Dostupn\u00e9 na internete: <Webov\u00e1 adresa aplik\u00e1cie>. Pr\u00edklad z praxe: BEZ\u00c1K, V. a kol.: Preh\u013eadn\u00e1 geologick\u00e1 mapa Slovenskej republiky 1 : 200 000 [online]. Bratislava: \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara, 2008. Dostupn\u00e9 na internete: https://app.geology.sk/pgm . \u2696\ufe0f Pr\u00e1vny r\u00e1mec a legislat\u00edva V\u0161etky d\u00e1ta s\u00fa poskytovan\u00e9 v s\u00falade so z\u00e1konom \u010d. 569/2007 Z. z. o geologick\u00fdch pr\u00e1cach (geologick\u00fd z\u00e1kon) a vykon\u00e1vacou vyhl\u00e1\u0161kou M\u017dP SR \u010d. 51/2008 Z. z. v znen\u00ed neskor\u0161\u00edch predpisov. Tieto normy upravuj\u00fa podmienky projektovania, vykon\u00e1vania, vyhodnocovania a kontroly geologick\u00fdch pr\u00e1c. Poskytovanie \u00fadajov a fungovanie tohto port\u00e1lu z\u00e1rove\u0148 reflektuje nasleduj\u00face legislat\u00edvne podklady a \u0161tandardy SR a E\u00da: Infra\u0161trukt\u00fara d\u00e1t: Z\u00e1kon \u010d.362/2015 Z. z., ktor\u00fdm sa men\u00ed a dop\u013a\u0148a z\u00e1kon \u010d. 3/2010 Z. z. o n\u00e1rodnej infra\u0161trukt\u00fare pre priestorov\u00e9 inform\u00e1cie. Pr\u00edstup k inform\u00e1ci\u00e1m: Z\u00e1kon \u010d. 211/2000 Z. z. o slobodnom pr\u00edstupe k inform\u00e1ci\u00e1m a Z\u00e1kon \u010d. 205/2004 Z. z. o zhroma\u017e\u010fovan\u00ed, uchov\u00e1van\u00ed a \u0161\u00edren\u00ed inform\u00e1ci\u00ed o \u017eivotnom prostred\u00ed. Autorsk\u00e9 pr\u00e1va: Z\u00e1kon \u010d. 618/2003 Z. z. o autorskom pr\u00e1ve a pr\u00e1vach s\u00favisiacich s autorsk\u00fdm pr\u00e1vom (Autorsk\u00fd z\u00e1kon). Informa\u010dn\u00e9 syst\u00e9my: Z\u00e1kon \u010d. 275/2006 Z. z. o informa\u010dn\u00fdch syst\u00e9moch verejnej spr\u00e1vy a V\u00fdnos MF SR \u010d. 55/2014 Z. z. o \u0161tandardoch pre ISVS. Strategick\u00e9 dokumenty: Koncepcia geologick\u00e9ho v\u00fdskumu a geologick\u00e9ho prieskumu \u00fazemia SR. KONTAKTY \u0160t\u00e1tny geologick\u00fd \u00fastav Dion\u00fdza \u0160t\u00fara Mlynsk\u00e1 dolina 1, 817 04 Bratislava 11 I\u010cO: 31753604 Telef\u00f3n: 02 / 59375238 (recepcia), 02 / 54773408 (sekretari\u00e1t GR) Kontaktujte n\u00e1s \u00daradn\u00e9 hodiny: pondelok a\u017e piatok: od 9:00 do 14:00 hod. Find us on: Facebook page opens in new window PRACOVISK\u00c1 Slia\u010d K\u00fape\u013en\u00e1 714/38 962 31 Slia\u010d E-mail: secretary@geology.sk Ko\u0161ice Jesensk\u00e9ho 8 040 01 Ko\u0161ice Telef\u00f3n: +421 55 6250043 E-mail: secretary.ke@geology.sk Spi\u0161sk\u00e1 Nov\u00e1 Ves Marku\u0161ovsk\u00e1 cesta 1 052 40 Spi\u0161sk\u00e1 Nov\u00e1 Ves Telef\u00f3n: +421 53 4421241 E-mail: secretary.snv@geology.sk secretary.gal@geology.sk ABOUT US Profil \u00fastavu Organiza\u010dn\u00e1 \u0161trukt\u00fara Objedn\u00e1vky, fakt\u00fary a VO Hist\u00f3ria Sprac\u00favanie osobn\u00fdch \u00fadajov v podmienkach \u0160t\u00e1tneho geologick\u00e9ho \u00fastavu Dion\u00fdza \u0160t\u00fara Vyhl\u00e1senie o pr\u00edstupnosti Intranet OUR SERVICES Geologick\u00e9 \u00falohy | Projekty Veda a v\u00fdskum Monitoring, informatika a dokument\u00e1cia Edi\u010dn\u00e1, propaga\u010dn\u00e1 a vzdel\u00e1vacia \u010dinnos\u0165 Projekty medzin\u00e1rodnej spolupr\u00e1ce Medzin\u00e1rodn\u00e1 spolupr\u00e1ca Go to Top"
+}

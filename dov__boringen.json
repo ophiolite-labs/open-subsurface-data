@@ -1,0 +1,56 @@
+{
+  "record_id": "dov/boringen",
+  "checked_at": "2026-10-28T07:08:18+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.dov.vlaanderen.be/page/boringen"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "not read whole: the feature type counts 188768 features, above the 50000 a whole layer is read to; the one-page export kept as a partial export, not a hashed file"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "6607 characters captured from https://www.dov.vlaanderen.be/page/gebruiksvoorwaarden-dov-services"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.dov.vlaanderen.be/page/boringen",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 689,
+    "reachability": "ok"
+  },
+  "partial_exports": [
+    {
+      "path": "GetFeature export (at most 1000 of 188768 features)",
+      "url": "https://www.dov.vlaanderen.be/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=dov-pub:Boringen&count=1000&outputFormat=application/json",
+      "bytes": 1099847,
+      "sha256": "b23896f095aecc3c0297f26092d261be06b158ae6709c6cd8541e472f4321c81",
+      "partial": true
+    }
+  ],
+  "licence_text_sha256": "a018fb49794c516a73f5766c9f64eac889c99131d514c531d3602f52cad50cf5",
+  "licence_text": "Overslaan en naar de algemene inhoud gaan Databank Ondergrond Vlaanderen Main navigation Home Thema's Voor Experts Kaarten Over DOV Contact Wat? Zoeken Gebruiksvoorwaarden DOV-services De gebruiksvoorwaarden voor DOV-services worden opgesteld rekening houdend met het algemeen juridisch kader en specifieke voorwaarden bij DOV. Deze gebruiksvoorwaarden worden hieronder toegelicht. DOV engageert zich een goede dienstverlening te leveren. De services aangeboden via DOV kunnen door iedereen gebruikt worden. DOV geeft als aanbieder van de services geen garanties t.a.v. de werking van de services, noch t.a.v. de juistheid van de aangeboden informatie. Door het gebruik van de service verbindt elke gebruiker of raadpleger er zich toe om zich te houden aan de toegangs- en gebruiksbepalingen van de in de service aangeboden gegevens. Gelieve de toegangs- en gebruiksbepalingen te raadplegen in de metadata van alle datasets die in de service worden aangeboden. De DOV-data en diensten zijn toegevoegd aan GDI-Vlaanderen, in uitvoering van het GDI-decreet en voor hergebruik ter beschikking, in uitvoering van het decreet hergebruik. DOV fungeert als een medioknooppunt in de Geografische Data-Infrastructuur die in Vlaanderen tot stand komt in uitvoering van de INSPIRE-richtlijn. Algemeen juridisch kader Algemene gebruiksvoorwaarden die gelden voor data die aan GDI zijn toegevoegd, voor hergebruik ter beschikking zijn en die voortvloeien uit dit juridisch kader, worden in functie van de potenti\u00eble gebruikers en doeleinden, hierna kernachtig samengevat. Er wordt een onderscheid gemaakt tussen burgers, organisaties en bedrijven enerzijds en overheidsinstanties anderzijds. A. Burgers, organisaties en bedrijven Aan de hand van het uitvoeringsbesluit voor het hergebruik van overheidsinformatie heeft de Vlaamse Regering onder andere modellicenties voor hergebruik van overheidsinformatie en open data bepaald. Het ter beschikking stellen van open data is een specifieke vorm van hergebruik waarbij gebruik gemaakt wordt van een 'open licentie' en een open en machinaal leesbaar formaat. Voor de gebruiksvoorwaarden op de DOV-data wordt verder verwezen naar de modellicentie voor gratis hergebruik. Onder deze licentie doet de instantie geen afstand van haar intellectuele rechten, maar mag de data voor eender welk doel hergebruikt worden, gratis en onder minimale restricties. Deze modellicentie is onderaan deze pagina te downloaden B. Overheidsinstanties Deelnemers GDI-Vlaanderen De deelnemer is verplicht : elk onrechtmatig gebruik van de gegevensbron te vermijden; de eigenaar, de beheerder en de verstrekker van de gegevensbron te vrijwaren voor aanspraken van anderen, voortvloeiend uit of verband houdend met de al dan niet onrechtmatige wijze waarop de deelnemer de gegevensbron gebruikt; adequate en afdoende technologische en organisatorische maatregelen te treffen om onrechtmatige toegang tot of onrechtmatig gebruik van de gegevensbron te voorkomen; zich te onthouden van het stellen van handelingen die de beschikbaarheid van de gegevensbron hinderen en zich te onthouden van elk gebruik van de gegevensbron op een wijze die als doel of gevolg heeft schade te berokkenen aan de eigenaar, beheerder of verstrekker ervan; vastgestelde fouten in de gegevensbron onverwijld te melden aan de eigenaar, beheerder of verstrekker ervan; vastgestelde fouten in de gegevensbron onverwijld te melden aan de eigenaar, beheerder of verstrekker; volgende bronvermelding op te nemen: \"GDI-Vlaanderen\". Niet-deelnemers GDI-Vlaanderen De instantie is verplicht : elk onrechtmatig gebruik van de gegevensbron te vermijden; de eigenaar, de beheerder en de verstrekker van de gegevensbron te vrijwaren voor aanspraken van anderen, voortvloeiend uit of verband houdend met de al dan niet onrechtmatige wijze waarop de instantie de gegevensbron gebruikt; adequate en afdoende technologische en organisatorische maatregelen te treffen om onrechtmatige toegang tot of onrechtmatig gebruik van de gegevensbron te voorkomen; zich te onthouden van het stellen van handelingen die de beschikbaarheid van de gegevensbron hinderen en zich te onthouden van elk gebruik van de gegevensbron op een wijze die als doel of gevolg heeft schade te berokkenen aan de eigenaar, beheerder of verstrekker ervan; volgende bronvermelding op te nemen: \"GDI-Vlaanderen\". Verdere toelichting omtrent dit juridisch kader in Vlaanderen is beschikbaar op de de website van Geopunt Vlaanderen . Inzicht in de Europese context wordt geboden op de INSPIRE-website . Specifieke gebruiksvoorwaarden DOV De DOV datasets zijn via de beschikbare toepassingen kosteloos en zonder formaliteiten te (her)gebruiken. Er is dus geen aanvraagprocedure te volgen, tenzij voor een beperkt aantal datasets waarvoor we extra duiding willen voorzien. Deze datasets kunnen worden opgevraagd via eenvoudige e-mail aan dov@vlaanderen.be . Wat van toepassing is, wordt duidelijk gemaakt in de metadata van elke dataset. Samengevat gelden volgende gebruiksvoorwaarden bij gebruik/hergebruik: 1. Bronvermelding bij visualiseren van DOV-data: GDI-Vlaanderen bij verwerken van DOV-data (bv rapportage, ...): Databank Ondergrond Vlaanderen (vermelding van de specifieke gegevens bv. Grondwatermeettnetten) geraadpleegd op dd/mm/jj, op http://dov.vlaanderen.be bij gebruik van achtergrondinformatie op de webpaginas (bv. erosie): Databank Ondergrond Vlaanderen http://dov.vlaanderen.be/dovweb/html/erosie.html eventuele aanvullende bronvermeldingen die per dataset kunnen verschillen, hiervoor wordt naar de metadata van de individuele datasets verwezen. 2. Aansprakelijkheidsregels Er zijn ook de specifieke aansprakelijkheidsregels voor DOV. 3. Legende De gegevens over gevoeligheid voor grondverschuivingen moeten steeds met de bijbehorende legende worden afgebeeld. Engagement DOV DOV kan, zonder enige vorm van schadevergoeding, de wijze van toegang tot de gegevensbron (gegevens en diensten) op elk moment wijzigen, maar streeft hierbij een zo hoog mogelijke comptabiliteit met vorige versies na waarop de gegevensbronnen (gegevens en diensten) ter beschikking worden gesteld. Om een goede dienstverlening te kunnen bieden vragen wij aan de gebruikers van de netwerkdiensten om zich kenbaar te maken bij DOV zodat communicatie mogelijk is in geval van geplande werkzaamheden of onvoorziene omstandigheden. Opmerkingen op en/of eventueel vastgestelde fouten in de datasets of de netwerkdiensten kunnen worden gemeld aan meldpunt@vlaanderen.be . DOV engageert zich zo snel mogelijk eventueel passende aanpassingen door te voeren. Modellicentie Gratis Hergebruik"
+}

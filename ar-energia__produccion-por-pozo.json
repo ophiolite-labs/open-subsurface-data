@@ -1,0 +1,45 @@
+{
+  "record_id": "ar-energia/produccion-por-pozo",
+  "checked_at": "2026-10-28T07:06:03+00:00",
+  "tool_version": "0.1.0",
+  "level": "L0",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "fail",
+      "detail": "HTTP 502 from https://datos.gob.ar/dataset/produccion-de-petroleo-y-gas-por-pozo"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "origin not reachable"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 502,
+    "final_url": "https://datos.gob.ar/dataset/produccion-de-petroleo-y-gas-por-pozo",
+    "content_type": "text/plain; charset=UTF-8",
+    "elapsed_ms": 572,
+    "reachability": "dead"
+  }
+}

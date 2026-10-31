@@ -1,0 +1,45 @@
+{
+  "record_id": "namcor/exploration-production-data",
+  "checked_at": "2026-10-28T07:08:35+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://www.namcor.com.na/technical-data/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://www.namcor.com.na/technical-data/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 2193,
+    "reachability": "ok"
+  }
+}

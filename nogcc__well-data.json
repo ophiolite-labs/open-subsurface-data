@@ -1,0 +1,53 @@
+{
+  "record_id": "nogcc/well-data",
+  "checked_at": "2026-10-28T07:06:43+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from http://nogcc.ne.gov/NOGCCPublications.aspx"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (5438416 bytes); 236 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "http://nogcc.ne.gov/NOGCCPublications.aspx",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 410,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "http://nogcc.ne.gov/Publications/NebraskaWellData_Tops.zip",
+      "url": "http://nogcc.ne.gov/Publications/NebraskaWellData_Tops.zip",
+      "bytes": 5438416,
+      "sha256": "4ab1ab0a0de98202c8b7ca25f6ad3179753b76783ba0305a96d83f9c1bfe6d2d"
+    }
+  ]
+}

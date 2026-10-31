@@ -1,0 +1,45 @@
+{
+  "record_id": "wvges/pipeline-oil-and-gas-well-data",
+  "checked_at": "2026-10-28T07:12:39+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.wvgs.wvnet.edu/www/datastat/datastat.htm"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "fail",
+      "detail": "licence page https://www.wvgs.wvnet.edu/oginfo/pipeline/pipeline2_intro.asp answered HTTP 404"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.wvgs.wvnet.edu/www/datastat/datastat.htm",
+    "content_type": "text/html",
+    "elapsed_ms": 132,
+    "reachability": "ok"
+  }
+}

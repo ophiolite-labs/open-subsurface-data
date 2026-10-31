@@ -1,0 +1,53 @@
+{
+  "record_id": "ancap/bouguer-anomaly-map-of-uruguay",
+  "checked_at": "2026-10-28T07:05:51+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://exploracionyproduccion.ancap.com.uy/15944/3/new-bouguer-anomaly-map-of-uruguay.html"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (1392953 bytes); 133 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://exploracionyproduccion.ancap.com.uy/15944/3/new-bouguer-anomaly-map-of-uruguay.html",
+    "content_type": "text/html;charset=UTF-8",
+    "elapsed_ms": 1209,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://exploracionyproduccion.ancap.com.uy/innovaportal/file/15944/1/bouguer_anomaly.rar",
+      "url": "https://exploracionyproduccion.ancap.com.uy/innovaportal/file/15944/1/bouguer_anomaly.rar",
+      "bytes": 1392953,
+      "sha256": "9688b35edb9b0e72bd949e3395130b0c2520c8faf9ff83d7436f3655775afb45"
+    }
+  ]
+}

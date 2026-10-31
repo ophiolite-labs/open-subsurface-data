@@ -1,0 +1,55 @@
+{
+  "record_id": "boem/well-data",
+  "checked_at": "2026-10-28T07:06:38+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.data.boem.gov/Main/Well.aspx"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (3994904 bytes); 188 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "871 characters captured from https://www.data.boem.gov/Main/HtmlPage.aspx?page=Disclaimer"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.data.boem.gov/Main/Well.aspx",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 584,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "/Well/Files/5010delimit.zip",
+      "url": "https://www.data.boem.gov/Well/Files/5010delimit.zip",
+      "bytes": 3994904,
+      "sha256": "fece6896efeee029d3bebfd9e815a84eb3ed3ac70a0aa814711e5e4059da01eb"
+    }
+  ],
+  "licence_text_sha256": "7c957d6a234a242d2e8383e2da295e43b77859eae7eaf077c64eea65ea30c628",
+  "licence_text": "Data Center >> Disclaimer This accessible computer data is from a working database which is derived by entering data from documents submitted to the Federal Government from oil companies, other Government Agencies, and/or the public. Some errors may exist in this data and we are constantly working to find and eliminate them. Copies of the original documents are available for your inspection and copying at our Public Information Office. This computer data is not intended as a legal document and should not be constructed as such. This data is not for navigational use. If you discover problems with this data, please advise and we will address this in our priority schedule to correct our data. Please mail to: GulfPublicInfo@bsee.gov to report such discrepancies. DOI.GOV USA.GOV Inspector General Fees for Services Disclaimers FOIA No Fear Act Accessibility Privacy"
+}

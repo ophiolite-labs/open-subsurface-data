@@ -1,0 +1,55 @@
+{
+  "record_id": "kgs/oil-gas-wells",
+  "checked_at": "2026-10-28T07:06:34+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://www.kgs.ku.edu/PRS/petroDB.html"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (44028388 bytes); 56 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4094 characters captured from https://www.kgs.ku.edu/General/copyright.html"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://www.kgs.ku.edu/PRS/petroDB.html",
+    "content_type": "text/html",
+    "elapsed_ms": 202,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "/PRS/Ora_Archive/ks_wells.zip",
+      "url": "https://www.kgs.ku.edu/PRS/Ora_Archive/ks_wells.zip",
+      "bytes": 44028388,
+      "sha256": "7d6f2148c08d88a840390bf832bd9d22ea43e3a48a00e7fa2bfef31991db3dab"
+    }
+  ],
+  "licence_text_sha256": "7193bfeca95b2f8a9ffc577d4a9a2c88f69910ca108e560e8c73723c51dacdcd",
+  "licence_text": "Kansas Geological Survey Water Energy Geology Geophysics Publications Education About the KGS Positions Available News Staff Listing Advisory Council Web Server Usage FAQ Geoinformatics Photo Library Wichita Office Lawrence Office KGS Staff Only Use of this Website Information presented on this website has been developed for public use and may be distributed or copied. We strongly recommend that Kansas Geological Survey (KGS) data be acquired directly from a KGS server and not through other sources that may change the data in some way. Any copyright notice contained in this Terms of Use statement or in any other part of this website shall remain intact and unaltered and shall be affixed to any use or copy of all or any such part of this website. The user is granted the right, without any fee or cost, to access, link to and use, publish, distribute, disseminate, transfer, or in any manner alter, modify, revise, copy, edit, or digitize this information. It is unlawful to falsely claim copyright or other rights in KGS material. The user must include an appropriate citation crediting the source of all or any portion of this website and its contents as follows: \"The source of this material is the Kansas Geological Survey website at http://www.kgs.ku.edu/. All Rights Reserved.\" If the user does reuse or redistribute information contained on this site, the user acknowledges that KGS or its affiliates, retains a nonexclusive, royalty-free, perpetual, irrevocable, and full right to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, and display the original information throughout the world in any media. KGS expressly disclaims the applicability of the Uniform Computer Information Transactions Act (UCITA). The name KGS may not be used in any advertising or publicity to endorse or promote any products or commercial entity unless specific written permission is obtained from KGS. By visiting the KGS website, the user agrees that the laws of the state of Kansas and the United States of America, without regard to principles of conflict of laws, will govern these Terms of Use and any dispute that might arise between the user and KGS or its affiliates. By visiting and using this website, the User agrees to abide by all laws of the United States of America, including any applicable export control laws regarding the use of any or all parts of this website. Disclaimer of Warranty The KGS digital data have been tested and their documentation has been carefully reviewed. However, the KGS and its representatives make no warranty or representation, either expressed or implied, with respect to the digital data and their documentation, their quality, performance, merchantability, or fitness for a particular purpose. The digital data are distributed on \"as is\" basis, and the user assumes all risk as to their quality, the results obtained from their use, and the performance of the data. In no event will the KGS or its representatives be liable for any direct, indirect, special, incidental or consequential damages resulting from and defect in the digital data or in their documentation. This disclaimer of warranty is exclusive and in lieu of all others, oral or written, express or implied. No agent or employee is authorized to make any modification, extension, or addition to this warranty. KGS expressly disclaims the applicability of the Uniform Computer Information Transactions Act (UCITA), and any express or implied warranties, including, but not limited to, the implied warranties of noninfringement, merchantability and fitness for a particular purpose. This website may contain links to other websites that do not belong to KGS. Links to these third-party sites will allow the user to leave KGS's website. Any third-party site is outside the domain of and is not under the control of of KGS, and may have a range of license agreements from public domain to commercial. Kansas Geological Survey Updated July 2002. Comments to webadmin@kgs.ku.edu The URL for this page is http://www.kgs.ku.edu/General/copyright.html"
+}

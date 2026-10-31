@@ -1,0 +1,55 @@
+{
+  "record_id": "petrocom-gh/fields-production-data",
+  "checked_at": "2026-10-28T07:06:59+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://petrocom.gov.gh/production-volume/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (597225 bytes); 1 entries listed; the manifest_url is the file itself"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4767 characters captured from https://petrocom.gov.gh/production-volume/"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://petrocom.gov.gh/production-volume/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1528,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "2025-fields-production-data",
+      "url": "https://petrocom.gov.gh/download/2025-fields-production-data/?wpdmdl=24377",
+      "bytes": 597225,
+      "sha256": "1e298a3fa95f4bca3856c216aa098c884ec5201c289594335e77774e9e6faea8"
+    }
+  ],
+  "licence_text_sha256": "c7394bce7d88e808e9c172f3bf264d07cb61b7df9635ffc0b9bf2bef8ac825fc",
+  "licence_text": "Skip to content Rate for Tue 27th Oct 2026 $1 = 11.6558 Follow Us Home About About Us Governing Board Activities Permit Application Procedures New Licensing & Permit Renewal Licensing & Permit Payment Directive Work Permit Renewal Community Relations Local Content E-Portal Local Content Conference Ghana Welding Bureau Upstream Job Portal Resources Exploration History Sedimentary Basins Geophysical Surveys & Commissioned Studies Upstream Operators Production Publications News & Gallery Laws & Regulations Newsletters Magazines & Reports Contact Production Volume Search for: Search Production Fields Jubilee 2026 JUBILEE PRODUCTION Period Oil Production (bbl/d) Gas Production (MMscf/d) Gas Re-injected (MMscf/d) Fuel Gas (MMscf/d) Flared Gas (MMscf/d) Gas Exported to GNGC (MMscf/d) Gas imported to TEN from Jubilee (MMscf) January, 2026 67,256.32 196.22 64.98 14.05 8.48 108.70 - February, 2026 71,987.57 174.78 33.26 12.72 12.18 116.62 - *March, 2026 69,961.94 159.04 26.90 12.86 6.75 112.52 - *April, 2026 71,151.00 163.44 39.83 12.63 6.99 103.99 - May, 2026 68,909.48 175.46 40.73 11.11 8.22 115.11 0.30 June, 2026 76,032.27 191.83 46.97 10.62 10.72 123.52 - July, 2026 August, 2026 September, 2026 October, 2026 November, 2026 December, 2026 2026 JUBILEE LIFTINGS Period Lifiting Party Quantity of Oil Lifted (bbl) 13-Jan-26 KOSMOS ENERGY GHANA INVESTMENTS 906,273.00 26-Jan-26 TULLOW GHANA LIMITED & PETROSA GHANA LIMITED 956,020.00 8-Feb-26 KOSMOS ENERGY GHANA INVESTMENTS 954,540.00 21-Feb-26 GHANA NATIONAL PETROLEUM CORPORATION 954,677.00 6-Mar-26 TULLOW GHANA LIMITED & PETROSA GHANA LIMITED 952,567.00 20-Mar-26 KOSMOS ENERGY GHANA HC 956,410.00 2-Apr-26 TULLOW GHANA LIMITED & PETROSA GHANA LIMITED 955,037.00 16-Apr-26 KOSMOS ENERGY GHANA HC 953,307.00 30-Apr-26 GHANA NATIONAL PETROLEUM CORPORATION 957,054.00 12-May-26 TULLOW GHANA LIMITED & PETROSA GHANA LIMITED 915,226.00 26-May-26 KOSMOS ENERGY GHANA HC 956,001.00 9-Jun-26 TULLOW GHANA LIMITED & PETROSA GHANA LIMITED 952,922.00 24-Jun-26 GNPC EXPLORATION & PRODUCTION COMPANY LTD. 952,170.00 TOTAL 12,322,204.00 TEN 2026 TEN PRODUCTION Period Oil Production (bbl/d) Gas Production (MMscf/d) Gas Re-injected (MMscf/d) Fuel Gas (MMscf/d) Flared Gas (MMscf/d) Gas Exported to GNGC (MMscf/d) Gas imported to TEN from Jubilee (MMscf) January, 2026 14,753.58 149.03 124.14 9.88 14.89 0.12 - February, 2026 14,904.29 149.35 125.85 10.24 11.28 1.98 - March, 2026 15,057.74 150.79 131.22 10.09 9.49 - - April, 2026 14,969.70 149.62 131.09 10.20 8.33 - - 14,969.70 May, 2026 14,637.65 146.99 130.89 10.63 5.61 0.16 0.30 14,637.65 June, 2026 14,535.90 148.71 132.58 10.38 5.43 0.33 - 14,535.90 July, 2026 August, 2026 September, 2026 October, 2026 November, 2026 December, 2026 2026 TEN LIFTINGS Period Lifting Party Quantity Lifted (bbl) 16-Feb-26 TULLOW GHANA LIMITED & PETROSA GHANA LIMITED 995,253.00 5-May-26 KOSMOS ENERGY GHANA HC 947,403.00 TOTAL 1,942,656.00 OCTP Sankofa/Gye Nyame 2026 OCTP / Sankofa-Gye Nyame Production Period Oil Production (bbl/d) Associated Gas Production (MMscf/d) Non - Asssociated Gas Production (MMscf/d) Gas Re-injected (MMscf/d) Fuel Gas (MMscf/d) Flared Gas(MMscf/d) Sales Gas (MMscf/d) January, 2026 29,966.51 173.56 259.93 145.24 10.80 1.01 271.85 February, 2026 28,846.32 173.01 238.24 115.76 10.36 8.93 271.16 March, 2026 28,951.29 170.31 252.17 140.65 10.44 2.10 264.33 April, 2026 28,260.71 171.68 261.27 137.14 10.72 0.26 279.85 May, 2026 26,908.23 170.16 259.63 130.50 10.38 4.23 279.74 June, 2026 25,257.84 168.73 258.02 115.96 10.11 16.86 278.75 July, 2026 August, 2026 September, 2026 October, 2026 November, 2026 December, 2026 2026 OCTP LIFTINGS Period Lifting Party Quantity Lifted (bbl) 23-Jan-26 ENI GHANA EXPLORATION AND PRODUCTION LIMITED 949,114.00 24-Feb-26 VITOL UPSTREAM GHANA LIMITED 949,308.00 27-Mar-26 ENI GHANA EXPLORATION AND PRODUCTION LIMITED 949,100.00 28-Apr-26 VITOL UPSTREAM GHANA LTD 903,614.00 2-Jun-26 ENI GHANA EXPLORATION & PRODUCTION LTD 999,042.00 Total 4,750,178.00 Production Fields Jubilee TEN OCTP Sankofa/Gye Nyame 2025 Fields Production Data 1 file(s) 583.23 KB Download 2024 Fields Production Data 1 file(s) 583 KB Download Production Volume Visit Us Head Office: Plot No 4A George Bush Highway Western Region Office: 3rd floor, GNPC Energy House,-Pobee Biney Road, adjacent to Ghana Secondary Technical School (GSTS) Get In Touch Email: info@petrocom.gov.gh Tel : +233 302 550 933 +233 302 550 934 Featured Post Parliament\u2019s Energy Committee Commends Petroleum Commission\u2019s Sustained Efforts to Strengthen Upstream Industry September 24, 2026 Petroleum Commission Ends AOW26 with Strong Investor Engagement for Ghana\u2019s Hydrocarbon Sector September 7, 2026 Copyright \u00a9 2026 Petroleum Commission, All rights reserved"
+}

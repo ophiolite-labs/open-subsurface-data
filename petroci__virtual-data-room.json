@@ -1,0 +1,47 @@
+{
+  "record_id": "petroci/virtual-data-room",
+  "checked_at": "2026-10-28T07:06:54+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.petrocivirtualdataroom.ci/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "758 characters captured from https://www.petrocivirtualdataroom.ci/diagram.html"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.petrocivirtualdataroom.ci/",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 1168,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "576d84774ce55e5401c89363e67d875242172d6831361766ee8a14488ff7e9d5",
+  "licence_text": "VIRTUAL DATA ROOM Access Virtual Data Room using given credentials to get full insights into blocks you are entitled to : COTE D\u00b4IVOIRE SEDIMENTARY BASIN - OIL AND GAS ACTIVITIES COTE D\u2019IVOIRE Sedimentary Basin Petroleum Geology Oil & Gas Activities Access Procedure Diagram Opened Blocks Areas Abidjan Margin Onshore San Pedro Margin Ultra Deep Virtual data room Connect Request Form Our connections +225 27 20 202 500 infosVDRr@petroci.ci Bo\u00eete Postale BP V 194 Abidjan C\u00f4te d'Ivoire Useful links Petroleum Geology Oil & Gas Activities Diagram Abidjan Margin Onshore San Pedro Margin Ultra Deep Request Form Connect to VDR \u00a9 Copyright 2023 (Petroci Virtual Data Room) All rights reserved A realization Intelligence Multim\u00e9dia Language English French Arabic"
+}

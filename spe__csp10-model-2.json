@@ -1,0 +1,53 @@
+{
+  "record_id": "spe/csp10-model-2",
+  "checked_at": "2026-10-28T07:12:15+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://www.spe.org/web/csp/datasets/set02.htm"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (19476344 bytes); 9 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://www.spe.org/web/csp/datasets/set02.htm",
+    "content_type": "text/html",
+    "elapsed_ms": 250,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "por_perm_case2a.zip",
+      "url": "https://www.spe.org/web/csp/datasets/por_perm_case2a.zip",
+      "bytes": 19476344,
+      "sha256": "12293c23688069c9600d3498c2ca62c59437daf8dbf4c61efec4a0538cb772e0"
+    }
+  ]
+}

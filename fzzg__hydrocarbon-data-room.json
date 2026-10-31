@@ -1,0 +1,47 @@
+{
+  "record_id": "fzzg/hydrocarbon-data-room",
+  "checked_at": "2026-10-28T07:07:50+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://fzzg.gov.ba/soba-sa-podacima"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "licence text changed since 2026-10-28"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://fzzg.gov.ba/soba-sa-podacima",
+    "content_type": "text/html; charset=UTF-8",
+    "elapsed_ms": 861,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "b26d2514c97fcef6d67464989554591c0f58357cd74048000cbeeeb20310ad2b",
+  "licence_text": "Gre\u0161ka na bazi podataka.<br>Molimo kontaktirajte nas na info@mojweb.ba"
+}

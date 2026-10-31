@@ -1,0 +1,55 @@
+{
+  "record_id": "cnsoer/directory-of-offshore-wells",
+  "checked_at": "2026-10-28T07:06:47+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://cnsopbdigitaldata.ca/geoviewer/dmc/public/query/0"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (42654 bytes); 27 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "4455 characters captured from https://cnsoer.ca/website-terms-of-use"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://cnsopbdigitaldata.ca/geoviewer/dmc/public/query/0",
+    "content_type": "text/html;charset=UTF-8",
+    "elapsed_ms": 594,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://cnsopbdigitaldata.ca/geoviewer/dmc/public/dow-2025.xlsx",
+      "url": "https://cnsopbdigitaldata.ca/geoviewer/dmc/public/dow-2025.xlsx",
+      "bytes": 42654,
+      "sha256": "712503e1949701c728f83e6618fc790cd0063e4e9a0befbb897f8e0fdc3b5c5f"
+    }
+  ],
+  "licence_text_sha256": "3eded3b23e8908a51720b956d29b86b41200fa8fef2b721aff7dcf93457e824b",
+  "licence_text": "Skip to main content CNSOER Social Media LinkedIn X EN FR Menu Main navigation Renewable Energy Renewable Energy Renewable Energy Offshore Wind Land Tenure Process NS25-1R Current Activity Lands Management Activity Authorizations Operator Preparedness & Response Monitoring & Compliance Operator Financial Obligations Health, Safety & Environmental Performance Oil & Gas Energy Oil & Gas Energy Oil & Gas Energy Petroleum-Related Call for Bids NS25-1P Current Activity Lands Management Legacy Production Projects Activity Authorizations Operator Preparedness & Response Monitoring & Compliance Operator Financial Obligations Health, Safety & Environmental Performance Regulatory Framework Regulatory Framework Regulatory Framework Legislation and Regulatory Instruments Cost Recovery Board Governance Engagement Engagement Engagement Indigenous Engagement Fishing Sector Engagement Public Comments & Engagement Opportunities About CNSOER About CNSOER About CNSOER What We Do Who We Are Working With Us Contact Us News & Resources News & Resources News & Resources Newsroom External Resources Social Media LinkedIn X EN FR Breadcrumb Home Website Terms of Use Website Terms of Use General Thank you for visiting our website. Our Terms of Use (the Terms) apply to you when you access the Canada-Nova Scotia Offshore Energy Regulator website. Our office is open Monday - Friday from 8 a.m. - 4:30 p.m. and closed on statutory holidays. Our online submissions are monitored regularly during business hours. We respond to most inquiries within two business days; however, we do not respond to inappropriate, incoherent or vulgar communications. Unless otherwise stated, the Canada-Nova Scotia Offshore Energy Regulator (CNSOER) is the owner of all information maintained on the website. The website is provided to make the information accessible to the public and stakeholders. Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited. To seek permission to reproduce any CNSOER materials please contact the Information and Privacy Coordinator at 902-422-5588. Where it is otherwise stated that the materials have been provided by third parties, users should contact those entities to seek permission to reproduce those materials. Disclaimer and Limitation of Liability The CNSOER provides the material available on this website for informational purposes only. You may only use the material for your personal and non-commercial use. We try to ensure that information we post is both timely and accurate. Despite our efforts, however, from time to time content may contain errors. Some information on this website has been provided by third parties to the CNSOER, and in some cases the information on the site is only an excerpt or summary, or is otherwise derived from the information originally provided to the CNSOER. The CNSOER is not responsible or liable for the content or accuracy of third-party information or any material related to the CNSOER that is derived from third-party information. This website might contain links to other Internet sites. The CNSOERis not responsible for the content on external sites, nor is it liable to the user for any consequences resulting from the user linking or attempting to link to external sites. Privacy Statement The CNSOER is committed to protecting the personal privacy of individuals and organizations who visit this website. Any personal information which you supply to the CNSOER via e-mail or correspondence is considered by the CNSOER to be confidential, unless otherwise stated. Such information collected by the CNSOER is protected under the Privacy Act. If you have issues or questions, or wish to access or correct your personal information, please contact the Access to Information and Privacy Coordinator at 902-422-5588. Cookies A cookie is a file that is placed on your device along with your temporary internet files while you are visiting a website. The CNSOER uses cookies on this website to track how visitors navigate the site. We do not store personal information in cookies, nor do we collect personal information from you without your knowledge as you browse. Considerations We reserve the right to amend or remove these Terms at any time without notice. Main navigation Renewable Energy Oil & Gas Energy Regulatory Framework Engagement About CNSOER News & Resources Copyright \u00a9 CNSOER 1990-2026 | All Rights Reserved | Website Terms of Use"
+}

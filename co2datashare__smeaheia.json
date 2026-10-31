@@ -1,0 +1,47 @@
+{
+  "record_id": "co2datashare/smeaheia",
+  "checked_at": "2026-10-28T07:06:11+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://co2datashare.org/dataset/smeaheia-dataset"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1406 characters captured from https://co2datashare.org/view/license/26af9426-203f-4993-9d41-2e1bf191ceaf"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://co2datashare.org/dataset/smeaheia-dataset",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 1971,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "fa5666d6275caeef7e285fe6e45c9b7f761f1fb2b2272ab9805eaca6be3a4e06",
+  "licence_text": "Skip to main content Log in Register Datasets Organizations About Search Datasets... License view page License information License name SMEAHEIA DATASET LICENSE Description SMEAHEIA DATASET THIS IS A HUMAN-READABLE SUMMARY OF AND NOT A SUBSTITUTE FOR THE LICENSE (link to full license provided below) You are free to: Download and use the Licensed Material for non-commercial and commercial purposes Create, produce and reproduce Adapt ed Material Share the Licensed Material and/or the Adapted Material Under the following terms: You may not sell the Licensed Material. You must give Equinor and Gassnova credit, and provide a link to these terms and conditions, as well as a copyright notice if applicable You may not share Adapted Material under a license that prevents recipients from complying with these terms and conditions You shall not use the Licensed Material in a manner that appears misleading nor present the Licensed Material in a distorted or incorrect manner. This license is based on CC BY 4.0 license, two important changes are: The licensed material may not be sold The license covers all data in the dataset whether or not it is by law covered by copyright. Link https://co2datashare.org/smeaheia-dataset/static/SMEAHEIA DATASET LICENSE_Gassnova and Equinor.pdf Is referenced by the following dataset(s): smeaheia-dataset Powered by CKAN Hosted by Sigma2 Managed by SINTEF Part of NCCS"
+}

@@ -1,0 +1,42 @@
+{
+  "format": "osd.custody/1",
+  "record_id": "opm/norne",
+  "path": "norne/plotwells.sh",
+  "origin_href": "https://raw.githubusercontent.com/OPM/opm-data/master/norne/plotwells.sh",
+  "key": "mirror/opm/norne/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96/plotwells.sh",
+  "href": "https://osd-mirror.fsn1.your-objectstorage.com/mirror/opm/norne/58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96/plotwells.sh",
+  "sha256": "58b1c25d01f7dad4629a87b5417257d07f127b73f79f97173eb2f15c71f8ff96",
+  "bytes": 3270,
+  "copied_at": "2026-10-28T06:14:23Z",
+  "verifier_run": {
+    "checked_at": "2026-10-28T05:57:03+00:00",
+    "tool_version": "0.1.0"
+  },
+  "licence": {
+    "name": "Open Database License 1.0 (decks); Database Contents License 1.0 (data)",
+    "spdx": "ODbL-1.0",
+    "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "redistribution": "allowed",
+    "attribution": "required",
+    "share_alike": true
+  },
+  "licence_text_sha256": "41d6e057386562248b6d681ed94529e9ec1609563ca80fa8c87f728a2b4d4f81",
+  "attribution": [
+    "## Norne field simulation case (OPM data)",
+    "",
+    "- Record: opm/norne (collection opm--norne)",
+    "- Origin: https://github.com/OPM/opm-data",
+    "- Licence: Open Database License 1.0 (decks); Database Contents License 1.0 (data) (ODbL-1.0), https://opendatacommons.org/licenses/odbl/1-0/",
+    "- Attribution: required",
+    "- Redistribution: allowed",
+    "- Share-alike: derived work must carry ODbL-1.0",
+    "- Statement: none stated by the publisher in the record",
+    "- Known issue: README adds: git history contains proprietary decks (now removed) where usage restrictions may apply.",
+    "- Known issue: NTNU's own Norne hosting is no longer the source; OPM is the live home (search result, not opened on the NTNU side).",
+    "- Known issue: share_alike is set for the ODbL share-alike clause, not a BY-SA family licence."
+  ],
+  "takedown": "https://github.com/ophiolite-labs/open-subsurface-data/issues/new?template=takedown.yml",
+  "removal": {
+    "state": "held"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "record_id": "swisstopo/deep-wells",
+  "checked_at": "2026-10-28T07:09:20+00:00",
+  "tool_version": "0.1.0",
+  "level": "L2",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://opendata.swiss/en/dataset/tiefe-bohrungen"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "sample, not the whole dataset: 1 of 1 selected files hashed (237568 bytes); 8 entries listed"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "3570 characters captured from https://opendata.swiss/en/terms-of-use"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://opendata.swiss/en/dataset/tiefe-bohrungen",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 1383,
+    "reachability": "ok"
+  },
+  "files": [
+    {
+      "path": "https://data.geo.admin.ch/ch.swisstopo.geologie-bohrungen_tiefer_500/geologie-bohrungen_tiefer_500/geologie-bohrungen_tiefer_500_2056.gpkg",
+      "url": "https://data.geo.admin.ch/ch.swisstopo.geologie-bohrungen_tiefer_500/geologie-bohrungen_tiefer_500/geologie-bohrungen_tiefer_500_2056.gpkg",
+      "bytes": 237568,
+      "sha256": "a8a3c60913b466b5f60975b72e60605bfa0a80f9a0299e6fcecb47efe2c2461f"
+    }
+  ],
+  "licence_text_sha256": "da7769eb9bdd976e47926a3a55ba72b9fed17e1cf1a12556081a1a45d1d1b68c",
+  "licence_text": "Toggle navigation Data Organizations Showcases Dashboard Handbook More \ud83c\udd95 opendata.swiss next Getting started Frequently Asked Questions (FAQ) Terms of use What's opendata.swiss? The OGD community Press and media About us The portal History of the portal \"opendata.swiss next\": the future portal Contact Home Terms of use Terms of use The terms of use for datasets of the federal authorities on opendata.swiss are determined by the existing legal framework. If there is a statutory requirement to cite the source, this is indicated by the appropriate symbol next to the dataset concerned. In all other cases, users are recommended to cite the source. The symbols next to each dataset indicate what use is permitted. All data owners use the same symbols. Table of contents The 4 terms of use Usage model Licences versus terms of use The 4 terms of use Open use You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes. You are recommended to provide the source (author, title and link to the dataset). Open use. Must provide the source. You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes. You must provide the source (author, title and link to the dataset). Open use. Use for commercial purposes requires permission of the data owner. You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes, but you must seek prior permission from the data owner. You are recommended to provide the source (author, title and link to the dataset). Open use. Must provide the source. Use for commercial purposes requires permission of the data owner. You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes, but you must seek prior permission from the data owner. You must provide the source (author, title and link to the dataset). Usage model opendata.swiss provides a usage model for other Swiss authorities and organisations with a mandate from the state. Please contact us if you have any questions. Licences versus terms of use Creative commons (CC) licences are legal contracts that allow copyright holders to establish terms for the reuse of their work, while retaining their rights. By contrast, terms of use can include technical or organisational rules, even where no copyright protection exists. In Switzerland, raw data or datasets (e.g. temperature recordings, demographic statistics) are not generally protected by copyright (source: User licences \u2013 UNIL ). That is why the datasets on opendata.swiss are generally accompanied by terms of use, rather than licences. This approach seeks to maximise transparency for users, while respecting the legal framework applicable to each type of content published. Join our lively community Sign up for our newsletter , read our latest articles or follow us on social media ( LinkedIn , Instagram , Bluesky , Twitter , Facebook, YouTube )! Get involved Learn to publish data Share your showcase Subscribe to NewsMail 16157 Datasets 176 Organizations 14 Categories 140 Showcases A joint project of the Confederation and the cantons The opendata.swiss portal is a joint project of the Confederation, cantons, communes and other organizations with a mandate from the state. It makes open government data available to the general public in a central catalogue. opendata.swiss is operated by the Federal Statistical Office. English Deutsch English Fran\u00e7ais Italiano About Contact Data Organizations Showcases Terms of use Legal framework Sourcecode"
+}

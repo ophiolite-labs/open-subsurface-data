@@ -1,0 +1,47 @@
+{
+  "record_id": "jamstec/seismic-survey-database",
+  "checked_at": "2026-10-28T07:06:22+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 206 from https://www.jamstec.go.jp/obsmcs_db/e/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "nothing to sample (verifier/samples.yaml): the listing is a cruise index with no file addresses"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "3306 characters captured from https://www.jamstec.go.jp/obsmcs_db/e/policy.html"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 206,
+    "final_url": "https://www.jamstec.go.jp/obsmcs_db/e/",
+    "content_type": "text/html",
+    "elapsed_ms": 977,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "52ed34258995ddfa3bbad475d59a29c5f9689fbeec4d4afbf448ced9f56decc4",
+  "licence_text": "Site policy \u30b5\u30a4\u30c8\u30dd\u30ea\u30b7\u30fc Home Site Policy Site Policy Site policy of JAMSTEC Seismic Survey DB Site follows that of JAMSTEC web site . Data Policy Your data provision application will be examined inside. All personal information and application details submitted will be handled and managed appropriately, strictly for the purpose of the examination. In the use of the data and documents of this site, please follow the rules shown below. Data policy of JAMSTEC Seismic Survey DB Site follows Basic Policies on the Handling of Data and Samples by Japan Agency for Marine-Earth Science and Technology . You can freely view the information on JAMSTEC Seismic Survey DB Site, but cannot provide them for any other people. When you use data related to JAMSTEC Seismic Survey DB for your research or studies, please fill in the JAMSTEC Seismic Survey DB Data Request Form and send it. You can use the requested data for academic and educational purposes. You cannot use the data for commercial purposes basically. Your request will be examined inside, and the result will be informed by E-mail. Please contact us even if you do not receive any notification within two weeks. You can\u2019t be permitted to use the data in the case that your request is contrary to the purpose of JAMSTEC Seismic Survey DB or obstruction to research work of JAMSTEC. Your request may be rejected in the use of JAMSTEC Seismic Survey DB against Site policy and Data policy of JAMSTEC Seismic Survey DB site. If you need the waveform data (digital data) which is not shown in this DB site, please confirm by the JAMSTEC Seismic Survey DB Data Request Form . Please note that you may come to YES(Yokohama Institute for Earth Science), JAMSTEC and copy the data in the case of exceptionally large volume data, and please prepare your own digital media for copied data. Please note that there is no further support for processing and analysis of data provided by JAMSTEC. If the data of the JAMSTEC Seismic Survey DB is to be used for publication or conference presentation , it is necessary to submit an application form to request the data usage. Please write clearly that you used the JAMSTEC Seismic Survey DB in that case. In case you will make a presentation in conference or publication, please refer as follows: \"JAMSTEC Seismic Survey Database (2004) Japan Agency for Marine-Earth Science and Technology, https://doi.org/doi:10.17596/0002069 .Accessed DD. Month, YYYY\" Moreover, please write the DOI of this site in the publications as follows: JAMSTEC (2004) JAMSTEC Seismic Survey Database. JAMSTEC. doi:10.17596/0002069 Please provide a copy of research results (scientific papers, articles, abstracts, etc.) that used data from the JAMSTEC Seismic Survey Database to the address. 3173-25, Showa-machi, Yokohama, 236-0001 Japan Agency for Marine-Earth Science and Technology, Research Institute for Marine Geodynamics, JAMSTEC Seismic Survey Database site Please submit your inquiry regarding data in the JAMSTEC Seismic Survey Database by completing the contact form. No phone inquiry will be accepted. Please understand that the data may not be provided due to circumstances at JAMSTEC. Handling of Personal information Personal information is safely and properly handled based on personal information management rule of JAMSTEC ."
+}

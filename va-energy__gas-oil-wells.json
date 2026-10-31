@@ -1,0 +1,57 @@
+{
+  "record_id": "va-energy/gas-oil-wells",
+  "checked_at": "2026-10-28T07:16:22+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://energy.virginia.gov/gas-oil/GasOil.shtml"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "whole layer checked (8606 features, esri-json), not a downloadable file; stability unknown (the layer states no edit date)"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no licence.url"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://energy.virginia.gov/gas-oil/GasOil.shtml",
+    "content_type": "text/html",
+    "elapsed_ms": 97,
+    "reachability": "ok"
+  },
+  "layer_exports": [
+    {
+      "layer": "https://energy.virginia.gov/gis/rest/services/DGO/DGO_wells/MapServer/0",
+      "format": "esri-json",
+      "features": 8606,
+      "count": 8606,
+      "bytes": 4572548,
+      "sha256": "0abb32c9798fe12563fcd7bc23029b7a5d12bca6dd3f3d788b71fd4fe649a9d0",
+      "edit_date_before": null,
+      "edit_date_after": null
+    }
+  ]
+}

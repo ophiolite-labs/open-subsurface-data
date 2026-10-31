@@ -1,0 +1,47 @@
+{
+  "record_id": "pau/petroleum-data",
+  "checked_at": "2026-10-28T07:18:50+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://www.pau.go.ug/about-us/petroleum-data-management/"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "1538 characters captured from https://www.pau.go.ug/about-us/petroleum-data-management"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://www.pau.go.ug/about-us/petroleum-data-management/",
+    "content_type": "text/html; charset=utf-8",
+    "elapsed_ms": 62593,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "6cd393c87b8abadd32cd9123fc3a23a2ac7103eda163fee5082d2031b94db571",
+  "licence_text": "About Us arrow_drop_down Profile Who We Are Board of Directors Executive Management Team Regulatory Areas Resource Management Cost Management and Economic Analysis Environment Health Safety & Security Petroleum Data Management National Participation Stakeholder Engagement Projects arrow_drop_down Exploration Uganda's Petroleum Resources Petroleum Exploration In Uganda Kasuruban Contract Area Kanywataba Contract Area The Ngassa Contract Area Development & Production Field Development Kingfisher Project Tilenga Project Midstream The Uganda Refinery Project East African Crude Oil Pipeline (EACOP) National Participation arrow_drop_down National Suppliers Database Guidelines Register Here Qualified Suppliers NSD Procurements Enterprise And Development Training National Oil & Gas Talent Register Guidelines Register Here Industry Jobs Electronic Work Permit Recommendation System (EWPRS) Register Here Opportunities arrow_drop_down Procurement Bid Notices Career Job Adverts Apply Here Publications arrow_drop_down Publications Policies Laws Regulations Reports Newsletters Conference Bulletins Maps Media arrow_drop_down Media Hub News Events Gallery Posters FAQs Contact Us Search search menu home \\ about us \\ petroleum data management petroleum data management Latest News ASK PAU distance call mail Copyright \u00a92025 Petroleum Authority of Uganda. All rights reserved. Home Follow us on X Follow us on Linkedin Follow us on Instagram Follow us on Facebook Subscribe to our Youtube Channel Close Chat Bot Scroll to Top Send Message"
+}

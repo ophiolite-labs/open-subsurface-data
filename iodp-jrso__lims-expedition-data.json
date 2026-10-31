@@ -1,0 +1,47 @@
+{
+  "record_id": "iodp-jrso/lims-expedition-data",
+  "checked_at": "2026-10-28T07:10:44+00:00",
+  "tool_version": "0.1.0",
+  "level": "L1",
+  "checks": [
+    {
+      "name": "origin-reachable",
+      "level": "L1",
+      "outcome": "pass",
+      "detail": "HTTP 200 from https://iodp.tamu.edu/database/zenodo.html"
+    },
+    {
+      "name": "files-checksummed",
+      "level": "L2",
+      "outcome": "skip",
+      "detail": "no origin.manifest_url"
+    },
+    {
+      "name": "licence-text-captured",
+      "level": "L2",
+      "outcome": "pass",
+      "detail": "3447 characters captured from https://iodp.tamu.edu/about/copyright.html"
+    },
+    {
+      "name": "outline-present",
+      "level": "L3",
+      "outcome": "fail",
+      "detail": "no outlines file"
+    },
+    {
+      "name": "canonical-conversion",
+      "level": "L4",
+      "outcome": "skip",
+      "detail": "no fidelity record (osd verify <id> --fidelity-from)"
+    }
+  ],
+  "origin": {
+    "http_status": 200,
+    "final_url": "https://iodp.tamu.edu/database/zenodo.html",
+    "content_type": "text/html",
+    "elapsed_ms": 454,
+    "reachability": "ok"
+  },
+  "licence_text_sha256": "2644ca8821f669f1d39251a0791ae2e1ace7bd984b4444516c711376e69f53e6",
+  "licence_text": "Skip to main content International Ocean Discovery Program JOIDES Resolution Science Operator Menu International Ocean Discovery Program JOIDES Resolution Science Operator Home Expeditions Schedule Information by Expedition JR Science Reports Laboratories Port Calls and Shipping Medical Exams Drill Site Maps Photo Galleries Participants Participant Information Apply to Sail Submit a Proposal Coring & Transit Time Estimator Medical Exams Export Control Cruise Evaluation Travel & Meetings Travel Information Meeting Schedule IODP Staff Travel Participant Travel Travel Forms, Policies, and Expense Accounts Visitor Information Technology Coring Tools and Technology Downhole Logging Tools Long-Term Observatories Laboratories Data Data Overview Data Available in Zenodo Core data (IODP Exp 317\u2013present) Core data (IODP Exp 301\u2013312, ODP, DSDP) Logging data (IODP, ODP, DSDP) Science Applications Supplementary Information Asset Management System (Staff) Crew & Cruise (Staff) User Guides and Laboratory Manuals Technical Documents (Guests) Technical Documents (Staff) Policies Samples Sample/Data Request Gulf Coast Core Repository (GCR) Bremen Core Repository (BCR) Kochi Core Center (KCC) Permanent Archives Frozen Microbiology Samples Micropaleontological Reference Centers (MRCs) Policies Publications IODP Publications Home Proceedings volumes Preliminary Reports Scientific Prospectuses Logging Summaries Citation and Bibliographic Info Browse By Topic Technical Notes Reports and Program Plans Facility Assessment Authors Outreach Social Media joidesresolution.org MerlinOne (photo archive) News Photos Education Program History Related Sites IODP Advisory Panels National Science Foundation Lamont-Doherty Earth Observatory Deep Sea Drilling Project Ocean Drilling Program Integrated Ocean Drilling Program Texas A&M University About About the JRSO Employee Directory Intranet Employment Vendors Merchandise Search Licensing Statement Licensing Statement IODP data and samples are typically protected by a 1-year postcruise moratorium, during which time data and samples from a particular expedition are available only to that expedition\u2019s science party and approved shore-based participants. Longer moratorium periods will be in effect for expeditions where sampling takes place postcruise at a shore-based repository. Except where otherwise noted, expedition photos and publications are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license ( https://creativecommons.org/licenses/by/4.0/ ). Unrestricted use, distribution, and reproduction are permitted, provided the original author and source are credited. Expedition photos are provided for free public use provided the International Ocean Discovery Program (IODP), JOIDES Resolution Science Operator (JRSO), and photographer (when known) are acknowledged in the caption or credits accompanying each photo. Expedition maps are provided for free use by researchers, policy makers, the media, and the public. If you have questions, please contact the Webmaster . The content of this website is based upon work supported by the IODP JRSO, which is a major facility fully funded by the National Science Foundation. Webmaster \u2022 Licensing \u2022 JRSO Code of Conduct The content of this website is based upon work supported by the IODP JRSO, which is a major facility fully funded by the National Science Foundation. Webmaster \u2022 Licensing \u2022 JRSO Code of Conduct"
+}
