@@ -16,7 +16,10 @@ Stop rule met: the archive carries `AAA readme_license.txt` (GA data CC BY 3.0 A
 and well import named) and Occam Technology's README (spliced logs CC-BY, acknowledge). The page label
 BY-SA 3.0 stays the recorded licence as the stricter one (record known_issues updated, kinds now add
 wellbore-logs and tops, deposit sha recorded). E44 table row and the gap assessment's Q-E1/Q-E2 updated;
-Ophiolite planner told. Deposits into the mirror still wait on owner item 117.
+Ophiolite planner told and closed D85 on its default (standard-file route for the seven wells with
+checkshot files, the other three refused by name, nothing decodes `.wlt`); E138 slice 5 takes the cube
+facts and the picksets as omission rows. Nothing further is needed from OSD for E137/E138 until their
+lanes reach those slices. Deposits into the mirror still wait on owner item 117.
 
 ## 31 Oct 2026 — Rockall Trough archive complete: listing; its faults are Fault3D only
 
