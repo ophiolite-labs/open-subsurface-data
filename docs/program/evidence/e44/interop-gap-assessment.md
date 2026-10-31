@@ -151,6 +151,7 @@ class); KML profile; a velocity-model kind (only F3's 1.78 MB cubes; E137 Out); 
 Produce for MNSH, Rockall Trough, Poseidon: `unzip -l <zip> > evidence/e44/<name>-listing.txt` (names and sizes only; no decoding),
 then answer from extension counts exactly as done for F3/USGS (awk on the last field).
 
+- Q-E1 (MNSH answered 31 Oct from `oga-mnsh-listing.txt`): 7 `.hor` and **5 `.2dh` Horizon2D**, 18 `.fss` (no `.flt`), 98 `.wlt`, 32 `.csmdl`, 4 `.tie`, 0 `.pck`/`.rdl`/`.body`/`.shp`/`.kml`, 2 `.wvlt`, NLAs folder empty (2 entries). Rockall Trough and Poseidon pending.
 - Q-E1. Which of these exist per archive: `.hor` (3D) vs 2D-horizon files, `.flt` vs `.fss` (Fault3D vs FaultStickSet), `.wlt/.csmdl/.tie`, `.pck`, `.rdl`, `.wvlt`, `.body`, `.nn`/NLAs contents, `.shp`, `.kml`? This decides C3, C4, C5.
 - Q-E2. Poseidon: is the cube time or depth (decides `DEPTH` refusal, export.py:39)? Trace count vs the 1,000,000 cap (segy.py:22)? Are time-depth models standard files beside the survey or only `.wlt` (D85, EPICS:13801)? Does it hold any seismic-2d?
 - Q-E3. Does each archive carry a *complete* `.survey` and registered survey (2D-only for USGS, MNSH, Rockall)? Is `Survey.inlrange` defined for 2D-only surveys (survey.py:77)? Does the export's read of `.defs`/`.survey` text (export.py:91-94) count as through-the-door (R-C1)?

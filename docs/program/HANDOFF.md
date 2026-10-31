@@ -2,6 +2,18 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 31 Oct 2026 — MNSH archive complete: listing, Horizon2D confirmed, no licence file inside
+
+`MNSH_OGA_2016_v1.zip` (11,537,303,224 bytes, equal to the Mac) is in the deposit directory; names-only
+listing at `docs/program/evidence/e44/oga-mnsh-listing.txt` (3,004 files). Counts: 286 `.cbvs` 2D line
+datasets (none over 1 GB) with 260 `.geom`; 7 3D horizons `.hor` and 5 2D horizons `.2dh` — so the E137
+slice 5 question is answered: Horizon2D objects exist, sent to the Ophiolite planner; 18 fault stick sets
+`.fss` (the FaultStickSet form E137 reads, no Fault3D); 98 wells with `.wlt` time-depth, `.wlm` tops and
+1,700 `.wll` logs; 32 well-tie models, 2 wavelets. No licence, terms or readme beyond OpendTect's generic
+`Proc/readme.txt`; the licence stays what the TerraNubis page states (OGL-UK-3.0), stop rule not
+triggered. E44 table row and the gap assessment's Q-E1 updated. Rockall Trough copying (4.9 of 9.96 GB),
+Poseidon queued.
+
 ## 31 Oct 2026 — Interoperability gap assessment: 12 gaps, what was chartered where
 
 Owner question: limitations, missing epics, tests, unsupported formats for the five TerraNubis OpendTect
