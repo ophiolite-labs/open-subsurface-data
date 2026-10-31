@@ -6,8 +6,8 @@ Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-
 
 `MNSH_OGA_2016_v1.zip` (11,537,303,224 bytes, equal to the Mac) is in the deposit directory; names-only
 listing at `docs/program/evidence/e44/oga-mnsh-listing.txt` (3,004 files). Counts: 286 `.cbvs` 2D line
-datasets (none over 1 GB) with 260 `.geom`; 7 3D horizons `.hor` and 5 2D horizons `.2dh` — so the E137
-slice 5 question is answered: Horizon2D objects exist, sent to the Ophiolite planner; 18 fault stick sets
+datasets (none over 1 GB) with 260 `.geom`; 7 3D horizons `.hor` and 5 2D horizons `.2dh` — so the 2D-horizon
+question is answered: Horizon2D objects exist; Ophiolite made it E137 slice 6 and closed D92 (main `cb50eb128`); 18 fault stick sets
 `.fss` (the FaultStickSet form E137 reads, no Fault3D); 98 wells with `.wlt` time-depth, `.wlm` tops and
 1,700 `.wll` logs; 32 well-tie models, 2 wavelets. No licence, terms or readme beyond OpendTect's generic
 `Proc/readme.txt`; the licence stays what the TerraNubis page states (OGL-UK-3.0), stop rule not

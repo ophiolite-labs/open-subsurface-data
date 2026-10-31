@@ -32,8 +32,10 @@ Rules added by the ruling:
   100,000 nodes, never resampled, refusal by number, bound default 1,000,000 raised in its slice 2, ResInsight
   horizon row unsupported; E138 slice 1 reports F3's 619,101-node horizons as "not-yet" until E139 s2); well tops are **E137 slice 4** ("a pack carries the project's well tops", F3 `.wlm` markers through odbind's well API only, same commit `75dfff509`; the verification slice is now slice 5, a 2D-horizon slice would follow it); Fault3D is
   refused by name in E137 slice 0 (the faults kind is the FaultStickSet form), whether `Fault3D.getstick`
-  enters is slice 2's decision measured read-only on F3's `Fault_A.flt`; 2D horizons become E137 slice 5
-  if the MNSH/Rockall listings show Horizon2D objects (OSD confirms from the listings). The gap
+  enters is slice 2's decision measured read-only on F3's `Fault_A.flt`; 2D horizons: the MNSH listing
+  showed five Horizon2D objects (31 Oct), so E137 gained **slice 6** "a pack carries the project's 2D horizons"
+  (odbind Horizon2D, picks per 2D line, after slice 5; Ophiolite main `cb50eb128`, which also closes D92: E137
+  owns 2D horizons, E138 reports them `not-yet: horizon-2d waits on E137 s6`). The gap
   assessment's twelve tests go to E137 and E138; the E129/E125 matrix items are recorded findings.
 - R-44.2 *Deposits first.* All five archives are deposited (E41 design 6, directories
   `/mnt/HC_Volume_107082112/osd-deposits/terranubis/<dataset>/` with `page.html` beside each; the
