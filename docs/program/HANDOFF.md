@@ -2,6 +2,24 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 31 Oct 2026 — Interoperability gap assessment: 12 gaps, what was chartered where
+
+Owner question: limitations, missing epics, tests, unsupported formats for the five TerraNubis OpendTect
+projects. Report: `docs/program/evidence/e44/interop-gap-assessment.md` (matrix of archive object types
+against odbind, Ophiolite data types, writers per target and tests; cited to Ophiolite `origin/main` and
+OSD main; F3 and USGS from their listings, the other three from the E44 table until copied). Findings:
+G1 round-trip epic — closed, E138. G9 the 100,000-point horizon limit leaves F3's eight horizons (619,101
+nodes) as `failed` rows, so F3 cannot pass L3 until Ophiolite raises it (asked of the Ophiolite planner as
+the strongest candidate, C2). G6 the E44 F3 row listed only four kinds; the archive also holds 10 2D
+lines, a Fault3D, 4 marker files and time-depth files — table amended. G7/G8 tops, wellbore-headers and
+2D horizons have no Ophiolite writer (asked as E137 follow-on slices; 2D horizons conditional on the
+MNSH/Rockall listings). G11 objects with no odbind class had no omission contract — closed on the OSD
+side by R-44.6 (archive row `partial`, reason lists untranslated classes with counts from the names
+listing) and R-44.7 (packs publish at the level earned, L4 waits on capacity); E42 design 1 amended. The
+twelve tests of section D and the Q-E9 odbind probe go to Ophiolite (E137 slice 0, E129, E125, E138);
+OSD adds none beyond R-44.6, which E42's acceptance 4 already exercises through the fidelity document.
+Section E lists nine questions the remaining three listings answer when the copy finishes.
+
 ## 31 Oct 2026 — E138 recorded in E44 (round-trip epic number and two constraints)
 
 The Ophiolite planner chartered E138 "OpendTect round trips: five public OpendTect-native projects go

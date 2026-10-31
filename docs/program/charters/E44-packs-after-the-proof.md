@@ -14,7 +14,7 @@ all these datasets; all need to be able to translate to Ophiolite data types / o
 
 | Dataset | Record | Archive (bytes on the owner's Mac, 31 Oct) | Licence as the record reads it | Content kinds |
 |---|---|---|---|---|
-| F3 Demo 2023 | `terranubis/f3-demo-2020` | `F3_Demo_2023.zip` 4,782,432,978 | CC-BY-SA-3.0, redistribution allowed | seismic-3d, wellbore-logs, wellbore-headers, horizons |
+| F3 Demo 2023 | `terranubis/f3-demo-2020` | `F3_Demo_2023.zip` 4,782,432,978 | CC-BY-SA-3.0, redistribution allowed | seismic-3d, wellbore-logs, wellbore-headers, horizons; from the archive listing (31 Oct, `evidence/e44/f3-demo-2023-listing.txt`): also seismic-2d (10 lines), faults (one Fault3D), tops (4 marker files), time-depth (well `.wlt` files and one standard DT file) |
 | OGA Mid North Sea High | `terranubis/oga-mnsh` | `MNSH_OGA_2016_v1.zip` 11,537,303,224 | OGL-UK-3.0, allowed | seismic-2d, wellbore-logs, horizons, faults |
 | OGA Rockall Trough | `terranubis/oga-rockall-trough` | `Rockall_Trough_OGA_2016_v1.zip` 9,961,960,412 | OGL-UK-3.0, allowed | seismic-2d, wellbore-logs, horizons, faults |
 | USGS Central Alaska 2023 | `terranubis/usgs-central-alaska-2023` | `USGS_Central_Alaska_2023.zip` 167,571,826 | CC-BY-SA-3.0, allowed | seismic-2d |
@@ -48,6 +48,18 @@ Rules added by the ruling:
   literal of them enters the Ophiolite repository or any public Ophiolite artefact (share-alike and
   attribution make them live-run evidence in validation records, synthetic fixtures in CI). The packs
   of this epic are OSD's to publish, under each dataset's own licence, never Ophiolite's.
+- R-44.6 *Nothing quietly omitted, including what has no odbind class.* The gap assessment of 31 Oct
+  (`docs/program/evidence/e44/interop-gap-assessment.md`, 12 gaps) found that each archive holds
+  OpendTect-native objects with no odbind class (picksets, random lines, well ties, wavelets, bodies,
+  models, attribute sets, neural nets, shapefiles): R-C1 bars decoding them, so no pack translates them.
+  The pack must still say so: the archive's fidelity/1 input row is `partial` (never `converted`) whenever
+  any object class in the archive is untranslated, and its `reason` lists the untranslated classes with
+  counts taken from the names-only listing (`unzip -l`, by extension; no decoding). Objects a writer
+  exists for but which fail (today F3's 619,101-node horizons against the 100,000-point intake limit) stay
+  `failed` rows with the reason, as H6 already provides. No schema change; `fidelity/1` stays pinned.
+- R-44.7 *L4 waits on capacity, packs do not.* A pack publishes at the level its fidelity record earns
+  (F3 today: L3, its horizons failed); L4 needs every file converted and so waits on the Ophiolite
+  horizon-capacity work the gap assessment asks for (C2). A pack is never held back for L4.
 - R-44.4 *Oracles.* F3: dGB's survey (E42). The others: the archive's own OpendTect survey where one
   is shipped (TerraNubis archives are OpendTect projects), read through odbind, as E42 design 4 does.
 

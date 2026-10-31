@@ -58,6 +58,11 @@ fidelity record; F3 reaches L3 from its data and L4 from the fidelity record. Th
    E09's inventory rule holds. If the lane finds the F3
    SEG-Y and wells on an anonymous origin whose terms allow it, that record's verified files become
    inputs beside the archive.
+   *Amendment 31 Oct (E44 R-44.6/R-44.7):* the archive row is `partial` with a `reason` listing the
+   OpendTect object classes the pack does not translate (by extension count from the names listing:
+   picksets, random lines, well ties, wavelets, models, attribute sets, neural nets, shapefiles, …);
+   the eight horizons (619,101 nodes against the 100,000-point intake limit) are `failed` rows with
+   that reason until Ophiolite raises the limit; the F3 pack publishes at L3 and does not wait for L4.
 2. *L3 before L4.* The recipe writes the survey outline (the cube's inline and crossline corners,
    through odbind, transformed from EPSG:23031 to WGS84) and the four well positions as
    `outlines/terranubis__f3-demo-2020.geojson` with `derivation` naming the deposit (the outline is
