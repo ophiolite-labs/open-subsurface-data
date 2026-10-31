@@ -1,0 +1,280 @@
+Archive:  F3_Demo_2023.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2023-06-12 12:25   F3_Demo_2023/
+        0  2023-05-02 17:19   F3_Demo_2023/Geometry/
+    40627  2023-01-31 19:21   F3_Demo_2023/Geometry/20021203-2-03_0033.geom
+    46386  2023-01-31 19:21   F3_Demo_2023/Geometry/20021203-2-03_0036.geom
+    45684  2023-01-31 19:20   F3_Demo_2023/Geometry/19981104-1-04_0037.geom
+    47564  2023-01-31 19:18   F3_Demo_2023/Geometry/19981104-1-04_0038.geom
+    61650  2023-01-31 19:21   F3_Demo_2023/Geometry/20021203-2-02_0013.geom
+    51252  2023-01-31 19:20   F3_Demo_2023/Geometry/19981104-1-04_0039.geom
+    45619  2023-01-31 19:21   F3_Demo_2023/Geometry/20021203-2-03_0032.geom
+     1766  2023-01-31 19:18   F3_Demo_2023/Geometry/.omf.bak
+     1663  2023-04-24 20:16   F3_Demo_2023/Geometry/.omf
+    59731  2023-01-31 19:21   F3_Demo_2023/Geometry/20021203-2-03_0038.geom
+    96979  2023-01-31 19:21   F3_Demo_2023/Geometry/20021203-2-02_0010.geom
+    41465  2023-01-31 19:21   F3_Demo_2023/Geometry/20021203-2-03_0034.geom
+        0  2023-05-03 16:30   F3_Demo_2023/Madagascar/
+      146  2023-05-03 16:30   F3_Demo_2023/Madagascar/.omf
+       13  2023-06-12 12:25   F3_Demo_2023/.terranubis_key
+        0  2023-06-01 20:40   F3_Demo_2023/Models/
+     6974  2020-08-12 16:17   F3_Demo_2023/Models/demo_Wedge_porosity.sgd
+     9768  2020-08-11 21:27   F3_Demo_2023/Models/demo_Gassman_Gas-Brine.sgd
+     7756  2020-08-17 20:42   F3_Demo_2023/Models/demo_Wedge_water_saturation.sgd
+    16080  2020-08-04 00:23   F3_Demo_2023/Models/Dutch_North_Sea.sfw
+     9885  2020-08-11 21:29   F3_Demo_2023/Models/demo_Gassman_Oil-Gas.sgd
+     9766  2020-08-11 21:26   F3_Demo_2023/Models/demo_Gassman_Brine-Oil.sgd
+     7002  2020-08-11 22:00   F3_Demo_2023/Models/demo_Wedge_thickness.sgd
+    70186  2020-08-12 16:35   F3_Demo_2023/Models/Profile_with_the_four_wells.sgd
+     4775  2020-08-11 21:38   F3_Demo_2023/Models/demo_Simple_Wedge.sgd
+     4008  2011-11-04 06:12   F3_Demo_2023/Models/A_test.sgd
+     8721  2020-08-11 22:01   F3_Demo_2023/Models/demo_Slanted_F03-4.sgd
+     9768  2020-08-11 21:28   F3_Demo_2023/Models/demo_Gassman_Oil-Brine.sgd
+     2497  2020-08-12 16:01   F3_Demo_2023/Models/.omf.bak
+      637  2020-08-04 00:23   F3_Demo_2023/Models/Dutch_North_Sea.stratlevels
+     9766  2020-08-11 21:23   F3_Demo_2023/Models/demo_Gassman_Brine-Gas.sgd
+     2434  2023-04-24 20:18   F3_Demo_2023/Models/.omf
+      637  2020-08-04 00:23   F3_Demo_2023/Models/Dutch_North_Sea.stratlevels.bak
+    16080  2020-08-04 00:23   F3_Demo_2023/Models/Dutch_North_Sea.sfw.bak
+        0  2023-05-02 17:19   F3_Demo_2023/NLAs/
+      142  2023-04-24 20:18   F3_Demo_2023/NLAs/.omf
+        0  2023-05-02 17:19   F3_Demo_2023/Misc/
+      137  2023-04-24 20:18   F3_Demo_2023/Misc/.omf
+        0  2023-05-10 16:45   F3_Demo_2023/Seismics/
+      171  2009-03-12 22:56   F3_Demo_2023/Seismics/Velocity_model__RMS_.par
+568100466  2011-12-19 18:58   F3_Demo_2023/Seismics/4_Dip_steered_median_filter.cbvs
+     2331  2015-08-26 01:15   F3_Demo_2023/Seismics/3b_Steering_FFT225_MF113.proc
+ 55705764  2011-12-19 18:25   F3_Demo_2023/Seismics/9_Similarity_on_Original_seismic.cbvs
+ 55705764  2011-12-19 19:45   F3_Demo_2023/Seismics/9-1_Similarity_on_FEF_seismic.cbvs
+568100474  2011-12-19 15:46   F3_Demo_2023/Seismics/1_Original_Seismics.cbvs
+      168  2011-12-19 19:46   F3_Demo_2023/Seismics/9-1_Similarity_on_FEF_seismic.par
+451600564  2012-06-25 22:59   F3_Demo_2023/Seismics/7a_AI_Cube_Std.cbvs
+      166  2012-03-28 15:17   F3_Demo_2023/Seismics/8a_PorosityCube_from_HC-NN.par
+      169  2011-12-19 18:28   F3_Demo_2023/Seismics/9_Similarity_on_Original_seismic.par
+      168  2020-08-12 16:39   F3_Demo_2023/Seismics/9-3_Fault_enhancement_filter.par
+        0  2023-04-12 22:17   F3_Demo_2023/Seismics/Seismic/
+  8231592  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^31.cbvs
+  3865992  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^33.cbvs
+  3931272  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^36.cbvs
+  5065512  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^37.cbvs
+  5228712  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^32.cbvs
+  3513072  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^35.cbvs
+  3441672  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^34.cbvs
+  3872112  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^28.cbvs
+  4345392  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^30.cbvs
+  4031232  2023-01-31 19:19   F3_Demo_2023/Seismics/Seismic/Seismic^29.cbvs
+      164  2009-03-12 22:44   F3_Demo_2023/Seismics/5_ChimneyCube.par
+      168  2020-08-12 16:39   F3_Demo_2023/Seismics/1_Original_Seismics.par
+ 28517132  2011-12-19 18:45   F3_Demo_2023/Seismics/9-2_Dip-steered_diffusion_filter.cbvs
+      161  2011-12-19 16:39   F3_Demo_2023/Seismics/3b_Steering_FFT225_MF113.par
+      162  2012-03-27 21:40   F3_Demo_2023/Seismics/8b_Gamma_from_HorizonCube.par
+      170  2020-08-12 16:42   F3_Demo_2023/Seismics/Seis.par
+1124177408  2023-04-12 22:55   F3_Demo_2023/Seismics/3a_Steering_PCA111_MF225.cbvs
+568100466  2011-12-19 19:01   F3_Demo_2023/Seismics/9-3_Fault_enhancement_filter.cbvs
+      357  2013-11-22 22:51   F3_Demo_2023/Seismics/stat_120.wvlt
+465564116  2012-03-27 21:02   F3_Demo_2023/Seismics/8b_Gamma_from_HorizonCube.cbvs
+  1780436  2012-03-29 00:25   F3_Demo_2023/Seismics/Velocity_model__RMS_.cbvs
+451599060  2012-03-28 15:15   F3_Demo_2023/Seismics/8a_PorosityCube_from_HC-NN.cbvs
+      167  2012-03-28 15:02   F3_Demo_2023/Seismics/7b_AI_Cube_from_HorizonCube.par
+     2953  2023-05-03 16:50   F3_Demo_2023/Seismics/.omf.bak
+451599060  2012-03-28 15:00   F3_Demo_2023/Seismics/7b_AI_Cube_from_HorizonCube.cbvs
+1088153380  2015-08-26 01:15   F3_Demo_2023/Seismics/3b_Steering_FFT225_MF113.cbvs
+476143072  2011-12-19 21:36   F3_Demo_2023/Seismics/5_ChimneyCube.cbvs
+  1780436  2012-03-29 00:24   F3_Demo_2023/Seismics/Velocity_model__INT_.cbvs
+     2667  2023-05-03 17:03   F3_Demo_2023/Seismics/.omf
+      168  2020-08-12 16:39   F3_Demo_2023/Seismics/9-2_Dip-steered_diffusion_filter.par
+      174  2020-08-12 16:41   F3_Demo_2023/Seismics/Velocity_model__INT_.par
+      166  2012-03-28 15:02   F3_Demo_2023/Seismics/7a_AI_Cube_Std.par
+      168  2020-08-12 16:39   F3_Demo_2023/Seismics/4_Dip_steered_median_filter.par
+   150923  2019-12-30 13:52   F3_Demo_2023/OD.ico
+        0  2023-05-03 16:50   F3_Demo_2023/Proc/
+      739  2023-05-03 16:51   F3_Demo_2023/Proc/7a_AI_Cube_Std_16bit_log.txt
+      653  2023-05-03 16:50   F3_Demo_2023/Proc/7a_AI_Cube_Std_16bit.par
+        0  2023-05-02 17:21   F3_Demo_2023/Surfaces/
+  7206414  2020-08-03 22:55   F3_Demo_2023/Surfaces/Demo_1_--__MFS4.hor^2.hov
+      150  2016-08-25 04:39   F3_Demo_2023/Surfaces/Demo_3__--__Top_Foresets.par
+     8933  2011-12-19 20:08   F3_Demo_2023/Surfaces/Demo_6_--__FS8.ts
+  1833719  2005-08-16 22:15   F3_Demo_2023/Surfaces/Demo_3__--__Top_Foresets.hor
+  1259495  2011-12-19 20:08   F3_Demo_2023/Surfaces/Demo_0_--__FS4.hor
+        0  2023-04-12 22:19   F3_Demo_2023/Surfaces/Truncated_HC_Full/
+ 79809810  2015-04-24 17:01   F3_Demo_2023/Surfaces/Truncated_HC_Full/1.3dhc
+ 80252291  2015-04-24 17:02   F3_Demo_2023/Surfaces/Truncated_HC_Full/2.3dhc
+     5432  2015-08-24 17:17   F3_Demo_2023/Surfaces/Truncated_HC_Full.sti
+  7206414  2020-08-03 22:53   F3_Demo_2023/Surfaces/Demo_1_--__MFS4.hor^0.hov
+  1259492  2011-12-19 20:08   F3_Demo_2023/Surfaces/Demo_6_--__FS8.hor
+     1936  2020-08-12 16:29   F3_Demo_2023/Surfaces/horizonrelations.txt
+  7206414  2020-08-03 22:54   F3_Demo_2023/Surfaces/Demo_1_--__MFS4.hor^1.hov
+   623145  2006-05-22 20:16   F3_Demo_2023/Surfaces/Demo_2_--__FS6.hor
+   712783  2020-08-17 20:14   F3_Demo_2023/Surfaces/Amplitude_anomaly_A.body
+      155  2015-04-24 17:02   F3_Demo_2023/Surfaces/Truncated_HC_Full.hci
+      118  2015-04-24 17:01   F3_Demo_2023/Surfaces/Truncated_HC_Full.hci.bak
+      147  2016-08-25 04:39   F3_Demo_2023/Surfaces/Demo_2_--__FS6.par
+  1259495  2012-03-27 21:20   F3_Demo_2023/Surfaces/Demo_1_--__MFS4.hor
+  1259492  2011-12-19 20:27   F3_Demo_2023/Surfaces/Demo_4_--__Truncation.hor
+     1008  2007-09-20 23:53   F3_Demo_2023/Surfaces/Demo_7_--__shallow.ts
+      227  2020-08-17 20:34   F3_Demo_2023/Surfaces/Amplitude_anomaly_A.par
+      150  2016-08-25 04:39   F3_Demo_2023/Surfaces/Demo_6_--__FS8.par
+  1261678  2012-03-28 22:20   F3_Demo_2023/Surfaces/Demo_5_--__FS7.hor
+     3842  2008-09-19 22:05   F3_Demo_2023/Surfaces/Fault_A.flt
+      305  2016-08-25 04:39   F3_Demo_2023/Surfaces/Demo_0_--__FS4.par
+     2260  2015-05-11 18:52   F3_Demo_2023/Surfaces/Truncated_HC_Full_Test.hcs
+     1227  2023-04-12 22:43   F3_Demo_2023/Surfaces/.omf.bak
+      152  2016-08-25 04:39   F3_Demo_2023/Surfaces/Demo_5_--__FS7.par
+      152  2016-08-25 04:35   F3_Demo_2023/Surfaces/Demo_7_--__shallow.par
+     1045  2023-05-02 17:21   F3_Demo_2023/Surfaces/.omf
+      153  2016-08-25 04:39   F3_Demo_2023/Surfaces/Demo_4_--__Truncation.par
+      155  2015-04-23 20:27   F3_Demo_2023/Surfaces/Continuous_HC_Full.hci
+     2261  2015-04-24 07:01   F3_Demo_2023/Surfaces/Continuous_HC_Full.hcs
+  1229443  2007-09-20 23:53   F3_Demo_2023/Surfaces/Demo_7_--__shallow.hor
+      270  2020-08-03 22:55   F3_Demo_2023/Surfaces/Demo_1_--__MFS4.par
+        0  2023-04-12 22:18   F3_Demo_2023/Surfaces/Continuous_HC_Full/
+       84  2015-08-21 18:18   F3_Demo_2023/Surfaces/Continuous_HC_Full/hcsd.ai
+198300356  2015-04-24 01:19   F3_Demo_2023/Surfaces/Continuous_HC_Full/1.3dhc
+     1349  2015-06-19 21:16   F3_Demo_2023/Surfaces/Continuous_HC_Full/Z-values.hcsd.bak
+316078847  2015-04-24 07:01   F3_Demo_2023/Surfaces/Continuous_HC_Full/2.3dhc
+     8933  2011-12-19 20:08   F3_Demo_2023/Surfaces/Demo_0_--__FS4.ts
+     2261  2015-04-24 17:00   F3_Demo_2023/Surfaces/Truncated_HC_Full.hcs
+      137  2015-09-10 02:40   F3_Demo_2023/Surfaces/Fault_A.par
+        0  2023-05-22 04:05   F3_Demo_2023/Locations/
+     4514  2006-06-07 10:30   F3_Demo_2023/Locations/Chimneys_yes.pck
+     4446  2006-06-07 10:30   F3_Demo_2023/Locations/Chimneys_no.pck
+     1643  2015-08-17 09:54   F3_Demo_2023/Locations/Shallow_Bright_Spot.pck
+     2062  2023-01-24 16:05   F3_Demo_2023/Locations/.omf.bak
+174041947  2012-03-28 22:37   F3_Demo_2023/Locations/RMS_velocities.pck
+     1564  2023-05-22 04:05   F3_Demo_2023/Locations/.omf
+      130  2012-03-27 18:29   F3_Demo_2023/Locations/Random_Line_through_wells_extended.rdl
+      803  2023-04-24 20:14   F3_Demo_2023/.survey.bak
+      119  2020-07-28 15:55   F3_Demo_2023/desktop.ini
+      301  2023-04-24 20:13   F3_Demo_2023/.fileformats
+        0  2023-05-03 16:30   F3_Demo_2023/GMT/
+      132  2023-05-03 16:30   F3_Demo_2023/GMT/.omf
+        0  2023-06-01 23:24   F3_Demo_2023/WellInfo/
+      218  2016-03-04 22:43   F3_Demo_2023/WellInfo/F02-1.well
+      362  2016-03-04 22:43   F3_Demo_2023/WellInfo/F03-2.csmdl
+    99345  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-4^3.wll
+    18740  2023-06-01 21:02   F3_Demo_2023/WellInfo/F06-1^9.wll
+    65222  2023-01-31 17:46   F3_Demo_2023/WellInfo/F02-1^5.wll
+    19294  2023-06-01 21:01   F3_Demo_2023/WellInfo/F03-2^8.wll
+    18186  2023-01-31 17:46   F3_Demo_2023/WellInfo/F02-1^10.wll
+    51007  2023-06-01 20:44   F3_Demo_2023/WellInfo/F02-1^7.wll
+    96404  2023-06-01 20:44   F3_Demo_2023/WellInfo/F03-2^7.wll
+   112719  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-2^3.wll
+   112739  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-2^5.wll
+    58971  2023-01-31 17:46   F3_Demo_2023/WellInfo/F02-1^4.wll
+      218  2016-03-04 22:43   F3_Demo_2023/WellInfo/F03-2.well
+     4696  2016-08-25 04:13   F3_Demo_2023/WellInfo/F03-4.disp
+    77541  2023-01-31 17:46   F3_Demo_2023/WellInfo/F02-1^3.wll
+     1579  2016-08-25 05:11   F3_Demo_2023/WellInfo/F02-1.wlm
+      455  2016-03-04 22:43   F3_Demo_2023/WellInfo/F02-1.csmdl
+    86833  2023-06-01 21:02   F3_Demo_2023/WellInfo/F06-1^11.wll
+    59226  2023-06-01 20:44   F3_Demo_2023/WellInfo/F06-1^7.wll
+    97808  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-4^5.wll
+    97800  2023-06-01 21:01   F3_Demo_2023/WellInfo/F03-4^11.wll
+    89320  2023-01-31 17:46   F3_Demo_2023/WellInfo/F06-1^1.wll
+    58964  2023-01-31 17:46   F3_Demo_2023/WellInfo/F02-1^1.wll
+     1558  2016-08-25 02:41   F3_Demo_2023/WellInfo/F03-2.wlm
+   112721  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-2^4.wll
+    89340  2023-01-31 17:46   F3_Demo_2023/WellInfo/F06-1^5.wll
+    19198  2023-06-01 21:01   F3_Demo_2023/WellInfo/F03-2^9.wll
+    97786  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-4^1.wll
+     1810  2016-08-26 19:14   F3_Demo_2023/WellInfo/F02-1.tie
+      530  2016-03-04 22:43   F3_Demo_2023/WellInfo/F03-4.csmdl
+   190350  2023-01-31 17:45   F3_Demo_2023/WellInfo/F03-2.wlt
+    18455  2023-06-01 21:00   F3_Demo_2023/WellInfo/F02-1^8.wll
+      236  2016-03-04 22:43   F3_Demo_2023/WellInfo/F06-1.well
+   127798  2023-01-31 17:45   F3_Demo_2023/WellInfo/F03-4.wlt
+     4696  2016-08-25 04:13   F3_Demo_2023/WellInfo/F02-1.disp
+    96393  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-2^2.wll
+    51002  2023-01-31 17:46   F3_Demo_2023/WellInfo/F02-1^2.wll
+     1579  2016-08-25 02:42   F3_Demo_2023/WellInfo/F06-1.wlm
+    18741  2023-06-01 21:02   F3_Demo_2023/WellInfo/F06-1^8.wll
+    88210  2023-01-31 17:46   F3_Demo_2023/WellInfo/F06-1^3.wll
+      831  2016-03-04 22:43   F3_Demo_2023/WellInfo/F03-4.well
+    59221  2023-01-31 17:46   F3_Demo_2023/WellInfo/F06-1^2.wll
+    18427  2023-01-31 17:46   F3_Demo_2023/WellInfo/F06-1^10.wll
+     1833  2016-08-26 19:13   F3_Demo_2023/WellInfo/F03-4.tie
+    72609  2023-06-01 20:44   F3_Demo_2023/WellInfo/F03-4^7.wll
+    18635  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-2^10.wll
+    19075  2023-06-01 21:01   F3_Demo_2023/WellInfo/F03-4^9.wll
+   112719  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-2^1.wll
+    19141  2023-06-01 21:00   F3_Demo_2023/WellInfo/F02-1^9.wll
+     4696  2016-08-25 04:13   F3_Demo_2023/WellInfo/F03-2.disp
+      320  2023-04-24 20:20   F3_Demo_2023/WellInfo/.omf.bak
+   119889  2023-01-31 17:45   F3_Demo_2023/WellInfo/F02-1.wlt
+    76328  2023-06-01 21:00   F3_Demo_2023/WellInfo/F02-1^11.wll
+   112743  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-2^6.wll
+    89344  2023-01-31 17:46   F3_Demo_2023/WellInfo/F06-1^6.wll
+    19211  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-4^10.wll
+   115612  2023-01-31 17:45   F3_Demo_2023/WellInfo/F06-1.wlt
+     1809  2016-08-26 19:14   F3_Demo_2023/WellInfo/F03-2.tie
+     4696  2016-08-25 04:13   F3_Demo_2023/WellInfo/F06-1.disp
+   110960  2023-06-01 21:00   F3_Demo_2023/WellInfo/F03-2^11.wll
+    97791  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-4^4.wll
+      324  2023-06-01 23:23   F3_Demo_2023/WellInfo/.omf
+     1535  2016-03-04 22:43   F3_Demo_2023/WellInfo/F03-4.wlm
+    89322  2023-01-31 17:46   F3_Demo_2023/WellInfo/F06-1^4.wll
+    65225  2023-01-31 17:46   F3_Demo_2023/WellInfo/F02-1^6.wll
+     1800  2016-08-26 19:14   F3_Demo_2023/WellInfo/F06-1.tie
+    19220  2023-06-01 21:01   F3_Demo_2023/WellInfo/F03-4^8.wll
+    97811  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-4^6.wll
+      368  2016-03-04 22:43   F3_Demo_2023/WellInfo/F06-1.csmdl
+    72601  2023-01-31 17:46   F3_Demo_2023/WellInfo/F03-4^2.wll
+        0  2023-04-12 22:17   F3_Demo_2023/Shapefiles/
+      435  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL_offshore_blocks.prj
+      172  2020-08-11 18:39   F3_Demo_2023/Shapefiles/offshore block names.disp
+     2620  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL_offshore_blocks.shx
+   249412  2017-07-05 17:15   F3_Demo_2023/Shapefiles/NL_Topo.shp
+      435  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL offshore outline.prj
+      149  2020-08-11 18:37   F3_Demo_2023/Shapefiles/NL_offshore_blocks.disp
+      756  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL offshore outline.shx
+   125275  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL offshore outline.dbf
+     2308  2017-07-05 17:15   F3_Demo_2023/Shapefiles/NL_Topo.shx
+    16916  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL offshore outline.shp
+   480600  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL_offshore_blocks.dbf
+      435  2017-07-05 17:15   F3_Demo_2023/Shapefiles/NL_Topo.prj
+    51852  2017-07-05 17:16   F3_Demo_2023/Shapefiles/NL_offshore_blocks.shp
+     7580  2017-07-05 17:16   F3_Demo_2023/Shapefiles/offshore block names.shp
+      149  2020-08-11 18:37   F3_Demo_2023/Shapefiles/NL offshore outline.disp
+     1460  2017-07-05 17:16   F3_Demo_2023/Shapefiles/offshore block names.shx
+      435  2017-07-05 17:16   F3_Demo_2023/Shapefiles/offshore block names.prj
+   357279  2017-07-05 17:16   F3_Demo_2023/Shapefiles/offshore block names.dbf
+      153  2020-08-11 18:38   F3_Demo_2023/Shapefiles/NL_Topo.disp
+   421125  2017-07-05 17:15   F3_Demo_2023/Shapefiles/NL_Topo.dbf
+      333  2023-05-03 16:30   F3_Demo_2023/.omf.bak
+        0  2023-05-02 17:33   F3_Demo_2023/Rawdata/
+        0  2023-05-02 17:27   F3_Demo_2023/Rawdata/Faults/
+     6730  2015-06-19 16:56   F3_Demo_2023/Rawdata/Faults/FaultA.txt
+699003060  2023-05-02 17:33   F3_Demo_2023/Rawdata/Seismic_data.sgy
+        0  2023-05-02 17:27   F3_Demo_2023/Rawdata/Surface_data/
+ 21711035  2007-11-09 23:47   F3_Demo_2023/Rawdata/Surface_data/F3-Horizon-Truncation.txt
+ 11132398  2007-11-09 23:48   F3_Demo_2023/Rawdata/Surface_data/F3-Horizon-FS6.txt
+ 22244600  2007-11-09 23:45   F3_Demo_2023/Rawdata/Surface_data/F3-Horizon-Shallow.txt
+ 22278909  2007-11-09 23:46   F3_Demo_2023/Rawdata/Surface_data/F3-Horizon-FS7.txt
+ 16753170  2007-11-09 23:49   F3_Demo_2023/Rawdata/Surface_data/F3-Horizon-Top-Foresets.txt
+ 21678870  2007-11-09 23:46   F3_Demo_2023/Rawdata/Surface_data/F3-Horizon-FS8.txt
+ 21710468  2007-11-09 23:48   F3_Demo_2023/Rawdata/Surface_data/F3-Horizon-MFS4.txt
+        0  2023-05-02 17:26   F3_Demo_2023/Rawdata/Well_data/
+      356  2006-01-04 19:25   F3_Demo_2023/Rawdata/Well_data/F02-01_markers.txt
+  1028134  2006-01-04 19:25   F3_Demo_2023/Rawdata/Well_data/F02-01_logs.las
+      336  2006-01-04 19:25   F3_Demo_2023/Rawdata/Well_data/F02-01_TD.txt
+      717  2006-01-04 19:25   F3_Demo_2023/Rawdata/Well_data/F02-01_welltrack.txt
+  1455760  2015-09-10 01:55   F3_Demo_2023/Rawdata/Well_data/All_wells_RawData.zip
+    16875  2006-01-04 19:25   F3_Demo_2023/Rawdata/Well_data/F02-01_DT_TVDSS.txt
+  2940148  2011-08-29 23:42   F3_Demo_2023/Rawdata/Velocity_functions.txt
+      355  2023-05-03 16:30   F3_Demo_2023/.omf
+        0  2023-05-02 17:19   F3_Demo_2023/Features/
+      315  2023-04-12 22:26   F3_Demo_2023/Features/.omf.bak
+      144  2023-04-24 20:15   F3_Demo_2023/Features/.omf
+      779  2023-06-12 12:25   F3_Demo_2023/.survey
+      109  2023-06-12 12:25   F3_Demo_2023/survey.log
+      342  2023-06-12 12:25   F3_Demo_2023/.defs
+        0  2023-05-10 16:45   F3_Demo_2023/Attribs/
+     3652  2023-05-05 21:48   F3_Demo_2023/Attribs/Segmentations_attributes__Dip-steered_3D_.attr
+      673  2023-05-05 21:50   F3_Demo_2023/Attribs/.omf.bak
+      670  2023-05-10 16:45   F3_Demo_2023/Attribs/.omf
+     4776  2023-05-05 21:50   F3_Demo_2023/Attribs/Demo_attributes.attr
+     1348  2023-05-05 21:46   F3_Demo_2023/Attribs/Inversion_attributes.attr
+      424  2015-07-29 17:29   F3_Demo_2023/Attribs/3D_UVQ_Attribs_Texture_+_HC.attr
+---------                     -------
+8131181824                     275 files
