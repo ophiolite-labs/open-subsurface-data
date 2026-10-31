@@ -18,12 +18,12 @@ all these datasets; all need to be able to translate to Ophiolite data types / o
 | OGA Mid North Sea High | `terranubis/oga-mnsh` | `MNSH_OGA_2016_v1.zip` 11,537,303,224 | OGL-UK-3.0, allowed | seismic-2d, wellbore-logs, horizons, faults |
 | OGA Rockall Trough | `terranubis/oga-rockall-trough` | `Rockall_Trough_OGA_2016_v1.zip` 9,961,960,412 | OGL-UK-3.0, allowed | seismic-2d, wellbore-logs, horizons, faults |
 | USGS Central Alaska 2023 | `terranubis/usgs-central-alaska-2023` | `USGS_Central_Alaska_2023.zip` 167,571,826 | CC-BY-SA-3.0, allowed | seismic-2d |
-| NW Shelf Australia Poseidon 3D | new record `terranubis/nw-shelf-australia-poseidon-3d` (slice 0; TerraNubis repackaging of `nopims/poseidon`; its page labels CC BY-SA 3.0 and quotes CC BY 3.0 AU: the lane reads the terms on the day) | `Poseidon_3D.zip` 14,236,435,784 | to be read (R-T4: never a pack while unknown) | seismic-3d, wellbore-logs, horizons |
+| NW Shelf Australia Poseidon 3D | new record `terranubis/nw-shelf-australia-poseidon-3d` (slice 0; TerraNubis repackaging of `nopims/poseidon`; its page labels CC BY-SA 3.0 and quotes CC BY 3.0 AU: the lane reads the terms on the day) | `Poseidon_3D.zip` 14,236,435,784 | CC-BY-SA-3.0 as the page labels it (GA's original under CC BY 3.0 AU; slice 0 reading, owner may overturn) | seismic-3d, wellbore-paths, time-depth (as the page states; the pack lane amends from the archive) |
 
 Rules added by the ruling:
 
 - R-44.1 *Every dataset, every kind.* Each of the five becomes a starter project, and every content
-  kind in the five (seismic-3d, seismic-2d, wellbore-logs, wellbore-headers, horizons, faults) must
+  kind in the five (seismic-3d, seismic-2d, wellbore-logs, wellbore-headers, wellbore-paths, time-depth, horizons, faults) must
   have a translation into Ophiolite's data types; a kind no writer handles is a defect of the
   Ophiolite half, not a pack that quietly omits it. The two new kinds against E129 are seismic-2d
   (lines, not a cube) and faults (sticks); the Ophiolite half charters them as an E129 follow-on with
