@@ -16,7 +16,7 @@ kinds: [seismic-2d, wellbore-logs, horizons, faults]
 region: {country: GB, basin: Mid North Sea High, bbox: [-1.0, 55.0, 2.0, 57.0]}
 listed_by: [publisher]
 known_issues:
-  - "The publisher's licence label reads only 'Creative Commons 3.0'; the variant (BY-SA 3.0) is taken from the deed the label links to."
+  - "The page's licence label reads 'License: Open Government License v3.0' (not linked); the OGL v3 webpage is linked under References. Survey description: 'The subsurface data is made freely available [...] under the Open Government License v3.0.' (read 31 Oct 2026)"
   - "The page's printed coordinates (44 07 N / 60 06 W) are those of Penobscot, not of this survey; bbox follows the page's map link."
 period:
   start: "2015"
