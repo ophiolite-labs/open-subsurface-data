@@ -15,11 +15,12 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [seismic-3d, wellbore-logs, wellbore-headers]
-region: {country: AU, basin: Browse Basin, bbox: [122.4, -13.6, 123.6, -12.4]}
+region: {country: AU, basin: Browse Basin, bbox: [121.75, -14.05, 122.65, -13.2]}
 listed_by: [seg-wiki]
 known_issues:
   - "Origin repointed from the SEG wiki page (HTTP 403 to automated requests, OSD-D9) to the TGS Open Data page on the AWS Registry of Open Data (opened 23 Oct 2026; CC BY 4.0, MDIO, public S3 bucket). Original survey: Geoscience Australia / ConocoPhillips via NOPIMS."
   - "Licence to be confirmed against the NOPIMS terms page by the verifier (L2)."
+  - "bbox corrected 31 Oct 2026 from [122.4, -13.6, 123.6, -12.4], which missed the survey: the outline's hull spans 121.78 to 122.61 E, 13.23 to 14.04 S, and TerraNubis's page for the same survey gives S 13°14' / E 122°12' and a map centre at -13.63, 122.2."
 inputs:
   - name: full-stack-agc
     url: "https://tgs-opendata-poseidon.s3.amazonaws.com/full_stack_agc.mdio/"

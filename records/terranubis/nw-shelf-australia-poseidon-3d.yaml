@@ -1,0 +1,33 @@
+id: terranubis/nw-shelf-australia-poseidon-3d
+title: NW Shelf Australia, Poseidon 3D (Browse Basin)
+summary: >-
+  OpendTect project with 3D seismic data, angle stacks and wells over the Poseidon 3D survey in the Browse Basin, NW Shelf of Australia.
+  Original seismic from Geoscience Australia; angle stacks created by ConocoPhillips; OpendTect project by dGB Earth Sciences.
+publisher: {name: dGB Earth Sciences (TerraNubis), url: https://terranubis.com, country: NL}
+origin:
+  url: https://terranubis.com/datainfo/NW-Shelf-Australia-Poseidon-3D
+  access: anonymous
+licence:
+  name: Creative Commons 3.0 (the page links the BY-SA 3.0 deed)
+  spdx: CC-BY-SA-3.0
+  url: https://creativecommons.org/licenses/by-sa/3.0/
+  redistribution: allowed
+  attribution: required
+  share_alike: true
+  terms:
+    stated: "General: \"License: Creative Commons 3.0\" (links the BY-SA 3.0 deed). Full Survey Description: \"The subsurface data is made available by GEOScience Australia under the terms of the Creative Commons licence Attribution 3.0 Australia (CC BY 3.0 AU).\" Acknowledgment: \"We thank dGB Earth Sciences for making the data available as an OpendTect project via their TerraNubis portal terranubis.com .\""
+kinds: [seismic-3d, wellbore-paths, time-depth]
+region: {country: AU, basin: Browse Basin, bbox: [121.9, -13.95, 122.5, -13.2]}
+size: {stated: "22.1 GB (uncompressed), 13.2 GB (download)"}
+listed_by: [publisher]
+known_issues:
+  - "The page's licence label reads only 'Creative Commons 3.0' and links the BY-SA 3.0 deed; its survey description says Geoscience Australia releases the data under CC BY 3.0 AU. The label is recorded: it is the page's licence for this download, and the stricter one."
+  - "CC BY 3.0 AU stays the licence of Geoscience Australia's original seismic: reuse credits Geoscience Australia as well as dGB. Redistribution and attribution read the same under either licence; only share_alike depends on the label."
+  - "The page says the main download holds 'only full stack seismic and well tracks'; angle stacks are separate downloads. Well logs are named but not linked (NOPIMS has them); horizons are not stated, so neither is a kind here."
+  - "bbox is approximate: it spans the page's coordinates (S 13°14' / E 122°12') and its map link (lat -13.63, lng 122.2) for the stated 3,376.71 sq km."
+period:
+  start: "2009"
+  end: "2009"
+  stated: "TerraNubis data info page, General block: 'Acquisition: 2009', '(Re)processing: 2009', 'Value added Products: 2017'"
+notes: "TerraNubis's OpendTect repackaging of the survey recorded as nopims/poseidon (TGS's MDIO release on AWS Open Data, CC BY 4.0): same survey, different publisher, format and licence statement. Deposit (E41 design 6): a maintainer took Poseidon_3D.zip from the owner's download of 31 Oct 2026 for deposit; the deposit into the mirror is not yet made. No outline: the page gives a point and an area, not the survey's corners; the outline is derived from the archive by the pack lane."
+added: 2026-10-31
