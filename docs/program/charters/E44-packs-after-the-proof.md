@@ -69,6 +69,20 @@ Rules added by the ruling:
   counts taken from the names-only listing (`unzip -l`, by extension; no decoding). Objects a writer
   exists for but which fail (today F3's 619,101-node horizons against the 100,000-point intake limit) stay
   `failed` rows with the reason, as H6 already provides. No schema change; `fidelity/1` stays pinned.
+- R-44.8 *Workspace pipeline pins (1 Nov).* The architecture check
+  (`docs/program/evidence/e44/workspace-pipeline-architecture.md`, 17 missing pieces) was answered by the
+  Ophiolite planner under the delegation: exporter crash and refusals on F3's cubes → **E137 slice 7** "every F3
+  cube exports or is refused by name" (kernel); picksets → E137 slice 8 *candidate*, opened only after an odbind
+  read path is shown; the 21.9 GB Poseidon cube → reserved **E140** "a cube of any size enters" (kernel, contract
+  first: archive cap, 8-bit sample form kept, FILE_MAX; representation and storage cost are the owner's pick);
+  part-of-a-volume retrieval by a connected application → reserved **E141** "a Python script or an application
+  retrieves part of a volume through the workspace" (kernel, contract first: trace-range and sub-volume read,
+  `exchange.get` for volumes; delegation refresh for long downloads folded in as an E31/E25 amendment); E141 ranks
+  before E140 because the owner stated the requirement; survey grouping and companion relations → the Data-page
+  tree epic of 8 Oct plus a companion-relations contract slice (no new number); viewers (2D line, large horizons,
+  overlays, a real-data journey through the web UI) → deferred under rule 14 until user testing, owner's say.
+  Consequence for OSD: a Poseidon pack with its cube waits on E140; the Poseidon pack may open with wells and
+  time-depth first and add the cube when E140 lands (R-44.7 applies, no pack waits for the cube).
 - R-44.7 *L4 waits on capacity, packs do not.* A pack publishes at the level its fidelity record earns
   (F3 today: L3, its horizons failed); L4 needs every file converted and so waits on the Ophiolite
   horizon-capacity work the gap assessment asks for (C2). A pack is never held back for L4.

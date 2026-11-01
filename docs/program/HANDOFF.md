@@ -20,6 +20,11 @@ single slice without overlays; no survey-level grouping or tree on main (286 lin
 no Workspace-UI run on real data; external retrieval of a cube is whole-slice or whole-file only
 (`exchange.get` refuses volumes), no sub-volume API, API declared not a stable unattended contract.
 Sent to the Ophiolite planner as input; chartering is theirs, the owner decides the order.
+*Same night:* the planner decided under the delegation — E137 slice 7 (F3 cube export crash/refusals), E137
+slice 8 candidate (picksets), reserved E140 (a cube of any size enters) and E141 (part-of-a-volume retrieval
+by a connected application, ranked first), survey grouping to the Data-page tree epic, viewers deferred under
+rule 14. Pinned as E44 R-44.8. Ophiolite's own architecture-gaps assessment (session ophiolite-33, main
+`4bf7fc620`) covers lifecycle and search; it does not overlap this one.
 
 ## 31 Oct 2026 — Poseidon archive complete: all five TerraNubis archives on the VPS; listing, licence file, D85 answer
 
