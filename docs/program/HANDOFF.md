@@ -2,6 +2,25 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 1 Nov 2026 — Workspace pipeline architecture check for the five TerraNubis projects (17 missing pieces)
+
+Owner question: are the archives convertible by Ophiolite's code into assets that are managed, viewed and
+retrievable by connected applications? Report (read-only, Ophiolite `origin/main` 1cc9007af):
+`docs/program/evidence/e44/workspace-pipeline-architecture.md` — eight stages (odbind read, conversion,
+intake, management, viewing, real runs, epic status, retrieval by SDK/HTTP) with a per-kind table.
+Corrections to earlier notes: E138 slices 1 and 2 are MERGED (1 Nov) — F3 Demo 2023 went round live
+(227 rows, 42 findings) and USGS Central Alaska's 17 2D lines did (14 within, 3 failed then fixed by E139
+s4); E137/E138/E139 are IMPLEMENTING, not queued. MNSH, Rockall Trough and Poseidon have not run.
+Headline: the chain does not yet hold for all five. Covered by chartered work: time-depth (E137 s3), tops
+(s4), 2D horizons (s6), big horizons (E139), the three remaining journeys (E138 s3–s5). Uncovered by any
+epic: the 21.9 GB Poseidon cube cannot enter (8 GiB export cap, float32 widening to ~88 GB against a
+64 GiB bound, never run above 2.77 GB); exporter refuses 13 of F3's 15 cubes and crashed on the main one;
+picksets have no path; no 2D-line viewer; no viewer for horizons above 100,000 nodes; seismic view is a
+single slice without overlays; no survey-level grouping or tree on main (286 lines = 286 loose items);
+no Workspace-UI run on real data; external retrieval of a cube is whole-slice or whole-file only
+(`exchange.get` refuses volumes), no sub-volume API, API declared not a stable unattended contract.
+Sent to the Ophiolite planner as input; chartering is theirs, the owner decides the order.
+
 ## 31 Oct 2026 — Poseidon archive complete: all five TerraNubis archives on the VPS; listing, licence file, D85 answer
 
 `Poseidon_3D.zip` (14,236,435,784 bytes, sha256 `78a08897…973cd`) is deposited; the sftp copy of all five
