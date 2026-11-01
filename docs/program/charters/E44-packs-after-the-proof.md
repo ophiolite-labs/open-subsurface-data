@@ -92,13 +92,14 @@ Rules added by the ruling:
   the limit is documented by name, never decoded). Standards asked for: contract-first slices, numeric
   read-back journeys on the deposited archives, one real-data journey through the web UI, a complete data-type
   registry for all kinds (2D horizon and pickset types included).
-  *Numbers (Ophiolite planner, 1 Nov, charters landing on main tonight; commit to be pinned):* **E141** "a Python
-  script or an application retrieves part of a volume through the workspace" (kernel, first); **E140** "a cube of
-  any size enters in its native sample form" (kernel, second); **E142** "a survey is one unit" (kernel contract: a
-  survey item and companion relations between cube, lines, horizons, faults, wells and picksets; the Data-page tree
-  epic becomes its surface; third); **E143** "seeing a survey" (surface, rule 14 depth: 2D-line viewer, large
+  *Numbers (Ophiolite planner, 1 Nov; charters on Ophiolite main `11dbb260f`, one Codex round each, findings folded):* **E141** "a Python
+  script or an application retrieves part of a volume through the workspace" (kernel, first; long reads use the existing E25 access keys, documented and qualified there — no delegation
+  refresh); **E140** "a cube of any size enters in its native sample form" (kernel, second); **E142** "a survey is one unit" (kernel contract: a
+  survey item and companion relations between cube, lines, horizons, faults, wells and picksets; its surface is a small
+  survey subtree; the project-wide Data-page tree of 8 Oct stays separate work; third); **E143** "seeing a survey" (surface, rule 14 depth: 2D-line viewer, large
   horizons as a surface, section view with overlays, one real-data web-UI journey on F3; in parallel once E142
-  slice 0 is in); **E137 slice 7** (every F3 cube exports or is refused by name) and **slice 8** (picksets bounded
+  slice 0 is in); **E137 slice 7** (the exporter crash is already a refusal by name on main, `export.py:54,152`; the slice audits the
+  13 refusals and tests the F3 shape) and **slice 8** (picksets bounded
   by the connector doctrine, and the data-type registry carrying every kind of the five archives).
   Consequence for OSD: a Poseidon pack with its cube waits on E140; the Poseidon pack may open with wells and
   time-depth first and add the cube when E140 lands (R-44.7 applies, no pack waits for the cube).

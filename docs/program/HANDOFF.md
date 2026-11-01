@@ -28,7 +28,9 @@ at scale → (b) survey as a unit → (c) seeing a survey), cover the full range
 high architectural standards — so the viewer deferral is lifted and E140 keeps the native sample form; relayed
 to the Ophiolite planner (owner item 119 records the ruling). Numbers: E141 (part-of-a-volume retrieval, first),
 E140 (cube of any size, native form), E142 (a survey is one unit), E143 (seeing a survey, surface), E137 slices 7
-and 8; charters landing on Ophiolite main tonight, commit pinned when sent. Ophiolite's own architecture-gaps assessment (session ophiolite-33, main
+and 8; charters on Ophiolite main `11dbb260f` (EPICS.md E141 l.13938, E140 l.13982, E142 l.14025, E143 l.14071; E137 s7–s8
+l.13787–13788), one Codex round each; two pins changed on Codex findings: E141 uses E25 access keys for long
+reads (no delegation refresh), E142's surface is a survey subtree and the Data-page tree stays separate. Ophiolite's own architecture-gaps assessment (session ophiolite-33, main
 `4bf7fc620`) covers lifecycle and search; it does not overlap this one.
 
 ## 31 Oct 2026 — Poseidon archive complete: all five TerraNubis archives on the VPS; listing, licence file, D85 answer
