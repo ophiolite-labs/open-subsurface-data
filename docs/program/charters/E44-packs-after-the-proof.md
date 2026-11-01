@@ -81,6 +81,17 @@ Rules added by the ruling:
   before E140 because the owner stated the requirement; survey grouping and companion relations → the Data-page
   tree epic of 8 Oct plus a companion-relations contract slice (no new number); viewers (2D line, large horizons,
   overlays, a real-data journey through the web UI) → deferred under rule 14 until user testing, owner's say.
+  **Owner ruling, 1 Nov 2026** (on the supervisor's recommendation (a) volumes at scale, (b) a survey as a
+  workspace unit, (c) seeing a survey): "I have no preference. Go with your recommendation. Just ensure the full
+  scope/range of data asset support and viewers is covered. Ensure from a system design and architecture point
+  of view you keep high standards." Read as: order (a) → (b) → (c); the viewer deferral under rule 14 is lifted
+  for (c) — viewers for every kind the packs carry are in scope, as a surface epic with journey tests and one
+  Codex round; E140's representation pick defaults to the supervisor's recommendation: keep the native sample
+  form (an 8-bit cube stays 8-bit, no float32 widening, stored once), serve sub-volumes server-side (E141);
+  picksets move from candidate to a definite slice bounded by the connector doctrine (if odbind exposes no read,
+  the limit is documented by name, never decoded). Standards asked for: contract-first slices, numeric
+  read-back journeys on the deposited archives, one real-data journey through the web UI, a complete data-type
+  registry for all kinds (2D horizon and pickset types included).
   Consequence for OSD: a Poseidon pack with its cube waits on E140; the Poseidon pack may open with wells and
   time-depth first and add the cube when E140 lands (R-44.7 applies, no pack waits for the cube).
 - R-44.7 *L4 waits on capacity, packs do not.* A pack publishes at the level its fidelity record earns

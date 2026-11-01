@@ -23,7 +23,10 @@ Sent to the Ophiolite planner as input; chartering is theirs, the owner decides 
 *Same night:* the planner decided under the delegation — E137 slice 7 (F3 cube export crash/refusals), E137
 slice 8 candidate (picksets), reserved E140 (a cube of any size enters) and E141 (part-of-a-volume retrieval
 by a connected application, ranked first), survey grouping to the Data-page tree epic, viewers deferred under
-rule 14. Pinned as E44 R-44.8. Ophiolite's own architecture-gaps assessment (session ophiolite-33, main
+rule 14. Pinned as E44 R-44.8. **Owner ruled 1 Nov:** no preference, go with the recommendation ((a) volumes
+at scale → (b) survey as a unit → (c) seeing a survey), cover the full range of data assets *and viewers*, keep
+high architectural standards — so the viewer deferral is lifted and E140 keeps the native sample form; relayed
+to the Ophiolite planner (owner item 118 records the ruling). Ophiolite's own architecture-gaps assessment (session ophiolite-33, main
 `4bf7fc620`) covers lifecycle and search; it does not overlap this one.
 
 ## 31 Oct 2026 — Poseidon archive complete: all five TerraNubis archives on the VPS; listing, licence file, D85 answer
