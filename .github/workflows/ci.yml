@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "22", cache: npm }
       - name: site test (Playwright, offline; E05)
-        timeout-minutes: 4
+        timeout-minutes: 7   # the shop journeys (E47, E49) run beside the live page tests until E53 deletes the old page
         run: |
           npm ci --no-audit --no-fund
           npx playwright install --only-shell chromium   # the runner image has Chromium's system libraries; --with-deps stalls on apt
