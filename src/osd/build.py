@@ -29,7 +29,8 @@ Outputs (build/catalog/):
                    with a pack carry the key). A refused or unchecked pack is printed, never published
   areas.json      the areas that hold at least one dataset, per kind (E46, area/1 #/$defs/index); with
                    any area file committed, every record carries `areas` {kind: [area_id]} (osd.areas)
-  areas-<kind>.geojson the geometry of those areas only (area/1 #/$defs/drawn)
+  areas-<kind>.geojson the geometry of those areas only (area/1 #/$defs/drawn); areas.pmtiles the same,
+                   one layer per kind, z0-8, when tippecanoe is installed
   starters/       each published pack document and its fidelity record, byte for byte (the pack
                    manifest's two documents, osd manifest --starter)
 """
@@ -87,8 +88,10 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
           now: datetime | None = None, mirror_dir: Path = mirror.MIRROR_DIR,
           records_dir: Path = paths.RECORDS_DIR, source_commit: str | None = FROM_ENVIRONMENT,
           verification_commit: str | None = FROM_ENVIRONMENT, starters_dir: Path = starters.STARTERS_DIR,
-          areas_dir: Path = paths.AREAS_DIR, outlines_dir: Path = paths.OUTLINES_DIR) -> dict:
+          areas_dir: Path | None = None, outlines_dir: Path = paths.OUTLINES_DIR) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
+    if areas_dir is None:   # E46: the committed areas go with the committed records; another record set has none
+        areas_dir = paths.AREAS_DIR if Path(records_dir) == paths.RECORDS_DIR else out_dir / "no-areas"
     recs = load_records(records_dir)
     records_out = []
     reasons = {}
@@ -119,7 +122,8 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         ids = sorted(p["id"] for p in packs if p["record_id"] == r["id"])
         if ids:
             r["starters"] = ids
-    held = areas.write(out_dir, records_out, recs, outlines_dir, areas_dir)   # E46: before the digest
+    held = areas.write(out_dir, records_out, recs, outlines_dir, areas_dir,   # E46: before the digest
+                       cache_dir=paths.BUILD_DIR / "areas-cache" if areas_dir == paths.AREAS_DIR else None)
     catalog = {
         "source_commit": git_head() if source_commit == FROM_ENVIRONMENT else source_commit,
         "verification_commit": (verification_commit_from_env() if verification_commit == FROM_ENVIRONMENT
@@ -141,6 +145,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     write_well_grids(out_dir, features)
     print_sizes(out_dir)
     write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
+    areas.write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None
     return {"records": len(records_out), "features": len(features), "collections": len(collections),
             "starters": len(packs), "areas": held}
 

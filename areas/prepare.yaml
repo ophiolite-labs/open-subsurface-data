@@ -1,0 +1,49 @@
+# How `osd areas prepare <kind> <file>` turns each publisher's file into areas/<kind>.geojson (E46).
+# The maintainer fetches the file by hand (the package reaches no network), records here where it
+# came from and when, and runs the command; `sha256` is computed from the file. SOURCES.md quotes the
+# terms. id: attribute names tried in order; unique: ids from these attributes are used only when not
+# repeated in the file; exclude: rows left out by attribute value. tolerance_m: Douglas-Peucker in metres,
+# about half a pixel at zoom 8; decimals: positions rounded (4 = 11 m).
+country:
+  file: ne_50m_admin_0_countries.zip
+  id: [ISO_A2_EH]
+  name: NAME
+  tolerance_m: 300
+  decimals: 4
+  source:
+    name: "Natural Earth 1:50m Cultural Vectors, Admin 0 - Countries"
+    url: "https://naciscdn.org/naturalearth/50m/cultural/ne_50m_admin_0_countries.zip"
+    licence: "public domain"
+    credit: "Natural Earth"
+    edition: "5.1.1"
+    retrieved: "2026-11-25"
+province:
+  file: ne_10m_admin_1_states_provinces.zip
+  id: [iso_3166_2, adm1_code]
+  unique: [iso_3166_2]
+  name: name
+  country: iso_a2
+  tolerance_m: 300
+  decimals: 4
+  source:
+    name: "Natural Earth 1:10m Cultural Vectors, Admin 1 - States, Provinces"
+    url: "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_1_states_provinces.zip"
+    licence: "public domain"
+    credit: "Natural Earth"
+    edition: "5.1.1"
+    retrieved: "2026-11-25"
+basin:
+  file: WEP_PRVG-archive-2025-02-02.zip
+  id: [CODE]
+  prefix: "usgs-"
+  exclude: {CODE: [0]}
+  name: NAME
+  tolerance_m: 300
+  decimals: 4
+  source:
+    name: "Geologic Provinces of the World, 2000 World Petroleum Assessment, all defined provinces (WEP_PRVG)"
+    url: "https://doi.org/10.5066/P9RMSU2R"
+    licence: "Use constraints: None."
+    credit: "U.S. Geological Survey"
+    edition: "World Petroleum Assessment 2000 (DDS-60)"
+    retrieved: "2026-11-25"
