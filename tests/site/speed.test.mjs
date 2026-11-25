@@ -131,7 +131,7 @@ test('practice 3: the shop\'s layers, their count and zoom ranges (printed for t
   await context.close();
 });
 
-test.todo('practice 3: the counted circles stop at the cluster zoom (wells-cluster, wells-count, wells maxzoom 7)', async () => {
+test('practice 3: the counted circles stop at the cluster zoom (wells-cluster, wells-count, wells maxzoom 7)', async () => {
   const { context, page } = await open(NORTH_SEA);
   const ours = (await layersOf(page)).filter(l => ['wells-cluster', 'wells-count', 'wells'].includes(l.id));
   await context.close();
@@ -144,12 +144,12 @@ const option = read => async () => {
   await context.close();
   return v;
 };
-test.todo('practice 4: tiles of five zoom levels stay in memory (maxTileCacheZoomLevels set explicitly, 5 or more)', async () => {
+test('practice 4: tiles of five zoom levels stay in memory (maxTileCacheZoomLevels set explicitly, 5 or more)', async () => {
   assert.ok(/maxTileCacheZoomLevels:\s*\d+/.test(SHOP_JS), 'shop.js sets maxTileCacheZoomLevels');
   const v = await option(() => window.osdMap._maxTileCacheZoomLevels)();
   assert.ok(v >= 5, String(v));
 });
-test.todo('practice 5: expired tiles are not asked for again (refreshExpiredTiles: false)', async () => {
+test('practice 5: expired tiles are not asked for again (refreshExpiredTiles: false)', async () => {
   assert.equal(await option(() => window.osdMap._refreshExpiredTiles)(), false);
 });
 
@@ -172,6 +172,6 @@ test('practice 7: hovering rows lights features by feature state; no setFilter, 
   await context.close();
 });
 
-test.todo('practice 8: names without the slow fade (fadeDuration 0)', async () => {
+test('practice 8: names without the slow fade (fadeDuration 0)', async () => {
   assert.equal(await option(() => window.osdMap._fadeDuration)(), 0);
 });

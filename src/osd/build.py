@@ -281,7 +281,7 @@ TIPPECANOE_PIN = "2.79.0"
 TILE_ZOOMS = ["-Z0", "-z12", "--no-line-simplification"]
 TILE_WELLS_FROM = {"*": ["any", ["!=", "kind", "wellbore"], ["!=", "$type", "Point"],
                          [">=", "$zoom", CLUSTER_BELOW_ZOOM]]}
-TILE_COMMON = ["-q", "-f", "-l", "outlines", "-r1", "--no-feature-limit", "--no-tile-size-limit",
+TILE_COMMON = ["-q", "-f", "-l", "outlines", "-r1", "--no-feature-limit", "--drop-densest-as-needed",
                "--no-tiny-polygon-reduction", "-j", json.dumps(TILE_WELLS_FROM)]
 
 
