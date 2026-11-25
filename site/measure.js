@@ -16,7 +16,7 @@
   try { performance.setResourceTimingBufferSize(10000); } catch (e) { /* the default 250 then */ }
   const R = { version: 1, loadedAt: Math.round(t0), userAgent: navigator.userAgent,
     screen: { w: innerWidth, h: innerHeight, dpr: devicePixelRatio }, idleMs: null, listMs: null,
-    late: false, atIdle: null, script: null, zoomOutBack: null, site: null, layers: null, done: false };
+    late: false, atIdle: null, firstLoad: null, script: null, zoomOutBack: null, site: null, layers: null, done: false };
   let ready, map = null;
   const done = new Promise(ok => { ready = ok; });
   window.osdMeasure = { result: R, done, run: () => runScript() };
@@ -123,6 +123,11 @@
   }
   function start() {
     R.atIdle = siteSinceLoad(); // the first-load budget (R-S7, E36): under 1 MB from the site
+    // Where the first load's time went: every request until the first idle, any origin, by when it ended.
+    const nav = performance.getEntriesByType('navigation')[0];
+    R.firstLoad = [nav, ...performance.getEntriesByType('resource')].filter(Boolean).map(e => ({
+      name: e.name.replace(/^https?:\/\//, '').slice(0, 120), start: Math.round(e.startTime), end: Math.round(e.responseEnd),
+      bytes: e.transferSize ?? null })).sort((a, b) => a.end - b.end);
     show();
     setTimeout(runScript, 500); // let the list settle; the readout already shows the load numbers
   }

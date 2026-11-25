@@ -6,6 +6,7 @@
    (q, k, l, t, dated, starter, sel, pick, map) plus `a` for access. The list follows the map window
    and is computed from records.json, never from the tiles (R-S7). */
 (async function () {
+  if (/[?&]measure=1(&|$)/.test(location.search)) document.head.appendChild(Object.assign(document.createElement('script'), { src: 'measure.js' })); // E50: the measuring mode, only on ?measure=1
   const BASEMAP = 'https://tiles.openfreemap.org/styles/liberty';
   const PMTILES_JS = 'https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js';
   const CLUSTER_BELOW_ZOOM = 7;   // as the live page and the build's well grids (E36)
