@@ -56,7 +56,7 @@ R6 says no timers. E46 defines area/1 and the count for any `kind`. From `block-
 5. *The surface, small, at the end of each country slice.* E48's switch shows Licences when the
    kind exists; the attribution shows "Licences: NSTA, read 24 Nov 2026" from `areas.json`; the
    row shows the blocks. J13 is lit with the first country.
-6. *Slices.* 0 terms (opens at once). 1 United Kingdom with the contract (`areas read`, the
+6. *Slices (order changed 25 Nov after slice 0 read the terms: OSD-D38, owner action 139).* 0 terms. 1 **Norway** with the contract; the United Kingdom is a later slice and only on the owner's answer. As first written: 0 terms (opens at once). 1 United Kingdom with the contract (`areas read`, the
    workflow, the count for licences). 2 Norway. 3 United States: BOEM leases; BLM only if its
    466,838 cases reduce to current leases holding a dataset inside the size budget, else a
    finding. Each country is one PR.
