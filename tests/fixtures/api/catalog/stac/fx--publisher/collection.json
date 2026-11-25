@@ -1,0 +1,16 @@
+{
+  "type": "Collection",
+  "id": "fx--publisher",
+  "title": "Publisher-only fixture",
+  "assets": {
+    "grid.csv": {
+      "href": "https://origin.fixture.invalid/publisher/grid.csv",
+      "title": "grid.csv",
+      "roles": [
+        "data"
+      ],
+      "file:size": 12,
+      "file:checksum": "12204d6537f48d2967725bfcc7a9f0d5094ce4088e0975fcd3f1a361f15f46e49f83"
+    }
+  }
+}

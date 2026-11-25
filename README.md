@@ -41,6 +41,25 @@ make verify       # network: reach every origin and write build/verification/
 make site         # http://localhost:8765
 ```
 
+## From Python
+
+```
+pip install "osd @ git+https://github.com/ophiolite-labs/open-subsurface-data"
+```
+
+```python
+import osd
+
+norne = osd.get("opm/norne")   # the files the catalogue lists, mirror first, each checked by sha256
+print(norne)                   # what arrived, from where, and what is left to do
+```
+
+`osd.get` reads the published catalogue, downloads to `./osd-data/<publisher>/<dataset>/` and
+writes `ATTRIBUTION.md` there; a file already present with the right digest is not fetched again.
+A dataset behind a sign-in returns no files and a `todo` line naming where to sign in; a file whose
+bytes do not match the recorded sha256 raises. `python -m osd.script opm/norne nlog/nlog -o get.py`
+writes the same kind of file for several datasets from a built catalogue.
+
 ## Contribute a dataset
 
 Copy `records/_template.yaml` to `records/<publisher>/<dataset>.yaml`, fill in what the

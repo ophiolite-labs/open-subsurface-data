@@ -1,0 +1,55 @@
+{
+  "records": [
+    {
+      "id": "fx/mirrored",
+      "title": "Mirrored fixture",
+      "origin": {
+        "url": "https://origin.fixture.invalid/mirrored/",
+        "access": "anonymous"
+      },
+      "licence": {
+        "name": "Creative Commons Attribution 4.0",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": false,
+        "statement": "Contains fixture data."
+      }
+    },
+    {
+      "id": "fx/publisher",
+      "title": "Publisher-only fixture",
+      "origin": {
+        "url": "https://origin.fixture.invalid/publisher/",
+        "access": "anonymous"
+      },
+      "licence": {
+        "name": "Creative Commons Attribution 4.0",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": false,
+        "statement": "Contains fixture data."
+      }
+    },
+    {
+      "id": "fx/signin",
+      "title": "Sign-in fixture",
+      "origin": {
+        "url": "https://origin.fixture.invalid/signin/",
+        "access": "registration"
+      },
+      "licence": {
+        "name": "Creative Commons Attribution 4.0",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "redistribution": "allowed",
+        "attribution": "required",
+        "share_alike": false,
+        "statement": "Contains fixture data."
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "type": "Collection",
+  "id": "fx--mirrored",
+  "title": "Mirrored fixture",
+  "assets": {
+    "well/A-1.las": {
+      "href": "https://origin.fixture.invalid/mirrored/well/A-1.las",
+      "title": "well/A-1.las",
+      "roles": [
+        "data"
+      ],
+      "file:size": 51,
+      "file:checksum": "1220c3efe396b4a5540098629d35e37186d516f1de60ada351955d9d561f45edc3c3",
+      "alternate": {
+        "mirror": {
+          "href": "https://mirror.fixture.invalid/mirror/fx/mirrored/c3efe396b4a5540098629d35e37186d516f1de60ada351955d9d561f45edc3c3/A-1.las"
+        }
+      }
+    },
+    "README": {
+      "href": "https://origin.fixture.invalid/mirrored/README",
+      "title": "README",
+      "roles": [
+        "data"
+      ],
+      "file:size": 15,
+      "file:checksum": "12202401991f812e1120dba531307019b3831c41d3727816b71e2feeeeedb3bbad86",
+      "alternate": {
+        "mirror": {
+          "href": "https://mirror.fixture.invalid/mirror/fx/mirrored/2401991f812e1120dba531307019b3831c41d3727816b71e2feeeeedb3bbad86/README"
+        }
+      }
+    }
+  }
+}
