@@ -121,7 +121,7 @@ line, the read date, J13).
 - F14 accepted in part: absent or repeated ids, failed joins, non-WGS84 layers, invalid geometry after simplification, a filter field absent: each a refusal with a test and a mutation. "Dissolve failure" does not arise in Norway (one row per licence; rows of one id are merged as E46 merges parts). "Stale retrieved" is not a guard: an unchanged read keeps the file and its date by design (inbox note 2).
 - F15 accepted: `osd validate` refuses a licence file whose `source.url` or `source.credit` does not appear in `areas/SOURCES.md`, where the terms are quoted.
 - F16 accepted: this lane owns `areas/SOURCES.md`'s Licences section; Norway only until another country is drawn.
-- F17 accepted: the AGENTS.md network sentence lands after E49 slice 4 merges (drafted in the PR).
+- F17 accepted: E49 slice 4 merged (8c68092); the AGENTS.md (and CLAUDE.md, a link to it) network sentence and the README sentence (OSD-D37) land in this slice.
 - F18 accepted: permissions and GitHub calls stated in the strategy and asserted by a test on `areas.yml`; `make check` never invokes it (test).
 - F19 accepted for slice 3: BLM needs a server-side filter before paging; Norway's 1,813 rows are read whole.
 - F20 accepted: `osd build` and `osd validate` read only committed files; a test runs them with the network patched to fail.

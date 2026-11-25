@@ -39,6 +39,9 @@ F15). An unchanged read rewrites nothing (inbox note 2).
 order) when the record sits in 1 to 25 licences; above 25 it has none and the row shows the length
 of `areas.licence` (F9).
 
+**The date on the page** (supervisor, answer 2): `retrieved` is the date of the read that produced the
+content, so the surface PR writes "Licences: Sodir, as of <date>", never "read <date>".
+
 **The schedule.** `.github/workflows/areas.yml`: weekly cron (Monday 05:17 UTC), dispatch (input
 `dry`, default true) and pull requests touching the workflow or `areas/licence/*.yaml` (always dry:
 acceptance 7 on this pull request). Permissions `contents: write`, `pull-requests: write`,
