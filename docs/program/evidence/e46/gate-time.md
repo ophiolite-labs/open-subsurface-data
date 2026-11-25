@@ -38,14 +38,28 @@ the area count 2 s cached / about 6 s cold.
 | 2. Two real-catalogue area tests under `full` where the gate already guards the rule: the area files' validation (the gate's `make validate` runs `osd validate`, which reads them) and the real record made national (fixture `test_national_dataset_lights_its_country_only`). The 25 MB budget and every national record in the catalogue stay in the gate. | `tests/test_areas.py` | 4.5-7.8 s in the longer half |
 | 3. The CI site test runs `npm run site-test` on the `site/data/` that `make check` staged instead of `make site-test`, which built the catalogue a second time. | `.github/workflows/ci.yml` | site test step 162 s -> 135-139 s |
 | Tile runs side by side | already in #95 (`build.py`) | (in the before numbers) |
-| CI cache of `build/areas-cache`, `build/tiles` | not added: the numbers did not need it | |
+| 4. CI keeps `build/tiles` and `build/areas-cache` (`actions/cache`). Both are content-addressed inside, so an older copy that does not match is ignored and rebuilt; the count cache's key also holds `src/osd/areas.py`, so a change to the count's code never reads an older count. | `.github/workflows/ci.yml` | outline tiling, about 110 CPU-seconds of the 4 cores (38 s wall alone, measured locally), and the cold count twice; see the runs below |
 
-No test left the gate except the two in cut 2, each guarded in the gate by the named station or test.
+Cut 4 was needed: with cuts 1-3 alone, three runs of commit 78fecf6 (after E51 added `test_areas_read.py` and the licence kind) took 96 s, 122 s and 76 s (run 45660870660). No test left the gate except the two in cut 2, each guarded in the gate by the named station or test.
 `node --test` already runs the site test files side by side (one process per file); the shop journeys
 file is the long one (about 85 s), so splitting it further belongs to its owner.
 
-After the cuts the long pole is the `build` target (Python build plus tiling, about 72 s), not pytest.
 
 ## After (three consecutive runs of the final commit)
 
-RESULTS
+Commit 57f42d2, run 45664911769, four attempts in a row:
+
+| Attempt | Caches | `make check` step | pytest, rest / real-build half | site test step |
+|---|---|---|---|---|
+| 1 | empty (first run of the key) | 123 s | 85 s / 117 s | 197 s |
+| 2 | restored | 54 s | 39 s / 54 s | 130 s |
+| 3 | restored | 45 s | 41 s / 45 s | 137 s |
+| 4 | restored | 57 s | 39 s / 56 s | 140 s |
+
+Attempts 2-4 are the three consecutive runs under 120 s. Attempt 1 is the cost when the caches are empty: the
+first PR run after a change to outlines (tiles) or to `src/osd/areas.py` (count), or after GitHub evicts the
+cache (7 days unused). It was 123 s on a slow runner and 96 s on a fast one (78fecf6 attempt 1). Pushes to main
+save the caches, and a PR restores main's through the `restore-keys` prefix.
+
+What is left on the table, outside this claim: `test_records::test_repository_records_and_outlines_are_valid`
+(9-27 s) checks what `make validate` checks beside it; it belongs to its owner to mark `full`.
