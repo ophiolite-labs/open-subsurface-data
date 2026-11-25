@@ -30,7 +30,7 @@
 | T5 | `<var>`: the part after `/`, lower-case, every character outside `[a-z0-9_]` to `_`; leading digit gets `d_`; a Python keyword or `osd` gets a trailing `_`; a repeat gets `_2`, `_3`, … |
 | T6 | Comment, entry with assets: `<n> file(s) from our mirror` (alternate present and sha256 stated) / `<n> file(s) from the publisher` / `<n> files: <m> from our mirror and <p> from the publisher`; then `, checked` when every asset has a sha256, `, no checksum recorded` when none, `, <k> checked` otherwise. |
 | T7 | Comment, entry without assets: `sign-in needed: left out, sign in at <origin_url>` (registration), `request needed: left out, ask at <origin_url>` (request), `for sale: left out, see <origin_url>` (purchase), `no file address known: left out, see <origin_url>` (other). |
-| T8 | Blank line, then `print(<var>)` for each dataset in order (slice 2 adds two reader lines for the first dataset with a `.las` asset). File ends with one newline. |
+| T8 | Blank line, then `print(<var>)` for each dataset in order. Slice 2: then a blank line and two reader lines for the first dataset (in order) with a `.las` asset: `logs = <var>.well_logs()  # a table per well`, `print(next(iter(logs.values())).head())`; failing that the first with `.csv` (`tables = <var>.tables()  # a table per file`, same print), failing that `.sgy`/`.segy` (`cubes = <var>.segy()  # headers per SEG-Y file`, `print(next(iter(cubes.values())))`); none when no dataset has such files. File ends with one newline. |
 
 ## Acceptance line -> test (`tests/test_api.py`, `tests/test_script.py`; fixture catalogue `tests/fixtures/api/catalog/`)
 

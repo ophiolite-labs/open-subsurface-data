@@ -209,3 +209,86 @@ def test_api_and_cli_leave_identical_trees(tmp_path, monkeypatch, capsys):
     assert len(seen) == 2 and seen[0] == seen[1], "both paths hand the same manifest entries to get.get"
     assert _tree(tmp_path / "api") == _tree(tmp_path / "cli") and len(_tree(tmp_path / "api")) == 3
     assert str(ds).splitlines()[1:] == printed[:-1] and printed[-1].startswith("attribution -> ")
+
+
+# --- slice 2: readers (acceptance 6, 7) ----------------------------------------------------------------
+
+def _fixture_run(code: str, cwd: Path, block: bool = False):
+    """A subprocess with the fixture catalogue and an injected opener set by this test, never by osd."""
+    pre = ("import json, sys, importlib.abc\n"
+           "class Block(importlib.abc.MetaPathFinder):\n"
+           "    def find_spec(self, name, path, target=None):\n"
+           "        if name.split('.')[0] in ('lasio', 'segyio', 'pandas'):\n"
+           "            raise ImportError(f'blocked {name}')\n"
+           + ("sys.meta_path.insert(0, Block())\n" if block else "")
+           + "import osd.api\n"
+           f"bodies = json.loads(open({str(FX / 'transport.json')!r}).read())\n"
+           "def opener(url):\n"
+           "    from osd.verify import FetchError\n"
+           "    if url not in bodies: raise FetchError(url, 404)\n"
+           "    return [bodies[url].encode()]\n"
+           f"osd.api.DEFAULT_CATALOG = {str(FX / 'catalog')!r}\n"
+           "osd.api.http_open = opener\n")
+    return subprocess.run([sys.executable, "-c", pre + code], cwd=cwd, check=False, capture_output=True, text=True)
+
+
+def test_golden_runs_offline(tmp_path):
+    """Acceptance 6: the golden file, as written, exits 0 and prints the first rows of a well log."""
+    r = _fixture_run(f"import runpy; runpy.run_path({str(FX / 'golden.py')!r}, run_name='__main__')\n", tmp_path)
+    assert r.returncode == 0, r.stderr
+    assert "GR" in r.stdout and "45.1" in r.stdout and "-> https://origin.fixture.invalid/signin/" in r.stdout
+    assert (tmp_path / "osd-data/fx/mirrored/fx--mirrored/well/A-1.las").is_file()
+
+
+def test_readers_missing_name_the_extra(tmp_path):
+    """Acceptance 7 (F17): with lasio, segyio and pandas blocked, osd and its commands work, a reader names the extra."""
+    code = ("import pkgutil, importlib, osd\n"
+            "for m in pkgutil.iter_modules(osd.__path__): importlib.import_module('osd.' + m.name)\n"
+            "from osd import cli, script\n"
+            f"assert cli.main(['manifest', 'fx/mirrored', '--catalog', {str(FX / 'catalog')!r}, '-o', 'm.json']) == 0\n"
+            f"assert script.main(['fx/mirrored', '--catalog', {str(FX / 'catalog')!r}]) == 0\n"
+            "d = osd.get('fx/mirrored')\n"
+            "for reader in (d.well_logs, d.segy, d.tables):\n"
+            "    try: reader()\n"
+            "    except ImportError as e: print('IMPORT', e)\n"
+            "    except ValueError as e: print('VALUE', e)\n")
+    r = _fixture_run(code, tmp_path, block=True)
+    assert r.returncode == 0, r.stderr
+    lines = [x for x in r.stdout.splitlines() if x.startswith(("IMPORT", "VALUE"))]
+    assert lines[0] == ("IMPORT reading these files needs lasio, which is not installed: pip install "
+                        '"osd[readers] @ git+https://github.com/ophiolite-labs/open-subsurface-data"')
+    assert lines[1].startswith("IMPORT reading these files needs segyio") and lines[2].startswith("IMPORT")
+
+
+def test_well_logs_and_tables(tmp_path, t):
+    d = osd.get("fx/mirrored", dest=tmp_path, catalog=CATALOG, opener=t)
+    logs = d.well_logs()
+    assert list(logs) == ["A-1"] and list(logs["A-1"]["GR"]) == [45.1, 47.3, 50.2]
+    assert logs["A-1"].index.name == "DEPT"
+    with pytest.raises(ValueError, match=r"fx/mirrored has no \.csv files for tables\(\) \(it has: \(no extension\), \.las\)"):
+        d.tables()
+    p = osd.get("fx/publisher", dest=tmp_path, catalog=CATALOG, opener=t)
+    assert p.tables()["grid.csv"].to_dict("records") == [{"x": 1, "y": 2, "z": 3}]
+
+
+def test_repeated_well_name_keeps_both(tmp_path, t):
+    from osd import readers
+    las = (FX / "transport.json").read_text()
+    body = next(v for k, v in json.loads(las).items() if k.endswith("A-1.las"))
+    files = []
+    for k in ("a/A-1.las", "b/A-1.las"):
+        (tmp_path / k).parent.mkdir(parents=True)
+        (tmp_path / k).write_text(body)
+        files.append(api.File(k, tmp_path / k, len(body), None, "publisher", "no checksum recorded"))
+    assert list(readers.well_logs("x/y", files)) == ["A-1", "A-1 (b/A-1.las)"]
+
+
+def test_segy_headers(tmp_path):
+    import numpy as np
+    import segyio
+
+    from osd import readers
+    p = tmp_path / "cube.sgy"
+    segyio.tools.from_array2D(str(p), np.zeros((3, 50), dtype=np.float32), dt=4000)
+    info = readers.segy("x/y", [api.File("cube.sgy", p, p.stat().st_size, None, "publisher", "no checksum recorded")])
+    assert (info["cube.sgy"].traces, info["cube.sgy"].samples, info["cube.sgy"].interval_us) == (3, 50, 4000.0)

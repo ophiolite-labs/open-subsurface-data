@@ -44,7 +44,7 @@ make site         # http://localhost:8765
 ## From Python
 
 ```
-pip install "osd @ git+https://github.com/ophiolite-labs/open-subsurface-data"
+pip install "osd[readers] @ git+https://github.com/ophiolite-labs/open-subsurface-data"
 ```
 
 ```python
@@ -53,6 +53,10 @@ import osd
 norne = osd.get("opm/norne")   # the files the catalogue lists, mirror first, each checked by sha256
 print(norne)                   # what arrived, from where, and what is left to do
 ```
+
+With the extra `osd[readers]` (lasio, segyio, pandas) a dataset opens its common kinds:
+`well_logs()` (LAS, a table per well), `segy()` (SEG-Y headers) and `tables()` (CSV). Without it
+`import osd` and every command work; a reader says what to install.
 
 `osd.get` reads the published catalogue, downloads to `./osd-data/<publisher>/<dataset>/` and
 writes `ATTRIBUTION.md` there; a file already present with the right digest is not fetched again.
