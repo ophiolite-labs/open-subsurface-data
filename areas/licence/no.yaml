@@ -1,0 +1,32 @@
+# Norway's production licences, read by `osd areas read no` (E51) from the Norwegian Offshore Directorate
+# (Sodir) FactMaps service; terms quoted in areas/SOURCES.md (Licences) and docs/program/evidence/e51/terms.md.
+# The file it writes, no.geojson, carries NLOD 2.0 and the credit below, not CC0 (OSD-D37).
+# licences: one row per licence; `current` keeps the licences in force (prlStatus ACTIVE; 1,277 of 1,813 rows
+# were INACTIVE on 25 Nov 2026); area_id is NO:<id>, the regulator's stable number.
+# blocks: rows per licence and block; `licence` joins licences.join, `block` joins block_layer.id; the name
+# shown is block_layer.name.
+country: "NO"
+service: "https://factmaps.sodir.no/api/rest/services/Factmaps/FactMapsWGS84/FeatureServer"
+licences:
+  layer: 616            # Production licence, all - current with geometry
+  id: prlNpdidLicence
+  name: prlName
+  name_prefix: "PL "
+  join: prlName
+  current: {field: prlStatus, op: "=", value: ACTIVE}
+  edition: prlDateUpdatedMax
+blocks:
+  layer: 615            # Production licence, current - by block and operator
+  licence: prlName
+  block: blcNpdidBlock
+block_layer:
+  layer: 802            # Blocks
+  id: blcNpdidBlock
+  name: blcName
+tolerance_m: 100
+decimals: 4
+source:
+  name: "Norwegian Offshore Directorate (Sodir) FactMaps, production licences (layer 616) and blocks (615, 802)"
+  url: "https://factmaps.sodir.no/api/rest/services/Factmaps/FactMapsWGS84/FeatureServer/616"
+  licence: "Norwegian Licence for Open Government Data (NLOD) 2.0, https://data.norge.no/nlod/en/2.0; simplified by Open Subsurface Data"
+  credit: "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by Norwegian Offshore Directorate"

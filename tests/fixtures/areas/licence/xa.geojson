@@ -1,0 +1,92 @@
+{
+ "type": "FeatureCollection",
+ "kind": "licence",
+ "source": {
+  "name": "fixture regulator",
+  "url": "https://example.org/licences",
+  "licence": "public domain",
+  "credit": "Fixture regulator",
+  "edition": "2026-11-24",
+  "retrieved": "2026-11-25",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "area_id": "XA:P1",
+    "name": "P1",
+    "country": "XA",
+    "blocks": [
+     "7/9",
+     "7/12"
+    ]
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       4.5,
+       6.5
+      ],
+      [
+       5.5,
+       6.5
+      ],
+      [
+       5.5,
+       7.5
+      ],
+      [
+       4.5,
+       7.5
+      ],
+      [
+       4.5,
+       6.5
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "area_id": "XA:P2",
+    "name": "P2",
+    "country": "XA",
+    "blocks": [
+     "8/1"
+    ]
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       8,
+       8.5
+      ],
+      [
+       9,
+       8.5
+      ],
+      [
+       9,
+       9.5
+      ],
+      [
+       8,
+       9.5
+      ],
+      [
+       8,
+       8.5
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

@@ -74,3 +74,5 @@ See `CONTRIBUTING.md`.
 
 Code: Apache-2.0 (`LICENSE`). Records and outlines: CC0 1.0 (`records/LICENSE`), facts about
 public datasets. The datasets themselves keep their publishers' licences, named in each record.
+Licence outlines (`areas/licence/`) are not CC0: each keeps its publisher's licence and credit line, as
+`areas/SOURCES.md` states (OSD-D37).

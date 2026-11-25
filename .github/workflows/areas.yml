@@ -1,0 +1,74 @@
+# E51 (OSD-D29: the one timer, by owner decision): read each country's licences from its regulator weekly with
+# `osd areas read` and open (or update) one pull request "Licences read <date>" when a file changed. `check`
+# gates that pull request like any change and the supervisor merges it: this workflow never pushes to main.
+# A refused read (no answer, empty, more than a fifth of the licences missing, a failed join) changes nothing
+# and comments on the country's standing issue "Licences: <CC> read refused".
+# Network: the regulators' public licence layers (osd areas read) and GitHub (git push of the branch
+# areas-read, gh pr create/edit, gh issue create/comment). `make check` never runs this.
+# Dispatch is dry unless `dry` is false; a pull request touching this file or a country's rule runs it dry.
+name: areas
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: "read and print the summary only; open no pull request, comment on no issue"
+        type: boolean
+        default: true
+  pull_request:
+    paths: [".github/workflows/areas.yml", "areas/licence/*.yaml"]
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+concurrency:
+  group: areas
+  cancel-in-progress: false
+jobs:
+  read:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      DRY: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry) }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with: { python-version: "3.12" }
+      - run: uv sync --frozen || uv sync
+      - name: read (one line per country; a refusal keeps the committed file)
+        id: read
+        run: |
+          set +e
+          uv run osd areas read no --summary build/areas-read
+          echo "refused=$?" >> "$GITHUB_OUTPUT"
+      - name: the diff summary
+        run: |
+          cat build/areas-read/pr-title.txt build/areas-read/pr-body.md
+          git diff --stat -- areas/licence
+          for f in build/areas-read/issue-*.md; do [ -e "$f" ] && cat "$f"; done; true
+      - name: open or update the pull request
+        if: env.DRY != 'true'
+        run: |
+          git diff --quiet -- areas/licence && { echo "no licence file changed"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c areas-read
+          git add areas/licence
+          git commit -q -m "$(cat build/areas-read/pr-title.txt)"
+          git push --force origin HEAD:refs/heads/areas-read
+          if gh pr view areas-read --json state -q .state 2>/dev/null | grep -qx OPEN; then
+            gh pr edit areas-read --title "$(cat build/areas-read/pr-title.txt)" --body-file build/areas-read/pr-body.md
+          else
+            gh pr create --base main --head areas-read --title "$(cat build/areas-read/pr-title.txt)" --body-file build/areas-read/pr-body.md
+          fi
+      - name: comment on the standing issue of each refused country
+        if: env.DRY != 'true' && steps.read.outputs.refused != '0'
+        run: |
+          for f in build/areas-read/issue-*.md; do
+            title=$(head -n1 "$f"); tail -n +2 "$f" > /tmp/comment.md
+            n=$(gh issue list --state open --search "in:title \"$title\"" --json number,title -q ".[] | select(.title == \"$title\") | .number" | head -n1)
+            [ -n "$n" ] || n=$(gh issue create --title "$title" --body "The standing issue of this country's licence read (E51, areas workflow)." | grep -o '[0-9]*$')
+            gh issue comment "$n" --body-file /tmp/comment.md
+          done
