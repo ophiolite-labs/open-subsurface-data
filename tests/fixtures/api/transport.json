@@ -1,7 +1,7 @@
 {
   "https://mirror.fixture.invalid/mirror/fx/mirrored/2401991f812e1120dba531307019b3831c41d3727816b71e2feeeeedb3bbad86/README": "fixture readme\n",
-  "https://mirror.fixture.invalid/mirror/fx/mirrored/c3efe396b4a5540098629d35e37186d516f1de60ada351955d9d561f45edc3c3/A-1.las": "~VERSION\nVERS. 2.0\n~WELL\nWELL. A-1\n~ASCII\n1000 1.5\n",
+  "https://mirror.fixture.invalid/mirror/fx/mirrored/77594189e8d38e547f3e3cf15c3024145f2cf8bc6faba74d261c86ae84ac14fd/A-1.las": "~VERSION INFORMATION\n VERS.   2.0 : CWLS LOG ASCII STANDARD - VERSION 2.0\n WRAP.   NO  : ONE LINE PER DEPTH STEP\n~WELL INFORMATION\n STRT.M  1000.0 : START DEPTH\n STOP.M  1001.0 : STOP DEPTH\n STEP.M  0.5 : STEP\n NULL.   -999.25 : NULL VALUE\n WELL.   A-1 : WELL\n~CURVE INFORMATION\n DEPT.M    : DEPTH\n GR  .GAPI : GAMMA RAY\n~ASCII\n1000.0 45.1\n1000.5 47.3\n1001.0 50.2\n",
   "https://origin.fixture.invalid/mirrored/README": "fixture readme\n",
-  "https://origin.fixture.invalid/mirrored/well/A-1.las": "~VERSION\nVERS. 2.0\n~WELL\nWELL. A-1\n~ASCII\n1000 1.5\n",
+  "https://origin.fixture.invalid/mirrored/well/A-1.las": "~VERSION INFORMATION\n VERS.   2.0 : CWLS LOG ASCII STANDARD - VERSION 2.0\n WRAP.   NO  : ONE LINE PER DEPTH STEP\n~WELL INFORMATION\n STRT.M  1000.0 : START DEPTH\n STOP.M  1001.0 : STOP DEPTH\n STEP.M  0.5 : STEP\n NULL.   -999.25 : NULL VALUE\n WELL.   A-1 : WELL\n~CURVE INFORMATION\n DEPT.M    : DEPTH\n GR  .GAPI : GAMMA RAY\n~ASCII\n1000.0 45.1\n1000.5 47.3\n1001.0 50.2\n",
   "https://origin.fixture.invalid/publisher/grid.csv": "x,y,z\n1,2,3\n"
 }

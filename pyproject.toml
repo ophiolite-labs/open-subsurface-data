@@ -12,11 +12,15 @@ dependencies = [
   "stac-validator==3.11.0",
 ]
 
+[project.optional-dependencies]
+# E49: the readers of `osd.get(...)` datasets; never needed by the catalogue tools or `import osd`
+readers = ["lasio>=0.31", "segyio>=1.9", "pandas>=2.0"]
+
 [project.scripts]
 osd = "osd.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "ruff>=0.6", "lasio>=0.31", "segyio>=1.9", "pandas>=2.0"]   # readers: the gate tests them (E49)
 
 [build-system]
 requires = ["hatchling"]

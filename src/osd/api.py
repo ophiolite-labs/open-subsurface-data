@@ -68,6 +68,21 @@ class Dataset:
     outcomes: tuple[get_mod.Outcome, ...]
     manifest: mf.Manifest
 
+    def well_logs(self) -> dict:
+        """LAS files -> {well name: pandas.DataFrame} (needs the extra `osd[readers]`)."""
+        from . import readers
+        return readers.well_logs(self.id, self.files)
+
+    def segy(self) -> dict:
+        """SEG-Y files -> {file key: readers.SegyInfo} (needs `osd[readers]`)."""
+        from . import readers
+        return readers.segy(self.id, self.files)
+
+    def tables(self) -> dict:
+        """CSV files -> {file key: pandas.DataFrame} (needs `osd[readers]`)."""
+        from . import readers
+        return readers.tables(self.id, self.files)
+
     def __str__(self) -> str:
         return "\n".join([f"{self.id}: {self.title} -> {self.path}",
                           *get_mod.summary(self.manifest, list(self.outcomes))])

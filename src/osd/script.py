@@ -17,7 +17,7 @@ from pathlib import Path
 from . import manifest as mf
 from . import paths
 
-INSTALL = 'pip install "osd @ git+https://github.com/ophiolite-labs/open-subsurface-data"'
+INSTALL = 'pip install "osd[readers] @ git+https://github.com/ophiolite-labs/open-subsurface-data"'
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 LEFT_OUT = {"registration": "sign-in needed: left out, sign in at {}",
             "request": "request needed: left out, ask at {}",
@@ -61,6 +61,22 @@ def comment(entry: dict) -> str:
     return f"{where}, {checked}"
 
 
+READERS = ((".las", "logs", "well_logs", "a table per well"),
+           (".csv", "tables", "tables", "a table per file"),
+           ((".sgy", ".segy"), "cubes", "segy", "headers per SEG-Y file"))
+
+
+def reader_lines(entries: list[dict], names: list[str]) -> list[str]:
+    """T8: two lines for the first dataset with LAS files, else CSV, else SEG-Y; none if no dataset has any."""
+    for ext, var, method, what in READERS:
+        for e, name in zip(entries, names, strict=True):
+            if any(k.lower().endswith(ext) for k in e["assets"]):
+                show = f"print(next(iter({var}.values())))" if method == "segy" else \
+                    f"print(next(iter({var}.values())).head())"
+                return ["", f"{var} = {name}.{method}()  # {what}", show]
+    return []
+
+
 def render(entries: list[dict], today: date) -> str:
     taken: set[str] = set()
     code = [(f'{variable(e["record_id"], taken)} = osd.get("{e["record_id"]}")', comment(e)) for e in entries]
@@ -70,7 +86,8 @@ def render(entries: list[dict], today: date) -> str:
              f"for {_plural(n, 'dataset')}"),
              f"# {INSTALL}", "", "import osd", ""]
     lines += [f"{c:<{width}}# {why}" for c, why in code]
-    lines += [""] + [f"print({c.split(' = ', 1)[0]})" for c, _ in code]
+    names = [c.split(" = ", 1)[0] for c, _ in code]
+    lines += [""] + [f"print({v})" for v in names] + reader_lines(entries, names)
     return "\n".join(lines) + "\n"
 
 
