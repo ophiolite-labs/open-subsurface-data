@@ -1,0 +1,664 @@
+{
+ "README": "E51 slice 1: a small Sodir FactMaps service (tests/test_areas_read.py serves it as ArcGIS answers). 616 pages by 2 (three pages); 003 is INACTIVE (relinquished); 002 B has two parts; 615 repeats the row 001/block 1 once.",
+ "616": {
+  "description": {
+   "name": "Production licence, all - current with geometry",
+   "maxRecordCount": 2,
+   "objectIdField": "OBJECTID",
+   "geometryType": "esriGeometryPolygon",
+   "advancedQueryCapabilities": {
+    "supportsPagination": true
+   },
+   "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+   },
+   "fields": [
+    {
+     "name": "OBJECTID",
+     "type": "esriFieldTypeOID"
+    },
+    {
+     "name": "prlNpdidLicence",
+     "type": "esriFieldTypeInteger"
+    },
+    {
+     "name": "prlName",
+     "type": "esriFieldTypeString"
+    },
+    {
+     "name": "prlStatus",
+     "type": "esriFieldTypeString"
+    },
+    {
+     "name": "prlDateUpdatedMax",
+     "type": "esriFieldTypeDate"
+    }
+   ]
+  },
+  "features": [
+   {
+    "attributes": {
+     "OBJECTID": 1,
+     "prlNpdidLicence": 101,
+     "prlName": "001",
+     "prlStatus": "ACTIVE",
+     "prlDateUpdatedMax": 1764086400000
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        2,
+        58
+       ],
+       [
+        2,
+        59
+       ],
+       [
+        3,
+        59
+       ],
+       [
+        3,
+        58
+       ],
+       [
+        2,
+        58
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 2,
+     "prlNpdidLicence": 102,
+     "prlName": "002 B",
+     "prlStatus": "ACTIVE",
+     "prlDateUpdatedMax": 1764172800000
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        3,
+        58
+       ],
+       [
+        3,
+        59
+       ],
+       [
+        3.5,
+        59
+       ],
+       [
+        3.5,
+        58
+       ],
+       [
+        3,
+        58
+       ]
+      ],
+      [
+       [
+        3.6,
+        58
+       ],
+       [
+        3.6,
+        59
+       ],
+       [
+        4,
+        59
+       ],
+       [
+        4,
+        58
+       ],
+       [
+        3.6,
+        58
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 3,
+     "prlNpdidLicence": 103,
+     "prlName": "003",
+     "prlStatus": "INACTIVE",
+     "prlDateUpdatedMax": 1764259200000
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        2,
+        59
+       ],
+       [
+        2,
+        60
+       ],
+       [
+        3,
+        60
+       ],
+       [
+        3,
+        59
+       ],
+       [
+        2,
+        59
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 4,
+     "prlNpdidLicence": 104,
+     "prlName": "015",
+     "prlStatus": "ACTIVE",
+     "prlDateUpdatedMax": 1764345600000
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        3,
+        59
+       ],
+       [
+        3,
+        60
+       ],
+       [
+        4,
+        60
+       ],
+       [
+        4,
+        59
+       ],
+       [
+        3,
+        59
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 5,
+     "prlNpdidLicence": 105,
+     "prlName": "004",
+     "prlStatus": "ACTIVE",
+     "prlDateUpdatedMax": 1764432000000
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        2,
+        60
+       ],
+       [
+        2,
+        60.5
+       ],
+       [
+        2.5,
+        60.5
+       ],
+       [
+        2.5,
+        60
+       ],
+       [
+        2,
+        60
+       ]
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ "615": {
+  "description": {
+   "name": "Production licence, current - by block and operator",
+   "maxRecordCount": 1000,
+   "objectIdField": "OBJECTID",
+   "geometryType": "esriGeometryPolygon",
+   "advancedQueryCapabilities": {
+    "supportsPagination": true
+   },
+   "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+   },
+   "fields": [
+    {
+     "name": "OBJECTID",
+     "type": "esriFieldTypeOID"
+    },
+    {
+     "name": "prlName",
+     "type": "esriFieldTypeString"
+    },
+    {
+     "name": "blcNpdidBlock",
+     "type": "esriFieldTypeInteger"
+    }
+   ]
+  },
+  "features": [
+   {
+    "attributes": {
+     "OBJECTID": 1,
+     "prlName": "001",
+     "blcNpdidBlock": 1
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 2,
+     "prlName": "001",
+     "blcNpdidBlock": 2
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 3,
+     "prlName": "002 B",
+     "blcNpdidBlock": 3
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 4,
+     "prlName": "015",
+     "blcNpdidBlock": 4
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 5,
+     "prlName": "004",
+     "blcNpdidBlock": 1
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 6,
+     "prlName": "001",
+     "blcNpdidBlock": 1
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   }
+  ]
+ },
+ "802": {
+  "description": {
+   "name": "Blocks",
+   "maxRecordCount": 1000,
+   "objectIdField": "OBJECTID",
+   "geometryType": "esriGeometryPolygon",
+   "advancedQueryCapabilities": {
+    "supportsPagination": true
+   },
+   "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+   },
+   "fields": [
+    {
+     "name": "OBJECTID",
+     "type": "esriFieldTypeOID"
+    },
+    {
+     "name": "blcNpdidBlock",
+     "type": "esriFieldTypeInteger"
+    },
+    {
+     "name": "blcName",
+     "type": "esriFieldTypeString"
+    }
+   ]
+  },
+  "features": [
+   {
+    "attributes": {
+     "OBJECTID": 1,
+     "blcNpdidBlock": 1,
+     "blcName": "1/2"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 2,
+     "blcNpdidBlock": 2,
+     "blcName": "1/12"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 3,
+     "blcNpdidBlock": 3,
+     "blcName": "1/9"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 4,
+     "blcNpdidBlock": 4,
+     "blcName": "2/1"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 5,
+     "blcNpdidBlock": 5,
+     "blcName": "2/2"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0.1
+       ],
+       [
+        0.1,
+        0.1
+       ],
+       [
+        0.1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ]
+     ]
+    }
+   }
+  ]
+ }
+}

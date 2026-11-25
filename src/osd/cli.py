@@ -121,6 +121,31 @@ def cmd_verify(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_areas_read(a: argparse.Namespace, get=None, today: str | None = None) -> int:
+    """Network (E51): the named regulators' public licence layers, nothing else. Exit 1 when any read was
+    refused; the committed file of that country stays as it was."""
+    from . import areas as areas_mod
+
+    today = today or datetime.now(UTC).date().isoformat()
+    get = get or areas_mod.http_get()
+    summaries = [areas_mod.read_to_file(cc, get, today, Path(a.areas)) for cc in a.country]
+    for s in summaries:
+        print(f"{s['country']}: {s['status']}, licences {s['before']} -> {s['after']} (+{s['added']} -{s['removed']})"
+              + (f"; refused: {s['finding']}" if s["finding"] else ""))
+    if a.summary:
+        out = Path(a.summary)
+        out.mkdir(parents=True, exist_ok=True)
+        for s in summaries:
+            (out / f"{s['country'].lower()}.json").write_text(json.dumps(s, indent=2) + "\n")
+            if s["status"] == "refused":
+                title, body = areas_mod.issue_text(s, today)
+                (out / f"issue-{s['country'].lower()}.md").write_text(f"{title}\n{body}")
+        title, body = areas_mod.pr_text(summaries, today)
+        (out / "pr-title.txt").write_text(title + "\n")
+        (out / "pr-body.md").write_text(body)
+    return 1 if any(s["status"] == "refused" for s in summaries) else 0
+
+
 def cmd_areas_prepare(a: argparse.Namespace) -> int:
     """Local only (E46): a publisher's file already on this machine to areas/<kind>.geojson."""
     from . import areas as areas_mod
@@ -410,6 +435,13 @@ def main(argv: list[str] | None = None) -> int:
     pap.add_argument("file", help="the publisher's file as fetched (GeoJSON, .shp or .zip)")
     pap.add_argument("--areas", default=str(paths.AREAS_DIR))
     pap.set_defaults(fn=cmd_areas_prepare)
+    par = asub.add_parser("read", help="network: read a country's licences from its regulator (E51) to "
+                          "areas/licence/<cc>.geojson; a refused read leaves the committed file")
+    par.add_argument("country", nargs="+", help="ISO code with an areas/licence/<cc>.yaml, e.g. no")
+    par.add_argument("--areas", default=str(paths.AREAS_DIR))
+    par.add_argument("--summary", metavar="DIR", help="write <cc>.json per country, pr-title.txt, pr-body.md "
+                     "and issue-<cc>.md for each refused read (the areas workflow)")
+    par.set_defaults(fn=cmd_areas_read)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)
     pn = sub.add_parser("new", help="scaffold records/<id>.yaml from a dataset page (reads its title)")
     pn.add_argument("url")

@@ -102,3 +102,26 @@ have merged; paths `areas/licence/**`, `src/osd/areas.py` (the reader and the `b
 (new, announced), `AGENTS.md`, `CLAUDE.md` (network sentence), `tests/test_areas_read.py`,
 `tests/fixtures/areas/licence/**`, `site/shop.js`, `tests/site/shop.test.mjs` (the row's blocks
 line, the read date, J13).
+
+**Dispositions of the Codex round (slice 1 lane, 25 Nov 2026; strategy `E51-licences-per-country-STRATEGY.md`).**
+
+- F1 accepted as context: the readers are `layers.export_layer` (ArcGIS, reused whole) and `export_wfs`; the 50,000 cap stays.
+- F2 accepted: `verify.yml` also runs on pull requests touching records or outlines; nothing here depends on it.
+- F3 noted: OSD-D29 is the exception to R6; `areas.yml` is the only timer.
+- F4 resolved by time: E46 slice 0 and 1 merged (area/1, record/6, the count, `areas/SOURCES.md`); area/1 already holds `kind: licence`, `country` and `blocks`.
+- F5 accepted: the services, layers and counts are now in the strategy from the lane's own read (25 Nov), and in `areas/licence/no.yaml`.
+- F6 accepted, no version bump needed: area/1 carries `blocks` and `country` since E46; `retrieved` per country is the source of each file in `areas.json`. `records[].blocks` is a build output field, documented in `build.py` (records.json has no schema).
+- F7 accepted: `areas/licence/<cc>.yaml` has a fixed shape, checked by `read_config` (keys in the strategy); ArcGIS only in this slice; WGS84 required.
+- F8 accepted, design changed: the join is named per country (licence key, block key, block-name layer); Norway joins 616 `prlName` to 615 `prlName`, 615 `blcNpdidBlock` to 802 `blcNpdidBlock`, name from 802 `blcName`. A licence without blocks, a block row of no current licence and a block id missing from 802 refuse the read. One `retrieved` per file; a country with two services (the United Kingdom) gets one file per service.
+- F9 accepted: `records[].blocks` is a sorted list of block names, present when the record sits in 1 to 25 licences; otherwise absent, and the count is the length of `records[].areas.licence`.
+- F10 accepted, design changed: `current` is `{field, op, value}` per country (Norway `prlStatus = ACTIVE`, 1,277 of 1,813 rows are not); the fixture carries an INACTIVE licence; a layer without the field refuses the read.
+- F11 accepted, design changed: one rule, "more than a fifth of the committed licences missing from the read" refuses; tested at exactly a fifth (read) and above (refused), and with the same count and other ids (refused).
+- F12 accepted: acceptance 5 requires at least one Norwegian licence holding a dataset (test on the real build); the numbers are in the PR.
+- F13 accepted: the PR and issue texts are built by `osd.areas.pr_text`/`issue_text` and unit-tested; the workflow's dry run on its own pull request proves the read and the summary; cron and the GitHub calls are stated, not run in `check`.
+- F14 accepted in part: absent or repeated ids, failed joins, non-WGS84 layers, invalid geometry after simplification, a filter field absent: each a refusal with a test and a mutation. "Dissolve failure" does not arise in Norway (one row per licence; rows of one id are merged as E46 merges parts). "Stale retrieved" is not a guard: an unchanged read keeps the file and its date by design (inbox note 2).
+- F15 accepted: `osd validate` refuses a licence file whose `source.url` or `source.credit` does not appear in `areas/SOURCES.md`, where the terms are quoted.
+- F16 accepted: this lane owns `areas/SOURCES.md`'s Licences section; Norway only until another country is drawn.
+- F17 accepted: the AGENTS.md network sentence lands after E49 slice 4 merges (drafted in the PR).
+- F18 accepted: permissions and GitHub calls stated in the strategy and asserted by a test on `areas.yml`; `make check` never invokes it (test).
+- F19 accepted for slice 3: BLM needs a server-side filter before paging; Norway's 1,813 rows are read whole.
+- F20 accepted: `osd build` and `osd validate` read only committed files; a test runs them with the network patched to fail.

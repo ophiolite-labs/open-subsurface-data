@@ -28,7 +28,8 @@ Outputs (build/catalog/):
                    document; the record in records.json lists the pack ids in `starters` (only records
                    with a pack carry the key). A refused or unchecked pack is printed, never published
   areas.json      the areas that hold at least one dataset, per kind (E46, area/1 #/$defs/index); with
-                   any area file committed, every record carries `areas` {kind: [area_id]} (osd.areas)
+                   any area file committed, every record carries `areas` {kind: [area_id]} (osd.areas);
+                   a record in 1 to 25 licences also carries `blocks`, their block names (E51)
   areas-<kind>.geojson the geometry of those areas only (area/1 #/$defs/drawn); areas.pmtiles the same,
                    one layer per kind, z0-8, when tippecanoe is installed
   starters/       each published pack document and its fidelity record, byte for byte (the pack

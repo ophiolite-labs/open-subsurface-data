@@ -39,3 +39,23 @@ its metadata names the publisher's addresses <https://doi.org/10.5066/P9RMSU2R> 
 Geometry: Douglas-Peucker at 300 m, positions rounded to 4 decimals (11 m), rings below 300 m x 300 m
 dropped, an edge left longer than 180 degrees of longitude halved (Antarctica along -90). Neighbouring
 areas are simplified apart, so a point within a few hundred metres of a border can count on either side.
+
+## Licences
+
+Licence outlines are read per country from the regulator by `osd areas read <cc>` (E51), by the rule in
+`areas/licence/<cc>.yaml`, and written to `areas/licence/<cc>.geojson`. A source is drawn only when its terms
+have been read and its address and credit line are written here (R-S5; `osd validate` refuses a licence file
+whose `source.url` or `source.credit` is not on this page). Licence outline files are not covered by the CC0
+grant of records and outlines: each carries its publisher's licence and credit line with it (OSD-D37). In a
+licence file, `source.sha256` is the digest of the licences as read (the features, canonical JSON), and
+`source.retrieved` the date of the last read that changed them. Full quotes: `docs/program/evidence/e51/terms.md`.
+
+| File | Source | Licence (as read) | CC0 | Credit line | Terms read |
+|---|---|---|---|---|---|
+| `licence/no.geojson` | Sodir, Norway: <https://factmaps.sodir.no/api/rest/services/Factmaps/FactMapsWGS84/FeatureServer/616> (production licences, current: `prlStatus` ACTIVE), block names from layers 615 and 802; terms <https://data.norge.no/nlod/en/2.0> (Sodir's open-data page names NLOD 2.0) | Norwegian Licence for Open Government Data (NLOD) 2.0; any purpose; no sub-licensing; changes must be indicated (outlines simplified by Open Subsurface Data) | no | Contains data under the Norwegian licence for Open Government data (NLOD) distributed by Norwegian Offshore Directorate | 25 Nov 2026 (Sodir page via archive copy of 23 Jun 2025; live page awaits a browser check, owner action 140) |
+
+NLOD 2.0 §2, as read: "The licensee, subject to the limitations that follow from this licence, may use the
+information for any purpose and in all contexts, by: copying the information and distributing the information
+to others, modifying the information and/or combining the information with other information, and copying and
+distributing such changed or combined information." The United Kingdom (NSTA) is held (non-commercial grant;
+OSD-D38); the United States (BOEM, BLM) follows in its own slice.

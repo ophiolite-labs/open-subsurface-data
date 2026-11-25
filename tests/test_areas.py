@@ -254,7 +254,7 @@ REAL = paths.AREAS_DIR
 
 def test_real_area_files_validate_and_stay_under_25_mb():
     files = {p.name: p.stat().st_size for p in areas.area_files(REAL)}
-    assert set(files) == {"country.geojson", "province.geojson", "basin.geojson"}
+    assert set(files) == {"country.geojson", "province.geojson", "basin.geojson", "no.geojson"}   # E51: licence/no
     assert sum(files.values()) < 25_000_000, files
     assert areas.validate_areas(REAL) == []
 
@@ -262,6 +262,8 @@ def test_real_area_files_validate_and_stay_under_25_mb():
 def test_sources_md_quotes_each_terms_sentence_and_digest():
     text = (REAL / "SOURCES.md").read_text()
     for p in areas.area_files(REAL):
+        if areas.file_kind(p.relative_to(REAL).as_posix()) == "licence":
+            continue   # E51: a read file; SOURCES.md names its address and credit (osd validate)
         src = json.loads(p.read_text())["source"]
         assert src["sha256"] in text and src["edition"] in text and src["retrieved"] in text, p.name
     assert '"All versions of Natural Earth raster + vector map data found on this\nwebsite are in the public domain."' in text
@@ -306,13 +308,13 @@ def test_national_record_without_outline_lights_its_country_and_no_basin(real):
     index, recs = real
     for rid, r in recs.items():
         if r["region"].get("national") and not paths.outline_path(rid).exists():
-            assert r["areas"] == {"country": [r["region"]["country"]], "province": [], "basin": []}, rid
+            assert r["areas"] == {"country": [r["region"]["country"]], "province": [], "basin": [], "licence": []}, rid
     rid = next(rid for rid, r in sorted(recs.items()) if r["region"].get("bbox") and r["region"].get("country")
                in {a["area_id"] for a in index["kinds"]["country"]["areas"]} and not paths.outline_path(rid).exists())
     rec = copy.deepcopy(recs[rid])
     rec["region"]["national"] = True
     assert areas.count({rid: rec}, {rid: None}, areas.AreaSet.load())[rid] == {
-        "country": [rec["region"]["country"]], "province": [], "basin": []}
+        "country": [rec["region"]["country"]], "province": [], "basin": [], "licence": []}   # E51: licence
 
 
 # --- slice 1: the cache (F13, F18) -----------------------------------------------------------------------
