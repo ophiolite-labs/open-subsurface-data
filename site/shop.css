@@ -84,6 +84,22 @@ main { position: fixed; inset: var(--top) 0 0 0; display: grid; grid-template-co
 #filters .foot button { padding: 8px 16px; border-radius: 4px; border: 1px solid #c9ced5; background: #fff; }
 #filters .foot #filters-done { background: var(--night); color: #fff; border-color: var(--night); }
 
+/* The area clicked (E48): its name as a chip above the list; the cross clears it */
+.area-chip { display: flex; align-items: center; gap: 6px; align-self: flex-start; margin: 10px 24px 0; padding: 3px 4px 3px 12px;
+  border-radius: 999px; background: var(--night); color: #fff; font-size: 13px; }
+.area-chip button { width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: #fff; font-size: 13px; line-height: 1; }
+.area-chip button:hover { background: rgba(255,255,255,.15); }
+
+/* The map's switches (E48): one kind of area at a time, Names, Flat | Globe; quiet, no colour for state but night */
+.osd-ctrl { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: none !important; box-shadow: none !important; }
+.osd-ctrl .seg { display: inline-flex; border-radius: 4px; box-shadow: 0 0 0 2px rgba(0,0,0,.1); background: #fff; overflow: hidden; }
+.osd-ctrl button { height: 30px; padding: 0 10px; border: 0; background: #fff; color: var(--fg); font-size: 13px; font-weight: 500; }
+.osd-ctrl .seg button + button { border-left: 1px solid var(--line); }
+.osd-ctrl .names { border-radius: 4px; box-shadow: 0 0 0 2px rgba(0,0,0,.1); }
+.maplibregl-ctrl.osd-ctrl button:not(:disabled):hover { background: var(--soft); }
+.maplibregl-ctrl.osd-ctrl button[aria-pressed="true"], .maplibregl-ctrl.osd-ctrl button[aria-pressed="true"]:not(:disabled):hover { background: var(--night); color: #fff; }
+.osd-ctrl button:focus-visible { outline: 3px solid #9cc3ef; outline-offset: -3px; }
+
 /* The detail, in place of the list: plain sections */
 #detail { padding: 14px 24px 32px; }
 #detail .back { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px 6px 4px; margin-left: -6px; border: 0; background: none; color: var(--muted); }
@@ -157,4 +173,7 @@ main { position: fixed; inset: var(--top) 0 0 0; display: grid; grid-template-co
   .plus.wide { height: 44px; }
   #detail { padding: 10px 16px 32px; }
   #bag { width: 100vw; border-left: 0; padding: 0 16px 32px; }
+  .area-chip { margin: 8px 16px 0; }
+  .osd-ctrl button { height: 32px; padding: 0 8px; font-size: 12px; }
+  .maplibregl-ctrl-bottom-left .osd-ctrl { max-width: calc(100vw - 130px); }
 }

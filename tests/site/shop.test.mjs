@@ -3,7 +3,7 @@
 // epic. Offline, over the build in site/data (`make build`), like site.test.mjs; run by `make site-test`.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
@@ -21,6 +21,7 @@ after(async () => { await browser.close(); server.close(); });
 const DESKTOP = { width: 1400, height: 900 }, PHONE = { width: 390, height: 844 };
 const NORTH_SEA = 'map=5.00/57.0000/3.0000', WORLD = 'map=0.50/20.0000/0.0000';
 const committed = JSON.parse(await readFile(join(ROOT, 'site', 'data', 'records.json'), 'utf8'));
+const committedAreas = JSON.parse(await readFile(join(ROOT, 'site', 'data', 'areas.json'), 'utf8').catch(() => '{"kinds":{}}'));
 const files = (await readFile(join(ROOT, 'site', 'data', 'files.txt'), 'utf8').catch(() => '')).split('\n');
 const noTiles = !files.includes('outlines.pmtiles') && (process.env.CI ? false : 'no data/outlines.pmtiles (tippecanoe not installed)');
 
@@ -37,21 +38,32 @@ async function open(hash = '', { viewport = DESKTOP, routes, page: path = 'shop.
 }
 
 // ---- The rule of design 3, written again here: the test does not ask the page how it decides ----
-// A record meets the window by its bbox, else its country's box (the page's table), else it has no
-// place and is listed only below the world zoom; wholly inside first, then by title.
+// A record meets the window by its bbox, else the box of the countries the build placed it in
+// (records[].areas.country, the boxes from areas.json), else it has no place and is listed only below
+// the world zoom; wholly inside first, then by title. On the globe with the whole earth in view, every
+// dataset is listed (E48 design 5).
 const collator = new Intl.Collator('en');
 async function windowOf(page) {
   return page.evaluate(() => { const b = window.osdMap.getBounds();
+    const c = window.osdMap.getCanvas(), globe = (window.osdMap.getProjection() || {}).type === 'globe';
     return { w: b.getWest(), e: b.getEast(), s: b.getSouth(), n: b.getNorth(), zoom: window.osdMap.getZoom(),
-      countryBox: window.osdShop.countryBox, worldZoom: window.osdShop.worldZoom }; });
+      earth: globe && 512 * 2 ** window.osdMap.getZoom() / Math.PI <= Math.min(c.clientWidth, c.clientHeight), worldZoom: window.osdShop.worldZoom }; });
 }
-function expected(recs, win) {
+function boxOf(r, areas) {
+  if (r.region && r.region.bbox) return r.region.bbox;
+  const bs = ((r.areas || {}).country || []).map(id => ((areas.kinds.country || {}).areas || []).find(a => a.area_id === id)).filter(Boolean).map(a => a.bbox);
+  if (bs.length < 2) return bs[0];
+  if (bs.some(b => b[0] > b[2])) return [-180, Math.min(...bs.map(b => b[1])), 180, Math.max(...bs.map(b => b[3]))];
+  return [Math.min(...bs.map(b => b[0])), Math.min(...bs.map(b => b[1])), Math.max(...bs.map(b => b[2])), Math.max(...bs.map(b => b[3]))];
+}
+function expected(recs, win, areas = committedAreas) {
+  if (win.earth) Object.assign(win, { w: -180, e: 180, s: -90, n: 90, zoom: -1 });
   // the window's longitudes on [-180, 180]: one interval, two across the antimeridian, all when it wraps
   const w0 = ((win.w + 180) % 360 + 360) % 360 - 180, e0 = w0 + (win.e - win.w);
   const wr = win.e - win.w >= 360 ? [[-180, 180]] : e0 > 180 ? [[w0, 180], [-180, e0 - 360]] : [[w0, e0]];
   const inside = [], meets = [], noplace = [];
   for (const r of recs) {
-    const b = (r.region && r.region.bbox) || (r.region && win.countryBox[r.region.country]);
+    const b = boxOf(r, areas);
     if (!b) { if (win.zoom < win.worldZoom) noplace.push(r); continue; }
     const [w, s, e, n] = b, br = w <= e ? [[w, e]] : [[w, 180], [-180, e]];
     if (s > win.n || n < win.s || !br.some(([a, c]) => wr.some(([x, y]) => a <= y && c >= x))) continue;
@@ -67,8 +79,8 @@ const listed = page => page.evaluate(() => ({ ids: window.osdShop.listIds(), nop
 const moveTo = (page, center, zoom) => page.evaluate(([center, zoom]) => new Promise(ok => {
   window.osdMap.once('moveend', () => setTimeout(ok, 0)); window.osdMap.jumpTo({ center, zoom }); }), [center, zoom]);
 
-async function assertListFollows(page, recs, where) {
-  const win = await windowOf(page), want = expected(recs, win), got = await listed(page);
+async function assertListFollows(page, recs, where, areas) {
+  const win = await windowOf(page), want = expected(recs, win, areas), got = await listed(page);
   assert.deepEqual(got.ids, want.ids, `${where}: the list is the window's set, wholly inside first, then by title`);
   assert.deepEqual(got.noplace, want.noplace, `${where}: no place stated`);
   assert.deepEqual(got.dom, got.ids, `${where}: the rows drawn are the list`);
@@ -146,7 +158,10 @@ async function assertOwnerRules(page) {
   const top = await page.locator('#top a').evaluateAll(as => as.map(a => a.getAttribute('href')));
   assert.deepEqual(top.filter(h => /how|status|starters/.test(h)), [], 'no link to how, status or starters in the top bar');
   assert.equal(await page.getByText(/Open in Ophiolite/i).count(), 0, 'no "Open in Ophiolite" (R-S6)');
-  assert.equal(await page.getByRole('button', { name: /^(Countries|Provinces|Basins|Names|Globe|Flat)$/ }).count(), 0, 'E48 controls absent');
+  // E48 design 2 and acceptance 6: the area layers have one colour each, no data-driven colour, no legend.
+  const paints = await page.evaluate(() => window.osdMap.getStyle().layers.filter(l => /^areas-/.test(l.id)).map(l => [l.id, l.paint || {}]));
+  for (const [id, paint] of paints) for (const k of ['fill-color', 'line-color', 'text-color', 'text-halo-color'])
+    if (k in paint) assert.equal(typeof paint[k], 'string', `${id} ${k} is one colour, not an expression`);
 }
 const noHorizontalScroll = page => page.evaluate(() => [document.documentElement, document.body, ...document.querySelectorAll('#side, #list, #detail, #bag')]
   .filter(e => e.getClientRects().length).every(e => e.scrollWidth <= e.clientWidth));
@@ -168,8 +183,8 @@ async function j1(viewport, shot) {
 test('J1 opens the page and sees the search bar, a list and the map; no legend, no side pages needed', () => j1(DESKTOP, 'j1-desktop.png'));
 
 // ---- J2 ----------------------------------------------------------------------------------------
-async function j2(viewport, tag) {
-  const { context, page, errors } = await open(NORTH_SEA, { viewport });
+async function j2(viewport, tag, more = '') {
+  const { context, page, errors } = await open(NORTH_SEA + more, { viewport });
   const sea = await assertListFollows(page, committed.records, 'North Sea');
   assert.ok(sea.ids.includes('equinor/volve') && sea.ids.includes('sodir/factpages'), 'the North Sea holds Volve and the Sodir FactPages');
   await moveTo(page, [134, -25], 4);
@@ -186,7 +201,8 @@ async function j2(viewport, tag) {
 test('J2 pans or zooms and the list is exactly the datasets of the map window, each once, with its count', () => j2(DESKTOP, 'desktop'));
 
 test('J2 the list does not come from the tiles: with every map source removed it still follows the window', async () => {
-  const only = c => c.route('**/data/files.txt', route => route.fulfill({ body: 'records.json\ncollections.json\nmirror.json\n' }));
+  // records.json and the build's index of areas (records without a bbox are placed by their countries' boxes)
+  const only = c => c.route('**/data/files.txt', route => route.fulfill({ body: 'records.json\nareas.json\ncollections.json\nmirror.json\n' }));
   const { context, page, errors } = await open(NORTH_SEA, { routes: only });
   await page.evaluate(() => new Promise(ok => { window.osdMap.once('idle', ok);
     window.osdMap.setStyle({ version: 8, sources: {}, layers: [] }, { diff: false }); }));
@@ -261,8 +277,8 @@ test('J4 a live-page hash (q=, t=, starter=1, a kind) opened on /shop.html gives
 
 // ---- J5 ----------------------------------------------------------------------------------------
 const styleOf = page => page.evaluate(() => JSON.stringify(window.osdMap.getStyle().layers));
-async function j5(viewport) {
-  const { context, page, errors } = await open(NORTH_SEA, { viewport });
+async function j5(viewport, more = '') {
+  const { context, page, errors } = await open(NORTH_SEA + more, { viewport });
   const row = page.locator('#list > ul > li').first(), id = await row.getAttribute('data-id');
   const plus = row.locator('.plus');
   const box = await plus.boundingBox();
@@ -338,7 +354,7 @@ test('J7 a click on a feature opens its row', async () => {
     for (const f of m.queryRenderedFeatures({ layers: ['boxes'] })) {
       const p = m.project(f.geometry.coordinates);
       if (p.x < 40 || p.y < 40 || p.x > c.width - 60 || p.y > c.height - 40) continue;
-      if (m.queryRenderedFeatures([[p.x - 8, p.y - 8], [p.x + 8, p.y + 8]]).filter(g => g.source !== 'openmaptiles').length === 1)
+      if (m.queryRenderedFeatures([[p.x - 8, p.y - 8], [p.x + 8, p.y + 8]]).filter(g => g.source !== 'openmaptiles' && !/^area/.test(g.source)).length === 1)
         return { id: f.properties.record_id, x: c.left + p.x, y: c.top + p.y };
     } });
   assert.ok(at, 'a box-only dataset is a dot');
@@ -349,10 +365,150 @@ test('J7 a click on a feature opens its row', async () => {
   await context.close();
 });
 
-// ---- J8–J10, J12, J13: other epics -------------------------------------------------------------
-test.todo('J8 switches Countries / Provinces / Basins: only areas holding a dataset are drawn; a click on one filters the list (E48, data E46)');
-test.todo('J9 turns Names on and off: one name per drawn area (E48)');
-test.todo('J10 switches Flat / Globe: same data, same clicks (E48)');
+// ---- J8–J10: outlines, names and the globe (E48), over the E46 fixture areas ---------------------
+// The fixture build: osd.build over tests/fixtures/areas (three countries, three provinces and two
+// basins hold a dataset; basin usgs-1003 holds none), served in place of site/data.
+const AREAS_FX = join(ROOT, 'tests', 'fixtures', 'areas'), E48 = join(OUT, 'e48');
+const areasBuilt = (async () => {
+  await py('import sys; from pathlib import Path; from osd.build import build\n' +
+    'out, fx, none = map(Path, sys.argv[1:4])\n' +
+    'build(out, none, mirror_dir=none, records_dir=fx / "records", areas_dir=fx / "areas", outlines_dir=fx / "outlines", starters_dir=none, source_commit="1" * 40, verification_commit="2" * 40)',
+    E48, AREAS_FX, join(OUT, 'e48-none'));
+  const names = (await readdir(E48)).filter(f => f !== 'files.txt');
+  await writeFile(join(E48, 'files.txt'), names.join('\n') + '\n');
+  const read = async f => JSON.parse(await readFile(join(E48, f), 'utf8'));
+  const index = await read('areas.json');
+  const drawn = Object.fromEntries(await Promise.all(Object.keys(index.kinds).map(async k => [k, await read(`areas-${k}.geojson`)])));
+  return { records: (await read('records.json')).records, index, drawn };
+})();
+const withAreas = c => c.route('**/data/**', async route => {
+  await areasBuilt;
+  const f = decodeURIComponent(new URL(route.request().url()).pathname.replace(/^\/data\//, ''));
+  return route.fulfill({ path: join(E48, f) }).catch(() => route.fulfill({ status: 404, body: '' }));
+});
+const FX_VIEW = 'map=4.50/5.0000/10.0000';
+const KINDS = { country: 'Countries', province: 'Provinces', basin: 'Basins' };
+const idle = page => page.evaluate(() => new Promise(ok => window.osdMap.areTilesLoaded() && !window.osdMap.isMoving()
+  ? requestAnimationFrame(() => window.osdMap.loaded() ? ok() : window.osdMap.once('idle', ok)) : window.osdMap.once('idle', ok)));
+const rendered = (page, layer) => page.evaluate(l => window.osdMap.getLayer(l)
+  ? window.osdMap.queryRenderedFeatures({ layers: [l] }).map(f => f.properties.area_id ?? f.properties.record_id) : [], layer);
+const areaLayers = page => page.evaluate(() => window.osdMap.getStyle().layers.filter(l => /^areas-(fill|line)$/.test(l.id)).map(l => [l.id, l.source, l['source-layer'] || null]));
+const pressed = page => page.locator('.osd-ctrl button[aria-pressed="true"]').allInnerTexts();
+async function openFx(hash = FX_VIEW, viewport = DESKTOP) {
+  const requested = [];
+  const o = await open(hash, { viewport, routes: c => { c.on('request', r => requested.push(new URL(r.url()).pathname)); return withAreas(c); } });
+  await idle(o.page);
+  return { ...o, requested };
+}
+// A point inside the area that no dataset feature covers, in page coordinates.
+const pointIn = (page, id) => page.evaluate(id => {
+  const m = window.osdMap, c = m.getCanvas().getBoundingClientRect(), mine = m.queryRenderedFeatures({ layers: ['areas-fill'] }).filter(f => f.properties.area_id === id);
+  const datasets = ['surveys-fill', 'fields-fill', 'wells', 'wells-cluster', 'boxes', 'wells-tiles'].filter(l => m.getLayer(l));
+  for (let x = 20; x < c.width - 20; x += 6) for (let y = 20; y < c.height - 20; y += 6) {
+    const here = m.queryRenderedFeatures([[x - 10, y - 10], [x + 10, y + 10]], { layers: ['areas-fill', ...datasets] });
+    if (mine.length && here.length && here.every(f => f.layer.id === 'areas-fill') && m.queryRenderedFeatures([x, y], { layers: ['areas-fill'] })
+      .some(f => f.properties.area_id === id)) return { x: c.left + x, y: c.top + y };
+  }
+}, id);
+const byTitleIds = (recs, ids) => recs.filter(r => ids.includes(r.id)).sort((a, b) => collator.compare(a.title, b.title) || (a.id < b.id ? -1 : 1)).map(r => r.id);
+
+test('J8 the files: every area in areas.json holds a dataset, the drawn files hold those and no other (nothing with n = 0 exists)', async () => {
+  const { index, drawn } = await areasBuilt;
+  const all = JSON.parse(await readFile(join(AREAS_FX, 'areas', 'basin.geojson'), 'utf8')).features.map(f => f.properties.area_id);
+  assert.ok(all.includes('usgs-1003'), 'the fixture has a basin that holds nothing');
+  for (const [k, { areas }] of Object.entries(index.kinds)) {
+    for (const a of areas) assert.ok(a.n > 0 && a.n === a.ids.length, `${k} ${a.area_id}: n = ${a.n}`);
+    assert.deepEqual(drawn[k].features.map(f => f.properties.area_id).sort(), areas.map(a => a.area_id).sort(), `${k}: the drawn file holds the index's areas`);
+  }
+  assert.ok(!index.kinds.basin.areas.some(a => a.area_id === 'usgs-1003'), 'the empty basin is not in the index');
+});
+
+test('J8 switches Countries / Provinces / Basins: one on, only its areas drawn, only its file requested, its credit shown', async () => {
+  const { index } = await areasBuilt;
+  for (const k of Object.keys(KINDS)) {
+    const { context, page, errors, requested } = await openFx(`${FX_VIEW}&o=${k}`);
+    assert.deepEqual(await pressed(page), [KINDS[k], 'Flat'], 'exactly one kind on (and Flat)');
+    assert.deepEqual([...new Set(await rendered(page, 'areas-fill'))].sort(), index.kinds[k].areas.map(a => a.area_id).sort(), `${k}: the drawn ids are areas.json's`);
+    assert.deepEqual(await areaLayers(page), [['areas-fill', `areas-${k}`, null], ['areas-line', `areas-${k}`, null]], `${k}: no other kind's layer in the style`);
+    assert.deepEqual(requested.filter(p => /areas/.test(p)).sort(), ['/data/areas.json', `/data/areas-${k}.geojson`].sort(), `${k}: only the chosen kind's file was requested`);
+    assert.match(await page.locator('.maplibregl-ctrl-attrib-inner').innerText(), new RegExp(index.kinds[k].sources[0].credit), 'the kind\'s credit in the attribution line');
+    await assertOwnerRules(page);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+  // switching fetches the other kind on demand and keeps what was fetched
+  const { context, page, errors, requested } = await openFx();
+  assert.equal(await page.locator('.osd-ctrl .seg[aria-label="Areas drawn"] button').count(), 3, 'no Licences part without that kind in areas.json');
+  await page.getByRole('button', { name: 'Basins', exact: true }).click(); await idle(page);
+  assert.deepEqual(await pressed(page), ['Basins', 'Flat']);
+  assert.deepEqual(await areaLayers(page), [['areas-fill', 'areas-basin', null], ['areas-line', 'areas-basin', null]]);
+  assert.match(await page.evaluate(() => location.hash), /o=basin/);
+  await page.getByRole('button', { name: 'Countries', exact: true }).click(); await idle(page);
+  assert.deepEqual([...new Set(await rendered(page, 'areas-fill'))].sort(), index.kinds.country.areas.map(a => a.area_id).sort());
+  assert.deepEqual(requested.filter(p => /areas/.test(p)), ['/data/areas.json', '/data/areas-country.geojson', '/data/areas-basin.geojson'],
+    'Basins fetched once on demand; Countries not again');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
+async function j8click(more = '') {
+  const { records, index } = await areasBuilt;
+  const basin = index.kinds.basin.areas.find(a => a.area_id === 'usgs-1002');
+  const { context, page, errors } = await openFx(`${FX_VIEW}&o=basin${more}`);
+  const before = await listed(page);
+  const at = await pointIn(page, basin.area_id);
+  assert.ok(at, 'a point of the basin with no dataset feature on it');
+  await page.mouse.click(at.x, at.y);
+  await page.locator('#area-chip:not([hidden])').waitFor();
+  await idle(page);
+  const got = await listed(page);
+  assert.deepEqual(got.ids, byTitleIds(records, basin.ids), 'the list is exactly the basin\'s ids');
+  assert.equal(got.count, `${basin.ids.length} datasets in ${basin.name}`);
+  assert.equal(await page.locator('#area-chip span').innerText(), basin.name, 'the chip names the area');
+  assert.match(await page.evaluate(() => location.hash), /area=usgs-1002/);
+  assert.equal(await page.evaluate(() => window.osdMap.getFeatureState({ source: 'areas-basin', id: 'usgs-1002' }).sel), true, 'outlined stronger by feature state');
+  // out of the window and still listed: the area's ids are not met with the map window
+  await moveTo(page, [100, -30], 5);
+  assert.deepEqual((await listed(page)).ids, byTitleIds(records, basin.ids), 'the area\'s datasets are listed when out of view');
+  await page.locator('#area-chip button').click();
+  await idle(page);
+  assert.equal(await page.locator('#area-chip').isHidden(), true);
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /area=/);
+  await assertListFollows(page, records, 'after the cross', index);
+  assert.equal(await page.evaluate(() => window.osdMap.getFeatureState({ source: 'areas-basin', id: 'usgs-1002' }).sel), undefined);
+  assert.deepEqual(errors, []);
+  await context.close();
+  return before;
+}
+test('J8 a click on a basin lists exactly its datasets, names it in a chip and the hash; the cross restores the window\'s list', () => j8click());
+
+test('J8 a second click on the area clears it; a click on a dataset inside an area opens the dataset', async () => {
+  const { records, index } = await areasBuilt;
+  const { context, page, errors } = await openFx(`${FX_VIEW}&o=basin`);
+  const before = await listed(page);
+  const at = await pointIn(page, 'usgs-1001');
+  await page.mouse.click(at.x, at.y);
+  await page.locator('#area-chip:not([hidden])').waitFor();
+  await page.waitForTimeout(400); await idle(page);
+  const again = await pointIn(page, 'usgs-1001');
+  await page.mouse.click(again.x, again.y);
+  await page.locator('#area-chip').waitFor({ state: 'hidden' });
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /area=/);
+  // the boxed record's dot sits in basin usgs-1001
+  await page.evaluate(() => window.osdMap.jumpTo({ center: [10, 5], zoom: 4.5 })); await idle(page);
+  const dot = await page.evaluate(() => { const m = window.osdMap, c = m.getCanvas().getBoundingClientRect();
+    const f = m.queryRenderedFeatures({ layers: ['boxes'] }).find(f => f.properties.record_id === 'fixture/boxed');
+    const p = m.project(f.geometry.coordinates); return { x: c.left + p.x, y: c.top + p.y,
+      under: m.queryRenderedFeatures([p.x, p.y], { layers: ['areas-fill'] }).map(g => g.properties.area_id) }; });
+  assert.deepEqual(dot.under, ['usgs-1001'], 'the dot is inside the basin');
+  await page.mouse.click(dot.x, dot.y);
+  await page.locator('#detail h2.title').waitFor();
+  assert.equal(await page.locator('#detail h2.title').innerText(), records.find(r => r.id === 'fixture/boxed').title, 'the dataset wins');
+  assert.equal(await page.locator('#area-chip').isHidden(), true, 'the area is not set by that click');
+  assert.ok(before.ids.length > 0);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
 
 // ---- J11 ---------------------------------------------------------------------------------------
 async function saveDownload(page, name) {

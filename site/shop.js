@@ -22,13 +22,17 @@
   // E50: a return visit can hold a stale byte range whose ETag the host no longer gives (GitHub
   // Pages' ETag for one file differs between its servers); the range then comes back as the whole
   // file, which the reader refuses. Asked once more past the browser's cache, the tiles stay on.
-  const archive = fresh => { const src = new pmtiles.FetchSource(base + 'data/outlines.pmtiles'); src.mustReload = fresh; return new pmtiles.PMTiles(src); };
-  let tiles = has('outlines.pmtiles') && await new Promise(ok => {
+  // E48: the same for the area tiles.
+  const archive = (f, fresh) => { const src = new pmtiles.FetchSource(base + 'data/' + f); src.mustReload = fresh; return new pmtiles.PMTiles(src); };
+  const pmtilesJs = (has('outlines.pmtiles') || has('areas.pmtiles')) && await new Promise(ok => {
     const s = document.createElement('script'); s.src = PMTILES_JS;
     s.onload = () => ok(true); s.onerror = () => ok(false); document.head.appendChild(s);
-  }) && archive(false);
-  let pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
-  if (tiles && !pmtilesMode) { tiles = archive(true); pmtilesMode = await tiles.getHeader().then(() => true, () => false); }
+  });
+  const tilesOf = async f => { if (!pmtilesJs || !has(f)) return null;
+    for (const fresh of [false, true]) { const t = archive(f, fresh); if (await t.getHeader().then(() => true, () => false)) return t; }
+    return null; };
+  const tiles = await tilesOf('outlines.pmtiles'), areaTiles = await tilesOf('areas.pmtiles');
+  const pmtilesMode = !!tiles;
 
   const built = await (await fetch('data/records.json')).json();
   const records = built.records.map(r => ({ ...r, reason: (built.reasons || {})[r.id] || '' }));
@@ -51,29 +55,26 @@
     }, () => [])
     : outlines.features.map(f => f.properties.record_id));
 
+  // ---- Areas (E46, E48): the build's index of the areas that hold a dataset, per kind ---------------
+  // areas.json is the authority for which areas exist (R-S3); the page computes no containment.
+  const index = has('areas.json') ? await fetch('data/areas.json').then(r => r.ok ? r.json() : null).catch(() => null) : null;
+  const KIND_LABEL = { country: 'Countries', province: 'Provinces', basin: 'Basins', licence: 'Licences' };
+  const KINDS = Object.keys(KIND_LABEL).filter(k => index && index.kinds[k]);
+  const areasOf = k => KINDS.includes(k) ? index.kinds[k].areas : [];
+  const areaById = Object.fromEntries(KINDS.map(k => [k, Object.fromEntries(areasOf(k).map(a => [a.area_id, a]))]));
+  const creditOf = k => [...new Set(index.kinds[k].sources.map(s => s.credit).filter(Boolean))].join(', ');
+
   // ---- Where a record is ------------------------------------------------------------------------
-  // The record's bbox; without one its country's box (mainland with its shelf, whole degrees, until
-  // the build states areas, E46); without either, no place: listed only at the world view.
-  const COUNTRY_BOX = {
-    AO: [11.7, -18.1, 24.1, -4.4], AQ: [-180, -90, 180, -60], AR: [-73.6, -55.1, -53.6, -21.8], AT: [9.5, 46.4, 17.2, 49.0],
-    AU: [112.9, -43.7, 153.7, -10.1], BA: [15.7, 42.6, 19.6, 45.3], BE: [2.5, 49.5, 6.4, 51.6], BO: [-69.6, -22.9, -57.5, -9.7],
-    BR: [-74.0, -33.8, -34.8, 5.3], CA: [-141.0, 41.7, -52.6, 83.1], CH: [5.9, 45.8, 10.5, 47.8], CI: [-8.6, 4.3, -2.5, 10.7],
-    CO: [-79.0, -4.2, -66.9, 12.5], CR: [-86.0, 8.0, -82.5, 11.2], CZ: [12.1, 48.6, 18.9, 51.1], DE: [5.9, 47.3, 15.0, 55.1],
-    DK: [3.2, 54.5, 15.2, 57.8], EE: [21.8, 57.5, 28.2, 59.7], EG: [24.7, 22.0, 36.9, 31.7], ES: [-9.3, 36.0, 3.3, 43.8],
-    FI: [20.6, 59.8, 31.6, 70.1], FK: [-61.3, -52.4, -57.7, -51.0], FO: [-7.7, 61.4, -6.3, 62.4], FR: [-5.1, 41.3, 9.6, 51.1],
-    GB: [-10.5, 49.5, 2.5, 61.5], GH: [-3.3, 4.7, 1.2, 11.2], GR: [19.4, 34.8, 28.3, 41.8], GT: [-92.3, 13.7, -88.2, 17.8],
-    GY: [-61.4, 1.2, -56.5, 8.6], HR: [13.5, 42.4, 19.4, 46.6], HU: [16.1, 45.7, 22.9, 48.6], ID: [95.0, -11.0, 141.0, 6.1],
-    IE: [-10.5, 51.4, -6.0, 55.4], IL: [34.3, 29.5, 35.9, 33.3], IN: [68.1, 6.7, 97.4, 35.5], IT: [6.6, 36.6, 18.5, 47.1],
-    JP: [122.9, 24.0, 145.8, 45.5], KE: [33.9, -4.7, 41.9, 5.0], KR: [126.1, 33.1, 129.6, 38.6], LK: [79.7, 5.9, 81.9, 9.8],
-    LR: [-11.5, 4.3, -7.4, 8.6], LT: [21.0, 53.9, 26.8, 56.5], LY: [9.3, 19.5, 25.2, 33.2], MX: [-117.1, 14.5, -86.7, 32.7],
-    MY: [99.6, 0.9, 119.3, 7.4], MZ: [30.2, -26.9, 40.8, -10.5], NA: [11.7, -29.0, 25.3, -16.9], NL: [2.5, 50.7, 7.3, 55.8],
-    NO: [1.5, 56.0, 31.1, 71.5], NZ: [166.4, -47.3, 178.6, -34.4], OM: [52.0, 16.6, 59.8, 26.4], PE: [-81.4, -18.4, -68.7, 0.0],
-    PG: [140.8, -11.7, 156.0, -1.3], PK: [60.9, 23.7, 77.8, 37.1], PL: [14.1, 49.0, 24.2, 54.9], PT: [-9.5, 37.0, -6.2, 42.2],
-    RU: [19.6, 41.2, 180.0, 81.9], SE: [11.0, 55.3, 24.2, 69.1], SI: [13.4, 45.4, 16.6, 46.9], SK: [16.8, 47.7, 22.6, 49.6],
-    SR: [-58.1, 1.8, -54.0, 6.0], TT: [-62.0, 10.0, -60.5, 11.4], TW: [120.0, 21.9, 122.0, 25.3], UG: [29.6, -1.5, 35.0, 4.2],
-    US: [-125.0, 24.5, -66.9, 49.4], UY: [-58.4, -35.0, -53.1, -30.1], ZA: [16.5, -34.8, 32.9, -22.1],
-  };
-  const placeOf = r => (r.region && r.region.bbox) || (r.region && COUNTRY_BOX[r.region.country]) || null;
+  // The record's bbox; without one the box of the countries the build placed it in (records[].areas,
+  // the boxes from areas.json); without either, no place: listed only at the world view.
+  function countriesBox(r) {
+    const bs = ((r.areas || {}).country || []).map(id => (areaById.country || {})[id]).filter(Boolean).map(a => a.bbox);
+    if (bs.length < 2) return bs[0] || null;
+    if (bs.some(b => b[0] > b[2])) return [-180, Math.min(...bs.map(b => b[1])), 180, Math.max(...bs.map(b => b[3]))];
+    return [Math.min(...bs.map(b => b[0])), Math.min(...bs.map(b => b[1])), Math.max(...bs.map(b => b[2])), Math.max(...bs.map(b => b[3]))];
+  }
+  const places = new Map(records.map(r => [r.id, (r.region && r.region.bbox) || countriesBox(r)]));
+  const placeOf = r => places.get(r.id) || null;
 
   // The window as longitude ranges in [-180, 180] (two when it crosses the antimeridian) and latitudes.
   function windowOf() {
@@ -84,6 +85,8 @@
       const k = Math.floor((w + 180) / 360), w0 = w - 360 * k, e0 = e - 360 * k;
       ranges = e0 > 180 ? [[w0, 180], [-180, e0 - 360]] : [[w0, e0]];
     }
+    const c = map.getCanvas(), earth = state.globe && 512 * 2 ** map.getZoom() / Math.PI <= Math.min(c.clientWidth, c.clientHeight);
+    if (earth) return { ranges: [[-180, 180]], south: -90, north: 90, world: true };   // the whole globe in view: every dataset
     return { ranges, south: b.getSouth(), north: b.getNorth(), world: map.getZoom() < WORLD_ZOOM };
   }
   // 0 outside, 1 meets the window, 2 wholly inside it.
@@ -96,7 +99,8 @@
 
   // ---- State <-> hash ---------------------------------------------------------------------------
   //   #q=volve&k=field,seismic-3d&l=2&t=1990-2000&dated=1&a=anonymous&starter=1&sel=equinor/volve
-  //   &pick=opm/norne,sodir/factpages&map=5.00/58.0000/3.0000
+  //   &pick=opm/norne,sodir/factpages&map=5.00/58.0000/3.0000&o=basin&area=usgs-5243&n=1&p=globe
+  // o, area, n and p are E48's: the kind of area drawn, the area clicked, names on, the globe.
   const ACCESS = {
     anonymous: { label: 'Download', alt: 'download: anyone can take the files',
       line: 'Open to anyone: the files download without an account.',
@@ -117,7 +121,8 @@
   const accessIcon = a => { const x = ACCESS[a] || ACCESS.request;
     return `<span class="acc" data-access="${esc(a)}" role="img" aria-label="${esc(x.alt)}" title="${esc(x.alt)}"><svg viewBox="0 0 24 24" aria-hidden="true">${x.svg}</svg></span>`; };
 
-  const state = { q: '', kinds: new Set(), minLevel: 0, from: null, to: null, dated: false, access: new Set(), starter: false, sel: null, pick: [] };
+  const state = { q: '', kinds: new Set(), minLevel: 0, from: null, to: null, dated: false, access: new Set(), starter: false, sel: null, pick: [],
+    kind: KINDS[0] || null, area: null, names: false, globe: false };
   function readHash() {
     const h = new URLSearchParams(location.hash.slice(1));
     state.q = (h.get('q') || '').trim().toLowerCase();
@@ -131,6 +136,10 @@
     state.starter = anyStarter && h.get('starter') === '1';
     state.sel = byId[h.get('sel')] ? h.get('sel') : null;
     state.pick = [...new Set((h.get('pick') || '').split(',').filter(id => byId[id]))];
+    state.kind = KINDS.includes(h.get('o')) ? h.get('o') : KINDS[0] || null;
+    state.area = state.kind && areaById[state.kind][h.get('area')] ? h.get('area') : null;
+    state.names = h.get('n') === '1';
+    state.globe = h.get('p') === 'globe';
     const m = (h.get('map') || '').split('/').map(Number);
     return m.length === 3 && m.every(Number.isFinite) ? { zoom: m[0], center: [m[2], m[1]] } : null;
   }
@@ -145,6 +154,10 @@
     if (state.starter) h.set('starter', '1');
     if (state.sel) h.set('sel', state.sel);
     if (state.pick.length) h.set('pick', state.pick.join(','));
+    if (state.kind && state.kind !== KINDS[0]) h.set('o', state.kind);
+    if (state.area) h.set('area', state.area);
+    if (state.names) h.set('n', '1');
+    if (state.globe) h.set('p', 'globe');
     if (map && mapReady) {
       const c = map.getCenter();
       h.set('map', `${map.getZoom().toFixed(2)}/${c.lat.toFixed(4)}/${c.lng.toFixed(4)}`);
@@ -172,13 +185,16 @@
     }
     return true;
   }
+  // The area clicked (E48): its datasets are the build's ids for it, met with the filters, not the window.
+  const inArea = r => !state.area || areaById[state.kind][state.area].ids.includes(r.id);
   const filterCount = () => [state.kinds.size, state.minLevel, state.from !== null || state.to !== null, state.dated,
     state.access.size, state.starter].filter(Boolean).length;
 
   // ---- The map ----------------------------------------------------------------------------------
   const view = readHash();
   let map = null, mapReady = false;
-  if (pmtilesMode) { const protocol = new pmtiles.Protocol(); protocol.add(tiles); maplibregl.addProtocol('pmtiles', protocol.tile); }
+  if (tiles || areaTiles) { const protocol = new pmtiles.Protocol(); for (const t of [tiles, areaTiles]) if (t) protocol.add(t);
+    maplibregl.addProtocol('pmtiles', protocol.tile); }
   map = new maplibregl.Map({ container: 'map', style: BASEMAP, center: view ? view.center : [6, 56], zoom: view ? view.zoom : 3.3,
     attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false, maxPitch: 0,
     // E50 (R-S7): five zoom levels of tiles kept for zooming back; no refetch of tiles the host's
@@ -188,6 +204,28 @@
   map.keyboard.disableRotation();
   window.osdMap = map; // for the site test and the console; not an API
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+  // The map's own switches (E48): the kind of area and Names bottom left, Flat | Globe bottom right.
+  const control = (html, at) => { const el = document.createElement('div'); el.className = 'maplibregl-ctrl osd-ctrl'; el.innerHTML = html;
+    map.addControl({ onAdd: () => el, onRemove: () => el.remove() }, at); return el; };
+  const seg = (label, items) => `<div class="seg" role="group" aria-label="${label}">${items.map(([v, t]) =>
+    `<button type="button" data-v="${v}" aria-pressed="false">${t}</button>`).join('')}</div>`;
+  const kindCtl = KINDS.length ? control(seg('Areas drawn', KINDS.map(k => [k, KIND_LABEL[k]])) +
+    '<button type="button" class="names" aria-pressed="false">Names</button>', 'bottom-left') : null;
+  const projCtl = control(seg('Projection', [['flat', 'Flat'], ['globe', 'Globe']]), 'bottom-right');
+  if (kindCtl) {
+    kindCtl.querySelectorAll('.seg button').forEach(b => b.onclick = () => setKind(b.dataset.v));
+    kindCtl.querySelector('.names').onclick = () => setNames(!state.names);
+  }
+  projCtl.querySelectorAll('button').forEach(b => b.onclick = () => setGlobe(b.dataset.v === 'globe'));
+  function syncMapControls() {
+    if (kindCtl) {
+      kindCtl.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === state.kind)));
+      kindCtl.querySelector('.names').setAttribute('aria-pressed', String(state.names));
+    }
+    projCtl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.v === 'globe') === state.globe)));
+  }
+  syncMapControls();
 
   // Box-only records: one dot at the middle of the box, its name beside it (not a rectangle).
   const boxIds = records.filter(r => r.region && r.region.bbox && !drawn.has(r.id)).map(r => r.id);
@@ -241,7 +279,7 @@
     const z = Math.floor(map.getZoom()), want = z < CLUSTER_BELOW_ZOOM ? Math.max(0, z) : 'single';
     if (want === wellsShown && !force) return;
     wellsShown = want;
-    const idSet = new Set(records.filter(matches).map(r => r.id));
+    const idSet = new Set(records.filter(inArea).filter(matches).map(r => r.id));
     let features;
     if (want !== 'single') features = clusters(await gridAt(want), idSet);
     else {
@@ -273,13 +311,13 @@
       : { type: 'geojson', data: outlines, promoteId: 'feature_id' });
     map.addSource('wells', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addSource('boxes', { type: 'geojson', data: boxes });
-    const line = (color, dash) => ({ 'line-color': ['case', HL, NIGHT, color], 'line-width': ['case', HL, 3.5, 2], ...(dash ? { 'line-dasharray': [2, 2] } : {}) });
+    const line = (color, dash, w = 2) => ({ 'line-color': ['case', HL, NIGHT, color], 'line-width': ['case', HL, 3.5, w], 'line-opacity': w < 2 ? ['case', HL, 1, 0.55] : 1, ...(dash ? { 'line-dasharray': [2, 2] } : {}) });
     map.addLayer({ id: 'fields-fill', type: 'fill', ...src, filter: LAYER_BASE['fields-fill'], paint: { 'fill-color': '#e5484d', 'fill-opacity': ['case', HL, 0.4, 0.18] } });
     map.addLayer({ id: 'fields-line', type: 'line', ...src, filter: LAYER_BASE['fields-line'], paint: line('#e5484d') });
     map.addLayer({ id: 'fields-dash', type: 'line', ...src, filter: LAYER_BASE['fields-dash'], paint: line('#e5484d', true) });
-    map.addLayer({ id: 'surveys-fill', type: 'fill', ...src, filter: LAYER_BASE['surveys-fill'], paint: { 'fill-color': '#f2a93b', 'fill-opacity': ['case', HL, 0.45, 0.2] } });
-    map.addLayer({ id: 'surveys-line', type: 'line', ...src, filter: LAYER_BASE['surveys-line'], paint: line('#d98a1c') });
-    map.addLayer({ id: 'surveys-dash', type: 'line', ...src, filter: LAYER_BASE['surveys-dash'], paint: line('#d98a1c', true) });
+    map.addLayer({ id: 'surveys-fill', type: 'fill', ...src, filter: LAYER_BASE['surveys-fill'], paint: { 'fill-color': '#f2a93b', 'fill-opacity': ['case', HL, 0.45, 0.06] } });
+    map.addLayer({ id: 'surveys-line', type: 'line', ...src, filter: LAYER_BASE['surveys-line'], paint: line('#d98a1c', false, 0.8) });
+    map.addLayer({ id: 'surveys-dash', type: 'line', ...src, filter: LAYER_BASE['surveys-dash'], paint: line('#d98a1c', true, 0.8) });
     const glyphs = !!map.getStyle().glyphs;
     map.addLayer({ id: 'wells-cluster', type: 'circle', source: 'wells', filter: ['has', 'point_count'], maxzoom: CLUSTER_BELOW_ZOOM,
       paint: { 'circle-color': '#2f9e63', 'circle-opacity': 0.85, 'circle-stroke-color': ['case', HL, NIGHT, '#ffffff'], 'circle-stroke-width': ['case', HL, 3, 1],
@@ -295,13 +333,27 @@
       paint: { 'circle-color': NIGHT, 'circle-radius': ['case', HL, 7, 4.5], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': ['case', HL, 2.5, 1.5] } });
     if (glyphs) map.addLayer({ id: 'boxes-name', type: 'symbol', source: 'boxes',
       layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-font': ['Noto Sans Regular'], 'text-anchor': 'left', 'text-offset': [0.8, 0],
-        'text-optional': true, 'text-max-width': 12 },
+        'text-optional': true, 'text-max-width': 12, visibility: state.names ? 'visible' : 'none' },
       paint: { 'text-color': NIGHT, 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 } });
 
+    if (KINDS.length) {
+      map.addSource('area-labels', { type: 'geojson', data: labelsOf(state.kind) });
+      if (glyphs) map.addLayer({ id: 'areas-name', type: 'symbol', source: 'area-labels',
+        layout: { 'text-field': ['get', 'name'], 'text-size': 12, 'text-font': ['Noto Sans Regular'], 'text-max-width': 9,
+          visibility: state.names ? 'visible' : 'none' },
+        paint: { 'text-color': AREA_TEXT, 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 } });
+      drawKind(state.kind);
+      // A dataset feature under the pointer wins; otherwise the area is the filter (a second click clears it).
+      map.on('click', 'areas-fill', e => {
+        if (map.queryRenderedFeatures(e.point, { layers: [...CLICKABLE, 'wells-cluster'].filter(l => map.getLayer(l)) }).length) return;
+        const id = e.features[0].properties.area_id;
+        setArea(id === state.area ? null : id, true);
+      });
+    }
     for (const l of CLICKABLE) map.on('click', l, e => openRow(e.features[0].properties.record_id));
     map.on('click', 'wells-cluster', e => map.easeTo({ center: e.features[0].geometry.coordinates,
       zoom: Math.min(Math.floor(map.getZoom()) + 2, CLUSTER_BELOW_ZOOM) }));
-    for (const l of [...CLICKABLE, 'wells-cluster']) {
+    for (const l of [...CLICKABLE, 'wells-cluster', ...(KINDS.length ? ['areas-fill'] : [])]) {
       map.on('mouseenter', l, () => map.getCanvas().style.cursor = 'pointer');
       map.on('mouseleave', l, () => map.getCanvas().style.cursor = '');
     }
@@ -310,11 +362,65 @@
     // Tiles that arrive after the highlight get it too (debounced: sourcedata fires per tile).
     let again = 0;
     map.on('sourcedata', e => { if (e.sourceId === 'outlines' && e.tile && lit.id) { clearTimeout(again); again = setTimeout(() => highlight(lit.id), 120); } });
+    if (state.globe) map.setProjection({ type: 'globe' });
+    // On a phone the credits start folded under their (i), so the switches at the bottom stay reachable.
+    if (matchMedia('(max-width: 720px)').matches) for (const el of document.querySelectorAll('.maplibregl-compact-show')) el.classList.remove('maplibregl-compact-show');
     mapReady = true;
     applyFilters();
+    if (state.area) { selectArea(); if (!view) fitArea(); }
     if (state.sel) highlight(state.sel);
     if (state.sel && !view) fitTo(state.sel);
   });
+
+  // ---- Areas on the map (E48): one kind at a time; its source added the first time it is chosen and
+  // kept, its two layers the only area layers in the style; the same lilac for every area (R-S2).
+  const AREA = '#8a6fc7', AREA_TEXT = '#4b3a78';
+  const SEL = ['boolean', ['feature-state', 'sel'], false];
+  const labelsOf = k => ({ type: 'FeatureCollection', features: areasOf(k).map(a => ({ type: 'Feature',
+    properties: { area_id: a.area_id, name: a.name }, geometry: { type: 'Point', coordinates: a.label } })) });
+  const areaSource = k => `areas-${k}`;
+  const areaTarget = (k, id) => ({ source: areaSource(k), ...(areaTiles ? { sourceLayer: `areas_${k}` } : {}), id });
+  function drawKind(k) {
+    for (const l of ['areas-fill', 'areas-line']) if (map.getLayer(l)) map.removeLayer(l);
+    if (!map.getSource(areaSource(k))) map.addSource(areaSource(k), areaTiles
+      ? { type: 'vector', url: 'pmtiles://' + base + 'data/areas.pmtiles', promoteId: { [`areas_${k}`]: 'area_id' }, attribution: creditOf(k) }
+      : { type: 'geojson', data: base + `data/areas-${k}.geojson`, promoteId: 'area_id', attribution: creditOf(k) });
+    const src = { source: areaSource(k), ...(areaTiles ? { 'source-layer': `areas_${k}` } : {}) };
+    const below = map.getLayer('fields-fill') ? 'fields-fill' : undefined;
+    map.addLayer({ id: 'areas-fill', type: 'fill', ...src, paint: { 'fill-color': AREA, 'fill-opacity': ['case', SEL, 0.24, 0.08] } }, below);
+    map.addLayer({ id: 'areas-line', type: 'line', ...src, paint: { 'line-color': AREA, 'line-opacity': 0.9, 'line-width': ['case', SEL, 2.5, 0.8] } }, below);
+    map.getSource('area-labels').setData(labelsOf(k));
+  }
+  function selectArea() {
+    for (const k of KINDS) if (map.getSource(areaSource(k))) map.removeFeatureState({ source: areaSource(k), ...(areaTiles ? { sourceLayer: `areas_${k}` } : {}) });
+    if (state.area) map.setFeatureState(areaTarget(state.kind, state.area), { sel: true });
+  }
+  function fitArea() {
+    const b = areaById[state.kind][state.area].bbox;
+    map.fitBounds(b[0] <= b[2] ? [[b[0], b[1]], [b[2], b[3]]] : [[b[0], b[1]], [b[2] + 360, b[3]]], { padding: 40, maxZoom: 9 });
+  }
+  function setArea(id, ease) {
+    state.area = id;
+    if (mapReady) { selectArea(); if (id && ease) fitArea(); }
+    applyFilters();
+  }
+  function setKind(k) {
+    if (k === state.kind) return;
+    state.kind = k; state.area = null;
+    if (mapReady) { drawKind(k); selectArea(); }
+    syncMapControls(); applyFilters();
+  }
+  function setNames(on) {
+    state.names = on;
+    if (mapReady) for (const l of ['areas-name', 'boxes-name']) if (map.getLayer(l)) map.setLayoutProperty(l, 'visibility', on ? 'visible' : 'none');
+    syncMapControls(); writeHash();
+  }
+  function setGlobe(on) {
+    state.globe = on;
+    if (mapReady) map.setProjection({ type: on ? 'globe' : 'mercator' });
+    syncMapControls(); writeHash();
+    if (mapReady) map.once('render', () => renderList());
+  }
 
   function fitTo(id) {
     const b = placeOf(byId[id]);
@@ -341,7 +447,7 @@
     syncFilterButtons();
     writeHash();
     if (!mapReady) return;
-    const ids = records.filter(matches).map(r => r.id);
+    const ids = records.filter(inArea).filter(matches).map(r => r.id);
     const idFilter = ['in', ['get', 'record_id'], ['literal', ids]];
     for (const [l, f] of Object.entries(LAYER_BASE)) map.setFilter(l, ['all', f, idFilter]);
     map.setFilter('boxes', idFilter);
@@ -373,6 +479,15 @@
   let shown = { ids: [], noplace: [] };
   function renderList() {
     if (!mapReady) { $('count').textContent = ''; return; }
+    renderChip();
+    if (state.area) {
+      const a = areaById[state.kind][state.area], inIt = records.filter(r => a.ids.includes(r.id) && matches(r)).sort(byTitle);
+      shown = { ids: inIt.map(r => r.id), noplace: [] };
+      $('count').textContent = `${inIt.length} dataset${inIt.length === 1 ? '' : 's'} in ${a.name}`;
+      document.querySelector('#list > ul').replaceChildren(...inIt.map(rowOf));
+      $('noplace').hidden = true; $('more').hidden = true;
+      return;
+    }
     const win = windowOf(), placed = [], noplace = [], outside = [];
     for (const r of records) {
       if (!matches(r)) continue;
@@ -395,6 +510,13 @@
       more.innerHTML = `<button type="button">${outside.length} more outside this view</button>`;
       more.firstChild.onclick = () => showAll(outside);
     }
+  }
+  function renderChip() {
+    const c = $('area-chip'), a = state.area && areaById[state.kind][state.area];
+    c.hidden = !a;
+    if (!a) return;
+    c.innerHTML = `<span>${esc(a.name)}</span><button type="button" aria-label="Clear the area ${esc(a.name)}">✕</button>`;
+    c.querySelector('button').onclick = () => setArea(null);
   }
   function showAll(list) {
     const bs = list.map(placeOf).filter(b => b && b[0] <= b[2]);
@@ -715,14 +837,22 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
 
   // A pasted or edited hash in the same tab applies too.
   window.addEventListener('hashchange', () => {
-    const v = readHash(); syncControls(); applyFilters(); renderBag();
+    const was = { kind: state.kind, globe: state.globe, names: state.names };
+    const v = readHash(); syncControls(); syncMapControls();
+    if (mapReady) {
+      if (state.kind !== was.kind) drawKind(state.kind);
+      selectArea();
+      if (state.globe !== was.globe) map.setProjection({ type: state.globe ? 'globe' : 'mercator' });
+      if (state.names !== was.names) for (const l of ['areas-name', 'boxes-name']) if (map.getLayer(l)) map.setLayoutProperty(l, 'visibility', state.names ? 'visible' : 'none');
+    }
+    applyFilters(); renderBag();
     if (state.sel) { renderDetail(byId[state.sel]); highlight(state.sel); } else closeDetail(true);
     for (const id of rows.keys()) refreshRow(id);
     if (v) map.jumpTo(v);
   });
 
   // For the site test and the console; not an API.
-  window.osdShop = { listIds: () => [...shown.ids], noPlaceIds: () => [...shown.noplace], countryBox: COUNTRY_BOX, worldZoom: WORLD_ZOOM };
+  window.osdShop = { listIds: () => [...shown.ids], noPlaceIds: () => [...shown.noplace], worldZoom: WORLD_ZOOM };
 
   syncControls();
   applyFilters();
