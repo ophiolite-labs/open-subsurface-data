@@ -1,0 +1,67 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "record_id": "fixture/survey",
+    "kind": "survey-3d",
+    "name": "S-1",
+    "feature_id": "fixture/survey#0",
+    "approximate": true,
+    "source": "fixture"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       7,
+       1
+      ],
+      [
+       12,
+       1
+      ],
+      [
+       12,
+       3
+      ],
+      [
+       7,
+       3
+      ],
+      [
+       7,
+       1
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "record_id": "fixture/survey",
+    "kind": "survey-2d",
+    "name": "L-1",
+    "feature_id": "fixture/survey#1",
+    "approximate": true,
+    "source": "fixture"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      12,
+      0.5
+     ],
+     [
+      13.5,
+      5
+     ]
+    ]
+   }
+  }
+ ]
+}

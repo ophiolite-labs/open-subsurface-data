@@ -1,0 +1,77 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "record_id": "fixture/register",
+    "kind": "wellbore",
+    "name": "W-0",
+    "feature_id": "fixture/register#0",
+    "approximate": true,
+    "source": "fixture"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5,
+     7
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "record_id": "fixture/register",
+    "kind": "wellbore",
+    "name": "W-1",
+    "feature_id": "fixture/register#1",
+    "approximate": true,
+    "source": "fixture"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     14,
+     2
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "record_id": "fixture/register",
+    "kind": "wellbore",
+    "name": "W-2",
+    "feature_id": "fixture/register#2",
+    "approximate": true,
+    "source": "fixture"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     3,
+     3
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "record_id": "fixture/register",
+    "kind": "wellbore",
+    "name": "W-3",
+    "feature_id": "fixture/register#3",
+    "approximate": true,
+    "source": "fixture"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -3,
+     5
+    ]
+   }
+  }
+ ]
+}

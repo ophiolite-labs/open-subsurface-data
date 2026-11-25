@@ -1,0 +1,19 @@
+id: fixture/nothing
+title: A dataset with no place
+publisher:
+  name: Fixture
+  url: https://example.org
+origin:
+  url: https://example.org/nothing
+  access: anonymous
+licence:
+  name: Fixture terms
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds:
+- wellbore-headers
+region: {}
+listed_by:
+- publisher
+added: '2026-11-25'

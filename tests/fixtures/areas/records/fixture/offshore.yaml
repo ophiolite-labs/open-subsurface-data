@@ -1,0 +1,25 @@
+id: fixture/offshore
+title: An offshore dataset
+publisher:
+  name: Fixture
+  url: https://example.org
+origin:
+  url: https://example.org/offshore
+  access: anonymous
+licence:
+  name: Fixture terms
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds:
+- wellbore-headers
+region:
+  country: XA
+  bbox:
+  - -4
+  - 4
+  - -2
+  - 6
+listed_by:
+- publisher
+added: '2026-11-25'

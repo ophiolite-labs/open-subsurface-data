@@ -1,0 +1,25 @@
+id: fixture/register
+title: A well register across two basins
+publisher:
+  name: Fixture
+  url: https://example.org
+origin:
+  url: https://example.org/register
+  access: anonymous
+licence:
+  name: Fixture terms
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds:
+- wellbore-headers
+region:
+  country: XA
+  bbox:
+  - 16
+  - 5
+  - 18
+  - 9
+listed_by:
+- publisher
+added: '2026-11-25'

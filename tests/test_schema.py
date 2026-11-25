@@ -33,7 +33,8 @@ def _v(schema: dict) -> Draft202012Validator:
     return Draft202012Validator(schema, format_checker=FormatChecker())
 
 
-RECORD = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))   # the live schema, record/5 (E29)
+RECORD = _v(json.loads((paths.SCHEMA_DIR / "record.schema.json").read_text()))   # the live schema, record/6 (E46)
+RECORD_5 = _v(json.loads((FROZEN / "record-5.schema.json").read_text()))
 RECORD_4 = _v(json.loads((FROZEN / "record-4.schema.json").read_text()))
 RECORD_3 = _v(json.loads((FROZEN / "record-3.schema.json").read_text()))
 RECORD_2 = _v(json.loads((FROZEN / "record-2.schema.json").read_text()))
@@ -62,7 +63,8 @@ def _errors(rec: dict) -> list:
 # --- record/3 --------------------------------------------------------------------------------------
 
 def test_record_ids_are_versioned():
-    assert RECORD.schema["$id"].endswith("/record/5") and RECORD_4.schema["$id"].endswith("/record/4")
+    assert RECORD.schema["$id"].endswith("/record/6") and RECORD_5.schema["$id"].endswith("/record/5")
+    assert RECORD_4.schema["$id"].endswith("/record/4")
     assert RECORD_3.schema["$id"].endswith("/record/3")
     assert RECORD_2.schema["$id"].endswith("/record/2")
 
@@ -192,6 +194,28 @@ def test_record_5_admits_arcgis_and_record_4_refuses_it():
     assert _errors(_with_input("arcgis")) == []
     assert list(RECORD_4.iter_errors(_with_input("arcgis")))
     assert _errors(_with_input("ArcGIS")) and _errors(_with_input("esri-json"))
+
+
+# --- record/6 (E46): a dataset can say it is country-wide ------------------------------------------
+
+def test_record_5_fixtures_validate_under_record_5_and_record_6():
+    """The same record/5 files (one per record/4 format, arcgis, and every kind) are valid under the frozen
+    record/5 and under record/6; every stored record is valid under both, until a record says national."""
+    for rec in [_with_input(f) for f in [*RECORD_4_FORMATS, "arcgis"]] + [_base(kinds=[k]) for k in RECORD_3_KINDS + NEW_KINDS]:
+        assert not list(RECORD_5.iter_errors(rec)), rec
+        assert not _errors(rec), rec
+    for p in record_files():
+        rec = load_record(p)
+        assert not _errors(rec), p
+        if "national" not in rec.get("region", {}):
+            assert not list(RECORD_5.iter_errors(rec)), p
+
+
+def test_record_6_national_is_a_boolean_and_needs_a_country():
+    assert _errors(_base(region={"country": "NL", "national": True})) == []
+    assert list(RECORD_5.iter_errors(_base(region={"country": "NL", "national": True})))
+    assert _errors(_base(region={"country": "NL", "national": "yes"}))
+    assert _errors(_base(region={"national": True}))
 
 
 # --- osd new: the scaffold's comment lists come from the schema -----------------------------------

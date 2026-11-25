@@ -1,0 +1,484 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-subsurface-data.org/schema/area/1",
+  "title": "Open Subsurface Data area file, version 1",
+  "description": "A committed area file under areas/ (E46): areas/<kind>.geojson, or areas/<kind>/<name>.geojson when a kind has one file per source (E51 licences per country). Geometry is WGS84, simplified once at preparation (`osd areas prepare`), Polygon or MultiPolygon, rings closed, split at +-180 degrees longitude (RFC 7946 section 3.1.9): no edge steps more than 180 degrees (`osd validate`). (kind, area_id) is the global key; area_id is unique within its kind across all files (`osd validate`). The build's outputs are described here too: `#/$defs/index` (build/catalog/areas.json) and `#/$defs/drawn` (build/catalog/areas-<kind>.geojson).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "source",
+    "features"
+  ],
+  "properties": {
+    "type": {
+      "const": "FeatureCollection"
+    },
+    "kind": {
+      "$ref": "#/$defs/kind"
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/feature"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "country"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "features": {
+            "items": {
+              "properties": {
+                "properties": {
+                  "properties": {
+                    "area_id": {
+                      "pattern": "^[A-Z]{2}$"
+                    }
+                  },
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "country"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "blocks"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "province"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "features": {
+            "items": {
+              "properties": {
+                "properties": {
+                  "required": [
+                    "country"
+                  ],
+                  "properties": {
+                    "area_id": {
+                      "pattern": "^([A-Z]{2}-[A-Z0-9]{1,3}|[A-Z]{3}-[0-9]+)$"
+                    }
+                  },
+                  "not": {
+                    "required": [
+                      "blocks"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "basin"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "features": {
+            "items": {
+              "properties": {
+                "properties": {
+                  "properties": {
+                    "area_id": {
+                      "pattern": "^usgs-[0-9]+$"
+                    }
+                  },
+                  "not": {
+                    "required": [
+                      "blocks"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "licence"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "features": {
+            "items": {
+              "properties": {
+                "properties": {
+                  "required": [
+                    "country"
+                  ],
+                  "properties": {
+                    "area_id": {
+                      "pattern": "^[A-Z]{2}:\\S+$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "country",
+        "province",
+        "basin",
+        "licence"
+      ],
+      "description": "country: Natural Earth admin-0; province: Natural Earth admin-1; basin: USGS Geologic Provinces of the World (WEP_PRVG); licence: a regulator's licence areas (E51)."
+    },
+    "source_fields": {
+      "type": "object",
+      "required": [
+        "name",
+        "url",
+        "licence",
+        "credit",
+        "edition",
+        "retrieved",
+        "sha256"
+      ],
+      "description": "The publisher's file the areas were prepared from, as the publisher states it; areas/SOURCES.md quotes the terms sentence. A source without read terms is not drawn (R-S5): an empty licence or credit is refused.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1
+        },
+        "licence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The terms as the publisher names them, e.g. 'public domain'."
+        },
+        "credit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The credit line the map shows."
+        },
+        "edition": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The publisher's version or date of the file."
+        },
+        "retrieved": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Of the publisher's file as retrieved."
+        }
+      }
+    },
+    "source": {
+      "$ref": "#/$defs/source_fields",
+      "unevaluatedProperties": false,
+      "description": "One per area file."
+    },
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "properties",
+        "geometry"
+      ],
+      "properties": {
+        "type": {
+          "const": "Feature"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "area_id",
+            "name"
+          ],
+          "properties": {
+            "area_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Stable, from the source's own code; the pattern per kind is in allOf."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "country": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "Provinces and licences: the country area_id the area belongs to."
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true,
+              "description": "Licences only (E51): the block names, sorted."
+            }
+          }
+        },
+        "geometry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "coordinates"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "Polygon",
+                "MultiPolygon"
+              ]
+            },
+            "coordinates": {
+              "type": "array",
+              "minItems": 1
+            }
+          }
+        }
+      }
+    },
+    "index": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kinds"
+      ],
+      "description": "build/catalog/areas.json. Per kind, the sources and exactly the areas that hold at least one dataset, sorted by area_id. country, province and basin are always present; another kind when a file of it is committed. records.json carries, when any area file exists, records[].areas with exactly these kinds, each a sorted list of area_id (possibly empty), and agrees with `ids` here in both directions.",
+      "properties": {
+        "version": {
+          "const": "areas/1"
+        },
+        "kinds": {
+          "type": "object",
+          "required": [
+            "country",
+            "province",
+            "basin"
+          ],
+          "propertyNames": {
+            "$ref": "#/$defs/kind"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sources",
+              "areas"
+            ],
+            "properties": {
+              "sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/source_fields",
+                  "required": [
+                    "file"
+                  ],
+                  "properties": {
+                    "file": {
+                      "type": "string",
+                      "pattern": "^[a-z]+(/[a-z0-9-]+)?\\.geojson$"
+                    }
+                  },
+                  "unevaluatedProperties": false
+                },
+                "description": "One per committed file of the kind, sorted by file (a path under areas/)."
+              },
+              "areas": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "area_id",
+                    "name",
+                    "source",
+                    "label",
+                    "bbox",
+                    "n",
+                    "ids"
+                  ],
+                  "properties": {
+                    "area_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "country": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{2}$"
+                    },
+                    "source": {
+                      "type": "string",
+                      "description": "The `file` of the source the area comes from."
+                    },
+                    "label": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": {
+                        "type": "number"
+                      },
+                      "description": "[lon, lat] inside the largest part, where the name is drawn."
+                    },
+                    "bbox": {
+                      "type": "array",
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "items": {
+                        "type": "number"
+                      },
+                      "description": "[west, south, east, north] of the whole area."
+                    },
+                    "n": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "description": "The number of ids."
+                    },
+                    "ids": {
+                      "type": "array",
+                      "minItems": 1,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The record ids that sit in the area, sorted."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "drawn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "features"
+      ],
+      "description": "build/catalog/areas-<kind>.geojson: the geometry of the areas in the index for that kind, no other; the fallback for areas.pmtiles. Feature id: the first 6 bytes of sha256('<kind>:<area_id>') as an integer, stable across builds.",
+      "properties": {
+        "type": {
+          "const": "FeatureCollection"
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "id",
+              "properties",
+              "geometry"
+            ],
+            "properties": {
+              "type": {
+                "const": "Feature"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 281474976710655
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "area_id",
+                  "name",
+                  "n"
+                ],
+                "properties": {
+                  "area_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "n": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              },
+              "geometry": {
+                "$ref": "#/$defs/feature/properties/geometry"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
