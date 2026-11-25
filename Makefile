@@ -8,8 +8,9 @@ check:                                   ## the required CI check (offline, < 2 
 lint:
 	uv run ruff check src tests
 
-# The tests that read the session's one real build (conftest `full_build`) and the rest, side by side (E46 slice 2).
-REAL_BUILD_TESTS = tests/test_build.py tests/test_stac.py tests/test_areas.py tests/site/test_how_snippets.py
+# The test files that read the session's one real build (conftest `full_build`, found by name) and the rest,
+# side by side: one real build in the first process, none in the second (E46 slice 2).
+REAL_BUILD_TESTS = $(shell grep -rl --include='test_*.py' full_build tests | sort)
 
 test: test-real-build test-rest
 
