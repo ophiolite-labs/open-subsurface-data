@@ -705,6 +705,40 @@ test('J14 shares the address: a second browser shows the same window, filters, o
   await a.context.close(); await b.context.close();
 });
 
+test('J14 (E48 half) shares the address: a second browser shows the same kind of area, area, names, globe, filter and bag', async () => {
+  const a = await openFx(`${FX_VIEW}`);
+  await a.page.getByRole('button', { name: 'Provinces', exact: true }).click(); await idle(a.page);
+  const at = await pointIn(a.page, 'XB-W');
+  await a.page.mouse.click(at.x, at.y);
+  await a.page.locator('#area-chip:not([hidden])').waitFor();
+  await a.page.getByRole('button', { name: 'Names', exact: true }).click();
+  await a.page.getByRole('button', { name: 'Globe', exact: true }).click();
+  await a.page.locator('#filters-btn').click();
+  await a.page.locator('#minlevel').selectOption('0');
+  await a.page.locator('#access .chip', { hasText: /^Download$/ }).click();
+  await a.page.locator('#filters-btn').click();
+  await a.page.locator('#list > ul > li .plus').first().click();
+  await idle(a.page);
+  const seen = async p => ({ count: await p.locator('#count').innerText(), ids: await p.evaluate(() => window.osdShop.listIds()),
+    chip: await p.locator('#area-chip span').innerText(), pressed: await pressed(p), bag: await p.locator('#bag-btn .n').innerText(),
+    filters: await p.locator('#filters-btn .n').innerText(), layers: await areaLayers(p),
+    projection: await p.evaluate(() => window.osdMap.getProjection().type),
+    names: (await rendered(p, 'areas-name')).sort(),
+    sel: await p.evaluate(() => window.osdMap.getFeatureState({ source: 'areas-province', id: 'XB-W' }).sel),
+    view: await p.evaluate(() => [window.osdMap.getZoom().toFixed(2), window.osdMap.getCenter().lat.toFixed(3), window.osdMap.getCenter().lng.toFixed(3)]) });
+  const want = await seen(a.page), hash = await a.page.evaluate(() => location.hash);
+  for (const k of [/o=province/, /area=XB-W/, /n=1/, /p=globe/, /a=anonymous/, /pick=/, /map=/]) assert.match(hash, k);
+  assert.equal(want.chip, 'Borduria West');
+  assert.equal(want.projection, 'globe');
+  assert.ok(want.names.length > 0 && want.sel === true);
+  const b = await openFx(hash.slice(1));
+  await b.page.locator('#area-chip:not([hidden])').waitFor();
+  assert.deepEqual(await seen(b.page), want);
+  console.log('# shared address (E48)', hash);
+  assert.deepEqual([...a.errors, ...b.errors], []);
+  await a.context.close(); await b.context.close();
+});
+
 // ---- J15 ---------------------------------------------------------------------------------------
 test('J15 does J1, J2, J5 and J11 on a phone-width screen (390 × 844): no horizontal scroll, the plus at least 44 px', async () => {
   await j1(PHONE, 'j15-phone-list.png');
