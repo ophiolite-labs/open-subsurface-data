@@ -36,9 +36,10 @@ site-deps:                               ## Playwright and Chromium for the site
 site-test: build                         ## Playwright against the local site (not part of `check` yet)
 	npm run --silent site-test
 
-shot: build                              ## desktop and phone screenshots into build/shots/
+shot: build                              ## desktop and phone screenshots into build/shots/ (the shop's into build/shots/shop/)
 	mkdir -p build/shots
 	node tools/shot.mjs build/shots
+	node tools/shot.mjs build/shots/shop shop
 
 clean:
 	rm -rf build site/data
