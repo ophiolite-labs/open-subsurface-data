@@ -27,8 +27,11 @@ sentence, sign.
 
 Consequence for the charter's order (UK, Norway, US): the United Kingdom is held (stop rule
 "a source whose terms forbid redistribution of derived data"; here, the grant forbids commercial
-exploitation and so forbids the CC0 commit). Inbox `e51s0.md` note 1 carries the default and the
-owner action. Norway is drawable but its file is not CC0 (note 2). The United States is clear.
+exploitation and so forbids the CC0 commit). Supervisor ruling on inbox `e51s0.md` note 1: no NSTA
+geometry; the choice (ask NSTA, rule our use non-commercial, or leave the UK out) is owner action
+139, decision OSD-D38; slice 1 starts with Norway. Norway is drawable but its file is not CC0
+(OSD-D37: licence files keep their publisher's licence; the README sentence goes to slice 1).
+The United States is clear.
 
 ## United Kingdom: NSTA (North Sea Transition Authority)
 
@@ -70,7 +73,7 @@ owner action. Norway is drawable but its file is not CC0 (note 2). The United St
   commit under CC0 is **not allowed**: CC0 lets anyone exploit commercially, a right NSTA does not
   grant. If committed at all, the file must travel with the attribution statement and a pointer to
   the User Agreement, and must be excluded from the repository's CC0 grant. Whether the shop and
-  Ophiolite's use count as non-commercial is not ours to decide: inbox note 1.
+  Ophiolite's use count as non-commercial is not ours to decide: owner action 139 (OSD-D38).
 - **Credit line, word for word**: "Contains information provided by the North Sea Transition
   Authority and/or other third parties."
 - **Update frequency**: no frequency on the item or its metadata (`maintFreq` absent). NSTA's data
@@ -98,7 +101,8 @@ owner action. Norway is drawable but its file is not CC0 (note 2). The United St
     NOD is not responsible for accuracy on data reported by third parties. Content shall not be
     used for navigational purposes."
   - No attribution wording of Sodir's own is on the page.
-  A person confirms the live page: inbox note 3 (owner action "open this address in a browser").
+  A person confirms the live page: owner action 140 ("open this address in a browser"); Norway
+  proceeds on this archive copy plus the live NLOD text (supervisor, 25 Nov 2026).
 - **Licence text opened**: NLOD 2.0, `https://data.norge.no/nlod/en/2.0` (HTTP 200, Norwegian
   Digitalisation Agency), opened 25 Nov 2026. Quotes:
   - §2: "The licensee, subject to the limitations that follow from this licence, may use the
@@ -129,7 +133,7 @@ owner action. Norway is drawable but its file is not CC0 (note 2). The United St
   (b) A commit **under CC0 is not allowed** (no sub-licensing, no change of terms; CC0 is not in
   the §9 list). The file **may** be committed carrying NLOD 2.0: the notice that must travel with
   it is the attribution line, the NLOD 2.0 link, the source address and "simplified by Open
-  Subsurface Data". Inbox note 2 (how a non-CC0 file sits in a CC0 repository).
+  Subsurface Data". OSD-D37 (licence files keep their publisher's licence, outside the CC0 grant).
 - **Credit line**: Sodir specifies none (archive copy); NLOD §5 default, filled in: "Contains data
   under the Norwegian licence for Open Government data (NLOD) distributed by Norwegian Offshore
   Directorate".
@@ -236,12 +240,12 @@ None moved (same day as the prototype read).
 
 | Source | Opened | What the text says (verbatim) | Verdict | Needs a person |
 |---|---|---|---|---|
-| C-NLOER (Newfoundland and Labrador) | `https://www.cnloer.ca/disclaimer/` HTTP 200 (old `cnlopb.ca/information/shapefiles` and `/terms-of-use/` are 404; maps page says the data "can now be found on the Data and Information Hub" `home-cnlopb.hub.arcgis.com`) | "Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications. ... Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited." "To seek permission to reproduce any Board materials for commercial purposes, please contact the Information and Privacy Coordinator" | **No** without written permission; no current-licence layer found (25 Nov) | Yes: hub item terms for a current-licence layer, or a permission (note 4) |
-| CNSOER (Nova Scotia) | `https://cnsoer.ca/website-terms-of-use` HTTP 200 (`cnsopb.ns.ca` redirects to `cnsoer.ca`) | "Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited." "You may only use the material for your personal and non-commercial use." | **No** without permission; no licence layer found | Yes: permission (note 4) |
+| C-NLOER (Newfoundland and Labrador) | `https://www.cnloer.ca/disclaimer/` HTTP 200 (old `cnlopb.ca/information/shapefiles` and `/terms-of-use/` are 404; maps page says the data "can now be found on the Data and Information Hub" `home-cnlopb.hub.arcgis.com`) | "Unless otherwise stated, the Board is the owner of all information maintained on the Website including Board WebPages, maps and publications. ... Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited." "To seek permission to reproduce any Board materials for commercial purposes, please contact the Information and Privacy Coordinator" | **No** without written permission; no current-licence layer found (25 Nov) | Yes: hub item terms for a current-licence layer, or a permission (owner action 140, later step) |
+| CNSOER (Nova Scotia) | `https://cnsoer.ca/website-terms-of-use` HTTP 200 (`cnsopb.ns.ca` redirects to `cnsoer.ca`) | "Unauthorized use or reproduction of these materials, either in whole or in part, is strictly prohibited." "You may only use the material for your personal and non-commercial use." | **No** without permission; no licence layer found | Yes: permission (owner action 140, later step) |
 | British Columbia | OGL-BC `https://www2.gov.bc.ca/gov/content/data/policy-standards/data-policies/open-data/open-government-licence-bc` HTTP 200; catalogue record `d7b059df-f978-4687-842c-01c4afe2033d` "Oil and Gas Tenure Areas" names this licence (publisher's own catalogue; record modified 2026-11-25) | "The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes" "Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose" default credit "Contains information licensed under the Open Government Licence – British Columbia." | (a) yes; (b) not CC0 (licence terms travel, as for NLOD); but the layer read is administrative tenure areas (266), not leases; the grid layers are "Access Only" (catalogue) | Which BC layer holds current leases |
-| Alberta | `https://open.alberta.ca/licence`: **not opened live** (curl 403 bot check, WebFetch 403); Internet Archive copy of 28 Oct 2026 read | "including for commercial purposes" ... default credit "Contains information licensed under the Open Government Licence – Alberta." | Licence text read (archive); **no Alberta licence/agreement layer identified**, so which terms apply is unknown | Yes: browser for open.alberta.ca and the agreements layer (note 3) |
-| NOPTA (Australia offshore) | `https://www.nopta.gov.au/copyright.html` HTTP 200; service `TitlesCompany_NOPTA` has no licence or copyright text | "All material on this website is licensed under a Creative Commons Attribution 4.0 International Licence, save for content supplied by third parties ..." "Content contained herein should be attributed as © Commonwealth of Australia (Department of Industry) [year], NOPTA [name of document or page containing the content]." | Website terms, not stated for the spatial service: **not verified** for the layer | Yes: NOPTA to confirm the service licence (note 4) |
+| Alberta | `https://open.alberta.ca/licence`: **not opened live** (curl 403 bot check, WebFetch 403); Internet Archive copy of 28 Oct 2026 read | "including for commercial purposes" ... default credit "Contains information licensed under the Open Government Licence – Alberta." | Licence text read (archive); **no Alberta licence/agreement layer identified**, so which terms apply is unknown | Yes: browser for open.alberta.ca and the agreements layer (owner action 140) |
+| NOPTA (Australia offshore) | `https://www.nopta.gov.au/copyright.html` HTTP 200; service `TitlesCompany_NOPTA` has no licence or copyright text | "All material on this website is licensed under a Creative Commons Attribution 4.0 International Licence, save for content supplied by third parties ..." "Content contained herein should be attributed as © Commonwealth of Australia (Department of Industry) [year], NOPTA [name of document or page containing the content]." | Website terms, not stated for the spatial service: **not verified** for the layer | Yes: NOPTA to confirm the service licence (owner action 140, later step) |
 | Western Australia (DEMIRS) | `https://dasc.dmirs.wa.gov.au/home?productAlias=WAPetroleumTitles` HTTP 200 | "All data and other material produced by Department of Mines, Petroleum and Exploration constitute Crown copyright." "... is licensed under a Creative Commons Attribution 4.0 International licence." "Please give attribution to: © State of Western Australia (Department of Mines, Petroleum and Exploration) 2026"; for derived material: "Attribution: Based on Department of Mines, Petroleum and Exploration material." | (a) yes with attribution; (b) not CC0 (CC BY 4.0 travels). Catalogue tags disagree: data.wa.gov.au says CC BY 4.0, daily; data.gov.au says CC BY-SA 4.0 for the same "WA Petroleum Titles (DMIRS-011)" | The page is DASC's generic home; a person confirms the licence on the product page itself |
 | Northern Territory | Metadata `http://www.ntlis.nt.gov.au/metadata/export_data?type=html&metadata_id=FB244D05EFB6203BE040CD9B21446E40` ("Northern Territory Petroleum Tenure") HTTP 200 | "The data or product is copyright of the Northern Territory Government. The data and other information may be reproduced or used to develop other products but any such copies or works must acknowledge the Northern Territory Geological Survey, on behalf of the Northern Territory of Australia as the source of the original data or information." Maintenance: "daily" | (a) yes with that acknowledgement; (b) CC0 not stated either way: **not verified** | Confirm whether the CC BY catalogue tag (data.nt.gov.au) is the operative licence |
 | Queensland | Catalogue only: data.qld.gov.au "Queensland mining and exploration tenure series", tag CC BY 4.0, `update_frequency` daily | catalogue tag only | **not verified** | Open the dataset's own licence text |
-| South Australia | `https://data.sa.gov.au/...`: **not opened** (curl 403, WebFetch 403) | none | **not verified** | Yes: browser (note 3) |
+| South Australia | `https://data.sa.gov.au/...`: **not opened** (curl 403, WebFetch 403) | none | **not verified** | Yes: browser (owner action 140) |
