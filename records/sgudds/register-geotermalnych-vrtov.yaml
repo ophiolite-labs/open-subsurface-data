@@ -19,7 +19,7 @@ licence:
   attribution: required
   statement: "© Štátny geologický ústav Dionýza Štúra"
 kinds: [wellbore-headers, geochemistry]
-region: {country: SK, bbox: [16.83, 47.73, 22.57, 49.61]}
+region: {country: SK, bbox: [16.83, 47.73, 22.57, 49.61], national: true}
 listed_by: [publisher]
 known_issues:
   - "The licence page puts \"všetky údaje, ktoré sú na portáli k dispozícii na stiahnutie\" under CC BY 4.0 and calls the data informative only; it does not name this map service separately."

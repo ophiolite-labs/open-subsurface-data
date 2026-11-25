@@ -17,7 +17,7 @@ licence:
   redistribution: forbidden
   attribution: unknown
 kinds: [wellbore-headers, wellbore-logs, seismic-2d, seismic-3d, core, reports]
-region: {country: UG, basin: Albertine Graben, bbox: [29.5, -1.5, 35.0, 4.3]}
+region: {country: UG, basin: Albertine Graben, bbox: [29.5, -1.5, 35.0, 4.3], national: true}
 size: {stated: "over sixty (60) Terabytes of electronic oil and gas digital data and thousands of physical data (geo samples)"}
 listed_by: [publisher]
 known_issues:

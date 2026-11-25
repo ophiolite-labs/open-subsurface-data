@@ -16,7 +16,7 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [wellbore-headers]
-region: {country: TW, basin: Onshore Taiwan, bbox: [119.3, 21.8, 122.1, 25.4], crs: "EPSG:4326"}
+region: {country: TW, basin: Onshore Taiwan, bbox: [119.3, 21.8, 122.1, 25.4], crs: "EPSG:4326", national: true}
 listed_by: [publisher]
 known_issues:
   - "bbox is Taiwan, approximate; the metadata states no spatial coverage."
@@ -25,4 +25,5 @@ period:
   start: "2017-11-22"
   end: "2017-11-22"
   stated: "data.gov.tw dataset 62919 (provider 台灣中油股份有限公司): 上架日期 (listing date) 2017-11-22; fields have no dates; metadata updated 2024-05-29; no temporal coverage stated"
+notes: "National onshore only: the publisher presents this as covering the Taiwan onshore, not the offshore."
 added: 2026-10-23

@@ -19,7 +19,7 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [wellbore-headers, tops]
-region: {country: IT, basin: "Italy, onshore and offshore", bbox: [6.5147, 35.4456, 18.6326, 47.1463]}
+region: {country: IT, basin: "Italy, onshore and offshore", bbox: [6.5147, 35.4456, 18.6326, 47.1463], national: true}
 listed_by: [publisher]
 known_issues:
   - "The wells are the public UNMIG well set that mase-unmig/videpi-wells serves as composite logs; this record is ISPRA's digitised 3D database of them."

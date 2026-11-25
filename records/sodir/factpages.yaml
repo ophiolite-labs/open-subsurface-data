@@ -18,7 +18,7 @@ licence:
   attribution: required
   statement: "Contains data under the Norwegian licence for Open Government data (NLOD) distributed by the Norwegian Offshore Directorate"
 kinds: [wellbore-headers, wellbore-paths, tops, production, source-list]
-region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0]}
+region: {country: "NO", basin: Norwegian continental shelf, bbox: [-2.0, 56.0, 32.0, 74.0], national: true}
 listed_by: [publisher]
 known_issues:
   - "Geonorge catalogue links NLOD 1.0, the FactPages terms page NLOD 2.0 (23 Oct)"
@@ -47,4 +47,5 @@ period:
   start: "1966"
   end: "2026-10-23"
   stated: "FactMaps Wellbores__all (the register's own WFS): earliest Entry_year 1966 (Entered_date 1966-07-19); register updated daily, end = date read 2026-10-23"
+notes: "National offshore only: the publisher presents this as covering the Norwegian offshore, not the land."
 added: 2026-10-23

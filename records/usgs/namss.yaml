@@ -14,7 +14,7 @@ licence:
   redistribution: allowed
   attribution: not-required
 kinds: [seismic-2d, seismic-3d, source-list]
-region: {country: US, basin: U.S. Exclusive Economic Zone, bbox: [-180.0, 17.0, -64.0, 72.0]}
+region: {country: US, basin: U.S. Exclusive Economic Zone, bbox: [-180.0, 17.0, -64.0, 72.0], national: true}
 listed_by: [publisher]
 known_issues:
   - "bbox is approximate (U.S. EEZ including Alaska, excluding Pacific territories); the publisher states the EEZ, not coordinates."
@@ -22,4 +22,5 @@ period:
   start: "1975"
   end: "2026-10-23"
   stated: "USGS DataCite record for its data release DOI 10.5066/F7930R7P: dateType Collected '1975/present'; abstract 'collected from 1975 to the present' (end taken as read date)"
+notes: "National offshore only: the publisher presents this as covering the U.S. offshore, not the land."
 added: 2026-10-23

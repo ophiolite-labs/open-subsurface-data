@@ -20,7 +20,7 @@ licence:
     stated: "Az ügyfél – térítési díj ellenében – másolatot kérhet a betekintésre kiadott adattári anyagról. [...] Nem üzleti célú adatigénylés esetén – pl. egyetemi hallgatók, doktoranduszok számára – [...] 50% díjkedvezményt vagy díjmentességet engedélyezhet. [...] Az adattári szolgáltatások igénybevétele során szolgáltatott adattári anyagokat az ügyfél csak az SZTFH-val történt előzetes egyeztetés, és az SZTFH hozzájárulása esetén az adattári anyagok továbbadásáról a felek között kötött megállapodás alapján adhatja tovább harmadik személynek."
     duration: null
 kinds: [seismic-2d, seismic-3d, wellbore-logs]
-region: {country: HU, basin: Pannonian Basin, bbox: [16.1, 45.7, 22.9, 48.6]}
+region: {country: HU, basin: Pannonian Basin, bbox: [16.1, 45.7, 22.9, 48.6], national: true}
 size: {stated: "3D tömb, feldolgozott: 103 db; 3D tömb, terepi mérés: 109 db; 2D vonal: 6757 db; 2D feldolgozott vonal, SEGY formátumban: 4810 db"}
 listed_by: [publisher]
 known_issues:

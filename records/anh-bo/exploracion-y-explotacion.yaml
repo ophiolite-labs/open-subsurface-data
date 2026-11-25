@@ -17,7 +17,7 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [reports]
-region: {country: BO, basin: Bolivia}
+region: {country: BO, basin: Bolivia, national: true}
 listed_by: [publisher]
 known_issues:
   - "The site states no licence or terms of use."

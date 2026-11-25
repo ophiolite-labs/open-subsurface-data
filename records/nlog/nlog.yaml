@@ -17,7 +17,7 @@ licence:
   terms:
     stated: "Het is toegestaan informatie op deze website te kopiëren, te downloaden of op enigerlei wijze openbaar te maken, te verspreiden of te vereenvoudigen zonder voorafgaande schriftelijke toestemming van NLOG.NL of de rechtmatige toestemming van de rechthebbende. Het is, mits met bronvermelding, tevens toegestaan om de informatie en/of vormgeving te kopiëren, te vermenigvuldigen of te bewerken."
 kinds: [wellbore-headers, wellbore-logs, wellbore-paths, tops, seismic-2d, seismic-3d, production, reports]
-region: {country: NL, basin: Netherlands onshore and offshore, bbox: [2.5, 50.7, 7.3, 55.9], crs: "EPSG:28992"}
+region: {country: NL, basin: Netherlands onshore and offshore, bbox: [2.5, 50.7, 7.3, 55.9], crs: "EPSG:28992", national: true}
 listed_by: [publisher, community]
 known_issues:
   - "The Dutch disclaimer prevails over the English one; read 27 Oct 2026."

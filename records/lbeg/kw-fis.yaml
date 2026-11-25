@@ -15,7 +15,7 @@ licence:
   attribution: required
   statement: "NIBIS® Kartenserver (<year of download>): <theme, and which data were changed>. - Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover."
 kinds: [wellbore-headers]
-region: {country: DE, basin: "Germany incl. North Sea and Baltic Sea (North German Basin, Upper Rhine Graben, Molasse Basin)", bbox: [3.35, 47.27, 15.04, 55.92]}
+region: {country: DE, basin: "Germany incl. North Sea and Baltic Sea (North German Basin, Upper Rhine Graben, Molasse Basin)", bbox: [3.35, 47.27, 15.04, 55.92], national: true}
 listed_by: [publisher]
 known_issues:
   - "Terms: copyright stays with the rights holders named in the copyright or metadata of each theme; the topographic base maps may be used only together with the NIBIS data."

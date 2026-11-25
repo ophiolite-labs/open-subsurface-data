@@ -19,7 +19,7 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [wellbore-headers, seismic-2d, seismic-3d]
-region: {country: ES, basin: "Spain, onshore and offshore", bbox: [-19.0, 27.6, 4.3, 44.6], crs: "EPSG:4258"}
+region: {country: ES, basin: "Spain, onshore and offshore", bbox: [-19.0, 27.6, 4.3, 44.6], crs: "EPSG:4258", national: true}
 listed_by: [publisher]
 known_issues:
   - "Well points carry identifiers and type, not names or depths; seismic is campaign and line locations (lineasSismicas, lineasSismicas3d), not traces."

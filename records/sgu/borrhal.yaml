@@ -18,7 +18,7 @@ licence:
   redistribution: allowed
   attribution: not-required
 kinds: [wellbore-headers, core]
-region: {country: SE, basin: Sweden (Fennoscandian Shield and Phanerozoic cover), bbox: [10.96, 55.34, 24.17, 69.06]}
+region: {country: SE, basin: Sweden (Fennoscandian Shield and Phanerozoic cover), bbox: [10.96, 55.34, 24.17, 69.06], national: true}
 listed_by: [publisher]
 known_issues:
   - "Mostly mineral-exploration and construction boreholes, not petroleum wells."

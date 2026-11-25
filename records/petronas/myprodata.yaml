@@ -22,7 +22,7 @@ licence:
     review_before_publication: null
     expires: null
 kinds: [seismic-2d, seismic-3d, wellbore-headers, wellbore-logs, potential-fields, reports, production]
-region: {country: MY, basin: "Malay, Penyu, Sarawak and Sabah basins (offshore Peninsular Malaysia, Sarawak and Sabah)", bbox: [99.6, 0.8, 119.3, 7.4]}
+region: {country: MY, basin: "Malay, Penyu, Sarawak and Sabah basins (offshore Peninsular Malaysia, Sarawak and Sabah)", bbox: [99.6, 0.8, 119.3, 7.4], national: true}
 size: {stated: "Over 1,100 TB; 700,000 sqkm 3D seismic, 292,000 sqkm Full Tensor Gradiometry, 495,000 line-km 2D seismic, 6,000 wells and well logs, 83,000 technical reports"}
 listed_by: [publisher]
 known_issues:

@@ -22,7 +22,7 @@ licence:
     review_before_publication: true
     expires: null
 kinds: [wellbore-headers, wellbore-logs, core, seismic-2d, seismic-3d, geochemistry, reports]
-region: {country: ZA, basin: "South African offshore and the Karoo, Algoa and Zululand onshore basins", bbox: [13.0, -38.0, 33.5, -22.0]}
+region: {country: ZA, basin: "South African offshore and the Karoo, Algoa and Zululand onshore basins", bbox: [13.0, -38.0, 33.5, -22.0], national: true}
 size: {stated: "more than 300 000 line km's of 2D and 40 000 km² of 3D seismic data"}
 listed_by: [publisher]
 known_issues:

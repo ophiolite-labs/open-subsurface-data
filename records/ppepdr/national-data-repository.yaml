@@ -19,7 +19,7 @@ licence:
   terms:
     stated: "Full Members US$ 22,050 / annum; Associate Members US$ 13,230 / annum; Non Members US$ 110 / hour; Temporary Members Free (companies with foreign operations registering interest with DGPC). Download fees apply in addition to membership. All data sales are subject to DGPC approval. Seismic data US$ 4 per line kilometer. Well data US$ 56 per well."
 kinds: [seismic-2d, seismic-3d, wellbore-headers]
-region: {country: PK, basin: "Indus, Potwar-Kohat and Balochistan basins, onshore and offshore", bbox: [60.9, 23.6, 77.8, 37.1]}
+region: {country: PK, basin: "Indus, Potwar-Kohat and Balochistan basins, onshore and offshore", bbox: [60.9, 23.6, 77.8, 37.1], national: true}
 size: {stated: "Terabytes of secure petrotechnical data"}
 listed_by: [publisher]
 known_issues:

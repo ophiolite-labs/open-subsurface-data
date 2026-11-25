@@ -16,7 +16,7 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [seismic-2d, seismic-3d, wellbore-logs, time-depth, core, geochemistry, reports, potential-fields]
-region: {country: NA, basin: Namibian offshore and onshore, bbox: [8.0, -29.5, 25.3, -16.9]}
+region: {country: NA, basin: Namibian offshore and onshore, bbox: [8.0, -29.5, 25.3, -16.9], national: true}
 listed_by: [publisher]
 known_issues:
   - "No terms of use are published for the data."

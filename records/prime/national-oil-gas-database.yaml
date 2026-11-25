@@ -17,7 +17,7 @@ licence:
   redistribution: forbidden
   attribution: required
 kinds: [wellbore-headers, seismic-2d, seismic-3d, reports, potential-fields]
-region: {country: IL, basin: Levant Basin (onshore and offshore Israel), bbox: [32.0, 29.4, 35.9, 33.4]}
+region: {country: IL, basin: Levant Basin (onshore and offshore Israel), bbox: [32.0, 29.4, 35.9, 33.4], national: true}
 listed_by: [publisher]
 known_issues:
   - "The terms reserve copyright to the State of Israel and allow only fair use, including reasonable quotation with the source stated; recorded as forbidden."

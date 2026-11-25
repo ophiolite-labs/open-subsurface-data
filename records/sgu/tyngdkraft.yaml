@@ -18,7 +18,7 @@ licence:
   redistribution: allowed
   attribution: not-required
 kinds: [potential-fields]
-region: {country: SE, basin: Sweden, bbox: [10.96, 55.34, 24.17, 69.06]}
+region: {country: SE, basin: Sweden, bbox: [10.96, 55.34, 24.17, 69.06], national: true}
 listed_by: [publisher]
 known_issues:
   - "bbox is Sweden, approximate; the airborne surveys cover only the Kiruna area."
