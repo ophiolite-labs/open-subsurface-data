@@ -532,6 +532,23 @@ test('J9 turns Names on and off: one name per drawn area at its label point, and
   }
 });
 
+test('J10 switches Flat / Globe: the projection is globe, the hash says so, and J2, J5 and the area click of J8 pass again', async () => {
+  const { context, page, errors } = await open(NORTH_SEA);
+  await page.getByRole('button', { name: 'Globe', exact: true }).click();
+  await page.waitForFunction(() => /p=globe/.test(location.hash));
+  assert.equal(await page.evaluate(() => window.osdMap.getProjection().type), 'globe');
+  assert.deepEqual(await pressed(page), ['Countries', 'Globe']);
+  await assertListFollows(page, committed.records, 'North Sea on the globe');
+  await page.getByRole('button', { name: 'Flat', exact: true }).click();
+  assert.equal(await page.evaluate(() => window.osdMap.getProjection().type), 'mercator');
+  assert.doesNotMatch(await page.evaluate(() => location.hash), /p=globe/);
+  assert.deepEqual(errors, []);
+  await context.close();
+  await j2(DESKTOP, 'globe', '&p=globe');
+  await j5(DESKTOP, '&p=globe');
+  await j8click('&p=globe');
+});
+
 // ---- J11 ---------------------------------------------------------------------------------------
 async function saveDownload(page, name) {
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#download').click()]);
