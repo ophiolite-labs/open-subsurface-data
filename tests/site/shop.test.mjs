@@ -510,6 +510,28 @@ test('J8 a second click on the area clears it; a click on a dataset inside an ar
   await context.close();
 });
 
+test('J9 turns Names on and off: one name per drawn area at its label point, and the dataset dots\' names with them', async () => {
+  const { index } = await areasBuilt;
+  for (const k of Object.keys(KINDS)) {
+    const { context, page, errors } = await openFx(`${FX_VIEW}&o=${k}`);
+    const ids = index.kinds[k].areas.map(a => a.area_id).sort();
+    assert.deepEqual(await rendered(page, 'areas-name'), [], `${k}: names off by default`);
+    assert.deepEqual(await rendered(page, 'boxes-name'), [], 'no dataset names either');
+    await page.getByRole('button', { name: 'Names', exact: true }).click(); await idle(page);
+    const names = await rendered(page, 'areas-name');
+    assert.deepEqual(names.sort(), ids, `${k}: one name per drawn area (${names.length} for ${ids.length})`);
+    assert.ok((await rendered(page, 'boxes-name')).length > 0, 'the dataset dots show their names');
+    assert.match(await page.evaluate(() => location.hash), /n=1/);
+    assert.equal(await page.evaluate(() => window.osdMap._fadeDuration), 0, 'fadeDuration 0');
+    await page.getByRole('button', { name: 'Names', exact: true }).click(); await idle(page);
+    assert.deepEqual(await rendered(page, 'areas-name'), [], 'off shows none');
+    assert.deepEqual(await rendered(page, 'boxes-name'), []);
+    assert.doesNotMatch(await page.evaluate(() => location.hash), /n=1/);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+});
+
 // ---- J11 ---------------------------------------------------------------------------------------
 async function saveDownload(page, name) {
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#download').click()]);
