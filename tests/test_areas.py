@@ -252,10 +252,15 @@ def test_province_needs_a_known_country(tmp_path, capsys):
 REAL = paths.AREAS_DIR
 
 
-def test_real_area_files_validate_and_stay_under_25_mb():
+def test_real_area_files_stay_under_25_mb():
     files = {p.name: p.stat().st_size for p in areas.area_files(REAL)}
     assert set(files) == {"country.geojson", "province.geojson", "basin.geojson", "no.geojson"}   # E51: licence/no
     assert sum(files.values()) < 25_000_000, files
+
+
+@pytest.mark.full
+def test_real_area_files_validate():
+    """In the gate `osd validate` (make validate) reads the same files; here under `full` only (E46 slice 2)."""
     assert areas.validate_areas(REAL) == []
 
 
@@ -303,12 +308,19 @@ def test_sodir_register_lights_more_than_one_basin_and_one_country(real):
 
 
 def test_national_record_without_outline_lights_its_country_and_no_basin(real):
-    """Every national record without an outline in the catalogue (E52 adds them), and one made from a real
-    record here, so the test bites before E52: its country, no province, no basin."""
-    index, recs = real
+    """Every national record without an outline in the catalogue (E52 adds them): its country, no province,
+    no basin."""
+    recs = real[1]
     for rid, r in recs.items():
         if r["region"].get("national") and not paths.outline_path(rid).exists():
             assert r["areas"] == {"country": [r["region"]["country"]], "province": [], "basin": [], "licence": []}, rid
+
+
+@pytest.mark.full
+def test_a_real_record_made_national_lights_only_its_country(real):
+    """A real record with a box made national: its country only. Under `full` (E46 slice 2): it loads the area set
+    again, and the fixture's `test_national_dataset_lights_its_country_only` guards the same rule in the gate."""
+    index, recs = real
     rid = next(rid for rid, r in sorted(recs.items()) if r["region"].get("bbox") and r["region"].get("country")
                in {a["area_id"] for a in index["kinds"]["country"]["areas"]} and not paths.outline_path(rid).exists())
     rec = copy.deepcopy(recs[rid])

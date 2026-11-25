@@ -1,15 +1,23 @@
 # One target per station. CI runs exactly `make check`.
-.PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
+.PHONY: check check-full test test-real-build test-rest lint validate build verify site serve clean site-deps site-test shot
 
 check:                                   ## the required CI check (offline, < 2 min)
 	$(MAKE) lint
-	$(MAKE) -j3 --output-sync=target test validate build   # side by side (E36): the build's tiling is the long one
+	$(MAKE) -j4 --output-sync=target test validate build   # side by side (E36): the build's tiling is the long one
 
 lint:
 	uv run ruff check src tests
 
-test:
-	nproc; uv run pytest -q --durations=40   # MEASURE (slice 2), removed before merge
+# The tests that read the session's one real build (conftest `full_build`) and the rest, side by side (E46 slice 2).
+REAL_BUILD_TESTS = tests/test_build.py tests/test_stac.py tests/test_areas.py tests/site/test_how_snippets.py
+
+test: test-real-build test-rest
+
+test-real-build:
+	uv run pytest -q --durations=15 $(REAL_BUILD_TESTS)   # MEASURE durations (slice 2)
+
+test-rest:
+	uv run pytest -q --durations=15 $(addprefix --ignore=,$(REAL_BUILD_TESTS))   # MEASURE durations (slice 2)
 
 validate:                                ## every record and outline against its schema
 	uv run osd validate; echo MEASURE validate done
