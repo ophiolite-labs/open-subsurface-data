@@ -33,7 +33,7 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           npx playwright install --only-shell chromium   # the runner image has Chromium's system libraries; --with-deps stalls on apt
-          make site-test
+          npm run --silent site-test   # site/data is the one make check staged; `make site-test` would build it again (E46 slice 2)
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main'
         with: { name: site, path: site, retention-days: 7 }
