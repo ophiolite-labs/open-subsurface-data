@@ -1,0 +1,183 @@
+{
+ "README": "E51 slice 3: a small BOEM MMC_Layers layer 15 (tests/test_areas_read.py serves it): NAD83 (4269), 2 a page; A0501 is a renewable lease (RENACV, left out); ' 00016' carries BOEM's leading blank.",
+ "15": {
+  "description": {
+   "name": "BOEM Oil and Gas Leases",
+   "type": "Feature Layer",
+   "maxRecordCount": 2,
+   "objectIdField": null,
+   "geometryType": "esriGeometryPolygon",
+   "advancedQueryCapabilities": {
+    "supportsPagination": true
+   },
+   "spatialReference": {
+    "wkid": 4269,
+    "latestWkid": 4269
+   },
+   "fields": [
+    {
+     "name": "OBJECTID",
+     "type": "esriFieldTypeOID"
+    },
+    {
+     "name": "LEASE_NUMBER",
+     "type": "esriFieldTypeString"
+    },
+    {
+     "name": "LEASE_STATUS_CD",
+     "type": "esriFieldTypeString"
+    },
+    {
+     "name": "LEASE_STATUS_CHANGE_DT",
+     "type": "esriFieldTypeDate"
+    },
+    {
+     "name": "ACLABS",
+     "type": "esriFieldTypeString"
+    }
+   ]
+  },
+  "features": [
+   {
+    "attributes": {
+     "OBJECTID": 1,
+     "LEASE_NUMBER": "G02883",
+     "LEASE_STATUS_CD": "PROD",
+     "LEASE_STATUS_CHANGE_DT": 1757548800001,
+     "ACLABS": "SM127"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        -91.5,
+        28.5
+       ],
+       [
+        -91.5,
+        28.55
+       ],
+       [
+        -91.45,
+        28.55
+       ],
+       [
+        -91.45,
+        28.5
+       ],
+       [
+        -91.5,
+        28.5
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 2,
+     "LEASE_NUMBER": " 00016",
+     "LEASE_STATUS_CD": "UNIT",
+     "LEASE_STATUS_CHANGE_DT": 1757548800002,
+     "ACLABS": "WD31"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        -89.9,
+        28.9
+       ],
+       [
+        -89.9,
+        28.95
+       ],
+       [
+        -89.85,
+        28.95
+       ],
+       [
+        -89.85,
+        28.9
+       ],
+       [
+        -89.9,
+        28.9
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 3,
+     "LEASE_NUMBER": "A0501",
+     "LEASE_STATUS_CD": "RENACV",
+     "LEASE_STATUS_CHANGE_DT": 1757548800003,
+     "ACLABS": "BI1"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        -71.5,
+        41
+       ],
+       [
+        -71.5,
+        41.05
+       ],
+       [
+        -71.45,
+        41.05
+       ],
+       [
+        -71.45,
+        41
+       ],
+       [
+        -71.5,
+        41
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "attributes": {
+     "OBJECTID": 4,
+     "LEASE_NUMBER": "G35001",
+     "LEASE_STATUS_CD": "PRIMRY",
+     "LEASE_STATUS_CHANGE_DT": 1757548800004,
+     "ACLABS": "HIA 384"
+    },
+    "geometry": {
+     "rings": [
+      [
+       [
+        -94,
+        28
+       ],
+       [
+        -94,
+        28.05
+       ],
+       [
+        -93.95,
+        28.05
+       ],
+       [
+        -93.95,
+        28
+       ],
+       [
+        -94,
+        28
+       ]
+      ]
+     ]
+    }
+   }
+  ]
+ }
+}

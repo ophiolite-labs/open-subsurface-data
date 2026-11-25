@@ -254,7 +254,7 @@ REAL = paths.AREAS_DIR
 
 def test_real_area_files_validate_and_stay_under_25_mb():
     files = {p.name: p.stat().st_size for p in areas.area_files(REAL)}
-    assert set(files) == {"country.geojson", "province.geojson", "basin.geojson", "no.geojson"}   # E51: licence/no
+    assert set(files) == {"country.geojson", "province.geojson", "basin.geojson", "no.geojson", "us.geojson"}   # E51: licence/no, licence/us
     assert sum(files.values()) < 25_000_000, files
     assert areas.validate_areas(REAL) == []
 

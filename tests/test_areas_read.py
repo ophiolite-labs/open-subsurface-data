@@ -22,7 +22,7 @@ SERVICE = "https://factmaps.sodir.no/api/rest/services/Factmaps/FactMapsWGS84/Fe
 TODAY = "2026-11-25"
 
 
-def serve(layers: dict, fail: str | None = None):
+def serve(layers: dict, fail: str | None = None, service: str = SERVICE):
     """`get` answering ArcGIS FeatureServer requests from {layer: {description, features}}; `fail`: a URL part
     whose request answers HTTP 503."""
     from osd.verifier.layers import Incomplete
@@ -34,8 +34,8 @@ def serve(layers: dict, fail: str | None = None):
         if fail and fail in url:
             raise Incomplete(f"HTTP 503 for {url}")
         u = urlsplit(url)
-        assert url.startswith(SERVICE + "/"), url
-        layer, _, op = u.path.rsplit("/FeatureServer/", 1)[1].partition("/")
+        assert url.startswith(service + "/"), url
+        layer, _, op = u.path.removeprefix(urlsplit(service).path + "/").partition("/")
         lay, q = layers[layer], dict(parse_qsl(u.query))
         feats = sorted(lay["features"], key=lambda f: f["attributes"]["OBJECTID"])
         if not op:
@@ -351,3 +351,72 @@ def test_http_get_tries_a_dropped_page_again_and_stops_at_a_4xx():
     with pytest.raises(Incomplete, match="HTTP 404"):
         get("https://x.example/gone")
     assert tries.count("https://x.example/gone") == 1
+
+
+# --- slice 3: the United States offshore (BOEM): blocks on the lease row, NAD83 -----------------------
+
+BOEM = "https://gis.boem.gov/arcgis/rest/services/BOEM_BSEE/MMC_Layers/MapServer"
+
+
+def boem() -> dict:
+    return json.loads((LIC / "boem.json").read_text())
+
+
+@pytest.fixture
+def usdir(tmp_path) -> Path:
+    (tmp_path / "licence").mkdir()
+    shutil.copy(paths.AREAS_DIR / "licence" / "us.yaml", tmp_path / "licence" / "us.yaml")
+    return tmp_path
+
+
+def read_us(usdir: Path, layers: dict | None = None) -> dict:
+    return areas.read_to_file("us", serve(layers or boem(), service=BOEM), TODAY, usdir)
+
+
+def test_boem_read_writes_the_golden_file(usdir):
+    s = read_us(usdir)
+    assert s["status"] == "written" and (s["before"], s["after"]) == (0, 3)
+    assert (usdir / "licence" / "us.geojson").read_bytes() == (LIC / "us.geojson").read_bytes()
+    props = [f["properties"] for f in json.loads((LIC / "us.geojson").read_text())["features"]]
+    assert props == [
+        {"area_id": "US:00016", "name": "OCS-00016", "country": "US", "blocks": ["WD31"]},
+        {"area_id": "US:G02883", "name": "OCS-G02883", "country": "US", "blocks": ["SM127"]},
+        {"area_id": "US:G35001", "name": "OCS-G35001", "country": "US", "blocks": ["HIA 384"]}]
+
+
+def test_boem_renewable_lease_is_not_read(usdir):
+    read_us(usdir)
+    assert "A0501" not in (usdir / "licence" / "us.geojson").read_text()
+
+
+@pytest.mark.parametrize(("case", "says"), [("no block", "have no block field ACLABS"),
+                                            ("served in WGS84", "is not in NAD83")])
+def test_boem_refused_reads_leave_the_file(usdir, case, says):
+    assert read_us(usdir)["status"] == "written"
+    before = (usdir / "licence" / "us.geojson").read_bytes()
+    layers = boem()
+    if case == "no block":
+        layers["15"]["features"][0]["attributes"]["ACLABS"] = " "
+    else:
+        layers["15"]["description"]["spatialReference"] = {"wkid": 4326}
+    s = read_us(usdir, layers)
+    assert s["status"] == "refused" and says in s["finding"], s
+    assert (usdir / "licence" / "us.geojson").read_bytes() == before
+
+
+def test_config_refuses_a_projected_wkid(usdir):
+    p = usdir / "licence" / "us.yaml"
+    p.write_text(p.read_text().replace("wkid: 4269", "wkid: 3857"))
+    assert "wkid 3857 is not one of the geographic" in read_us(usdir)["finding"]
+
+
+def test_real_us_file_under_5_mb_and_valid(tmp_path):
+    us = paths.AREAS_DIR / "licence" / "us.geojson"
+    assert us.stat().st_size < 5_000_000
+    d = licence_only(tmp_path)
+    shutil.copy(us, d / "licence" / "us.geojson")
+    assert areas.validate_areas(d) == []
+    doc = json.loads(us.read_text())
+    assert doc["source"]["url"].endswith("/MapServer/15") and len(doc["features"]) > 1500
+    total = sum(p.stat().st_size for p in (paths.AREAS_DIR / "licence").glob("*.geojson"))
+    assert total < 10_000_000   # acceptance 8: the licence files of all countries together

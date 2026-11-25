@@ -53,9 +53,13 @@ licence file, `source.sha256` is the digest of the licences as read (the feature
 | File | Source | Licence (as read) | CC0 | Credit line | Terms read |
 |---|---|---|---|---|---|
 | `licence/no.geojson` | Sodir, Norway: <https://factmaps.sodir.no/api/rest/services/Factmaps/FactMapsWGS84/FeatureServer/616> (production licences, current: `prlStatus` ACTIVE), block names from layers 615 and 802; terms <https://data.norge.no/nlod/en/2.0> (Sodir's open-data page names NLOD 2.0) | Norwegian Licence for Open Government Data (NLOD) 2.0; any purpose; no sub-licensing; changes must be indicated (outlines simplified by Open Subsurface Data) | no | Contains data under the Norwegian licence for Open Government data (NLOD) distributed by Norwegian Offshore Directorate | 25 Nov 2026 (Sodir page via archive copy of 23 Jun 2025; live page awaits a browser check, owner action 140) |
+| `licence/us.geojson` | BOEM, United States offshore: <https://gis.boem.gov/arcgis/rest/services/BOEM_BSEE/MMC_Layers/MapServer/15> (oil and gas leases, current: `LEASE_STATUS_CD` PROD, PRIMRY, UNIT, SOP, DSO, OPERNS; the 34 renewable-energy leases, RENACV, left out), the block on the lease row (`ACLABS`); NAD83 geographic, drawn as served; terms <https://www.boem.gov/about-boem/disclaimer-liability-and-endorsement> | Public information, "may be distributed or copied"; credit requested | yes | Leases: Bureau of Ocean Energy Management (BOEM), MarineCadastre.gov; simplified, not official | 25 Nov 2026 |
 
 NLOD 2.0 §2, as read: "The licensee, subject to the limitations that follow from this licence, may use the
 information for any purpose and in all contexts, by: copying the information and distributing the information
 to others, modifying the information and/or combining the information with other information, and copying and
-distributing such changed or combined information." The United Kingdom (NSTA) is held (non-commercial grant;
-OSD-D38); the United States (BOEM, BLM) follows in its own slice.
+distributing such changed or combined information." BOEM, as read (disclaimer page): the information is public and "may be distributed or copied";
+"Use of appropriate byline/photo/image credit is requested." The United Kingdom (NSTA) is held (non-commercial
+grant; OSD-D38). BLM onshore leases (MLRS) are not drawn: 32,406 of its 466,838 cases are "Authorized"; a
+sample page of 2,000 simplified at 100 m measures 754 bytes a lease, about 24 MB for all, over the 5 MB a
+country may add (E51 stop rule; `docs/program/evidence/e51/slice3-us-read.md`).

@@ -125,3 +125,4 @@ line, the read date, J13).
 - F18 accepted: permissions and GitHub calls stated in the strategy and asserted by a test on `areas.yml`; `make check` never invokes it (test).
 - F19 accepted for slice 3: BLM needs a server-side filter before paging; Norway's 1,813 rows are read whole.
 - F20 accepted: `osd build` and `osd validate` read only committed files; a test runs them with the network patched to fail.
+- Slice 3 (United States, 25 Nov 2026): BOEM leases drawn (blocks on the lease row, NAD83 named in `us.yaml`); BLM not drawn, a finding by the size stop rule (about 24 MB for 32,406 authorized leases): strategy, "Slice 3".

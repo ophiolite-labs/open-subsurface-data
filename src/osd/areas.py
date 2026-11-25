@@ -847,11 +847,11 @@ def prepare_to_file(kind: str, path: Path, areas_dir: Path = paths.AREAS_DIR) ->
 READ_AGENT = "areas-reader/1"   # a generic client name (no project or person in requests to regulators)
 SHRINK = 0.2                    # more than this share of the committed licences missing: the read is refused
 BLOCKS_MAX = 25                 # records[].blocks only for a record in at most this many licences
-CONFIG_KEYS = {"country": str, "service": str, "licences": dict, "blocks": dict, "block_layer": dict,
+CONFIG_KEYS = {"country": str, "service": str, "licences": dict, "blocks": dict,
                "tolerance_m": (int, float), "decimals": int, "source": dict}
-SUB_KEYS = {"licences": ("layer", "id", "name", "join", "current", "edition"),
-            "blocks": ("layer", "licence", "block"), "block_layer": ("layer", "id", "name"),
-            "source": ("name", "url", "licence", "credit")}
+SUB_KEYS = {"licences": ("layer", "id", "name", "current", "edition"), "source": ("name", "url", "licence", "credit")}
+JOIN_KEYS = {"licences": ("join",), "blocks": ("layer", "licence", "block"), "block_layer": ("layer", "id", "name")}
+GEOGRAPHIC = {4326: "WGS84", 4269: "NAD83"}   # NAD83 lies within 2 m of WGS84: drawn as served at 100 m simplification
 
 
 class ReadRefused(Exception):
@@ -874,10 +874,15 @@ def read_config(cc: str, areas_dir: Path = paths.AREAS_DIR) -> dict:
     for k, t in CONFIG_KEYS.items():
         if not isinstance(cfg.get(k), t):
             raise ReadRefused(f"{p.name}: `{k}` missing or not a {getattr(t, '__name__', t)}")
-    for k, subs in SUB_KEYS.items():
+    joined = "field" not in cfg["blocks"]   # blocks: {field} on the licence row, or the join over two layers
+    if joined and not isinstance(cfg.get("block_layer"), dict):
+        raise ReadRefused(f"{p.name}: `blocks` is {{field}} or a join with `block_layer`")
+    for k, subs in [*SUB_KEYS.items(), *(JOIN_KEYS.items() if joined else [])]:
         for s in subs:
             if cfg[k].get(s) in (None, ""):
                 raise ReadRefused(f"{p.name}: `{k}.{s}` missing")
+    if cfg.get("wkid", 4326) not in GEOGRAPHIC:
+        raise ReadRefused(f"{p.name}: wkid {cfg['wkid']} is not one of the geographic {sorted(GEOGRAPHIC)}")
     cur = cfg["licences"]["current"]
     if not (isinstance(cur, dict) and cur.get("field") and cur.get("op") in ("=", "in") and "value" in cur):
         raise ReadRefused(f"{p.name}: `licences.current` is {{field, op (= or in), value}}")
@@ -897,9 +902,17 @@ def _layer(cfg: dict, which: str, get) -> list[dict]:
         raise ReadRefused(f"layer {cfg[which]['layer']} not read whole: {getattr(e, 'reason', e)}") from None
     doc = json.loads(body)
     sr = doc.get("spatialReference") or {}
-    if 4326 not in (sr.get("wkid"), sr.get("latestWkid")):
-        raise ReadRefused(f"layer {cfg[which]['layer']} is not in WGS84 (spatialReference {sr})")
+    want = cfg.get("wkid", 4326)
+    if want not in (sr.get("wkid"), sr.get("latestWkid")):
+        raise ReadRefused(f"layer {cfg[which]['layer']} is not in {GEOGRAPHIC[want]} (wkid {want}; "
+                          f"spatialReference {sr})")
     return doc["features"]
+
+
+def _token(v) -> str | None:
+    """An id or name as the area file carries it: trimmed, inner spaces kept for names; None when empty.
+    BOEM serves 80 lease numbers with a leading blank (" 00016", 25 Nov 2026)."""
+    return str(v).strip() or None if v is not None else None
 
 
 def _current(attrs: dict, cur: dict, layer) -> bool:
@@ -916,10 +929,11 @@ def read_licences(cfg: dict, get, today: str) -> dict:
     from .outlines.geometry import Refused as GeometryRefused
     from .outlines.geometry import simplify
 
-    lc, bc, kc, cc = cfg["licences"], cfg["blocks"], cfg["block_layer"], cfg["country"]
+    lc, bc, kc, cc = cfg["licences"], cfg["blocks"], cfg.get("block_layer"), cfg["country"]
+    on_row = bc.get("field")   # the block name on the licence row itself (BOEM: one block a lease)
     lic = _layer(cfg, "licences", get)
-    rows = _layer(cfg, "blocks", get)
-    blk = _layer(cfg, "block_layer", get)
+    rows = [] if on_row else _layer(cfg, "blocks", get)
+    blk = [] if on_row else _layer(cfg, "block_layer", get)
     names: dict = {}
     for f in blk:
         a = f["attributes"]
@@ -934,7 +948,7 @@ def read_licences(cfg: dict, get, today: str) -> dict:
         a = f["attributes"]
         if not _current(a, lc["current"], lc["layer"]):
             continue
-        aid, name, key = a.get(lc["id"]), a.get(lc["name"]), a.get(lc["join"])
+        aid, name, key = (_token(a.get(lc["id"])), _token(a.get(lc["name"])), a.get(lc.get("join", lc["id"])))
         if aid in (None, "") or not name or key in (None, ""):
             raise ReadRefused(f"licence layer {lc['layer']}: a current licence without {lc['id']}, {lc['name']} "
                               f"or {lc['join']}: {aid!r} {name!r}")
@@ -948,9 +962,13 @@ def read_licences(cfg: dict, get, today: str) -> dict:
         if not g or g["type"] not in ("Polygon", "MultiPolygon"):
             raise ReadRefused(f"licence {name}: no polygon")
         current[key] = (aid, name, g, a.get(lc["edition"]))
+        if on_row:
+            names[key] = a.get(on_row)
     if not current:
         raise ReadRefused(f"licence layer {lc['layer']}: no current licence read")
     blocks: dict = {k: set() for k in current}
+    if on_row:
+        blocks = {k: {str(v).strip()} if v not in (None, "") and str(v).strip() else set() for k, v in names.items()}
     for f in rows:
         a = f["attributes"]
         key, bid = a.get(bc["licence"]), a.get(bc["block"])
@@ -961,8 +979,8 @@ def read_licences(cfg: dict, get, today: str) -> dict:
                               f"block layer {kc['layer']}")
         blocks[key].add(names[bid])
     if empty := sorted(k for k, b in blocks.items() if not b):
-        raise ReadRefused(f"{len(empty)} current licences have no block rows (layer {bc['layer']}), "
-                          f"e.g. {empty[0]!r}")
+        where = f"field {on_row}" if on_row else f"rows (layer {bc['layer']})"
+        raise ReadRefused(f"{len(empty)} current licences have no block {where}, e.g. {empty[0]!r}")
     features = []
     for key, (aid, name, g, _) in current.items():
         try:
@@ -972,7 +990,7 @@ def read_licences(cfg: dict, get, today: str) -> dict:
         if bad := geometry_problems(sg):
             raise ReadRefused(f"licence {name}: {bad[0]}")
         features.append({"type": "Feature", "properties": {
-            "area_id": f"{cc}:{aid}", "name": f"{cfg['licences'].get('name_prefix', '')}{name}", "country": cc,
+            "area_id": cc + ":" + re.sub(r"\s+", "-", aid), "name": f"{cfg['licences'].get('name_prefix', '')}{name}", "country": cc,
             "blocks": sorted(blocks[key], key=natural)}, "geometry": sg})
     features.sort(key=lambda f: natural(f["properties"]["area_id"]))
     eds = [e for *_, e in current.values() if isinstance(e, int) and not isinstance(e, bool)]
