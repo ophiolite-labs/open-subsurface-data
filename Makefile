@@ -9,15 +9,16 @@ lint:
 	uv run ruff check src tests
 
 test:
-	uv run pytest -q
+	nproc; uv run pytest -q --durations=40   # MEASURE (slice 2), removed before merge
 
 validate:                                ## every record and outline against its schema
-	uv run osd validate
+	uv run osd validate; echo MEASURE validate done
 
 build:                                   ## build/catalog/*.json, outlines.pmtiles (tippecanoe) + site/data/
 	uv run osd build
 	mkdir -p site/data && rm -rf site/data/stac site/data/*.pmtiles && cp -R build/catalog/. site/data/   # stac/ is a tree; tiles only when tippecanoe ran (E15)
 	ls site/data | grep -vx files.txt > site/data/files.txt   # the map reads optional files from this list
+	echo MEASURE build done
 
 check-full: build                        ## the whole STAC tree, every Item (OSD-D18), the full tile comparison (E36); verify workflow on main, not the gate
 	uv run pytest -q -m full
