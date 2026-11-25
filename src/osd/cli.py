@@ -20,16 +20,18 @@ from . import report as report_mod
 from . import shards as shards_mod
 from . import starters as starters_mod
 from . import verify as verify_mod
-from .records import load_records, validate_outlines, validate_records
+from .areas import validate_areas
+from .records import Problem, load_records, validate_outlines, validate_records
 from .verify import apply_fidelity, conversion_coverage, http_open, is_stale, verify_all
 
 
 def cmd_validate(a: argparse.Namespace) -> int:
-    """Records, outlines and the starter packs (E40); with documents given, those starter documents alone,
+    """Records, outlines, area files (E46) and the starter packs (E40); with documents given, those starter documents alone,
     wherever they are (Ophiolite E129 runs `osd validate <pack>.json` before and after its upload)."""
     records_dir, starters_dir = Path(a.records), Path(a.starters)
     ev = starters_mod.Evidence(load_records(records_dir), Path(a.vdir), Path(a.custody))
-    problems = [] if a.documents else validate_records(records_dir) + validate_outlines(Path(a.outlines), records_dir)
+    problems = [] if a.documents else (validate_records(records_dir) + validate_outlines(Path(a.outlines), records_dir)
+                                       + [Problem(f"areas/{p.path}", p.message) for p in validate_areas(Path(a.areas))])
     for p in problems:
         print(f"  {p}")
     if a.documents:
@@ -365,6 +367,7 @@ def main(argv: list[str] | None = None) -> int:
     pva.add_argument("documents", nargs="*", help="starter documents to check alone, anywhere on disk (E40)")
     pva.add_argument("--records", default=str(paths.RECORDS_DIR))
     pva.add_argument("--outlines", default=str(paths.OUTLINES_DIR))
+    pva.add_argument("--areas", default=str(paths.AREAS_DIR), help="committed area files, area/1 (E46)")
     pva.add_argument("--starters", default=str(starters_mod.STARTERS_DIR))
     pva.add_argument("--vdir", default=str(paths.VERIFICATION_DIR), help="latest verifications (absent: unchecked)")
     pva.add_argument("--custody", default=str(starters_mod.CUSTODY_DIR), help="custody documents (absent: unchecked)")

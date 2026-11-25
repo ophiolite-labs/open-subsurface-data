@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-subsurface-data.org/schema/record/5",
-  "title": "Open Subsurface Data record, version 4",
-  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record. Version 3 (E19, additive) adds the kind `potential-fields`, the access `purchase` and the optional `licence.terms`; every version-2 record is a valid version-3 record. Version 4 (E26, additive) adds the kinds `velocity-model`, `geological-model`, `airborne-em`, `radiometrics` and `stress`; every version-3 record is a valid version-4 record.",
+  "$id": "https://open-subsurface-data.org/schema/record/6",
+  "title": "Open Subsurface Data record, version 6",
+  "description": "One dataset as published by its owner. Facts about the dataset, never facts produced by our tools: verification levels, checksums and outlines live in build output, not here. Version 2 adds `inputs` and the optional `period` (E04, additive); every version-1 record is a valid version-2 record. Version 3 (E19, additive) adds the kind `potential-fields`, the access `purchase` and the optional `licence.terms`; every version-2 record is a valid version-3 record. Version 4 (E26, additive) adds the kinds `velocity-model`, `geological-model`, `airborne-em`, `radiometrics` and `stress`; every version-3 record is a valid version-4 record. Version 5 (E29, additive) adds the input format `arcgis`. Version 6 (E46, additive) adds the optional `region.national`; every version-5 record is a valid version-6 record.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "title", "publisher", "origin", "licence", "kinds", "region", "listed_by", "added"],
@@ -73,8 +73,10 @@
         "basin": {"type": "string"},
         "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"},
                  "description": "[west, south, east, north] in WGS84 decimal degrees, approximate, for the map's first zoom only."},
-        "crs": {"type": "string", "description": "The dataset's own CRS as the publisher states it, e.g. EPSG:23031."}
-      }
+        "crs": {"type": "string", "description": "The dataset's own CRS as the publisher states it, e.g. EPSG:23031."},
+        "national": {"type": "boolean", "description": "Record/6 (E46). The publisher presents the dataset as covering the whole country named in `country` (a national register, a national survey). A publisher fact; absent (or false) when not stated. The build counts such a dataset for its country, never by its bbox."}
+      },
+      "dependentRequired": {"national": ["country"]}
     },
     "size": {
       "type": "object", "additionalProperties": false,

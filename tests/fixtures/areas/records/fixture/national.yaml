@@ -1,0 +1,26 @@
+id: fixture/national
+title: A national register
+publisher:
+  name: Fixture
+  url: https://example.org
+origin:
+  url: https://example.org/national
+  access: anonymous
+licence:
+  name: Fixture terms
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds:
+- wellbore-headers
+region:
+  country: XB
+  national: true
+  bbox:
+  - 12
+  - 0
+  - 18
+  - 6
+listed_by:
+- publisher
+added: '2026-11-25'

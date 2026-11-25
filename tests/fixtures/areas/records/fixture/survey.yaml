@@ -1,0 +1,20 @@
+id: fixture/survey
+title: A survey across a border
+publisher:
+  name: Fixture
+  url: https://example.org
+origin:
+  url: https://example.org/survey
+  access: anonymous
+licence:
+  name: Fixture terms
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds:
+- wellbore-headers
+region:
+  country: XA
+listed_by:
+- publisher
+added: '2026-11-25'

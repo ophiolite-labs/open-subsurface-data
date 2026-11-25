@@ -27,6 +27,9 @@ Outputs (build/catalog/):
                    `record` (the record's title and level) and each artefact's `href` from its custody
                    document; the record in records.json lists the pack ids in `starters` (only records
                    with a pack carry the key). A refused or unchecked pack is printed, never published
+  areas.json      the areas that hold at least one dataset, per kind (E46, area/1 #/$defs/index); with
+                   any area file committed, every record carries `areas` {kind: [area_id]} (osd.areas)
+  areas-<kind>.geojson the geometry of those areas only (area/1 #/$defs/drawn)
   starters/       each published pack document and its fidelity record, byte for byte (the pack
                    manifest's two documents, osd manifest --starter)
 """
@@ -42,7 +45,7 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
-from . import __version__, mirror, paths, stac, starters
+from . import __version__, areas, mirror, paths, stac, starters
 from .reasons import reason
 from .records import load_outline, load_records
 from .verify import is_stale
@@ -83,7 +86,8 @@ def verification_commit_from_env() -> str | None:
 def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR,
           now: datetime | None = None, mirror_dir: Path = mirror.MIRROR_DIR,
           records_dir: Path = paths.RECORDS_DIR, source_commit: str | None = FROM_ENVIRONMENT,
-          verification_commit: str | None = FROM_ENVIRONMENT, starters_dir: Path = starters.STARTERS_DIR) -> dict:
+          verification_commit: str | None = FROM_ENVIRONMENT, starters_dir: Path = starters.STARTERS_DIR,
+          areas_dir: Path = paths.AREAS_DIR, outlines_dir: Path = paths.OUTLINES_DIR) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     recs = load_records(records_dir)
     records_out = []
@@ -97,7 +101,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         joined = dict(rec, level=level, checked_at=checked, stale=is_stale(checked, now), blocked_since=blocked)
         reasons[rid] = reason(v, rec)
         records_out.append(joined)
-        op = paths.outline_path(rid)
+        op = paths.outline_path(rid, outlines_dir)
         if op.exists():
             for f in load_outline(op)["features"]:
                 # E18: a feature's dates are its STAC Item's, not map attributes (tippecanoe 2.49
@@ -115,6 +119,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
         ids = sorted(p["id"] for p in packs if p["record_id"] == r["id"])
         if ids:
             r["starters"] = ids
+    held = areas.write(out_dir, records_out, recs, outlines_dir, areas_dir)   # E46: before the digest
     catalog = {
         "source_commit": git_head() if source_commit == FROM_ENVIRONMENT else source_commit,
         "verification_commit": (verification_commit_from_env() if verification_commit == FROM_ENVIRONMENT
@@ -137,7 +142,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     print_sizes(out_dir)
     write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
     return {"records": len(records_out), "features": len(features), "collections": len(collections),
-            "starters": len(packs)}
+            "starters": len(packs), "areas": held}
 
 
 def published_starters(starters_dir: Path, recs: dict[str, dict], records_out: list[dict], vdir: Path,

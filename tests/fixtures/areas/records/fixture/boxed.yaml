@@ -1,0 +1,25 @@
+id: fixture/boxed
+title: A dataset known by its box
+publisher:
+  name: Fixture
+  url: https://example.org
+origin:
+  url: https://example.org/boxed
+  access: anonymous
+licence:
+  name: Fixture terms
+  spdx: null
+  redistribution: unknown
+  attribution: unknown
+kinds:
+- wellbore-headers
+region:
+  country: XA
+  bbox:
+  - 4
+  - 6
+  - 8
+  - 8
+listed_by:
+- publisher
+added: '2026-11-25'
