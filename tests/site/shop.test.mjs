@@ -390,7 +390,7 @@ async function j11(viewport, tag) {
   assert.match(await bag.locator(`li[data-id="opm/norne"] .lic`).innerText(), /share-alike: derived work must carry ODbL-1\.0/);
   assert.match(await bag.locator(`li[data-id="${F3}"] .acc-line`).innerText(), /Sign in at the publisher's page/);
   assert.equal(await bag.getByText(/Open in Ophiolite/i).count(), 0);
-  assert.equal(await bag.getByRole('button', { name: /python/i }).count(), 0, 'the Python file is E49\'s');
+  assert.equal(await bag.getByRole('button', { name: /python/i }).count(), 1, 'the Python file (E49), beside the amber button');
   const amber = await bag.locator('#download').evaluate(b => getComputedStyle(b).backgroundColor);
   assert.equal(amber, 'rgb(224, 145, 47)', 'the one amber button');
   if (viewport === PHONE) {
@@ -434,7 +434,53 @@ test('J11 a sold dataset with terms: the bag writes the manifest/4 the live page
   await context.close();
 });
 
-test.todo('J12 takes "Get a Python file": a .py that runs as written against the catalogue (E49)');
+// ---- J12 ---------------------------------------------------------------------------------------
+// The fixture catalogue of tests/fixtures/api/ joins the build: its records (on a committed record's
+// shape, so the page lists them) and its STAC Collections; the date is fixed, so the file equals the
+// golden file `osd script` writes and tests/test_api.py runs as written.
+const API = join(ROOT, 'tests', 'fixtures', 'api'), FXIDS = ['fx/mirrored', 'fx/publisher', 'fx/signin'];
+const withApiCatalogue = async c => {
+  const fx = JSON.parse(await readFile(join(API, 'catalog', 'records.json'), 'utf8')).records;
+  const cols = await Promise.all(FXIDS.map(async id => JSON.parse(await readFile(join(API, 'catalog', 'stac', id.replace('/', '--'), 'collection.json'), 'utf8'))));
+  await c.route('**/data/records.json', async route => {
+    const body = JSON.parse(await (await route.fetch()).text());
+    body.records.push(...fx.map(r => ({ ...byId['opm/norne'], ...r })));
+    return route.fulfill({ json: { ...body, count: body.records.length } });
+  });
+  await c.route('**/data/collections.json', async route => {
+    const body = JSON.parse(await (await route.fetch()).text());
+    body.collections.push(...cols);
+    return route.fulfill({ json: body });
+  });
+  await c.clock.setFixedTime(new Date(2026, 10, 25, 12));
+};
+async function pythonDownload(page, name) {
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#python').click()]);
+  assert.equal(dl.suggestedFilename(), 'osd_get.py');
+  await dl.saveAs(join(OUT, name));
+  return readFile(join(OUT, name), 'utf8');
+}
+test('J12 takes "Get a Python file": the file osd script writes, a sign-in dataset as its comment line', async () => {
+  const { context, page, errors, unexpected } = await open(`pick=${FXIDS.join(',')}`, { routes: withApiCatalogue });
+  await page.locator('#bag-btn').click();
+  const text = await pythonDownload(page, 'j12-fixture.py');
+  assert.equal(text, await readFile(join(API, 'golden.py'), 'utf8'), 'the golden file');
+  assert.match(text, /^signin = osd\.get\("fx\/signin"\) +# sign-in needed: left out, sign in at https:\/\/origin\.fixture\.invalid\/signin\/$/m);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(unexpected, []);
+  await context.close();
+});
+test('J12 on the built catalogue: the page writes what osd script writes from site/data', async () => {
+  const pick = ['opm/norne', F3, 'sodir/factpages'];
+  const { context, page, errors } = await open(`pick=${pick.join(',')}`, { routes: async c => c.clock.setFixedTime(new Date(2026, 10, 25, 12)) });
+  await page.locator('#bag-btn').click();
+  const text = await pythonDownload(page, 'j12-built.py');
+  const { stdout } = await run(process.env.UV || 'uv', ['run', '--quiet', 'python', '-m', 'osd.script', ...pick, '--catalog',
+    join(ROOT, 'site', 'data'), '--today', '2026-11-25'], { cwd: ROOT });
+  assert.equal(text, stdout);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
 test.todo('J13 switches to Licences where a regulator is read: licences holding a dataset are drawn, the row names the block (E51)');
 
 // ---- J14 ---------------------------------------------------------------------------------------

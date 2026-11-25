@@ -595,6 +595,56 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   const licenceLine = l => `${l.name}${l.spdx ? ' (' + l.spdx + ')' : ''} · attribution ${l.attribution} · ${l.share_alike === true
     ? `share-alike: derived work must carry ${l.spdx || l.name}` : l.share_alike === false ? 'share-alike: no' : 'share-alike: not stated'}`;
 
+  // ---- The Python file (E49): the text `osd script <ids>` writes, rule table T1-T8 of
+  // docs/program/charters/E49-the-python-file-STRATEGY.md; the site test holds it equal to the golden file.
+  const PY_INSTALL = 'pip install "osd[readers] @ git+https://github.com/ophiolite-labs/open-subsurface-data"';
+  const PY_KEYWORDS = new Set(('False None True and as assert async await break class continue def del elif else except finally ' +
+    'for from global if import in is lambda nonlocal not or pass raise return try while with yield osd').split(' '));
+  const PY_MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+  const PY_READERS = [[['.las'], 'logs', 'well_logs', 'a table per well'], [['.csv'], 'tables', 'tables', 'a table per file'],
+    [['.sgy', '.segy'], 'cubes', 'segy', 'headers per SEG-Y file']];
+  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+  function pyVariable(id, taken) {
+    let v = id.slice(id.indexOf('/') + 1).toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    if (/^[0-9]/.test(v)) v = 'd_' + v;
+    if (PY_KEYWORDS.has(v)) v += '_';
+    let out = v;
+    for (let n = 2; taken.has(out); n++) out = `${v}_${n}`;
+    taken.add(out);
+    return out;
+  }
+  function pyComment(r, assets) {
+    const a = Object.values(assets);
+    if (!a.length) return ({ registration: 'sign-in needed: left out, sign in at ', request: 'request needed: left out, ask at ',
+      purchase: 'for sale: left out, see ' }[r.origin.access] || 'no file address known: left out, see ') + r.origin.url;
+    const summed = a.filter(x => 'file:checksum' in x), m = summed.filter(x => x.alternate && Object.keys(x.alternate).length).length;
+    const p = a.length - m, k = summed.length;
+    const where = !p ? `${plural(m, 'file')} from our mirror` : !m ? `${plural(p, 'file')} from the publisher`
+      : `${plural(a.length, 'file')}: ${m} from our mirror and ${p} from the publisher`;
+    return `${where}, ${k === a.length ? 'checked' : !k ? 'no checksum recorded' : k + ' checked'}`;
+  }
+  async function pythonFile(today = new Date()) {
+    const cols = await loadCollections(), taken = new Set();
+    const ds = [...new Set(state.pick)].map(id => ({ id, assets: (cols[collectionId(id)] || {}).assets || {} }))
+      .map(d => ({ ...d, code: `${pyVariable(d.id, taken)} = osd.get("${d.id}")`, why: pyComment(byId[d.id], d.assets) }));
+    const width = Math.max(...ds.map(d => d.code.length)) + 2, name = d => d.code.split(' = ')[0];
+    const lines = [`# open-subsurface-data, made ${today.getDate()} ${PY_MONTHS[today.getMonth()]} ${today.getFullYear()} for ${plural(ds.length, 'dataset')}`,
+      `# ${PY_INSTALL}`, '', 'import osd', '', ...ds.map(d => d.code.padEnd(width) + '# ' + d.why), '', ...ds.map(d => `print(${name(d)})`)];
+    for (const [ext, v, method, what] of PY_READERS) {
+      const d = ds.find(x => Object.keys(x.assets).some(k => ext.some(e => k.toLowerCase().endsWith(e))));
+      if (d) { lines.push('', `${v} = ${name(d)}.${method}()  # ${what}`, method === 'segy' ? `print(next(iter(${v}.values())))`
+        : `print(next(iter(${v}.values())).head())`); break; }
+    }
+    return lines.join('\n') + '\n';
+  }
+  function saveText(text, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/x-python' }));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
   function toggleBag(id) {
     const i = state.pick.indexOf(id);
     if (i < 0) state.pick.push(id); else state.pick.splice(i, 1);
@@ -618,11 +668,12 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
     b.innerHTML = `<header><h2>Bag <span class="n">${n}</span></h2><button type="button" class="close" aria-label="Close the bag">✕</button></header>
       ${n ? `<ul class="items">${items}</ul>
       <button id="download" type="button" class="amber">Download the files</button>
+      <button id="python" type="button" class="quiet">Get a Python file</button>
       <div id="files" hidden></div>`
       : '<p class="empty">Nothing in the bag yet. The green plus on a row adds a dataset.</p>'}`;
     b.querySelector('.close').onclick = () => setBag(false);
     b.querySelectorAll('.x').forEach(x => x.onclick = () => toggleBag(x.closest('li').dataset.id));
-    if (n) $('download').onclick = download;
+    if (n) { $('download').onclick = download; $('python').onclick = async () => saveText(await pythonFile(), 'osd_get.py'); }
   }
   async function download() {
     save(await buildManifest(), 'osd.manifest.json');
