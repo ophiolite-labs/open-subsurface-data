@@ -120,6 +120,8 @@ main { position: fixed; inset: var(--top) 0 0 0; display: grid; grid-template-co
 .amber { display: block; width: 100%; margin: 18px 0 8px; height: 48px; border: 0; border-radius: 4px; background: var(--amber); color: var(--night);
   font-weight: 500; font-size: 16px; }
 .amber:hover { background: #c97d22; }
+#bag .quiet { display: block; width: 100%; height: 40px; margin: 0 0 8px; border: 1px solid var(--line); border-radius: 4px; background: none; color: var(--fg); font-weight: 500; }
+#bag .quiet:hover { border-color: var(--muted); }
 #files h3 { margin: 18px 0 6px; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 #files p { margin: 4px 0; }
 #files pre { margin: 6px 0; padding: 8px 10px; background: var(--soft); border-radius: 4px; }
