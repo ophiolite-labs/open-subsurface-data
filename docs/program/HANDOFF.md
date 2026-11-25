@@ -2,6 +2,26 @@
 
 Repository: https://github.com/ophiolite-labs/open-subsurface-data (public, OSD-D1). Site: https://opensubsurfacedata.org (OSD-D4).
 
+## 25 Nov 2026 — The site redesign is chartered: family "The map as a shop" (E46–E53); four lanes open
+
+The owner accepted the design drawn on Paper (file "OpenSubsurfaceData", boards Shop 01–06, Open 01–02) and
+asked for it to be chartered and built now. Rulings OSD-D26 to OSD-D31 and OSD-D34 are the owner's; OSD-D32
+(the Python file installs from this repository), OSD-D33 (the redesign lives at `/shop.html` until the
+journey passes whole) and OSD-D35 (record/6 `region.national`) are defaults under the delegation.
+Family charter: `charters/MAP-AS-A-SHOP-family.md` (the page, the journey J1–J15 that is the contract, rules
+R-S1–R-S9, the order). Epics: E46 areas that hold data (kernel; slice 0 = area/1, record/6, fixtures, the
+build contract), E47 the one-page shop (surface), E48 outlines, names and the globe (surface), E49 the
+Python file (kernel), E50 speed, measured (the four owed measurements are its acceptance), E51 licences per
+country (kernel + records; United Kingdom, Norway, United States), E52 country-wide datasets say so
+(records), E53 the shop becomes the front page (opens only when the journey has no todo left).
+Open from 25 Nov: E46, E47, E49 and E51 slice 0 (terms read), Opus 5.5 workers in herdr workspace w25;
+briefs in `~/.local/share/osd-program/briefs/`. Next by precondition: E52 after E46 slice 0; E48 after E46
+slice 1 and E47; E50 after E47; E51 slices 1–3 after E46 slice 1 and E48; E53 last.
+Not shipped by decision: an "Open in Ophiolite" button (OSD-D30). The prototype at
+`~/.local/share/osd-program/prototype-2026-11-25/` is design evidence, not source.
+Left as found: PR #86 (E45 charter, from the Ophiolite program, open since 29 Oct, conflicting with main);
+it holds the numbers E45 and OSD-D25, which this family therefore skips.
+
 ## 1 Nov 2026 — Workspace pipeline architecture check for the five TerraNubis projects (17 missing pieces)
 
 Owner question: are the archives convertible by Ophiolite's code into assets that are managed, viewed and

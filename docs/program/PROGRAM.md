@@ -4,7 +4,7 @@ Owner: Ophiolite Labs. Supervisor: one Claude session. Workers: at most two codi
 one records lane at a time. Engineering rules: `../ENGINEERING.md`. Charters: `charters/E<nn>-*.md`.
 Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HANDOFF.md`.
 
-## Queue (23 Oct 2026; family "Ready for your tools" E40–E44 added 28 Oct, `charters/READY-FOR-YOUR-TOOLS-family.md`)
+## Queue (23 Oct 2026; family "Ready for your tools" E40–E44 added 28 Oct, `charters/READY-FOR-YOUR-TOOLS-family.md`; family "The map as a shop" E46–E53 added 25 Nov, `charters/MAP-AS-A-SHOP-family.md`; E45 is reserved by open PR #86)
 
 | # | Epic | Class | Status | Depends on | Outcome a user can observe |
 |---|---|---|---|---|---|
@@ -56,6 +56,14 @@ Open questions for the owner: `DECISIONS.md`. Claims: `CLAIMS.md`. Commands: `HA
 | 42 | E42 The F3 starter project, judged against dGB's own survey | Kernel, cross-repo | QUEUED, ready except owner item 112 (30 Oct: E41 merged, Ophiolite E129 complete) (28 Oct; after E41 and the Ophiolite half `charters/E42-ophiolite-half.md`, handed to the Ophiolite program; Codex round closed, REWORK reworked, 21 dispositions) | E40, E41, E03, Ophiolite half | A person downloads F3 for OpendTect, ResInsight or Python and it opens in place, in metres, in time, with dGB named; F3 at L3 from its data and L4 from the fidelity record |
 | 43 | E43 Ready for your tools on the site | Surface | MERGED on fixture packs (PR #84, 28 Oct; main bb65da2; acceptance 6 with the real F3 pack after E42) QUEUED (28 Oct; after E40 on fixture packs; DONE after E42) | E40 | A fourth card per dataset, a Starter projects page, a filter; nothing shows until a real pack exists |
 | 44 | E44 Packs after the proof: the next datasets, chosen by the owner | Records, Kernel | slice 0 MERGED (PR #89, 31 Oct; main dc44783; Poseidon record, five deposit notes, 237 records); deposits wait on owner item 117; packs after E42 and Ophiolite E137 | E42, E43 | Two or three more packs: Dutch wells, a Dutch 3D survey, Drogon for ResInsight |
+| 46 | E46 Areas that hold data (area/1, record/6, the count at build time, countries, provinces, basins) | Kernel | IMPLEMENTING (25 Nov; slice 0 contract first; family "The map as a shop", `charters/MAP-AS-A-SHOP-family.md`; Codex round on the charter) | none | The build says which country, province and basin each dataset sits in, and writes only the areas that hold one |
+| 47 | E47 The one-page shop | Surface | IMPLEMENTING (25 Nov; at `/shop.html`, the live page untouched) | none | Search, a list that follows the map, Filters behind one button, the green plus, the bag with the files |
+| 48 | E48 Outlines, names and the globe | Surface | QUEUED (25 Nov) | E46 slice 1, E47 | One switch Countries / Provinces / Basins, every drawn area clickable, names on and off, Flat and Globe |
+| 49 | E49 The Python file | Kernel | IMPLEMENTING (25 Nov; Codex round on the charter; slice 4, the bag button, after E47) | E06 (merged) | `import osd; osd.get("opm/norne")` fetches and checks; the bag writes the file |
+| 50 | E50 Speed, measured | Surface (with build) | QUEUED (25 Nov) | E47; second pass E48 | The Shop 06 practices in place; four measurements on real machines with numbers |
+| 51 | E51 Licences per country (United Kingdom, Norway, United States) | Kernel + Records | slice 0 (terms read) IMPLEMENTING (25 Nov); slices 1–3 QUEUED (Codex round on the charter before slice 1) | slice 0 none; slices 1–3 E46 slice 1, E48 | Licences holding a dataset as a fourth outline kind, read from the regulator on a schedule; the row names the block |
+| 52 | E52 Country-wide datasets say so | Records | QUEUED (25 Nov) | E46 slice 0 | National registers count for their country by the publisher's statement, not by a guess |
+| 53 | E53 The shop becomes the front page | Surface | QUEUED (25 Nov; opens only when the journey passes whole) | E47, E48, E49 slice 4, E50 first pass | opensubsurfacedata.org opens on the shop; old links mean the same |
 
 Scaffold delivered 23 Oct: schemas, nine records, placeholder outlines, verifier at L1, build,
 map, CI (`check`, `verify`, `pages`). Verifier result on the day: five origins at L1, four at L0
@@ -89,7 +97,7 @@ opened by an agent, not a person; Teapot Dome's NETL page redirects to a login.
 
 ## Rules
 
-- R1 WIP: two coding lanes plus one records lane. A third coding lane waits.
+- R1 WIP: two coding lanes plus one records lane. A third coding lane waits. For the family E46–E53 this is a floor, not a cap (owner, 25 Nov 2026, OSD-D34): lanes with disjoint claimed paths run side by side.
 - R2 Gate: `make check` only. Nothing network-bound is ever required.
 - R3 Records say what the publisher says; tools say what they established. Never cross.
 - R4 Every slice names what a user can do after it merges.
