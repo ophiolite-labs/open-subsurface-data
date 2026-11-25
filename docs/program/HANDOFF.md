@@ -22,6 +22,15 @@ Not shipped by decision: an "Open in Ophiolite" button (OSD-D30). The prototype 
 Left as found: PR #86 (E45 charter, from the Ophiolite program, open since 29 Oct, conflicting with main);
 it holds the numbers E45 and OSD-D25, which this family therefore skips.
 
+## 25 Nov 2026, evening — First merges of the shop family; three empty commits on main from a GitHub outage
+
+Merged: E49 slice 1 (#90) and slice 2 (#93), E46 slice 0 (#91), E51 slice 0 (#92), E47 (#94): `/shop.html` is
+published beside the live page, unlinked. During a GitHub outage (16:50–17:10 CET) merge calls answered 502 and
+were retried; GitHub applied #92 three times and #93 twice, leaving three empty squash commits on main
+(abdb603, 5724247 as the second and third of #92; 57393b5 as the second of #93). Their trees are identical to
+their parents; nothing is lost or doubled. Lesson: after a 502 on merge, read the pull request state before retrying.
+United Kingdom licences are held (OSD-D38, owner action 139). Open now: E46 slice 1, E49 slice 4, E50, E52.
+
 ## 1 Nov 2026 — Workspace pipeline architecture check for the five TerraNubis projects (17 missing pieces)
 
 Owner question: are the archives convertible by Ophiolite's code into assets that are managed, viewed and
