@@ -121,6 +121,23 @@ def cmd_verify(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_areas_prepare(a: argparse.Namespace) -> int:
+    """Local only (E46): a publisher's file already on this machine to areas/<kind>.geojson."""
+    from . import areas as areas_mod
+
+    try:
+        out, notes = areas_mod.prepare_to_file(a.kind, Path(a.file), Path(a.areas))
+    except (areas_mod.Refused, OSError, ValueError) as e:
+        print(f"refused: {e}", file=sys.stderr)
+        return 1
+    for n in notes:
+        print(f"  {n}")
+    doc = json.loads(out.read_text())
+    print(f"{out}: {len(doc['features'])} areas, {out.stat().st_size / 1e6:.1f} MB, sha256 of the source "
+          f"{doc['source']['sha256']}")
+    return 0
+
+
 def cmd_build(_: argparse.Namespace) -> int:
     n = build_mod.build()
     print(f"built {n} -> {paths.CATALOG_DIR}")
@@ -385,6 +402,14 @@ def main(argv: list[str] | None = None) -> int:
     pv.add_argument("--ids-out", metavar="FILE", help="write the ids verified, one per line")
     pv.set_defaults(fn=cmd_verify)
     sub.add_parser("build", help="write build/catalog").set_defaults(fn=cmd_build)
+    pa = sub.add_parser("areas", help="the committed area files (E46)")
+    asub = pa.add_subparsers(dest="areas_cmd", required=True)
+    pap = asub.add_parser("prepare", help="local only, no network: a publisher's file on this machine to "
+                          "areas/<kind>.geojson, by its rule in areas/prepare.yaml")
+    pap.add_argument("kind", choices=["country", "province", "basin"])
+    pap.add_argument("file", help="the publisher's file as fetched (GeoJSON, .shp or .zip)")
+    pap.add_argument("--areas", default=str(paths.AREAS_DIR))
+    pap.set_defaults(fn=cmd_areas_prepare)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)
     pn = sub.add_parser("new", help="scaffold records/<id>.yaml from a dataset page (reads its title)")
     pn.add_argument("url")

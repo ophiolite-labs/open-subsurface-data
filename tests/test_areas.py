@@ -245,3 +245,204 @@ def test_province_needs_a_known_country(tmp_path, capsys):
     p.write_text(json.dumps(doc))
     rc, out = _validate(d, capsys)
     assert rc == 1 and "'country' is a required property" in out
+
+
+# --- slice 1: the real area files, the real catalogue ---------------------------------------------------
+
+REAL = paths.AREAS_DIR
+
+
+def test_real_area_files_validate_and_stay_under_25_mb():
+    files = {p.name: p.stat().st_size for p in areas.area_files(REAL)}
+    assert set(files) == {"country.geojson", "province.geojson", "basin.geojson"}
+    assert sum(files.values()) < 25_000_000, files
+    assert areas.validate_areas(REAL) == []
+
+
+def test_sources_md_quotes_each_terms_sentence_and_digest():
+    text = (REAL / "SOURCES.md").read_text()
+    for p in areas.area_files(REAL):
+        src = json.loads(p.read_text())["source"]
+        assert src["sha256"] in text and src["edition"] in text and src["retrieved"] in text, p.name
+    assert '"All versions of Natural Earth raster + vector map data found on this\nwebsite are in the public domain."' in text
+    assert 'Use_Constraints "None."' in text
+
+
+def test_id_patterns_are_the_schema_patterns():
+    for rule in areas.schema()["allOf"]:
+        kind = rule["if"]["properties"]["kind"]["const"]
+        props = rule["then"]["properties"]["features"]["items"]["properties"]["properties"]
+        assert props["properties"]["area_id"]["pattern"] == areas.ID_PATTERNS[kind]
+
+
+@pytest.fixture(scope="module")
+def real(full_build) -> tuple[dict, dict]:
+    index = json.loads((full_build / "areas.json").read_text())
+    recs = {r["id"]: r for r in json.loads((full_build / "records.json").read_text())["records"]}
+    return index, recs
+
+
+def test_real_build_holds_no_empty_area_and_agrees_both_ways(real, full_build):
+    index, recs = real
+    assert not list(areas.validator("index").iter_errors(index))
+    for k, v in index["kinds"].items():
+        assert v["areas"] and all(a["n"] == len(a["ids"]) >= 1 for a in v["areas"]), k
+        drawn = json.loads((full_build / f"areas-{k}.geojson").read_text())
+        assert [f["properties"]["area_id"] for f in drawn["features"]] == [a["area_id"] for a in v["areas"]]
+        assert all(f["properties"]["n"] >= 1 for f in drawn["features"])
+    from_index = {(k, a["area_id"], rid) for k, v in index["kinds"].items() for a in v["areas"] for rid in a["ids"]}
+    from_records = {(k, aid, rid) for rid, r in recs.items() for k, ids in r["areas"].items() for aid in ids}
+    assert from_index == from_records and {rid for _, _, rid in from_index} <= set(recs)
+
+
+def test_sodir_register_lights_more_than_one_basin_and_one_country(real):
+    a = real[1]["sodir/factpages"]["areas"]
+    assert len(a["basin"]) > 1 and a["country"] == ["NO"]
+
+
+def test_national_record_without_outline_lights_its_country_and_no_basin(real):
+    """Every national record without an outline in the catalogue (E52 adds them), and one made from a real
+    record here, so the test bites before E52: its country, no province, no basin."""
+    index, recs = real
+    for rid, r in recs.items():
+        if r["region"].get("national") and not paths.outline_path(rid).exists():
+            assert r["areas"] == {"country": [r["region"]["country"]], "province": [], "basin": []}, rid
+    rid = next(rid for rid, r in sorted(recs.items()) if r["region"].get("bbox") and r["region"].get("country")
+               in {a["area_id"] for a in index["kinds"]["country"]["areas"]} and not paths.outline_path(rid).exists())
+    rec = copy.deepcopy(recs[rid])
+    rec["region"]["national"] = True
+    assert areas.count({rid: rec}, {rid: None}, areas.AreaSet.load())[rid] == {
+        "country": [rec["region"]["country"]], "province": [], "basin": []}
+
+
+# --- slice 1: the cache (F13, F18) -----------------------------------------------------------------------
+
+def _write(tmp_path, out_name, cache, areas_dir=FIX / "areas", outlines_dir=FIX / "outlines"):
+    from osd.records import load_records
+    recs = load_records(FIX / "records")
+    out = tmp_path / out_name
+    out.mkdir()
+    records_out = [dict(r) for r in recs.values()]
+    areas.write(out, records_out, recs, outlines_dir, areas_dir, cache_dir=cache)
+    return {r["id"]: r["areas"] for r in records_out}
+
+
+def test_cache_serves_a_second_build_and_never_a_stale_one(tmp_path, capsys):
+    cache = tmp_path / "cache"
+    first = _write(tmp_path, "a", cache)
+    assert "6 records counted, 0 from the cache" in capsys.readouterr().err
+    assert _write(tmp_path, "b", cache) == first
+    assert "0 records counted, 6 from the cache" in capsys.readouterr().err
+    outl = tmp_path / "outlines"   # an outline changes: that record alone is counted again
+    shutil.copytree(FIX / "outlines", outl)
+    p = outl / "fixture__register.geojson"
+    fc = json.loads(p.read_text())
+    fc["features"] = fc["features"][:1]
+    p.write_text(json.dumps(fc))
+    got = _write(tmp_path, "c", cache, outlines_dir=outl)
+    assert "1 records counted, 5 from the cache" in capsys.readouterr().err
+    assert got["fixture/register"]["basin"] == ["usgs-1001"]
+    d = tmp_path / "areas"         # an area file changes: everything is counted again
+    shutil.copytree(FIX / "areas", d)
+    doc = json.loads((d / "basin.geojson").read_text())
+    doc["features"] = doc["features"][1:]
+    (d / "basin.geojson").write_text(json.dumps(doc))
+    got = _write(tmp_path, "d", cache, areas_dir=d)
+    assert "6 records counted, 0 from the cache" in capsys.readouterr().err
+    assert got["fixture/boxed"]["basin"] == []
+    assert len(list(cache.glob("areas-*.json"))) == 1 and not list(cache.glob("*.tmp"))
+
+
+def test_cache_is_not_published(full_build):
+    assert not list(full_build.rglob("areas-cache*")) and not (full_build / "areas-cache").exists()
+
+
+# --- slice 1: preparation (F11, F19) ----------------------------------------------------------------------
+
+def _shapefile(d: Path, rows: list[tuple[dict, list]], prj="GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\"]]") -> Path:
+    """A polygon Shapefile (.shp, .dbf, .prj, .cpg) of rows (attributes, rings) written byte by byte."""
+    import struct
+    recs = b""
+    for i, (_, rings) in enumerate(rows, 1):
+        pts = [p for r in rings for p in r]
+        parts, at = [], 0
+        for r in rings:
+            parts.append(at)
+            at += len(r)
+        body = struct.pack("<i4d2i", 5, 0, 0, 0, 0, len(rings), len(pts)) + struct.pack(f"<{len(parts)}i", *parts)
+        body += b"".join(struct.pack("<2d", *p) for p in pts)
+        recs += struct.pack(">2i", i, len(body) // 2) + body
+    (d / "t.shp").write_bytes(struct.pack(">7i", 9994, 0, 0, 0, 0, 0, (100 + len(recs)) // 2)
+                              + struct.pack("<2i4d4d", 1000, 5, 0, 0, 0, 0, 0, 0, 0, 0) + recs)
+    names = list(rows[0][0])
+    head = struct.pack("<4BIHH20x", 3, 126, 11, 25, len(rows), 32 + 32 * len(names) + 1, 1 + 20 * len(names))
+    fields = b"".join(n.encode().ljust(11, b"\0") + b"C" + b"\0" * 4 + bytes([20]) + b"\0" * 15 for n in names)
+    data = b"".join(b" " + b"".join(str(a[n]).encode().ljust(20) for n in names) for a, _ in rows)
+    (d / "t.dbf").write_bytes(head + fields + b"\r" + data + b"\x1a")
+    (d / "t.prj").write_text(prj)
+    (d / "t.cpg").write_text("UTF-8")
+    return d / "t.shp"
+
+
+CW = [(0, 0), (0, 10), (10, 10), (10, 0), (0, 0)]           # shapefile exterior: clockwise
+CCW_HOLE = [(2, 2), (4, 2), (4, 4), (2, 4), (2, 2)]         # shapefile hole: counterclockwise
+RULE = {"id": ["CODE"], "prefix": "usgs-", "name": "NAME", "tolerance_m": 0, "decimals": 6, "exclude": {"CODE": [0]},
+        "source": {"name": "t", "url": "https://example.org/t", "licence": "public domain", "credit": "T",
+                   "edition": "1", "retrieved": "2026-11-25"}}
+
+
+def test_shapefile_reader_nests_holes_and_merges_parts(tmp_path):
+    shp = _shapefile(tmp_path, [({"CODE": "1001", "NAME": "Alpha"}, [CW, CCW_HOLE]),
+                                ({"CODE": "1001", "NAME": "Alpha"}, [[(20, 0), (20, 1), (21, 1), (21, 0), (20, 0)]]),
+                                ({"CODE": "0", "NAME": "Ocean"}, [[(30, 0), (30, 1), (31, 1), (31, 0), (30, 0)]])])
+    doc, notes = areas.prepare("basin", shp, RULE)
+    assert not list(areas.validator().iter_errors(doc)) and notes == []
+    assert [f["properties"] for f in doc["features"]] == [{"area_id": "usgs-1001", "name": "Alpha"}]
+    g = doc["features"][0]["geometry"]
+    assert g["type"] == "MultiPolygon" and len(g["coordinates"][0]) == 2   # the hole stays in its polygon
+    ki = areas.KindIndex(doc["features"])
+    assert ki.hits(areas.Shapes(points=[(3, 3)])) == set() and ki.hits(areas.Shapes(points=[(5, 5)])) == {"usgs-1001"}
+    assert doc["source"]["sha256"] == __import__("hashlib").sha256(shp.read_bytes()).hexdigest()
+
+
+def test_prepare_refuses_a_projected_file(tmp_path):
+    shp = _shapefile(tmp_path, [({"CODE": "1", "NAME": "A"}, [CW])], prj='PROJCS["ED50 / UTM zone 31N"]')
+    with pytest.raises(areas.Refused, match="geographic WGS 84"):
+        areas.prepare("basin", shp, RULE)
+
+
+def test_prepare_densifies_an_edge_over_180_degrees():
+    g = areas.densify_wide({"type": "Polygon", "coordinates": [[[180, -85], [180, -90], [-180, -90], [-180, -85], [180, -85]]]})
+    assert areas.wide_edges(g) == 0 and [0.0, -90.0] in g["coordinates"][0]
+
+
+def test_prepare_reaches_no_network(tmp_path, monkeypatch, capsys):
+    """`osd areas prepare` is local only: with every socket refused it still writes the area file."""
+    import socket
+
+    def refuse(*a, **k):
+        raise AssertionError("osd areas prepare opened a socket")
+    monkeypatch.setattr(socket, "socket", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
+    d = tmp_path / "areas"
+    d.mkdir()
+    (d / "prepare.yaml").write_text(json.dumps({"basin": {**RULE, "file": "t.shp"}}))
+    shp = _shapefile(tmp_path, [({"CODE": "1001", "NAME": "Alpha"}, [CW])])
+    assert cli.main(["areas", "prepare", "basin", str(shp), "--areas", str(d)]) == 0
+    assert "1 areas" in capsys.readouterr().out and areas.validate_areas(d) == []
+
+
+def test_area_tiles_hold_one_layer_per_kind(built, tmp_path):
+    if not shutil.which("tippecanoe"):
+        pytest.skip("tippecanoe not installed")
+    out = tmp_path / "out"
+    shutil.copytree(built, out)
+    p = areas.write_tiles(out, tmp_path / "tiles")
+    assert p and p.stat().st_size > 0
+    import gzip
+    import struct
+    head = p.read_bytes()[:127]
+    meta_off, meta_len = struct.unpack("<QQ", head[24:40])
+    raw = p.read_bytes()[meta_off:meta_off + meta_len]
+    meta = json.loads(gzip.decompress(raw) if head[97] == 2 else raw)
+    assert sorted(layer["id"] for layer in meta["vector_layers"]) == ["areas_basin", "areas_country", "areas_province"]

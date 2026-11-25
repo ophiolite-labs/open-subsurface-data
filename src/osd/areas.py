@@ -24,6 +24,7 @@ import hashlib
 import itertools
 import json
 import math
+import os
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
@@ -32,7 +33,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
 
 from . import paths
-from .records import Problem, geometry_problems, load_outline
+from .records import Problem, geometry_problems
 
 KINDS = ("country", "province", "basin", "licence")
 CORE = ("country", "province", "basin")
@@ -74,47 +75,91 @@ def wide_edges(g: dict) -> int:
     return sum(abs(b[0] - a[0]) > 180 for poly in polygons(g) for ring in poly for a, b in itertools.pairwise(ring))
 
 
+def _geometry_fast(g: dict) -> tuple[bool, int]:
+    """(rings closed, positions numeric WGS84 lon/lat; edges over 180 degrees) in one pass over flat lists;
+    (False, 0) sends the caller to records.geometry_problems for the words."""
+    import operator
+
+    wide = 0
+    try:
+        for poly in polygons(g):
+            if not poly:
+                return False, 0
+            for ring in poly:
+                if len(ring) < 4 or ring[0] != ring[-1] or not set(map(len, ring)) <= {2, 3}:
+                    return False, 0
+                xs, ys = [p[0] for p in ring], [p[1] for p in ring]
+                lo, hi, south, north = min(xs), max(xs), min(ys), max(ys)
+                if not all(type(v) in (int, float) for v in (lo, hi, south, north)):
+                    return False, 0
+                if not (-180 <= lo and hi <= 180 and -90 <= south and north <= 90):
+                    return False, 0
+                wide += sum(d > 180 for d in map(abs, map(operator.sub, xs[1:], xs[:-1])))
+    except (TypeError, KeyError, IndexError):
+        return False, 0
+    return True, wide
+
+
+_CHECKED: dict[tuple, tuple] = {}   # (path, size, mtime) -> one file's findings, for repeated validate calls
+
+
+def _check_file(p: Path, rel: str) -> tuple[list[Problem], str | None, list[tuple[int, str]], list[tuple[int, str]]]:
+    """One area file: (problems, kind when valid, [(feature, area_id)], [(feature, country)])."""
+    st = p.stat()
+    key = (str(p), st.st_size, st.st_mtime_ns)
+    if key in _CHECKED:
+        return _CHECKED[key]
+    problems: list[Problem] = []
+    try:
+        doc = json.loads(p.read_text())
+    except (OSError, ValueError) as e:
+        return [Problem(rel, f"unreadable: {e}")], None, [], []
+    errs = sorted(validator().iter_errors(doc), key=lambda e: list(e.path))
+    for err in errs:
+        where = "/".join(str(x) for x in err.path) or "<root>"
+        problems.append(Problem(rel, f"{where}: {err.message}"))
+    kind = doc.get("kind") if isinstance(doc, dict) else None
+    if file_kind(rel) != kind:
+        problems.append(Problem(rel, f"kind {kind!r} does not match the file path (areas/<kind>.geojson "
+                                     "or areas/<kind>/<name>.geojson)"))
+    if errs:
+        return problems, None, [], []
+    ids, owners = [], []
+    for i, f in enumerate(doc["features"]):
+        aid = f["properties"]["area_id"]
+        ok, wide = _geometry_fast(f["geometry"])
+        if not ok:
+            problems += [Problem(rel, f"feature {i} ({aid}): {m}") for m in geometry_problems(f["geometry"])]
+        elif wide:
+            problems.append(Problem(rel, f"feature {i} ({aid}): an edge steps more than 180 degrees of "
+                                         "longitude; cut it at +-180 (RFC 7946 3.1.9)"))
+        ids.append((i, aid))
+        if "country" in f["properties"]:
+            owners.append((i, f["properties"]["country"]))
+    _CHECKED[key] = (problems, kind, ids, owners)
+    return _CHECKED[key]
+
+
 def validate_areas(areas_dir: Path = paths.AREAS_DIR) -> list[Problem]:
     """Each area file against area/1, in the place its kind says, with valid WGS84 rings cut at +-180;
     area_id unique within a kind across its files; a province's or licence's country is a country area
     when countries are committed."""
     problems: list[Problem] = []
-    v = validator()
     seen: dict[tuple[str, str], str] = {}
     countries: set[str] | None = None
     owners: list[tuple[str, int, str]] = []
     for p in area_files(areas_dir):
         rel = p.relative_to(areas_dir).as_posix()
-        try:
-            doc = json.loads(p.read_text())
-        except (OSError, ValueError) as e:
-            problems.append(Problem(rel, f"unreadable: {e}"))
-            continue
-        errs = sorted(v.iter_errors(doc), key=lambda e: list(e.path))
-        for err in errs:
-            where = "/".join(str(x) for x in err.path) or "<root>"
-            problems.append(Problem(rel, f"{where}: {err.message}"))
-        kind = doc.get("kind") if isinstance(doc, dict) else None
-        if file_kind(rel) != kind:
-            problems.append(Problem(rel, f"kind {kind!r} does not match the file path (areas/<kind>.geojson "
-                                         "or areas/<kind>/<name>.geojson)"))
-        if errs:
-            continue
+        found, kind, ids, own = _check_file(p, rel)
+        problems += found
         if kind == "country":
-            countries = (countries or set()) | {f["properties"]["area_id"] for f in doc["features"]}
-        for i, f in enumerate(doc["features"]):
-            aid = f["properties"]["area_id"]
-            for msg in geometry_problems(f["geometry"]):
-                problems.append(Problem(rel, f"feature {i} ({aid}): {msg}"))
-            if not geometry_problems(f["geometry"]) and wide_edges(f["geometry"]):
-                problems.append(Problem(rel, f"feature {i} ({aid}): an edge steps more than 180 degrees of "
-                                             "longitude; cut it at +-180 (RFC 7946 3.1.9)"))
+            countries = (countries or set()) | {aid for _, aid in ids}
+        for i, aid in ids:
             if (kind, aid) in seen:
                 problems.append(Problem(rel, f"feature {i}: area_id '{aid}' repeated in kind {kind} "
                                              f"(also {seen[(kind, aid)]})"))
             seen.setdefault((kind, aid), rel)
-            if "country" in f["properties"]:
-                owners.append((rel, i, f["properties"]["country"]))
+        owners += [(rel, i, c) for i, c in own]
     if countries is not None:
         for rel, i, c in owners:
             if c not in countries:
@@ -440,25 +485,331 @@ def dumps_index(doc: dict) -> str:
     return NUMBERS.sub(lambda m: "[" + ", ".join(x.strip() for x in m.group(1).split(",")) + "]", text) + "\n"
 
 
+COUNT_RULE = "e46-count-1"   # change when the count changes: every cached result is then stale
+
+
+def area_set_digest(areas_dir: Path) -> str:
+    h = hashlib.sha256(COUNT_RULE.encode())
+    for p in area_files(areas_dir):
+        h.update(p.relative_to(areas_dir).as_posix().encode() + b"\0" + hashlib.sha256(p.read_bytes()).digest())
+    return h.hexdigest()
+
+
+def record_key(rec: dict, outline_bytes: bytes | None) -> str:
+    """What a record's areas depend on besides the area files: its region and its committed outline."""
+    h = hashlib.sha256(json.dumps(rec.get("region") or {}, sort_keys=True).encode())
+    h.update(b"\0" + (hashlib.sha256(outline_bytes).digest() if outline_bytes is not None else b"none"))
+    return h.hexdigest()
+
+
 def write(out_dir: Path, records_out: list[dict], records: dict[str, dict], outlines_dir: Path,
-          areas_dir: Path = paths.AREAS_DIR) -> dict:
+          areas_dir: Path = paths.AREAS_DIR, cache_dir: Path | None = None) -> dict:
     """Write areas.json and areas-<kind>.geojson into out_dir and set records_out[].areas (every index
-    kind) when any area file is committed. Returns {kind: number of areas that hold a dataset}."""
+    kind) when any area file is committed. Returns {kind: number of areas that hold a dataset}.
+    cache_dir: per area-set digest one file {record key: areas}; a record whose region or outline changed,
+    or any area file, is counted again. Written whole by rename; never published."""
+    import sys
+    import tempfile
+
     areas = AreaSet.load(areas_dir)
     for old in out_dir.glob("areas-*.geojson"):
         old.unlink()
     if areas.files:
-        outlines = {}
-        for rid in records:
+        keys, outlines = {}, {}
+        for rid, rec in records.items():
             op = paths.outline_path(rid, outlines_dir)
-            outlines[rid] = load_outline(op) if op.exists() else None
-        placed = count(records, outlines, areas)
+            raw = op.read_bytes() if op.exists() else None
+            keys[rid] = record_key(rec, raw)
+            outlines[rid] = json.loads(raw) if raw is not None else None
+        cached: dict = {}
+        cfile = cache_dir / f"areas-{area_set_digest(areas_dir)[:16]}.json" if cache_dir else None
+        if cfile and cfile.exists():
+            try:
+                cached = json.loads(cfile.read_text())
+            except ValueError:
+                cached = {}
+        todo = {rid: rec for rid, rec in records.items() if keys[rid] not in cached}
+        fresh = count(todo, outlines, areas) if todo else {}
+        placed = {rid: fresh[rid] if rid in fresh else cached[keys[rid]] for rid in records}
+        if cfile and todo:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            for old in cache_dir.glob("areas-*.json"):
+                old.unlink(missing_ok=True)
+            with tempfile.NamedTemporaryFile("w", dir=cache_dir, delete=False, suffix=".tmp") as t:
+                json.dump({keys[rid]: placed[rid] for rid in records}, t)
+            Path(t.name).replace(cfile)
         for r in records_out:
             r["areas"] = placed[r["id"]]
+        print(f"areas: {len(todo)} records counted, {len(records) - len(todo)} from the cache", file=sys.stderr)
     else:
         placed = {rid: {k: [] for k in CORE} for rid in records}
     doc, drawn = index_and_drawn(areas, placed)
     (out_dir / "areas.json").write_text(dumps_index(doc))
     for k, fc in drawn.items():
         (out_dir / f"areas-{k}.geojson").write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
+    for k, v in doc["kinds"].items():
+        print(f"areas: {k} {len(v['areas'])} areas hold data, "
+              f"{sum(1 for x in placed.values() if x.get(k))} datasets placed", file=sys.stderr)
     return {k: len(v["areas"]) for k, v in doc["kinds"].items()}
+
+
+# Tiles (E46 design 5): areas.pmtiles, one layer per kind, the drawn areas only, z0-8 (the area files are
+# simplified for zoom 8; the page overzooms). Feature id is the drawn id; properties area_id, name, n.
+AREA_TILE_ARGS = ["-q", "-f", "-Z0", "-z8", "--no-feature-limit", "--no-tile-size-limit",
+                  "--no-tiny-polygon-reduction", "--detect-shared-borders"]
+
+
+def write_tiles(out_dir: Path, cache_dir: Path = paths.BUILD_DIR / "tiles") -> Path | None:
+    """out_dir/areas.pmtiles from out_dir/areas-<kind>.geojson, cached by input and tool version like the
+    outline tiles; None when tippecanoe is absent or no kind has a drawn area (the page reads the GeoJSON)."""
+    import shutil
+    import subprocess
+    import sys
+
+    dst = out_dir / "areas.pmtiles"
+    dst.unlink(missing_ok=True)
+    layers = [(f"areas_{p.stem.removeprefix('areas-')}", p) for p in sorted(out_dir.glob("areas-*.geojson"))
+              if json.loads(p.read_text())["features"]]
+    if not layers or not shutil.which("tippecanoe"):
+        return None
+    version = subprocess.run(["tippecanoe", "--version"], capture_output=True, text=True, check=False).stderr.strip()
+    key = hashlib.sha256(json.dumps([version, AREA_TILE_ARGS, [n for n, _ in layers]]).encode())
+    for _, p in layers:
+        key.update(p.read_bytes())
+    cached = cache_dir / f"areas-{key.hexdigest()[:16]}.pmtiles"
+    if not cached.exists():
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        tmp = cache_dir / f"tmp-{os.getpid()}-{cached.name}"   # tippecanoe writes PMTiles for a .pmtiles name
+        args = [a for n, p in layers for a in ("-L", f"{n}:{p}")]
+        r = subprocess.run(["tippecanoe", *AREA_TILE_ARGS, "-o", str(tmp), *args], capture_output=True, text=True, check=False)
+        if r.returncode:
+            raise RuntimeError(f"tippecanoe failed: {r.stderr}")
+        for old in cache_dir.glob("areas-*.pmtiles"):
+            old.unlink(missing_ok=True)
+        tmp.replace(cached)
+    shutil.copyfile(cached, dst)
+    print(f"tiles: {dst.name} {dst.stat().st_size / 1e6:.1f} MB, z0-8, layers {', '.join(n for n, _ in layers)}", file=sys.stderr)
+    return dst
+
+
+# --- preparation (osd areas prepare): a publisher's file on this machine to a committed area file ----
+# Read as data, never executed; reaches no network. GeoJSON, or an ESRI Shapefile of polygons (a .zip
+# holding one, or the .shp with its .dbf beside it) in geographic WGS84 coordinates.
+
+class Refused(ValueError):
+    pass
+
+
+def _dbf(b: bytes, encoding: str) -> list[dict]:
+    import struct
+
+    n, header, size = struct.unpack("<IHH", b[4:12])
+    fields, i = [], 32
+    while b[i] != 0x0D:
+        fields.append((b[i:i + 11].split(b"\0")[0].decode("ascii"), chr(b[i + 11]), b[i + 16]))
+        i += 32
+    rows = []
+    for r in range(n):
+        rec, at, row = b[header + r * size: header + (r + 1) * size], 1, {}
+        for name, t, width in fields:
+            raw = rec[at:at + width].split(b"\0")[0].decode(encoding, "replace").strip()
+            at += width
+            if t in "NF":
+                row[name] = None if not raw or raw.startswith("*") else (float(raw) if "." in raw or "e" in raw.lower() else int(raw))
+            else:
+                row[name] = raw
+        rows.append(row)
+    return rows
+
+
+def _shp_polygons(b: bytes) -> list[list[list[list[float]]] | None]:
+    """Each record's rings (shape type 5 Polygon, 15 PolygonZ, 25 PolygonM; 0 Null gives None)."""
+    import struct
+
+    if struct.unpack(">I", b[:4])[0] != 9994:
+        raise Refused("not a shapefile (.shp file code)")
+    out, i = [], 100
+    while i + 8 <= len(b):
+        length = struct.unpack(">I", b[i + 4:i + 8])[0] * 2
+        rec = b[i + 8:i + 8 + length]
+        i += 8 + length
+        t = struct.unpack("<i", rec[:4])[0]
+        if t == 0:
+            out.append(None)
+            continue
+        if t not in (5, 15, 25):
+            raise Refused(f"shape type {t} is not a polygon")
+        nparts, npts = struct.unpack("<ii", rec[36:44])
+        parts = list(struct.unpack(f"<{nparts}i", rec[44:44 + 4 * nparts])) + [npts]
+        at = 44 + 4 * nparts
+        xy = struct.unpack(f"<{2 * npts}d", rec[at:at + 16 * npts])
+        out.append([[[xy[2 * k], xy[2 * k + 1]] for k in range(parts[p], parts[p + 1])] for p in range(nparts)])
+    return out
+
+
+def _nest(rings: list[list[list[float]]]) -> dict:
+    """Shapefile rings to GeoJSON: clockwise rings are exteriors, the others holes of the smallest
+    exterior holding their first vertex."""
+    outer = [r for r in rings if ring_area(r) < 0]
+    holes = [r for r in rings if ring_area(r) >= 0]
+    if not outer:
+        outer, holes = holes, []
+    polys = [[o] for o in outer]
+    for h in holes:
+        hold = [p for p in polys if parity(h[0][0], h[0][1], cut_edges(p[0]))]
+        (min(hold, key=lambda p: abs(ring_area(p[0]))) if hold else polys[0]).append(h)
+    for p in polys:   # GeoJSON: exterior counterclockwise, holes clockwise (RFC 7946 3.1.6)
+        p[0] = p[0][::-1]
+        p[1:] = [h[::-1] for h in p[1:]]
+    return {"type": "Polygon", "coordinates": polys[0]} if len(polys) == 1 else {"type": "MultiPolygon", "coordinates": polys}
+
+
+def read_features(path: Path) -> list[tuple[dict, dict | None]]:
+    """[(attributes, geometry)] from a GeoJSON file, a .shp (with .dbf, .prj, .cpg beside it) or a .zip
+    holding one .shp. Coordinates must be geographic WGS84 (the .prj says GCS WGS 1984)."""
+    import zipfile
+
+    if path.suffix.lower() in (".geojson", ".json"):
+        fc = json.loads(path.read_text())
+        return [(f.get("properties") or {}, f.get("geometry")) for f in fc.get("features", [])]
+    if path.suffix.lower() == ".zip":
+        z = zipfile.ZipFile(path)
+        shps = [n for n in z.namelist() if n.lower().endswith(".shp")]
+        if len(shps) != 1:
+            raise Refused(f"{path.name}: {len(shps)} .shp files inside, need one")
+        names = {n.lower(): n for n in z.namelist()}
+
+        def part(ext):
+            n = names.get(shps[0][:-4].lower() + ext)
+            return z.read(n) if n else None
+    elif path.suffix.lower() == ".shp":
+        sibs = {p.suffix.lower(): p for p in path.parent.glob(path.stem + ".*")}
+
+        def part(ext):
+            return sibs[ext].read_bytes() if ext in sibs else None
+    else:
+        raise Refused(f"{path.name}: not GeoJSON, .shp or .zip")
+    prj = (part(".prj") or b"").decode("latin-1")
+    if not (prj.startswith("GEOGCS") and "WGS_1984" in prj.replace(" ", "_")):
+        raise Refused(f"{path.name}: the .prj does not say geographic WGS 84: {prj[:80]!r}")
+    cpg = (part(".cpg") or b"").decode("ascii", "replace").strip().lower()
+    encoding = "utf-8" if cpg in ("utf-8", "utf8", "65001") else "latin-1"
+    rows = _dbf(part(".dbf") or b"", encoding)
+    shapes = _shp_polygons(part(".shp"))
+    if len(rows) != len(shapes):
+        raise Refused(f"{path.name}: {len(rows)} attribute rows for {len(shapes)} shapes")
+    return [(r, _nest(s) if s else None) for r, s in zip(rows, shapes)]
+
+
+ID_PATTERNS = {"country": r"^[A-Z]{2}$", "province": r"^([A-Z]{2}-[A-Z0-9]{1,3}|[A-Z]{3}-[0-9]+)$",
+               "basin": r"^usgs-[0-9]+$", "licence": r"^[A-Z]{2}:\S+$"}   # area/1 allOf (tests/test_areas.py)
+
+
+def _value(attrs: dict, f: str, prefix: str = "") -> str | None:
+    v = attrs.get(f)
+    if v is None or v == "":
+        return None
+    return prefix + (str(int(v)) if isinstance(v, float) and v.is_integer() else str(v)).strip()
+
+
+def _area_id(attrs: dict, rule: dict, kind: str, taken: dict[str, dict]) -> str | None:
+    """The first of the rule's id fields whose value (with the rule's prefix) fits the kind's pattern and,
+    for a field the rule lists under `unique`, is not repeated in the file."""
+    import re as _re
+
+    for f in rule["id"]:
+        v = _value(attrs, f, rule.get("prefix", ""))
+        if v and _re.fullmatch(ID_PATTERNS[kind], v) and taken.get(f, {}).get(v, 1) == 1:
+            return v
+    return None
+
+
+def densify_wide(g: dict) -> dict:
+    """Edges longer than 180 degrees of longitude halved (planar midpoints) until none is: the publisher's
+    straight edge along a parallel, such as Antarctica's along -90, kept as drawn, which simplification
+    can leave as one edge from 180 to -180 (area/1 refuses an edge over 180 degrees)."""
+    def ring(r):
+        out = [r[0]]
+        for b in r[1:]:
+            a = out[-1]
+            n = 1
+            while abs(b[0] - a[0]) / n > 180:
+                n *= 2
+            out += [[a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n] for k in range(1, n)] + [b]
+        return out
+    polys = [[ring(r) for r in poly] for poly in polygons(g)]
+    return {"type": g["type"], "coordinates": polys[0] if g["type"] == "Polygon" else polys}
+
+
+def _merge(geoms: list[dict]) -> dict:
+    polys = [p for g in geoms for p in polygons(g)]
+    return {"type": "Polygon", "coordinates": polys[0]} if len(polys) == 1 else {"type": "MultiPolygon", "coordinates": polys}
+
+
+def prepare(kind: str, path: Path, rule: dict, countries: set[str] | None = None) -> tuple[dict, list[str]]:
+    """The area file for kind from the publisher's file at path, by its rule in areas/prepare.yaml: ids,
+    names and (provinces) countries from the named attributes, parts of one id merged, simplified to
+    `tolerance_m` (zoom 8) with positions rounded to `decimals`. Returns (area file, notes on what was left
+    out and why)."""
+    import collections
+
+    from .outlines.geometry import simplify
+
+    notes: list[str] = []
+    by_id: dict[str, list] = {}
+    rows = read_features(path)
+    taken = {f: collections.Counter(_value(a, f, rule.get("prefix", "")) for a, _ in rows) for f in rule.get("unique", [])}
+    for attrs, g in rows:
+        if any(_value(attrs, f) in map(str, vs) for f, vs in rule.get("exclude", {}).items()):
+            continue
+        aid = _area_id(attrs, rule, kind, taken)
+        name = str(attrs.get(rule["name"]) or "").strip()
+        if g is None or not aid or not name:
+            notes.append(f"left out: no geometry, id or name: {rule['name']}={name!r} "
+                         + " ".join(f"{f}={attrs.get(f)!r}" for f in rule["id"]))
+            continue
+        country = attrs.get(rule["country"]) if "country" in rule else None
+        if "country" in rule and (not isinstance(country, str) or (countries is not None and country not in countries)):
+            notes.append(f"left out: {aid} {name}: country {country!r} is not a country area")
+            continue
+        by_id.setdefault(aid, []).append((name, country, g))
+    features = []
+    for aid in sorted(by_id):
+        parts = by_id[aid]
+        big = max(parts, key=lambda p: max(abs(ring_area(q[0])) for q in polygons(p[2])))
+        names = sorted({n for n, _, _ in parts})
+        if len(names) > 1:
+            notes.append(f"{aid}: {len(parts)} rows named {names}; the largest part's name kept: {big[0]}")
+        g = densify_wide(simplify(_merge([p[2] for p in parts]), rule["tolerance_m"], decimals=rule["decimals"])[0])
+        props = {"area_id": aid, "name": big[0]}
+        if "country" in rule:
+            props["country"] = big[1]
+        features.append({"type": "Feature", "properties": props, "geometry": g})
+    source = dict(rule["source"], sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+    return {"type": "FeatureCollection", "kind": kind, "source": source, "features": features}, notes
+
+
+def prepare_to_file(kind: str, path: Path, areas_dir: Path = paths.AREAS_DIR) -> tuple[Path, list[str]]:
+    """areas/<kind>.geojson from the publisher's file by its rule in areas/prepare.yaml; returns (path,
+    notes). Provinces keep only countries in the committed areas/country.geojson."""
+    import yaml
+
+    rules = yaml.safe_load((areas_dir / "prepare.yaml").read_text())
+    if kind not in rules:
+        raise Refused(f"no rule for kind {kind!r} in {areas_dir / 'prepare.yaml'}")
+    rule = rules[kind]
+    if path.name != rule["file"]:
+        raise Refused(f"{path.name} is not the file the rule names ({rule['file']})")
+    countries = None
+    if "country" in rule:
+        cp = areas_dir / "country.geojson"
+        if not cp.exists():
+            raise Refused("prepare countries first: provinces keep only committed countries")
+        countries = {f["properties"]["area_id"] for f in json.loads(cp.read_text())["features"]}
+    doc, notes = prepare(kind, path, rule, countries)
+    errs = list(validator().iter_errors(doc))
+    if errs:
+        raise Refused(f"the prepared file is not area/1: {errs[0].message}")
+    out = areas_dir / f"{kind}.geojson"
+    out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n")
+    return out, notes
