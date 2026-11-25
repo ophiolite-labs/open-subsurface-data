@@ -1,0 +1,7 @@
+{
+  "https://mirror.fixture.invalid/mirror/fx/mirrored/2401991f812e1120dba531307019b3831c41d3727816b71e2feeeeedb3bbad86/README": "fixture readme\n",
+  "https://mirror.fixture.invalid/mirror/fx/mirrored/c3efe396b4a5540098629d35e37186d516f1de60ada351955d9d561f45edc3c3/A-1.las": "~VERSION\nVERS. 2.0\n~WELL\nWELL. A-1\n~ASCII\n1000 1.5\n",
+  "https://origin.fixture.invalid/mirrored/README": "fixture readme\n",
+  "https://origin.fixture.invalid/mirrored/well/A-1.las": "~VERSION\nVERS. 2.0\n~WELL\nWELL. A-1\n~ASCII\n1000 1.5\n",
+  "https://origin.fixture.invalid/publisher/grid.csv": "x,y,z\n1,2,3\n"
+}

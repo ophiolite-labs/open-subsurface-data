@@ -18,13 +18,18 @@ outcome names the location that served it (`source`).
 
 Entries without assets are the to-do list: their origin page and the reason. ATTRIBUTION.md is
 written from the licence objects as the records state them, nothing invented.
+
+The module is also callable (E49): `osd.get("opm/norne")` is `osd.api.get`, the same retrieval by
+dataset id, so `from osd import get as get_mod` keeps this module for every existing caller.
 """
 
 from __future__ import annotations
 
 import hashlib
 import os
+import sys
 import tempfile
+import types
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
@@ -218,3 +223,14 @@ def summary(m: Manifest, outcomes: list[Outcome]) -> list[str]:
 
 def failed(outcomes: list[Outcome]) -> bool:
     return any(r.outcome in FAILED for r in outcomes)
+
+
+class _CallableModule(types.ModuleType):
+    """`osd.get(id, ...)` from Python (E49): the module stays a module, calling it is `osd.api.get`."""
+
+    def __call__(self, *args, **kwargs):
+        from .api import get as get_dataset
+        return get_dataset(*args, **kwargs)
+
+
+sys.modules[__name__].__class__ = _CallableModule
