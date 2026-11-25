@@ -788,6 +788,15 @@ test('budget: the first load of /shop.html on the real catalogue stays under 1 M
     console.log(`# shop first load #${hash}: site ${sum(site)} bytes in ${site.length} requests; libraries ${sum(libs)} bytes (unpkg, uncompressed here);`,
       `fonts ${sum(fonts)} bytes (answered empty offline; Google Fonts online)`);
     assert.deepEqual(site.filter(r => /outlines\.geojson|collections\.json|mirror\.json/.test(r.url)), [], 'nothing the first view does not need');
+    assert.ok(site.some(r => /areas\.(json|pmtiles)/.test(r.url)), 'with Countries on');
+    // E48 acceptance 8: what switching to Provinces and then to Basins requests, stated in the PR
+    for (const kind of ['Provinces', 'Basins']) {
+      const from = log.length;
+      await page.getByRole('button', { name: kind, exact: true }).click();
+      await shopReady(page); await page.waitForTimeout(300);
+      const more = log.slice(from).filter(r => r.url.startsWith(server.url));
+      console.log(`# switching to ${kind} at #${hash}: site ${sum(more)} bytes in ${more.length} requests`);
+    }
     assert.ok(sum(site) < 1e6, `site bytes ${sum(site)}`);
     assert.deepEqual(errors, []);
     assert.deepEqual(unexpected, []);
