@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open Subsurface Data</title>
+<meta name="description" content="Open subsurface datasets on one map: look at a place, add what you want to the bag, take the files.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="shop.css">
+</head>
+<body>
+<header id="top">
+  <h1>Open Subsurface Data</h1>
+  <input id="q" type="search" placeholder="Search a dataset, a publisher or a basin" autocomplete="off" aria-label="Search">
+  <button id="filters-btn" type="button" aria-expanded="false" aria-controls="filters">Filters<span class="n" hidden></span></button>
+  <button id="bag-btn" type="button" aria-expanded="false" aria-controls="bag">Bag<span class="n">0</span></button>
+</header>
+
+<main>
+  <section id="side" aria-label="Datasets">
+    <div id="sheet-head">
+      <button id="grip" type="button" aria-label="Pull the list up or down"></button>
+      <h2 id="count" aria-live="polite"></h2>
+      <button id="filters-btn-sheet" type="button" aria-controls="filters">Filters<span class="n" hidden></span></button>
+    </div>
+    <form id="filters" hidden onsubmit="return false">
+      <div class="group"><h3>Holds</h3><div id="kinds" class="chips"></div></div>
+      <div class="group"><h3>Level at least</h3>
+        <select id="minlevel" aria-label="Level at least">
+          <option value="0">L0 listed</option><option value="1">L1 reachable</option><option value="2">L2 checksummed</option>
+          <option value="3">L3 outlined</option><option value="4">L4 converted</option>
+        </select></div>
+      <div class="group"><h3>Years</h3>
+        <label>from <input id="from" type="text" inputmode="numeric" maxlength="4" placeholder="year" autocomplete="off"></label>
+        <label>to <input id="to" type="text" inputmode="numeric" maxlength="4" placeholder="year" autocomplete="off"></label>
+        <label><input type="checkbox" id="dated"> dated only</label></div>
+      <div class="group"><h3>How it is obtained</h3><div id="access" class="chips"></div></div>
+      <div class="group" id="starterfilter" hidden><label><input type="checkbox" id="starter"> with a starter project</label></div>
+      <div class="foot"><button id="clear" type="button">Clear</button><button id="filters-done" type="button">Done</button></div>
+    </form>
+    <div id="list"><ul></ul><p id="more" hidden></p><div id="noplace" hidden><h3>No place stated</h3><ul></ul></div></div>
+    <article id="detail" hidden></article>
+  </section>
+  <div id="map"></div>
+  <aside id="bag" hidden aria-label="Bag"></aside>
+</main>
+
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="shop.js"></script>
+</body>
+</html>
