@@ -76,3 +76,12 @@ def test_first_line_and_alignment():
     assert lines[5].index("#") == lines[6].index("#") == len('longer_name = osd.get("p/longer-name")') + 2
     assert text.endswith("print(longer_name)\n")
     assert script.render([_entry("p/one")], date(2026, 1, 5)).startswith("# open-subsurface-data, made 5 Jan 2026 for 1 dataset\n")
+
+
+def test_osd_script_subcommand_equals_golden(tmp_path, capsys):
+    """`osd script` is `python -m osd.script`: same flags, same file."""
+    from osd import cli
+    out = tmp_path / "osd_fixture.py"
+    assert cli.main(["script", "--catalog", str(FX / "catalog"), *IDS, "--today", "2026-11-25", "-o", str(out)]) == 0
+    assert out.read_text() == (FX / "golden.py").read_text()
+    assert cli.main(["script", "fx/none", "--catalog", str(FX / "catalog")]) == 2
