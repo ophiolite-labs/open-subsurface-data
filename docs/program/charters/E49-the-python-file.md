@@ -25,10 +25,12 @@ gave them, and has the files of the chosen datasets on their own disk, each chec
 recorded sha256, with a handle that says what arrived and opens the common kinds. The file is
 short enough to read and is the same whether the site or the command line wrote it.
 
-**Context today (verified on `origin/main` `fd69de4`).** `src/osd/get.py` has `get(m: Manifest,
-dest, opener)` returning outcomes per entry, `attribution`, `summary`; `src/osd/manifest.py` has
+**Context today (verified on `origin/main` `c3baa16`; corrected at lane open, F1–F2).** `src/osd/get.py`
+has `get(m: Manifest, dest, opener)` returning one outcome per asset, `attribution`, `summary`; `src/osd/manifest.py` has
 `from_catalog(ids, catalog_dir, catalog_url)` which builds a manifest from a built catalogue on
-disk. `src/osd/__init__.py` exports only `__version__`. There is no call that takes a dataset id
+disk (it reads `records.json` and `stac/<collection_id>/collection.json`; the mirror addresses are
+already the collections' asset alternates). `src/osd/__init__.py` exports only `__version__`, and
+`osd.get` is today the module `src/osd/get.py`. There is no call that takes a dataset id
 and reads the published catalogue, no reader, and the package name `osd` is installed from the
 repository (`uv sync`); it is not on PyPI (OSD-D32). The lane's first act is to write down, in the
 strategy, exactly what E06 gives and what is missing; this charter's design is corrected there if
@@ -39,11 +41,14 @@ the code disagrees.
 1. *`osd.get(id, dest=None, area=None, catalog=None) -> Dataset`.* Reads the published catalogue
    (`https://opensubsurfacedata.org/data/…`, or `catalog=` a local build directory or another URL),
    builds the same manifest entry `osd manifest` would, and fetches through the E06 path: mirror
-   copy first when one is held, else the publisher; sha256 checked where one is recorded; resumable
-   and idempotent (a file already present with the right digest is not fetched again). `dest`
+   copy first when one is held, else the publisher; sha256 checked where one is recorded; idempotent
+   atomic retry (a file already present with the right digest is not fetched again; an interrupted
+   download leaves nothing; no byte-range resume, F7). `catalog=`, the transport and the public
+   types are fixed in the strategy (F4–F6). `dest`
    defaults to `./osd-data/<publisher>/<dataset>/`. This is the intentional retrieval AGENTS.md
    already names for `osd get`; the network line gains "`osd.get(...)`, the same retrieval called
-   from Python" and nothing else.
+   from Python, which reads only the catalogue's `records.json` and the chosen collections' files
+   besides the assets" and nothing else (F16).
 2. *What cannot be fetched is said, not raised.* A dataset whose access is registration, request
    or purchase returns a `Dataset` with no files and `todo` holding the sentence and the address
    where to sign in or ask; printing the dataset shows it. A checksum mismatch raises.
@@ -69,8 +74,10 @@ the code disagrees.
    `osd.script.render(catalog, ids, today)`. The site writes the same text: the rule is specified
    in the charter's strategy as a table, the CLI's output for the fixture catalogue is committed as
    golden files, and the page's output is tested equal to them (as E06 does for manifests).
-6. *Slices.* 1: `osd.get` and `Dataset` without readers, `osd script`, golden files. 2: readers
-   and the extra. 3: `area=`. 4 (after E47 merges; surface, small): the bag's "Get a Python file"
+6. *Slices.* 1: `osd.get` and `Dataset` without readers, `python -m osd.script` (the `osd script`
+   subcommand line follows E46 slice 0's merge, F14), golden files. 2: readers and the extra.
+   3: `area=`, parked until a per-file membership contract exists (F8; inbox e49 note 1); until
+   then any `area` is refused with the sentence and nothing is requested. 4 (after E47 merges; surface, small): the bag's "Get a Python file"
    button in `site/shop.js`, lighting J12.
 
 **Acceptance.** Offline; tests inject the opener and a fixture catalogue.
@@ -117,3 +124,25 @@ announced in the PR title), `README.md` (a "From Python" section), `docs/program
 E46's area ids if merged; slice 4 on E47.
 
 **Evidence to inspect.** The golden file; the real Norne run; the mutation list.
+
+## Codex review dispositions (review `E49-the-python-file-CODEX-REVIEW.md`, main `18071f4`; verdict REWORK)
+
+| Finding | Disposition | Where |
+|---|---|---|
+| F1 stale revision | Accepted: context names `c3baa16`. | Context today |
+| F2 outcomes per asset | Accepted: corrected. | Context today |
+| F3 context otherwise right | Noted. | – |
+| F4 `catalog=` underspecified | Accepted: three forms (default root, URL root, local directory), two files read, collection id computed from a record found in `records.json`, in-memory per-process cache, `DatasetError` naming the URL, injected opener. | Strategy, contract |
+| F5 no injectable transport | Accepted: `opener=` keyword (default `http_open`) for catalogue and assets; the subprocess test uses a test-side wrapper that sets the fixture catalogue and opener, then runs the file; the product reads nothing from the environment. | Strategy, contract; acceptance 6 |
+| F6 `Dataset.files` shape | Accepted: frozen `File`/`Dataset` with typed fields, `source` and `checked` values listed, partial failure into `todo`, `ChecksumMismatch(ValueError)` with `.key`. | Strategy, contract |
+| F7 "resumable" | Accepted: idempotent atomic retry; resume dropped. | Design 1 |
+| F8 `area=` has no per-file input | Accepted: slice 3 parked until a versioned per-file membership contract exists; `area` refused before any request from slice 1 (acceptance 8's second half moves to slice 1). Whether to charter that contract goes to the inbox. | Design 6; inbox e49 note 1 |
+| F9 readers open-ended | Accepted: extensions, return types, collisions, errors and pins fixed in the strategy for slice 2. | Strategy, slices |
+| F10 script input undefined | Accepted: `render(entries, today)` consumes the manifest entries `from_catalog` writes (which the page already writes equal, E06); ordering, duplicates, inaccessible datasets and the reader rule are rule table T1–T8. | Strategy, rule table |
+| F11 one code path not proven | Accepted: a spy on `get.get` asserts the API and `osd get` both call it with equal manifest entries. | Acceptance 4 test |
+| F12 acceptance 6 offline; 10 network | Accepted: wrapper as in F5; acceptance 10 is an intentional `osd.get` run outside the gate. | Strategy |
+| F13 mutation list | Accepted: guards for id/URL, area, eager import, mirror-first, rehash, restricted access and mismatch leftovers mapped to tests and mutations; asset-key escape and duplicate targets stay E06's, reached through the same `get.get`. | Strategy, acceptance table |
+| F14 shared `cli.py` | Accepted (supervisor ruling 25 Nov): no edit of `cli.py` now; `python -m osd.script` ships in slice 1, the subcommand line after E46 slice 0 merges. | Design 6 |
+| F15 catalogue module | Partly: the catalogue read is a private function in `src/osd/api.py` (claimed), not in `manifest.py` and not a new unclaimed module; `from_catalog` is unchanged and reads a temporary directory holding the two fetched files. | Strategy, contract |
+| F16 network sentence | Accepted: the AGENTS.md sentence names `osd.get` with catalogue reads and asset downloads only; no import-time or background network; tests inject. | Design 1; AGENTS.md |
+| F17 reader-free test | Accepted: a subprocess with a meta-path finder that blocks `lasio`, `segyio`, `pandas` in the installed project; no environment is created in the gate. | Acceptance 7 test |
