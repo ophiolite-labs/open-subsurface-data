@@ -14,7 +14,7 @@ licence:
   redistribution: restricted
   attribution: required
 kinds: [wellbore-headers, wellbore-logs, core, reports, seismic-2d, seismic-3d, source-list]
-region: {country: DK, basin: Danish onshore and North Sea, bbox: [3.0, 54.5, 15.5, 58.0]}
+region: {country: DK, basin: Danish onshore and North Sea, bbox: [3.0, 54.5, 15.5, 58.0], national: true}
 listed_by: [publisher]
 known_issues:
   - "Terms 2.2: the user may 'in specific cases' make the data available to others free of charge and must tell them GEUS' rights apply; GEUS keeps all rights. Read here as restricted redistribution."

@@ -18,7 +18,7 @@ licence:
   redistribution: unknown
   attribution: required
 kinds: [wellbore-headers]
-region: {country: NZ, basin: "Taranaki, East Coast, Canterbury, Great South and other New Zealand basins", bbox: [167.15, -49.61, 178.46, -35.11]}
+region: {country: NZ, basin: "Taranaki, East Coast, Canterbury, Great South and other New Zealand basins", bbox: [167.15, -49.61, 178.46, -35.11], national: true}
 listed_by: [publisher]
 known_issues:
   - "The copyright page says Crown copyright material on the website may be reproduced free of charge with the source acknowledged; it does not name the map services, and the service's licence field is empty."

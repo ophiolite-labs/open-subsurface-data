@@ -16,7 +16,7 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [seismic-2d, seismic-3d, wellbore-logs, potential-fields, reports]
-region: {country: LK, basin: "Sri Lanka offshore basins (Mannar Basin)"}
+region: {country: LK, basin: "Sri Lanka offshore basins (Mannar Basin)", national: true}
 listed_by: [publisher]
 known_issues:
   - "Access is for 'qualified operators' in the Data Room; the page states no terms for other users."

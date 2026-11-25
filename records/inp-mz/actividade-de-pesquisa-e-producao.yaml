@@ -18,7 +18,7 @@ licence:
   redistribution: forbidden
   attribution: unknown
 kinds: [wellbore-headers]
-region: {country: MZ, basin: "Rovuma and Mozambique basins (onshore and offshore)", bbox: [30.2, -27.0, 42.6, -10.4], crs: "EPSG:4326"}
+region: {country: MZ, basin: "Rovuma and Mozambique basins (onshore and offshore)", bbox: [30.2, -27.0, 42.6, -10.4], crs: "EPSG:4326", national: true}
 period:
   start: "1958"
   end: "2021"

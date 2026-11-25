@@ -18,7 +18,7 @@ licence:
   attribution: required
   statement: "Datenquelle: Datensatzbezeichnung, © LIAG-Institut für Angewandte Geophysik, Ort, Jahr"
 kinds: [geological-model]
-region: {country: DE, basin: Germany, bbox: [5.8155, 47.2714, 15.2284, 55.0604]}
+region: {country: DE, basin: Germany, bbox: [5.8155, 47.2714, 15.2284, 55.0604], national: true}
 listed_by: [publisher]
 known_issues:
   - "Terms: 'Die Weitergabe an Dritte oder die Veröffentlichung von Raumdaten aus GeotIS … ist nur in begrenztem Umfang gestattet. Ohne vorherige Zustimmung … nicht mehr als ein Fünftel der Landesfläche Deutschlands in einer Veröffentlichung'."

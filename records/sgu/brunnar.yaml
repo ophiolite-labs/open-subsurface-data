@@ -18,7 +18,7 @@ licence:
   redistribution: allowed
   attribution: not-required
 kinds: [wellbore-headers]
-region: {country: SE, basin: Sweden}
+region: {country: SE, basin: Sweden, national: true}
 listed_by: [publisher]
 known_issues:
   - "Water and ground-source heat wells, not petroleum wells."

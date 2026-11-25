@@ -18,7 +18,7 @@ licence:
   attribution: required
   statement: "Contains Irish Public Sector Data (Geological Survey Ireland) licensed under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence"
 kinds: [wellbore-headers, core, reports]
-region: {country: IE, basin: Ireland, bbox: [-10.24, 51.45, -5.98, 55.29], crs: "EPSG:2157"}
+region: {country: IE, basin: Ireland, bbox: [-10.24, 51.45, -5.98, 55.29], crs: "EPSG:2157", national: true}
 listed_by: [publisher]
 known_issues:
   - "Mineral-exploration holes, not petroleum wells."

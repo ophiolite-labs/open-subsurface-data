@@ -523,6 +523,7 @@ def test_every_version_1_record_validates_under_record_2():
             continue  # record/3 values (E19) and record/4 kinds (E26): not a version-1 record
         rec.pop("inputs", None)  # the version-2 additions: what remains is a version-1 file
         rec.pop("period", None)
+        (rec.get("region") or {}).pop("national", None)  # record/6 (E46, E52)
         assert not list(v1.iter_errors(rec)), p
         assert not list(v2.iter_errors(rec)), p
 

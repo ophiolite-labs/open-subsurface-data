@@ -17,7 +17,7 @@ licence:
   redistribution: unknown
   attribution: required
 kinds: [seismic-2d]
-region: {country: NZ, basin: New Zealand onshore and offshore basins, bbox: [165.0, -53.0, 180.0, -29.0]}
+region: {country: NZ, basin: New Zealand onshore and offshore basins, bbox: [165.0, -53.0, 180.0, -29.0], national: true}
 listed_by: [publisher]
 known_issues:
   - "A survey line index (generalised navigation and survey attributes), not seismic traces; the nearest kind is seismic-2d. The traces are in the NZP&M geodata catalogue (RealMe login)."

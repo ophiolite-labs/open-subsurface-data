@@ -16,7 +16,7 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [wellbore-headers]
-region: {country: KE, basin: "Anza, Lamu, Mandera and Tertiary Rift basins", bbox: [33.9, -4.9, 41.9, 5.1]}
+region: {country: KE, basin: "Anza, Lamu, Mandera and Tertiary Rift basins", bbox: [33.9, -4.9, 41.9, 5.1], national: true}
 period:
   start: "1960"
   end: "2017"

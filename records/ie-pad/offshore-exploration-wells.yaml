@@ -15,10 +15,11 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [wellbore-headers]
-region: {country: IE, basin: Irish offshore, bbox: [-13.40, 49.67, -5.53, 56.19]}
+region: {country: IE, basin: Irish offshore, bbox: [-13.40, 49.67, -5.53, 56.19], national: true}
 listed_by: [publisher]
 period:
   start: "1970"
   end: "2019"
   stated: "data.gov.ie record (harvested from ISDE, Marine Institute/GSRO): 'Offshore wells recorded between 1970 and 2019'; temporal_start 1969-12-31, temporal_end 2019-12-31; issued 2018-02-05"
+notes: "National offshore only: the publisher presents this as covering the Irish offshore, not the land."
 added: 2026-10-23

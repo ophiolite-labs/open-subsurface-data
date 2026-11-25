@@ -15,10 +15,10 @@ licence:
   redistribution: unknown
   attribution: unknown
 kinds: [seismic-2d, seismic-3d, wellbore-logs, wellbore-paths, tops, reports, source-list]
-region: {country: GB, basin: "UK onshore (England, Scotland and Wales)", bbox: [-6.5, 49.9, 1.8, 58.7]}
+region: {country: GB, basin: "UK onshore (England, Scotland and Wales)", bbox: [-6.5, 49.9, 1.8, 58.7], national: true}
 listed_by: [publisher]
 known_issues:
   - "No licence or terms page found; the web map is a JavaScript application, so whether downloads need an account was not established."
   - "bbox is approximate (Great Britain onshore)."
-notes: "No period stated: the archives page gives volumes but no acquisition dates."
+notes: "No period stated: the archives page gives volumes but no acquisition dates. National onshore only: the publisher presents this as covering the UK onshore, not the offshore."
 added: 2026-10-23

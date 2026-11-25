@@ -14,7 +14,7 @@ licence:
   redistribution: forbidden
   attribution: unknown
 kinds: [wellbore-logs, seismic-2d, seismic-3d, geochemistry, reports, source-list]
-region: {country: BR, basin: Brazilian sedimentary basins, bbox: [-74.0, -34.0, -28.8, 5.3]}
+region: {country: BR, basin: Brazilian sedimentary basins, bbox: [-74.0, -34.0, -28.8, 5.3], national: true}
 listed_by: [publisher]
 known_issues:
   - "The Termo de Adesão obliges the data user 'não disponibilizar a terceiros os dados' except where ANP resolutions allow; Resolução 889/2022 (atosoficiais.com.br) answered 403 to an automated request on 23 Oct 2026, so its exceptions were not read."

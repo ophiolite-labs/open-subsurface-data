@@ -18,7 +18,7 @@ licence:
   redistribution: restricted
   attribution: required
 kinds: [wellbore-headers]
-region: {country: CZ, bbox: [12.09, 48.55, 18.86, 51.06]}
+region: {country: CZ, bbox: [12.09, 48.55, 18.86, 51.06], national: true}
 listed_by: [publisher]
 known_issues:
   - "cgs.gov.cz/copyright: \"Jejich využívání nebo reprodukce je možná pouze s písemným souhlasem České geologické služby.\" The CC BY 4.0 there covers INSPIRE download datasets only, not this service."

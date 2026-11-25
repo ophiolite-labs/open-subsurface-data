@@ -18,7 +18,7 @@ licence:
   redistribution: allowed
   attribution: required
 kinds: [wellbore-headers, reports]
-region: {country: CH, basin: "Switzerland with border areas (Molasse Basin, Jura, Alps)", bbox: [5.9, 45.8, 10.5, 47.8]}
+region: {country: CH, basin: "Switzerland with border areas (Molasse Basin, Jura, Alps)", bbox: [5.9, 45.8, 10.5, 47.8], national: true}
 listed_by: [publisher]
 known_issues:
   - "Terms: 'You may use this dataset for non-commercial purposes. You may use this dataset for commercial purposes. You must provide the source (author, title and link to the dataset).' The terms speak of use; they do not name redistribution separately."
