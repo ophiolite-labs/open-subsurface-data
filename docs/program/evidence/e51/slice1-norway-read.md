@@ -36,3 +36,9 @@ FAILS (caught): terms binding (SOURCES.md): ['1 failed, 28 deselected in 0.18s']
 FAILS (caught): unchanged read rewritten: ['1 failed, 28 deselected in 0.05s']
 FAILS (caught): blocks for 26 licences: ['1 failed, 28 deselected in 0.03s']
 ```
+
+First dry `areas` run on the pull request (GitHub runner, 25 Nov, run 45657893722): `NO: refused ... layer 802
+not read whole: no answer for .../802/query?...resultOffset=1000...: Remote end closed connection without
+response`. The guard held (file kept, summary printed). Follow-up: a request with no answer or a 5xx is tried
+twice more after 15 s; a 4xx is final (`test_http_get_tries_a_dropped_page_again_and_stops_at_a_4xx`;
+mutation "retry a 4xx" fails it, mutation "no retry for no answer" fails it).

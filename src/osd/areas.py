@@ -1039,9 +1039,11 @@ def issue_text(s: dict, today: str) -> tuple[str, str]:
     return f"Licences: {s['country']} read refused", comment
 
 
-def http_get(pause: float = 1.0):
+def http_get(pause: float = 1.0, retries: int = 2, wait: float = 15.0, opener=None, sleep=None):
     """`get` for osd areas read: GET with a generic client name, robots.txt obeyed (RFC 9309; 4xx allows,
-    anything else unreadable refuses), one request at a time with a pause per request."""
+    anything else unreadable refuses), one request at a time with a pause per request. A request with no
+    answer or a 5xx is tried again `retries` times after `wait` seconds (Sodir closed a page's connection
+    on the first workflow run, 25 Nov); a 4xx is final."""
     import time
     import urllib.error
     import urllib.request
@@ -1052,10 +1054,27 @@ def http_get(pause: float = 1.0):
 
     rules: dict = {}
 
+    sleep = sleep or time.sleep
+
     def fetch(url: str) -> bytes:
+        if opener:
+            return opener(url)
         req = urllib.request.Request(url, headers={"User-Agent": READ_AGENT})
         with urllib.request.urlopen(req, timeout=60) as r:
             return r.read()
+
+    def again(url: str) -> bytes:
+        for k in range(retries + 1):
+            try:
+                return fetch(url)
+            except urllib.error.HTTPError as e:
+                if e.code < 500 or k == retries:
+                    raise
+            except (urllib.error.URLError, OSError):
+                if k == retries:
+                    raise
+            sleep(wait)
+        raise AssertionError("unreachable")
 
     def get(url: str) -> bytes:
         u = urlsplit(url)
@@ -1070,9 +1089,9 @@ def http_get(pause: float = 1.0):
                 rules[host] = robots_txt.Rules.disallow_all()
         if not rules[host].allowed(url):
             raise layers.Incomplete(f"robots.txt does not allow {url}")
-        time.sleep(pause)
+        sleep(pause)
         try:
-            return fetch(url)
+            return again(url)
         except urllib.error.HTTPError as e:
             raise layers.Incomplete(f"HTTP {e.code} for {url}") from None
         except (urllib.error.URLError, OSError) as e:

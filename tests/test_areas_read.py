@@ -329,3 +329,25 @@ def test_cli_writes_the_summary_and_exits_1_on_a_refusal(adir, tmp_path):
     assert cli.cmd_areas_read(a, get=serve(sodir(), fail="/802"), today=TODAY) == 1
     assert (tmp_path / "sum" / "issue-no.md").read_text().startswith("Licences: NO read refused\n")
     assert json.loads((tmp_path / "sum" / "no.json").read_text())["status"] == "refused"
+
+
+def test_http_get_tries_a_dropped_page_again_and_stops_at_a_4xx():
+    import urllib.error
+
+    from osd.verifier.layers import Incomplete
+    tries = []
+
+    def opener(url):
+        tries.append(url)
+        if url.endswith("/robots.txt"):
+            return b""
+        if "dropped" in url and tries.count(url) < 3:
+            raise urllib.error.URLError("Remote end closed connection without response")
+        if "gone" in url:
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+        return b"ok"
+    get = areas.http_get(opener=opener, sleep=lambda s: None)
+    assert get("https://x.example/dropped") == b"ok" and tries.count("https://x.example/dropped") == 3
+    with pytest.raises(Incomplete, match="HTTP 404"):
+        get("https://x.example/gone")
+    assert tries.count("https://x.example/gone") == 1
