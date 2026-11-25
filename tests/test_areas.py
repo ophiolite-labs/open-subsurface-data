@@ -310,7 +310,6 @@ def test_national_record_without_outline_lights_its_country_and_no_basin(real):
     rid = next(rid for rid, r in sorted(recs.items()) if r["region"].get("bbox") and r["region"].get("country")
                in {a["area_id"] for a in index["kinds"]["country"]["areas"]} and not paths.outline_path(rid).exists())
     rec = copy.deepcopy(recs[rid])
-    assert areas.count({rid: rec}, {rid: None}, areas.AreaSet.load())[rid]["basin"] or True   # by its box: anything
     rec["region"]["national"] = True
     assert areas.count({rid: rec}, {rid: None}, areas.AreaSet.load())[rid] == {
         "country": [rec["region"]["country"]], "province": [], "basin": []}
