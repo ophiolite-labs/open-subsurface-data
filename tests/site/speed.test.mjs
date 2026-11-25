@@ -25,12 +25,13 @@ after(async () => { await browser.close(); server.close(); });
 const DESKTOP = { width: 1400, height: 900 };
 const NORTH_SEA = 'map=5.00/57.0000/3.0000', GULF = 'map=5.00/27.0000/-91.0000', NORTH_SEA_7 = 'map=7.50/58.5000/2.0000';
 
-async function open(hash = NORTH_SEA, { query = '', measure = false, init } = {}) {
+async function open(hash = NORTH_SEA, { query = '', measure = false, init, routes } = {}) {
   const context = await browser.newContext({ viewport: DESKTOP });
   const unexpected = [];
   await shopOffline(context, unexpected);
   if (measure && !HOOKED) await context.addInitScript({ path: MEASURE_JS });
   if (init) await context.addInitScript(init);
+  if (routes) await routes(context);
   const page = await context.newPage();
   const errors = errorsOf(page);
   const requested = [];
@@ -174,4 +175,28 @@ test('practice 7: hovering rows lights features by feature state; no setFilter, 
 
 test.todo('practice 8: names without the slow fade (fadeDuration 0)', async () => {
   assert.equal(await option(() => window.osdMap._fadeDuration)(), 0);
+});
+
+// ---- Measurement 2, the return visit ------------------------------------------------------------
+
+test('return visit: a header range answered with the whole file (a stale ETag at the host) keeps the tiles on', async () => {
+  // As measured on 25 Nov 2026 (docs/program/evidence/e50/measurements.md): after max-age, Chrome asks
+  // for the cached range with If-Range and an ETag another GitHub Pages server no longer gives, and
+  // gets 200 with the whole file. Here the first header request gets a 200 with more than it asked.
+  const headers = [];
+  const { context, page, requested } = await open(NORTH_SEA, { routes: async ctx => {
+    await ctx.route(u => u.pathname.endsWith('/data/outlines.pmtiles'), async route => {
+      const range = route.request().headers().range || '';
+      if (range.startsWith('bytes=0-')) headers.push(range);
+      if (range.startsWith('bytes=0-') && headers.length === 1) {
+        const r = await route.fetch({ headers: { ...route.request().headers(), range: 'bytes=0-65535' } });
+        return route.fulfill({ status: 200, body: await r.body(), headers: { 'content-type': 'application/octet-stream' } });
+      }
+      return route.continue();
+    });
+  } });
+  assert.equal(headers.length, 2, 'the header was asked for twice');
+  assert.ok(!requested.some(u => u.endsWith('outlines.geojson')), 'no fall back to the whole GeoJSON');
+  assert.ok(await page.evaluate(() => !!window.osdMap.getLayer('wells-tiles')), 'the map draws from the tiles');
+  await context.close();
 });
