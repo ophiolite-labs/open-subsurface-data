@@ -740,7 +740,7 @@ test('J14 (E48 half) shares the address: a second browser shows the same kind of
 });
 
 // ---- J15 ---------------------------------------------------------------------------------------
-test('J15 does J1, J2, J5 and J11 on a phone-width screen (390 × 844): no horizontal scroll, the plus at least 44 px', async () => {
+test('J15 does J1, J2, J5 and J11 on a phone-width screen (390 × 844): no horizontal scroll, the plus at least 44 px, the E48 switches reachable', async () => {
   await j1(PHONE, 'j15-phone-list.png');
   await j2(PHONE, 'phone');
   await j5(PHONE);
@@ -755,6 +755,18 @@ test('J15 does J1, J2, J5 and J11 on a phone-width screen (390 × 844): no horiz
   await page.waitForTimeout(300);
   assert.ok((await page.locator('#side').boundingBox()).y < sheet.y - 200, 'the sheet pulls up');
   await context.close();
+  // E48: the switches are on the map, inside the screen and not covered, and a tap works
+  const fx = await openFx('', PHONE);
+  for (const name of ['Countries', 'Provinces', 'Basins', 'Names', 'Flat', 'Globe']) {
+    const b = fx.page.getByRole('button', { name, exact: true }), box = await b.boundingBox();
+    assert.ok(box && box.x >= 0 && box.x + box.width <= PHONE.width && box.height >= 30, `${name} on screen`);
+    assert.equal(await b.evaluate(el => { const r = el.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === el; }), true, `${name} not covered`);
+  }
+  await fx.page.getByRole('button', { name: 'Basins', exact: true }).click();
+  assert.deepEqual(await pressed(fx.page), ['Basins', 'Flat']);
+  assert.ok(await noHorizontalScroll(fx.page));
+  assert.deepEqual(fx.errors, []);
+  await fx.context.close();
 });
 
 // ---- Budget (E36's method) and the live page --------------------------------------------------
