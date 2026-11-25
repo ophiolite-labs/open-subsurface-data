@@ -144,8 +144,13 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
     write_well_grids(out_dir, features)
     print_sizes(out_dir)
-    write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None  # test builds into tmp dirs skip tiling
-    areas.write_tiles(out_dir) if out_dir == paths.CATALOG_DIR else None
+    if out_dir == paths.CATALOG_DIR:   # test builds into tmp dirs skip tiling
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(1) as pool:   # E46: the area tiles beside the longer outline run, not after it
+            area_tiles = pool.submit(areas.write_tiles, out_dir)
+            write_tiles(out_dir)
+            area_tiles.result()
     return {"records": len(records_out), "features": len(features), "collections": len(collections),
             "starters": len(packs), "areas": held}
 
