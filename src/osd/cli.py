@@ -457,7 +457,12 @@ def main(argv: list[str] | None = None) -> int:
     mr.add_argument("--request", required=True, help="the approved takedown issue")
     mr.add_argument("--approved-by", required=True, help="the approving maintainer's GitHub login")
     mr.set_defaults(fn=cmd_mirror_remove)
+    sub.add_parser("script", add_help=False, prefix_chars="\0", help="write the Python file that fetches datasets "
+                   "with osd.get (E49; flags: python -m osd.script --help)").add_argument("args", nargs="*")
     a = ap.parse_args(argv)
+    if a.cmd == "script":
+        from . import script
+        return script.main(a.args)
     return a.fn(a)
 
 
