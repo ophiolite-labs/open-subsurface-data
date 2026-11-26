@@ -180,7 +180,10 @@
   let map = null, mapReady = false;
   if (pmtilesMode) { const protocol = new pmtiles.Protocol(); protocol.add(tiles); maplibregl.addProtocol('pmtiles', protocol.tile); }
   map = new maplibregl.Map({ container: 'map', style: BASEMAP, center: view ? view.center : [6, 56], zoom: view ? view.zoom : 3.3,
-    attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false, maxPitch: 0 });
+    attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false, maxPitch: 0,
+    // E50 (R-S7): five zoom levels of tiles kept for zooming back; no refetch of tiles the host's
+    // max-age=600 marks expired (the files do not change within a visit); names without the fade.
+    maxTileCacheZoomLevels: 5, refreshExpiredTiles: false, fadeDuration: 0 });
   map.touchZoomRotate.disableRotation();
   map.keyboard.disableRotation();
   window.osdMap = map; // for the site test and the console; not an API
@@ -278,14 +281,15 @@
     map.addLayer({ id: 'surveys-line', type: 'line', ...src, filter: LAYER_BASE['surveys-line'], paint: line('#d98a1c') });
     map.addLayer({ id: 'surveys-dash', type: 'line', ...src, filter: LAYER_BASE['surveys-dash'], paint: line('#d98a1c', true) });
     const glyphs = !!map.getStyle().glyphs;
-    map.addLayer({ id: 'wells-cluster', type: 'circle', source: 'wells', filter: ['has', 'point_count'],
+    map.addLayer({ id: 'wells-cluster', type: 'circle', source: 'wells', filter: ['has', 'point_count'], maxzoom: CLUSTER_BELOW_ZOOM,
       paint: { 'circle-color': '#2f9e63', 'circle-opacity': 0.85, 'circle-stroke-color': ['case', HL, NIGHT, '#ffffff'], 'circle-stroke-width': ['case', HL, 3, 1],
         'circle-radius': ['step', ['get', 'point_count'], 10, 50, 14, 500, 19, 5000, 25] } });
-    if (glyphs) map.addLayer({ id: 'wells-count', type: 'symbol', source: 'wells', filter: ['has', 'point_count'],
+    if (glyphs) map.addLayer({ id: 'wells-count', type: 'symbol', source: 'wells', filter: ['has', 'point_count'], maxzoom: CLUSTER_BELOW_ZOOM,
       layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 11, 'text-font': ['Noto Sans Regular'] },
       paint: { 'text-color': '#ffffff' } });
     const WELL_PAINT = { 'circle-color': '#2f9e63', 'circle-radius': ['case', HL, 6, 4], 'circle-stroke-color': ['case', HL, NIGHT, '#ffffff'], 'circle-stroke-width': ['case', HL, 2, 1] };
-    map.addLayer({ id: 'wells', type: 'circle', source: 'wells', filter: ['!', ['has', 'point_count']], paint: WELL_PAINT });
+    map.addLayer({ id: 'wells', type: 'circle', source: 'wells', filter: ['!', ['has', 'point_count']], paint: WELL_PAINT,
+      ...(pmtilesMode ? { maxzoom: CLUSTER_BELOW_ZOOM } : {}) }); // from it the tiles draw the wells
     if (pmtilesMode) map.addLayer({ id: 'wells-tiles', type: 'circle', ...src, filter: WELL, minzoom: CLUSTER_BELOW_ZOOM, paint: WELL_PAINT });
     map.addLayer({ id: 'boxes', type: 'circle', source: 'boxes',
       paint: { 'circle-color': NIGHT, 'circle-radius': ['case', HL, 7, 4.5], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': ['case', HL, 2.5, 1.5] } });

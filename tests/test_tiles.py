@@ -192,8 +192,6 @@ def test_built_archive_has_its_index_at_the_front(name):
 
 
 @pytest.mark.full
-@pytest.mark.xfail(reason="practice 1 not yet in the build: write_tiles passes --no-tile-size-limit; E50's "
-                          "build.py slice (after E46 slice 1) changes the flags", strict=False)
 @pytest.mark.parametrize("name", ARCHIVES)
 def test_built_archive_tiles_are_under_500_kb(name):
     """Practice 1: every tile under 500 KB, thinned where dense."""

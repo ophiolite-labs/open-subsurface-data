@@ -46,8 +46,10 @@
 
   // ---- What came from the site ----------------------------------------------------------------
   const ours = () => performance.getEntriesByType('resource').filter(e => e.name.startsWith(location.origin));
+  // Chrome counts a response's headers as 300 bytes (Resource Timing): a body over the wire gives
+  // transferSize = encodedBodySize + 300; a 304 gives 300 with the cached body's size beside it.
   const how = e => e.transferSize === undefined ? 'unknown' : e.transferSize === 0 ? (e.decodedBodySize > 0 ? 'cache' : 'no body')
-    : e.encodedBodySize === 0 && e.transferSize > 0 ? 'revalidated' : 'network';
+    : e.transferSize < e.encodedBodySize + 300 ? 'revalidated' : 'network';
   function sum(entries) {
     const files = {};
     for (const e of entries) {
