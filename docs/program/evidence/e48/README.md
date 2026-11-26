@@ -1,7 +1,7 @@
 # E48 evidence: outlines, names and the globe on /shop.html
 
 Screenshots by `node tools/shot.mjs docs/program/evidence/e48 e48`, over the local build of the
-real catalogue (237 records; 68 countries, 141 provinces, 145 basins hold a dataset) with the live
+real catalogue (main of 26 Nov; with E51's Licences the switch has a fourth part) with the live
 basemap (OpenFreeMap liberty) and its fonts. Every level reads L0: the build here has no
 verification results.
 
@@ -13,11 +13,11 @@ verification results.
 | `globe-first-view.png` | `#p=globe`, the first view on the globe |
 | `phone-switch.png` | 390 × 844: the kind switch, Names and Flat · Globe on the map, reachable (credits folded under their (i)) |
 
-Bytes from the site (journey test "budget", E36's method, this host):
+Bytes from the site (journey test "budget", E36's method, this host, after OSD-D41 made the build
+write records.json and areas.json compact; areas.json now also holds E51's licences):
 
-- First load with Countries on: 1,043,874 bytes in 22 requests (records.json 649,296; areas.json
-  131,952; outlines.pmtiles 113,651; areas.pmtiles 70,659; shop.js 56,988). **Over the 1 MB line**:
-  see the PR and inbox note e48 #2 (both JSON files are written pretty-printed; compact they are
-  513,518 and 79,634 bytes).
-- Switching to Provinces: 46,423 bytes in 6 requests (area tiles of the same file, read again for
-  the new source); to Basins: 46,423 bytes in 6 requests.
+- First load with Countries on: 991,831 bytes in 22 requests at the first view (records.json
+  523,930; areas.json 181,052; outlines.pmtiles 113,697; areas.pmtiles 93,675; shop.js 58,404),
+  988,092 bytes over the North Sea. Under 1 MB, by 8 KB.
+- Switching to Provinces: 69,436 bytes in 6 requests at the first view, 57,534 bytes in 9 over the
+  North Sea (area tiles of the same file, read again for the new source); to Basins the same.

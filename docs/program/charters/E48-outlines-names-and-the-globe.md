@@ -16,8 +16,8 @@ at open and corrects this paragraph in its PR if they differ.
 
 *Verified at lane open (25 Nov 2026, main b09078f).* As stated, with these differences: each kind
 in `areas.json` also carries `sources` (file, name, url, licence, `credit`, edition), and a
-province carries its `country`; the file is pretty-printed (132 KB on the real build, 80 KB
-compact). `areas.pmtiles` is one file whose every tile holds all three layers (z0–8), so on the
+province carries its `country`; the build wrote it pretty-printed (132 KB on the real build); since
+OSD-D41 it and records.json are compact. `areas.pmtiles` is one file whose every tile holds all three layers (z0–8), so on the
 tile path a kind is a source layer, not a file; the per-kind GeoJSON is written beside it and is the
 path when tiles are absent (the fixture build). Drawn features carry `area_id`, `name`, `n` and an
 integer id. E47 already uses `a=` in the hash for access, so the area is `area=<area_id>`.
