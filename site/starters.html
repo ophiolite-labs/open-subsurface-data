@@ -107,5 +107,6 @@ The next datasets are chosen from these requests.</p>
   if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
 })();
 </script>
+<script>addEventListener('load', () => { let t = 0, n = 0, o = new PerformanceObserver(() => t = 0); o.observe({ type: 'resource' }); const i = setInterval(() => { if (++t > 3 || ++n > 30) { clearInterval(i); o.disconnect(); document.body.append(Object.assign(document.createElement('script'), { src: 'foot.js' })); } }, 500); }) /* E54: the foot line, once the page is quiet */</script>
 </body>
 </html>
