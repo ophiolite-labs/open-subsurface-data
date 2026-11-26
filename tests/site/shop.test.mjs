@@ -521,6 +521,8 @@ test('J9 turns Names on and off: one name per drawn area at its label point, and
     const names = await rendered(page, 'areas-name');
     assert.deepEqual(names.sort(), ids, `${k}: one name per drawn area (${names.length} for ${ids.length})`);
     assert.ok((await rendered(page, 'boxes-name')).length > 0, 'the dataset dots show their names');
+    const symbols = await page.evaluate(() => window.osdMap.getStyle().layers.filter(l => l.type === 'symbol' && l.source !== 'openmaptiles').map(l => l.id));
+    assert.equal(symbols.at(-1), 'areas-name', 'area names are the top symbol layer: placed first, they win collisions over dataset names');
     assert.match(await page.evaluate(() => location.hash), /n=1/);
     assert.equal(await page.evaluate(() => window.osdMap._fadeDuration), 0, 'fadeDuration 0');
     await page.getByRole('button', { name: 'Names', exact: true }).click(); await idle(page);
