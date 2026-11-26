@@ -2,10 +2,11 @@
 
 import json
 import os
+import re
 import subprocess
 from datetime import date
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -132,7 +133,19 @@ def test_the_committed_entries_load_and_every_link_answers_in_the_built_site(ful
         rel = path.lstrip("/")
         target = full_build / rel[len("data/"):] if rel.startswith("data/") else site / rel
         assert target.is_file(), f"{e['link']} ({e['title']}) does not answer: no {target}"
-        if u.fragment and target.suffix == ".html":
+        if u.fragment and rel == "shop.html":   # the shop's address (site/shop.js readHash): what it names exists
+            h = parse_qs(u.fragment)
+            kinds = json.loads((full_build / "areas.json").read_text())["kinds"]
+            ids = {r["id"] for r in json.loads((full_build / "records.json").read_text())["records"]}
+            kind = h.get("o", ["country"])[0]
+            assert kind in kinds, f"{e['link']}: no kind {kind}"
+            for area in h.get("area", []):
+                assert area in {a["area_id"] for a in kinds[kind]["areas"]}, f"{e['link']}: no {kind} {area} holds a dataset"
+            for rid in [i for k in ("pick", "sel") for v in h.get(k, []) for i in v.split(",")]:
+                assert rid in ids, f"{e['link']}: no dataset {rid}"
+            for m in h.get("map", []):
+                assert re.fullmatch(r"[0-9.]+/-?[0-9.]+/-?[0-9.]+", m), f"{e['link']}: map={m}"
+        elif u.fragment and target.suffix == ".html":
             assert f'id="{u.fragment}"' in target.read_text(), f"{e['link']}: no id {u.fragment} on {rel}"
     assert json.loads((full_build / "changes.json").read_text()) == {"changes": entries}
 
