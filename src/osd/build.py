@@ -135,7 +135,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     (out_dir / "records.json").write_text(json.dumps(
         {"tool_version": __version__, "count": len(records_out), "catalog": catalog, "records": records_out,
          "reasons": reasons},
-        indent=2) + "\n")
+        separators=(",", ":")) + "\n")   # compact (OSD-D41): the page's first load reads it whole
     (out_dir / "outlines.geojson").write_text(json.dumps(
         {"type": "FeatureCollection", "features": features}) + "\n")
     write_starters(out_dir, starters_dir, packs)

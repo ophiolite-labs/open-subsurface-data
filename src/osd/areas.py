@@ -496,13 +496,9 @@ def index_and_drawn(areas: AreaSet, placed: dict[str, dict[str, list[str]]]) -> 
     return {"version": VERSION, "kinds": kinds_out}, drawn
 
 
-NUMBERS = re.compile(r"\[\s+(-?[0-9][-0-9.e+,\s]*?)\s+\]")
-
-
 def dumps_index(doc: dict) -> str:
-    """areas.json as written: two-space indent, each label and bbox on one line."""
-    text = json.dumps(doc, indent=2, ensure_ascii=False)
-    return NUMBERS.sub(lambda m: "[" + ", ".join(x.strip() for x in m.group(1).split(",")) + "]", text) + "\n"
+    """areas.json as written: compact, one line (OSD-D41: the page's first load reads it whole)."""
+    return json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
 COUNT_RULE = "e46-count-1"   # change when the count changes: every cached result is then stale
