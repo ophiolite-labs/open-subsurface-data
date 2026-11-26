@@ -11,6 +11,9 @@
 - Network only in `osd verify`, the `verify` workflow, the one page `osd new <url>` reads for a title (`--title` skips it), `osd get <manifest>`, which is intentional retrieval by the person running it, and `osd.get(<id>)`, the same retrieval called from Python, which reads only the catalogue's `records.json`, the chosen dataset's `collection.json` and its files, never at import (E49), and `osd mirror put`, which copies eligible origins into the mirror (run by the verify workflow on main, or by a maintainer), and `osd mirror deposit` and `osd mirror put-derived`, which upload files already on the machine to the mirror store and reach nothing else (E41), and `osd areas read <cc>`, which reads the named regulators' public licence layers into `areas/licence/` (run by the `areas` workflow, which also pushes the branch `areas-read`, opens its pull request and comments on a country's standing issue, never main; or by a maintainer) (E51). Tests inject a fetcher or transport.
 - Lanes claim paths in `docs/program/CLAIMS.md` before they start; two open lanes never share a
   path. Branch names are `e<nn>-<slug>`; one squash merge per lane.
+- A lane that changes what a person can do adds one file `changes/<YYYY-MM-DD>-<slug>.yaml` (`date`, `title`:
+  one plain sentence of what they can now do, `link`: where on the site to see it, `pr`) in its pull
+  request; `changes/**` is append-only and a new file there needs no row in CLAIMS.
 - Program state lives in `docs/program/PROGRAM.md` (queue), `docs/program/charters/` (what each
   epic must achieve) and `docs/program/DECISIONS.md` (open questions for the owner).
 - Keep the conversation small: read the lines you need, write results to files, brief by reference.

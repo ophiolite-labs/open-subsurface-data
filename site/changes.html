@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What changed · Open Subsurface Data</title>
+<meta name="description" content="What changed on Open Subsurface Data, newest first: what you can now do and where to click to see it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500&display=swap">
+<style>
+  /* The shop's house look (site/shop.css, R-S9): light paper, Merriweather titles, Roboto text, ink and green. */
+  :root { --night: #101824; --green: #2f9e63; --green-dark: #23784b; --fg: #1b2330; --muted: #5d6877; --line: #e3e6ea; --bg: #ffffff;
+    --title: Merriweather, Georgia, "Times New Roman", serif; --text: Roboto, system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 var(--text); }
+  a { color: #1d5fa8; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; }
+  h1 { font: 400 28px/1.25 var(--title); margin: 0 0 10px; }
+  .muted { color: var(--muted); }
+  .back { margin: 0 0 24px; font-size: 14px; }
+  #changes h2 { font: 700 15px/1.4 var(--title); color: var(--night); margin: 32px 0 4px; }
+  #changes ul { list-style: none; margin: 0; padding: 0; }
+  #changes li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  #changes li a.open { margin-left: 6px; color: var(--green-dark); font-weight: 500; white-space: nowrap; }
+  #changes li a.pr { margin-left: 8px; font-size: 12px; color: var(--muted); text-decoration: none; white-space: nowrap; }
+  #changes li a.pr:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<main>
+<p class="back"><a href="./">← Back to the map</a></p>
+<h1>What changed</h1>
+<p class="muted">The site is rebuilt and published each time a change is merged; there are no
+versions to wait for. Newest first: what you can now do, and where to click to see it. The foot of
+each page says when the site you are reading was built.</p>
+<div id="changes"><p class="muted">Loading…</p></div>
+</main>
+<script>
+(async () => {
+  const el = document.getElementById('changes');
+  const MONTHS = 'JanFebMarAprMayJunJulAugSepOctNovDec';
+  const day = s => { const [y, m, d] = s.split('-'); return `${+d} ${MONTHS.substr(m * 3 - 3, 3)} ${y}`; };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  try {
+    const r = await fetch('data/changes.json');
+    if (!r.ok) throw new Error(r.status);
+    const { changes } = await r.json(), days = new Map();
+    for (const c of changes) days.set(c.date, [...(days.get(c.date) || []), c]);
+    el.innerHTML = changes.length ? [...days].map(([d, cs]) => `<section><h2><time datetime="${esc(d)}">${day(d)}</time></h2><ul>${cs.map(c =>
+      `<li>${esc(c.title)} <a class="open" href="${esc(c.link)}">Open it</a><a class="pr" href="https://github.com/ophiolite-labs/open-subsurface-data/pull/${+c.pr}" title="The pull request">#${+c.pr}</a></li>`).join('')}</ul></section>`).join('')
+      : '<p class="muted">Nothing yet.</p>';
+  } catch (e) {
+    el.innerHTML = '<p class="muted">The list of changes could not be read just now.</p>';
+  }
+})();
+</script>
+<script>addEventListener('load', () => { let t = 0, n = 0, o = new PerformanceObserver(() => t = 0); o.observe({ type: 'resource' }); const i = setInterval(() => { if (++t > 3 || ++n > 30) { clearInterval(i); o.disconnect(); document.body.append(Object.assign(document.createElement('script'), { src: 'foot.js' })); } }, 500); }) /* E54: the foot line, once the page is quiet */</script>
+</body>
+</html>

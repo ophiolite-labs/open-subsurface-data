@@ -1,0 +1,8 @@
+Open Subsurface Data: worth opening today (2026-11-26)
+
+- Find datasets in the shop, with a list that follows the map.
+  https://opensubsurfacedata.org/shop.html
+- Read a dataset in Python with one line.
+  https://opensubsurfacedata.org/how.html#card-python
+
+The live site should say at its foot: Built 26 Nov 2026 from fccb4d0

@@ -1,0 +1,4 @@
+date: 2026-11-25
+title: 'Fetch a dataset from Python with one line, osd.get("opm/norne"), every file checked against its checksum.'
+link: "/how.html#card-python"
+pr: 90
