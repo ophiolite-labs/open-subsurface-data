@@ -42,8 +42,18 @@ server's log is what crossed the network:
 The worker was in control and answered every range it had kept; the 14 were tiles of a view the first
 visit never showed, because the address had drifted. With the address held, a return visit of the
 note's address takes no body of our data files from the server (visit 3; in the published-page runs below the
-31 kB left are the HTML, CSS and the two scripts, which the worker never touches). The 11-minute wait was not needed for the cause: the worker checks a file
-with one HEAD per visit and does not depend on max-age.
+31 kB left are the HTML, CSS and the two scripts, which the worker never touches). Those three visits were back to back.
+
+**Still open: the same with 11 minutes between the visits.** With the visits 11 minutes apart and the
+tab on about:blank in between, visit 3 (the note's address) took 24 tile ranges and records.json,
+areas.json and files.txt from the server again: the worker answered nothing it had kept. The worker
+checks each file with one HEAD per visit and does not depend on max-age, so the time itself should not
+matter. Suspected, not yet shown: Playwright's WebKit contexts keep their storage in memory (no
+profile on disk), and WebKit may drop the Cache Storage of an origin with no page open. Real Safari
+keeps it on disk. `return-visit.mjs` reads what the caches hold before and after the wait. The run
+that would tell was stopped when the host ran out of memory (26 Nov), and it waits until local browsers
+are allowed again. It is then run with an on-disk WebKit profile in /tmp/osd-e50-<name>, removed
+afterwards.
 
 ## Rulings 9 and 12: zoom back, 2 requests in Safari
 

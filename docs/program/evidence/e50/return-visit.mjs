@@ -31,9 +31,17 @@ try {
     console.log(`${label} (${hash}): usable ${r.idleMs} ms, view z${r.view.zoom}, controlled ${controlled}; ` +
       `from the server: ${JSON.stringify(by)}; zoom back ${JSON.stringify(r.zoomOutBack.back.files)}`);
   };
+  // What the worker holds, read from a page of the site that is not the shop (shop.css).
+  const probe = async label => { await page.goto(server.url + 'shop.css');
+    const s = await page.evaluate(async () => { const keys = await caches.keys(), reg = await navigator.serviceWorker.getRegistration();
+      let entries = 0; for (const k of keys) entries += (await (await caches.open(k)).keys()).length;
+      return { caches: keys.length, entries, names: keys.map(k => k.split('|').slice(1).join('|')), worker: reg ? (reg.active ? reg.active.state : 'no active') : 'none' }; });
+    console.log(`${label}: ${s.caches} caches, ${s.entries} entries, worker ${s.worker}; ${s.names.join(', ')}`); };
   await visit('visit 1, first', 'map=5.00/57.0000/3.0000');
+  await probe('after visit 1');
   await page.goto('about:blank');
   await new Promise(ok => setTimeout(ok, WAIT * 60e3));
+  await probe(`after ${WAIT} min`);
   await visit(`visit 2, +${WAIT} min, the owner's drifted address`, 'map=4.00/57.0000/3.0000');
   await visit('visit 3, the note\'s address', 'map=5.00/57.0000/3.0000');
 } finally { await browser.close(); server.close(); }
