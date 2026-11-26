@@ -44,5 +44,7 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: site }
+      # deploy-pages asked for the artifact 0.3 s after its upload and was told "0 artifacts" on 4 of 6 runs (25-26 Nov)
+      - run: sleep 30
       - id: deploy
         uses: actions/deploy-pages@v4
