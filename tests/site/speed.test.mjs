@@ -103,6 +103,25 @@ test('measuring mode on a phone: the same ground as on a laptop, the box clear o
   await context.close();
 });
 
+test('measuring mode: the address stays the one opened, so a reload measures the same ground (ruling 13)', async () => {
+  // 26 Nov 2026: the page wrote the script's view into the hash (the phone's ground fit included), so
+  // every reload started one zoom level further out (Safari: address z5, then z4).
+  const { context, page, errors } = await open(NORTH_SEA, { query: '?measure=1', measure: true, phone: true });
+  const first = await page.evaluate(() => window.osdMeasure.done);
+  await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(() => location.hash), '#' + NORTH_SEA);
+  await page.reload();
+  await shopReady(page);
+  const again = await page.evaluate(() => window.osdMeasure.done);
+  assert.deepEqual(again.view, first.view, 'the reload measured the same view');
+  // After the script the page is the shop again: a move writes the hash as it always did.
+  await page.evaluate(() => new Promise(ok => { window.osdMap.once('idle', ok); window.osdMap.jumpTo({ zoom: 6 }); }));
+  await page.waitForTimeout(100);
+  assert.match(await page.evaluate(() => location.hash), /map=6\.00\//);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
 test('measuring mode: the normal page asks for no measure.js', async () => {
   const { context, requested } = await open(NORTH_SEA);
   assert.ok(!requested.some(u => u.includes('measure.js')));
@@ -291,6 +310,19 @@ test('browser cache: a return visit takes no body of our data files from the ser
   const kept = await v.page.evaluate(async () => (await Promise.all((await caches.keys()).map(async k => (await (await caches.open(k)).keys()).map(r => r.url)))).flat());
   assert.ok(kept.length > 0 && kept.every(u => /\/data\/[^/]+\.(json|txt|pmtiles)(\?range=\d+-\d+)?$/.test(u)), 'only data files kept: never HTML, JS or CSS');
   assert.deepEqual(v.errors, []);
+  await v.close();
+});
+
+test('browser cache: build.json and changes.json are never answered by the worker (E54, ruling 14)', async () => {
+  // E54's foot line (the build's date and commit) and its list of changes: from the worker's cache they
+  // would show the site one build behind. Each is asked twice; both reach the host, neither is kept.
+  const asked = [];
+  const v = await twoVisits({ routes: c => c.route(/\/data\/(build|changes)\.json$/, r => { asked.push(`${r.request().method()} ${new URL(r.request().url()).pathname}`);
+    r.fulfill({ status: 200, contentType: 'application/json', headers: { etag: 'W/"6b0713bf-2"', 'last-modified': new Date().toUTCString() }, body: '{}' }); }) });
+  await v.page.evaluate(async () => { for (let i = 0; i < 2; i++) for (const f of ['build', 'changes']) await (await fetch(`data/${f}.json`)).text(); });
+  assert.deepEqual(asked.sort(), ['GET /data/build.json', 'GET /data/build.json', 'GET /data/changes.json', 'GET /data/changes.json']);
+  const kept = await v.page.evaluate(async () => (await caches.keys()).join(' '));
+  assert.doesNotMatch(kept, /build\.json|changes\.json/);
   await v.close();
 });
 

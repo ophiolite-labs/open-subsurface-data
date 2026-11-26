@@ -18,7 +18,8 @@
    file check, the worker asks for it (HEAD); when it is there, the worker deletes its caches and
    unregisters itself, and a new one does not install. */
 const PREFIX = 'osd-data|';
-const OURS = /\/data\/[^/]+\.(json|txt|pmtiles)$/;
+// build.json and changes.json (E54: the build date and what changed) always from the network, never a build behind.
+const OURS = /\/data\/(?!(?:build|changes)\.json$)[^/]+\.(json|txt|pmtiles)$/;
 const OFF = new URL('sw-off.txt', self.registration.scope).href;
 const CHECK_MS = 60e3, SAME_S = 60;
 

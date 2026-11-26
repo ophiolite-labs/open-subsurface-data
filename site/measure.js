@@ -22,6 +22,12 @@
     screen: { w: innerWidth, h: innerHeight, dpr: devicePixelRatio }, idleMs: null, listMs: null,
     late: false, view: null, refreshHz: null, atIdle: null, firstLoad: null, script: null, zoomOutBack: null, site: null, layers: null, done: false };
   let ready, map = null;
+  // The address stays the one opened: shop.js writes the view into the hash at every move, so without
+  // this a reload (or a reopened tab) would measure the script's last view, the ground fit's zoom out
+  // included (one level less on a 450 px map at every reload, ruling 13 of 26 Nov). Held from the
+  // load to the script's end; "Run again" holds the address it starts from.
+  let address = location.href, holding = true;
+  const hold = () => { if (holding && location.href !== address) history.replaceState(history.state, '', address); };
   const done = new Promise(ok => { ready = ok; });
   window.osdMeasure = { result: R, done, run: () => runScript() };
 
@@ -30,6 +36,7 @@
   const attach = m => {
     if (map) return;
     map = m;
+    m.on('moveend', () => setTimeout(hold, 0)); // after shop.js's own moveend has written the hash
     if (m.loaded() && m.areTilesLoaded()) { R.late = true; R.idleMs = Math.round(performance.now()); start(); return; }
     // The same ground as a map 900 x 600 (a laptop's, or larger): never zoomed in, only out on a smaller map.
     const c = m.getCanvas(), w = c.clientWidth, h = c.clientHeight, z = m.getZoom();
@@ -117,6 +124,7 @@
   async function runScript() {
     if (running || !map) return R;
     running = true;
+    if (!holding) { address = location.href; holding = true; }
     const view = { center: map.getCenter(), zoom: map.getZoom() };
     await settled();
     R.script = await frames(dragAndZoom);
@@ -127,6 +135,7 @@
     R.layers = map.getStyle().layers.map(l => ({ id: l.id, type: l.type, source: l.source || null,
       minzoom: l.minzoom ?? null, maxzoom: l.maxzoom ?? null }));
     R.done = true;
+    hold(); holding = false;
     running = false;
     show();
     ready(R);
@@ -135,7 +144,7 @@
   // The display's own rate: the median interval between frames at rest (the map idle).
   function refresh(ms) {
     return new Promise(ok => { const ts = [], t0 = performance.now();
-      const tick = t => { ts.push(t); if (t - t0 < ms) requestAnimationFrame(tick); else {
+      const tick = t => { ts.push(t); if (t - t0 < ms || (ts.length < 6 && t - t0 < 10 * ms)) requestAnimationFrame(tick); else { // at least 5 intervals: a slow first frame (a busy machine) can outlast ms alone
         const d = ts.slice(1).map((t, i) => t - ts[i]).sort((a, b) => a - b);
         ok(d.length ? Math.round(1000 / d[d.length >> 1]) : null); } };
       requestAnimationFrame(tick); });
