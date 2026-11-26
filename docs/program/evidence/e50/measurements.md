@@ -297,3 +297,69 @@ The after numbers (worst of five clean first visits, plus one visit in a used pr
 the published page once the cuts are merged. The owner capped the Chrome windows opened on the
 MacBook at six a day, in one batch: the six of 26 Nov were the next-day return visit and the five
 runs above, so the after batch runs on a later day.
+
+### Measurement 4, the globe with every well: the method, and the controller's numbers
+
+What is measured: the measuring mode's line 2 (pictures a second over the scripted drag and zoom,
+beside the display's own rate) at two views, on the laptop and on the phone:
+
+    https://opensubsurfacedata.org/shop.html?measure=1#p=globe
+    https://opensubsurfacedata.org/shop.html?measure=1#map=6.00/47.5000/-100.5000&p=globe
+
+On the laptop both ride on one Chrome window opening (`drive-chrome.mjs --then URL,URL`, after the
+used-profile visit of ruling 1): the owner caps the windows opened on the MacBook at six a day, in
+one batch. On a phone the measuring mode zooms out to the laptop's ground (z6 is z4.8 on a 393 px
+phone); the view it measured is under More.
+
+The controller's numbers (headless Chromium, SwiftShader: the GPU is the CPU, so these numbers say
+how the globe compares with the flat map, not what a laptop does; `speed.test.mjs` "measurement 4"):
+
+| view | width | projection | usable | drag+zoom | longest frame | at first idle |
+|---|---|---|---|---|---|---|
+| first view (z3.3) | laptop | globe | 1966 ms | 11.3 fps | 200 ms | 30 req, 1.08 MB |
+| first view (z3.3) | laptop | flat | 1364 ms | 22.2 fps | 83 ms | 23 req, 1.01 MB |
+| first view (z2.1) | phone | globe | 2114 ms | 11.8 fps | 117 ms | 24 req, 1.09 MB |
+| first view (z2.1) | phone | flat | 1199 ms | 21.0 fps | 83 ms | 21 req, 1.05 MB |
+| North Dakota z6 | laptop | globe | 1860 ms | 36.1 fps | 83 ms | 23 req, 0.90 MB |
+| North Dakota z6 | laptop | flat | 1042 ms | 45.8 fps | 50 ms | 23 req, 0.90 MB |
+| North Dakota z4.8 | phone | globe | 1467 ms | 46.0 fps | 100 ms | 15 req, 0.87 MB |
+| North Dakota z4.8 | phone | flat | 1072 ms | 43.5 fps | 67 ms | 15 req, 0.87 MB |
+
+On the controller, the globe halves the pictures a second at the first view (the whole earth with
+every well's cluster) and costs about a fifth at zoom 6. The bytes are the local build's (records
+not yet compact). The laptop's and the phone's own numbers are owed: the laptop in the next Mac
+batch, the phone from the owner. If the phone misses a usable rate, the charter's choice follows
+(the lighter globe or the globe off by default on small screens), stated with its reason.
+
+### The browser cache (OSD-D40): `site/sw.js`
+
+What it does: a service worker, registered by `shop.js` after the first idle, for the files directly
+under `data/` that end in `.json`, `.txt` or `.pmtiles`, and nothing else. It never touches HTML, JS
+or CSS.
+- **Tile archives:** byte ranges come from the cache when the file on the host is the one the cache
+  holds, otherwise from the network, and are kept.
+- **JSON and text:** these come from the cache at once and are refreshed in the background when the
+  host's file has changed (stale-while-revalidate).
+- **How it tells "the same file":** one `HEAD` per file per visit, with no body. It reads the size
+  and modification time from the host's `W/"mtime-size"` ETag, and allows a minute of difference
+  between Pages' servers.
+- **Its own network requests** carry no `If-Range`, so the stale-ETag 200 of measurement 2 can't
+  happen through it.
+- **On a first visit** the page isn't under the worker yet. Once it is, the page reads its first
+  load's files and ranges once more from the browser's HTTP cache (`cache: 'force-cache'`, no
+  network), so the worker holds them for the return visit.
+
+The switch: publishing `site/sw-off.txt` switches it off for every visitor. With each visit the
+worker asks for that file (`HEAD`); when it is there, the worker deletes its caches, unregisters,
+and gives nothing from a cache.
+
+Tested in `speed.test.mjs`, on the controller (the server's own log of bodies sent):
+
+| | |
+|---|---|
+| a return visit | **0 bodies of our data files** from the server (48 on the first visit); 7 `HEAD`; the map from the tiles; only `data/` files kept |
+| a file changed on the host | fetched once by the worker on the return visit (`HEAD`, `GET`), for the next visit |
+| `sw-off.txt` published | caches deleted, the worker unregistered; the next visit takes every data file from the server and keeps nothing |
+
+The return visit in Chrome on the laptop (the acceptance) is in the next Mac batch. Safari is reported
+by the owner.
