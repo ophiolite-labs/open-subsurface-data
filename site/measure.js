@@ -144,7 +144,7 @@
   // The display's own rate: the median interval between frames at rest (the map idle).
   function refresh(ms) {
     return new Promise(ok => { const ts = [], t0 = performance.now();
-      const tick = t => { ts.push(t); if (t - t0 < ms) requestAnimationFrame(tick); else {
+      const tick = t => { ts.push(t); if (t - t0 < ms || (ts.length < 6 && t - t0 < 10 * ms)) requestAnimationFrame(tick); else { // at least 5 intervals: a slow first frame (a busy machine) can outlast ms alone
         const d = ts.slice(1).map((t, i) => t - ts[i]).sort((a, b) => a - b);
         ok(d.length ? Math.round(1000 / d[d.length >> 1]) : null); } };
       requestAnimationFrame(tick); });

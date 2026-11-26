@@ -313,6 +313,19 @@ test('browser cache: a return visit takes no body of our data files from the ser
   await v.close();
 });
 
+test('browser cache: build.json and changes.json are never answered by the worker (E54, ruling 14)', async () => {
+  // E54's foot line (the build's date and commit) and its list of changes: from the worker's cache they
+  // would show the site one build behind. Each is asked twice; both reach the host, neither is kept.
+  const asked = [];
+  const v = await twoVisits({ routes: c => c.route(/\/data\/(build|changes)\.json$/, r => { asked.push(`${r.request().method()} ${new URL(r.request().url()).pathname}`);
+    r.fulfill({ status: 200, contentType: 'application/json', headers: { etag: 'W/"6b0713bf-2"', 'last-modified': new Date().toUTCString() }, body: '{}' }); }) });
+  await v.page.evaluate(async () => { for (let i = 0; i < 2; i++) for (const f of ['build', 'changes']) await (await fetch(`data/${f}.json`)).text(); });
+  assert.deepEqual(asked.sort(), ['GET /data/build.json', 'GET /data/build.json', 'GET /data/changes.json', 'GET /data/changes.json']);
+  const kept = await v.page.evaluate(async () => (await caches.keys()).join(' '));
+  assert.doesNotMatch(kept, /build\.json|changes\.json/);
+  await v.close();
+});
+
 test('browser cache: a file changed on the host is fetched again by the worker on the return visit', async () => {
   // records.json is another file on the second visit: the host gives it another ETag (time and size).
   let visit = 1;
