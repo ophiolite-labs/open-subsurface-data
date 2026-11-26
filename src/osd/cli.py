@@ -213,6 +213,24 @@ def status_lines(vdir: Path = paths.VERIFICATION_DIR, now: datetime | None = Non
             + [f"{lv:{w}} {rest} {kinds:{k}} {why}".rstrip() for lv, rest, kinds, why in rows])
 
 
+def cmd_changes(a: argparse.Namespace) -> int:
+    """The daily note (E54): from the committed entries only; the supervisor places it, nothing is sent."""
+    from . import changes
+
+    try:
+        date.fromisoformat(a.since)
+    except ValueError:
+        print(f"--since {a.since!r} is not YYYY-MM-DD", file=sys.stderr)
+        return 2
+    try:
+        entries = changes.load(a.dir)
+    except changes.ChangeError as e:
+        print(e, file=sys.stderr)
+        return 1
+    print(changes.note(entries, a.since, a.top, build=changes.stamp()), end="")
+    return 0
+
+
 def cmd_status(_: argparse.Namespace) -> int:
     print("\n".join(status_lines()))
     return 0
@@ -442,6 +460,11 @@ def main(argv: list[str] | None = None) -> int:
     par.add_argument("--summary", metavar="DIR", help="write <cc>.json per country, pr-title.txt, pr-body.md "
                      "and issue-<cc>.md for each refused read (the areas workflow)")
     par.set_defaults(fn=cmd_areas_read)
+    pch = sub.add_parser("changes", help="the daily note: what changed on the site since a date, from changes/ (E54)")
+    pch.add_argument("--since", required=True, help="YYYY-MM-DD: entries of this day and later")
+    pch.add_argument("--top", type=int, default=3, help="at most this many, the newest, one per pull request (3)")
+    pch.add_argument("--dir", type=Path, default=None, help=argparse.SUPPRESS)
+    pch.set_defaults(fn=cmd_changes)
     sub.add_parser("status", help="one line per record").set_defaults(fn=cmd_status)
     pn = sub.add_parser("new", help="scaffold records/<id>.yaml from a dataset page (reads its title)")
     pn.add_argument("url")

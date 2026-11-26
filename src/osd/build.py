@@ -47,7 +47,7 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
-from . import __version__, areas, mirror, paths, stac, starters
+from . import __version__, areas, changes, mirror, paths, stac, starters
 from .reasons import reason
 from .records import load_outline, load_records
 from .verify import is_stale
@@ -144,6 +144,7 @@ def build(out_dir: Path = paths.CATALOG_DIR, vdir: Path = paths.VERIFICATION_DIR
     collections = stac.write_catalog(out_dir, records_out, vdir, mirror_index=index)
     (out_dir / "collections.json").write_text(json.dumps({"collections": collections}, indent=2) + "\n")
     write_well_grids(out_dir, features)
+    changes.write(out_dir)   # E54: changes.json from changes/, build.json the commit and its date (site/foot.js)
     print_sizes(out_dir)
     if out_dir == paths.CATALOG_DIR:   # test builds into tmp dirs skip tiling
         from concurrent.futures import ThreadPoolExecutor

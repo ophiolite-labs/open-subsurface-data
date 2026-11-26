@@ -1,0 +1,22 @@
+{
+ "changes": [
+  {
+   "date": "2026-11-26",
+   "title": "Find datasets in the shop, with a list that follows the map.",
+   "link": "/shop.html",
+   "pr": 91
+  },
+  {
+   "date": "2026-11-25",
+   "title": "Read a dataset in Python with one line.",
+   "link": "/how.html#card-python",
+   "pr": 90
+  },
+  {
+   "date": "2026-11-24",
+   "title": "Open the status page to see every dataset's level and why.",
+   "link": "/status.html",
+   "pr": 80
+  }
+ ]
+}
