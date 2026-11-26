@@ -86,3 +86,27 @@ hold a dataset would make the read depend on the catalogue; that is a decision f
 | current filter (`in`) | `test_boem_renewable_lease_is_not_read` |
 | 3 guards | `test_boem_refused_reads_leave_the_file` (no block on the row; served WGS84 while NAD83 is named), `test_config_refuses_a_projected_wkid` |
 | 5, 8 real file, sizes | `test_real_us_file_under_5_mb_and_valid` (also: all licence files under 10 MB) |
+
+## J13: Licences on /shop.html, and the licences out of the first load (26 Nov 2026)
+
+**The switch.** The kinds are those with an index file in `files.txt`; Licences is the fourth part when
+`areas-licence.json` exists (none without a licence file: E48's test of three parts stands). A click on a
+licence filters the list to its `ids`, as for basins. While Licences are drawn the row names the blocks of the
+dataset's licences (`records[].blocks`, at most four and "+N"), else "in N licences"; the names hide when
+another kind is drawn. The attribution, per licence source whose areas are drawn: "Licences: <regulator>,
+as of <retrieved>." then the credit line word for word; <regulator> is the abbreviation in brackets in
+`source.name` (Sodir, BOEM, NSTA). Never "read" (supervisor, answer 2).
+
+**The first load.** The build writes, beside `areas.json` (unchanged, area/1 `#/$defs/index`), one file a
+kind, `areas-<kind>.json` = `{version, kind, sources, areas}`, the kind's entry of `areas.json` as it is
+(`osd.areas.kind_index`; test: equal to `areas.json`'s entry, one file a kind). The page reads
+`areas-country.json` (it places records without a box) and the drawn kind's at the first load, another
+kind's when it is chosen; it no longer reads `areas.json`. No schema change: a file is added, the contract
+file keeps its shape and content.
+
+| Acceptance | Test (`tests/site/shop.test.mjs` unless named) |
+|---|---|
+| 6 the switch, the click, the row's blocks, the attribution with "as of" | `J13 switches to Licences: ...` (fixture build with `licence/xa.geojson`) |
+| 6 no Licences part without licence data | `J8 switches Countries / Provinces / Basins: ...` (three parts) |
+| the first load holds no licence index; bytes before and after | `budget: the first load ...` (real catalogue); numbers in the PR |
+| the per-kind files | `tests/test_areas_read.py::test_each_kind_has_its_own_index_file_equal_to_areas_json` |

@@ -496,6 +496,13 @@ def index_and_drawn(areas: AreaSet, placed: dict[str, dict[str, list[str]]]) -> 
     return {"version": VERSION, "kinds": kinds_out}, drawn
 
 
+def kind_index(doc: dict, kind: str) -> dict:
+    """areas-<kind>.json: one kind of areas.json, {version, kind, sources, areas}, the entry as areas.json
+    holds it. The shop's first load reads the countries' only, and a kind's when it is chosen (E51 J13:
+    the licences, most of areas.json, stay out of the first load). areas.json is unchanged."""
+    return {"version": doc["version"], "kind": kind, **doc["kinds"][kind]}
+
+
 def dumps_index(doc: dict) -> str:
     """areas.json as written: compact, one line (OSD-D41: the page's first load reads it whole)."""
     return json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n"
@@ -528,7 +535,7 @@ def write(out_dir: Path, records_out: list[dict], records: dict[str, dict], outl
     import tempfile
 
     areas = AreaSet.load(areas_dir)
-    for old in out_dir.glob("areas-*.geojson"):
+    for old in [*out_dir.glob("areas-*.geojson"), *out_dir.glob("areas-*.json")]:
         old.unlink()
     if areas.files:
         keys, outlines = {}, {}
@@ -564,6 +571,8 @@ def write(out_dir: Path, records_out: list[dict], records: dict[str, dict], outl
         placed = {rid: {k: [] for k in CORE} for rid in records}
     doc, drawn = index_and_drawn(areas, placed)
     (out_dir / "areas.json").write_text(dumps_index(doc))
+    for k, v in doc["kinds"].items():   # J13: the page reads one kind's index when that kind is drawn
+        (out_dir / f"areas-{k}.json").write_text(dumps_index(kind_index(doc, k)))
     for k, fc in drawn.items():
         (out_dir / f"areas-{k}.geojson").write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
     for k, v in doc["kinds"].items():

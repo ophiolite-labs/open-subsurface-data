@@ -244,6 +244,14 @@ def test_licence_holding_a_well_is_written_and_the_other_not(built_licences):
     assert [f["properties"]["area_id"] for f in drawn["features"]] == ["XA:P1"]
 
 
+def test_each_kind_has_its_own_index_file_equal_to_areas_json(built_licences):
+    index = json.loads((built_licences / "areas.json").read_text())
+    for k, entry in index["kinds"].items():   # J13: the shop's first load reads areas-country.json only
+        got = json.loads((built_licences / f"areas-{k}.json").read_text())
+        assert got == {"version": "areas/1", "kind": k, **entry}
+    assert sorted(p.name for p in built_licences.glob("areas-*.json")) == sorted(f"areas-{k}.json" for k in index["kinds"])
+
+
 def test_record_blocks_are_its_licences_blocks(built_licences):
     recs = {r["id"]: r for r in json.loads((built_licences / "records.json").read_text())["records"]}
     assert recs["fixture/register"]["areas"]["licence"] == ["XA:P1"]

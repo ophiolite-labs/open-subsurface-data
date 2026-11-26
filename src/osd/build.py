@@ -30,6 +30,8 @@ Outputs (build/catalog/):
   areas.json      the areas that hold at least one dataset, per kind (E46, area/1 #/$defs/index); with
                    any area file committed, every record carries `areas` {kind: [area_id]} (osd.areas);
                    a record in 1 to 25 licences also carries `blocks`, their block names (E51)
+  areas-<kind>.json one kind of areas.json, {version, kind, sources, areas} (osd.areas.kind_index): the
+                   shop reads the countries' at its first load and another kind's when it is chosen (E51 J13)
   areas-<kind>.geojson the geometry of those areas only (area/1 #/$defs/drawn); areas.pmtiles the same,
                    one layer per kind, z0-8, when tippecanoe is installed
   starters/       each published pack document and its fidelity record, byte for byte (the pack

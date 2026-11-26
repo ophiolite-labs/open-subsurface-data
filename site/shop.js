@@ -16,10 +16,14 @@
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   // ---- Data ------------------------------------------------------------------------------------
-  // E50: records.json and areas.json are asked for at once, beside files.txt and the tile headers,
-  // not one after the other (shop.html preloads them while maplibre-gl.js downloads).
+  // E50: records.json and the countries' area index are asked for at once, beside files.txt and the tile
+  // headers, not one after the other (shop.html preloads them while maplibre-gl.js downloads). E51 J13:
+  // the index of the kind the hash draws is asked for with them; other kinds' when chosen.
   const builtP = fetch('data/records.json').then(r => r.json());
-  const indexP = fetch('data/areas.json').then(r => r.ok ? r.json() : null).catch(() => null);
+  const indexOf = k => fetch(`data/areas-${k}.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+  const firstKinds = [...new Set(['country', new URLSearchParams(location.hash.slice(1)).get('o') || 'country'])]
+    .filter(k => /^(country|province|basin|licence)$/.test(k));
+  const indexP = Object.fromEntries(firstKinds.map(k => [k, indexOf(k)]));
   builtP.catch(() => {}); // awaited below, where a failure still stops the page
   const files = (await fetch('data/files.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split('\n');
   const has = f => files.includes(f);
@@ -66,14 +70,28 @@
     }, () => [])
     : outlines.features.map(f => f.properties.record_id));
 
-  // ---- Areas (E46, E48): the build's index of the areas that hold a dataset, per kind ---------------
-  // areas.json is the authority for which areas exist (R-S3); the page computes no containment.
-  const index = has('areas.json') ? await indexP : null;
+  // ---- Areas (E46, E48, E51 J13): the build's index of the areas that hold a dataset, per kind -------
+  // The authority for which areas exist (R-S3); the page computes no containment. One file a kind,
+  // areas-<kind>.json (the kind's entry of areas.json): the countries' and the drawn kind's at the first
+  // load, another kind's when it is chosen, so the licences stay out of the first load.
   const KIND_LABEL = { country: 'Countries', province: 'Provinces', basin: 'Basins', licence: 'Licences' };
-  const KINDS = Object.keys(KIND_LABEL).filter(k => index && index.kinds[k]);
-  const areasOf = k => KINDS.includes(k) ? index.kinds[k].areas : [];
-  const areaById = Object.fromEntries(KINDS.map(k => [k, Object.fromEntries(areasOf(k).map(a => [a.area_id, a]))]));
-  const creditOf = k => [...new Set(index.kinds[k].sources.map(s => s.credit).filter(Boolean))].join(', ');
+  const KINDS = Object.keys(KIND_LABEL).filter(k => has(`areas-${k}.json`));
+  const index = { kinds: {} }, areaById = {}, loading = {};
+  const loadKind = k => loading[k] ||= (indexP[k] || indexOf(k)).then(d => {
+    index.kinds[k] = d && Array.isArray(d.areas) ? d : { sources: [], areas: [] };
+    areaById[k] = Object.fromEntries(index.kinds[k].areas.map(a => [a.area_id, a]));
+  });
+  const hashKind = () => { const o = new URLSearchParams(location.hash.slice(1)).get('o'); return KINDS.includes(o) ? o : KINDS[0]; };
+  await Promise.all([...new Set(['country', hashKind()])].filter(k => KINDS.includes(k)).map(loadKind));
+  const areasOf = k => (index.kinds[k] || { areas: [] }).areas;
+  // The credits of the sources whose areas are drawn; licences also name the regulator and the date of the
+  // read that produced them ("Licences: Sodir, as of 2026-11-25"; the date is when the content was read).
+  const regulator = s => (/\(([A-Z][A-Za-z]+)\)/.exec(s.name || '') || [])[1] || s.name;
+  const creditOf = k => {
+    const { sources, areas } = index.kinds[k], used = sources.filter(s => areas.some(a => a.source === s.file));
+    const credits = [...new Set(used.map(s => s.credit).filter(Boolean))].join(', ');
+    return k === 'licence' && used.length ? `Licences: ${used.map(s => `${regulator(s)}, as of ${s.retrieved}`).join('; ')}. ${credits}` : credits;
+  };
 
   // ---- Where a record is ------------------------------------------------------------------------
   // The record's bbox; without one the box of the countries the build placed it in (records[].areas,
@@ -148,7 +166,7 @@
     state.sel = byId[h.get('sel')] ? h.get('sel') : null;
     state.pick = [...new Set((h.get('pick') || '').split(',').filter(id => byId[id]))];
     state.kind = KINDS.includes(h.get('o')) ? h.get('o') : KINDS[0] || null;
-    state.area = state.kind && areaById[state.kind][h.get('area')] ? h.get('area') : null;
+    state.area = state.kind && (areaById[state.kind] || {})[h.get('area')] ? h.get('area') : null;
     state.names = h.get('n') === '1';
     state.globe = h.get('p') === 'globe';
     const m = (h.get('map') || '').split('/').map(Number);
@@ -247,6 +265,7 @@
       kindCtl.querySelector('.names').setAttribute('aria-pressed', String(state.names));
     }
     projCtl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.v === 'globe') === state.globe)));
+    for (const b of document.querySelectorAll('#list .blk')) b.hidden = state.kind !== 'licence';
   }
   syncMapControls();
 
@@ -435,7 +454,9 @@
     if (mapReady) { selectArea(); if (id && ease) fitArea(); }
     applyFilters();
   }
-  function setKind(k) {
+  async function setKind(k) {
+    if (k === state.kind) return;
+    await loadKind(k);
     if (k === state.kind) return;
     state.kind = k; state.area = null;
     if (mapReady) { drawKind(k); selectArea(); }
@@ -491,13 +512,18 @@
     : `<span class="lvl ${esc(r.level)}">${esc(r.level)}</span>`}${isStale(r) ? `<span class="stale" title="last checked ${esc(r.checked_at)}, more than ${STALE_DAYS} days ago">stale</span>` : ''}`;
   const inBag = id => state.pick.includes(id);
   const plusButton = r => `<button type="button" class="plus" aria-pressed="${inBag(r.id)}" aria-label="${inBag(r.id) ? 'In the bag' : 'Add to the bag'}: ${esc(r.title)}"></button>`;
+  // J13: while Licences are drawn the row names the blocks of the licences the dataset sits in
+  // (records[].blocks, for 1 to 25 licences), else how many licences it sits in.
+  const blocksLabel = r => r.blocks ? `blocks ${r.blocks.slice(0, 4).join(', ')}${r.blocks.length > 4 ? ` +${r.blocks.length - 4}` : ''}`
+    : ((r.areas || {}).licence || []).length ? `in ${r.areas.licence.length} licences` : '';
   const rows = new Map();
   function rowOf(r) {
     let li = rows.get(r.id);
     if (li) return li;
     li = document.createElement('li'); li.dataset.id = r.id; li.tabIndex = 0;
     li.innerHTML = `${plusButton(r)}<div class="t"><span class="title">${esc(r.title)}</span><span class="p">${esc(r.publisher.name)}</span>
-      <span class="m">${esc(r.kinds.join(', '))}${span(r) ? ` · <span class="yr">${esc(yearsLabel(r))}</span>` : ''}</span></div>
+      <span class="m">${esc(r.kinds.join(', '))}${span(r) ? ` · <span class="yr">${esc(yearsLabel(r))}</span>` : ''}${blocksLabel(r)
+        ? `<span class="blk"${state.kind === 'licence' ? '' : ' hidden'}> · ${esc(blocksLabel(r))}</span>` : ''}</span></div>
       <div class="s"><span class="badges">${levelBadge(r)}</span>${accessIcon(r.origin.access)}</div>`;
     li.querySelector('.plus').onclick = e => { e.stopPropagation(); toggleBag(r.id); };
     li.onclick = () => openRow(r.id);
@@ -867,7 +893,8 @@ mine = [f for f in fc["features"] if f["properties"]["record_id"] == "${esc(r.id
   });
 
   // A pasted or edited hash in the same tab applies too.
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('hashchange', async () => {
+    await loadKind(hashKind());
     const was = { kind: state.kind, globe: state.globe, names: state.names };
     const v = readHash(); syncControls(); syncMapControls();
     if (mapReady) {

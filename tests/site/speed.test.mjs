@@ -222,14 +222,14 @@ for (const [name, hash] of Object.entries(GLOBE_VIEWS)) for (const phone of [fal
 
 // ---- The first load's order (ruling 1 of 26 Nov: the laptop's 2 s) -------------------------------
 
-test('first load: records.json and areas.json are asked for before the tile headers come back; our sources go in at style.load', async () => {
+test('first load: records.json and the countries' area index (areas-country.json, E51 J13) are asked for before the tile headers come back; our sources go in at style.load', async () => {
   const { context, page } = await open(NORTH_SEA);
   const t = await page.evaluate(() => { const e = performance.getEntriesByType('resource'), at = f => e.filter(x => x.name.includes('/data/' + f));
-    return { records: at('records.json')[0].startTime, areas: (at('areas.json')[0] || {}).startTime, header: at('outlines.pmtiles')[0].responseEnd }; });
+    return { records: at('records.json')[0].startTime, areas: (at('areas-country.json')[0] || {}).startTime, header: at('outlines.pmtiles')[0].responseEnd }; });
   await context.close();
   console.log('first load (ms):', t);
   assert.ok(t.records < t.header, 'records.json beside the tile header, not after it');
-  if (t.areas !== undefined) assert.ok(t.areas < t.header, 'areas.json beside the tile header');
+  if (t.areas !== undefined) assert.ok(t.areas < t.header, 'areas-country.json beside the tile header');
   assert.ok(/once\('style\.load'/.test(SHOP_JS) && !/on\('load'/.test(SHOP_JS), 'shop.js adds its sources at style.load, not load');
 });
 

@@ -2,7 +2,7 @@
  "type": "FeatureCollection",
  "kind": "licence",
  "source": {
-  "name": "fixture regulator",
+  "name": "Fixture regulator (FXR), licences",
   "url": "https://example.org/licences",
   "licence": "public domain",
   "credit": "Fixture regulator",
