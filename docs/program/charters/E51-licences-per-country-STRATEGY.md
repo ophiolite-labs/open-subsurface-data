@@ -62,3 +62,27 @@ main. `make check` never runs it or `osd areas read` (test).
 Mutations (shown in the PR): each guard removed in turn makes its test fail. Time added to
 `make check`: the fixture tests (no network, about a second) and the licence kind in the real
 build's count (measured, stated in the PR).
+
+## Slice 3: the United States offshore (BOEM), 25 Nov 2026
+
+**Read.** BOEM `MMC_Layers` MapServer 15 "BOEM Oil and Gas Leases": 1,875 rows, one per lease, NAD83
+geographic (wkid 4269), `maxRecordCount` 10,000. Statuses PRIMRY 1,110, UNIT 450, PROD 260, DSO 11, SOP 7,
+OPERNS 3 and RENACV 34 (renewable-energy leases, no mineral type). The block is on the lease row (`ACLABS`,
+e.g. "SM127", "HIA 384"); 80 lease numbers start with a blank (" 00016"). Robots: 404 (allows).
+
+**Contract changes, small.** `blocks: {field}` names the block on the licence row (no join layer); `wkid`
+names the served geographic CRS (4326 default, 4269 allowed: NAD83 lies within 2 m of WGS84, below the
+100 m simplification), and the layer must serve exactly it. Ids and names are trimmed; inner spaces in an
+id become "-". `current` for BOEM: `LEASE_STATUS_CD in [PROD, PRIMRY, UNIT, SOP, DSO, OPERNS]`.
+
+**BLM is a finding, not drawn.** MLRS oil and gas leases: 466,838 cases, 32,406 `Authorized`. A sample
+page of 2,000 Authorized cases (38 MB served) simplified at 100 m measures 754 bytes a lease: about 24 MB
+for all, over the 5 MB stop rule, and a weekly read would move about 600 MB. Drawing only BLM leases that
+hold a dataset would make the read depend on the catalogue; that is a decision for a later charter.
+
+| Acceptance | Test |
+|---|---|
+| 2 golden BOEM file, pages, blank-prefixed id | `test_boem_read_writes_the_golden_file` |
+| current filter (`in`) | `test_boem_renewable_lease_is_not_read` |
+| 3 guards | `test_boem_refused_reads_leave_the_file` (no block on the row; served WGS84 while NAD83 is named), `test_config_refuses_a_projected_wkid` |
+| 5, 8 real file, sizes | `test_real_us_file_under_5_mb_and_valid` (also: all licence files under 10 MB) |

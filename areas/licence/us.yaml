@@ -1,0 +1,27 @@
+# United States offshore oil and gas leases, read by `osd areas read us` (E51 slice 3) from the Bureau of Ocean
+# Energy Management (BOEM) MMC_Layers map service; terms quoted in areas/SOURCES.md (Licences) and
+# docs/program/evidence/e51/terms.md. Federal public information: the file it writes, us.geojson, is CC0 like
+# records, with BOEM's credit (OSD-D37: "CC0: yes").
+# licences: layer 15 "BOEM Oil and Gas Leases", one row per lease (1,875 on 25 Nov 2026); `current` keeps the
+# oil and gas statuses (the layer also serves 34 renewable-energy leases, status RENACV); area_id US:<lease number>.
+# blocks: the block on the lease row itself (ACLABS, area code and block number such as "MC807"); no join.
+# wkid: the service serves NAD83 geographic (4269), within 2 m of WGS84, drawn as served.
+country: "US"
+service: "https://gis.boem.gov/arcgis/rest/services/BOEM_BSEE/MMC_Layers/MapServer"
+wkid: 4269
+licences:
+  layer: 15
+  id: LEASE_NUMBER
+  name: LEASE_NUMBER
+  name_prefix: "OCS-"
+  current: {field: LEASE_STATUS_CD, op: in, value: [PROD, PRIMRY, UNIT, SOP, DSO, OPERNS]}
+  edition: LEASE_STATUS_CHANGE_DT
+blocks:
+  field: ACLABS
+tolerance_m: 100
+decimals: 4
+source:
+  name: "Bureau of Ocean Energy Management (BOEM), MMC_Layers, BOEM Oil and Gas Leases (layer 15)"
+  url: "https://gis.boem.gov/arcgis/rest/services/BOEM_BSEE/MMC_Layers/MapServer/15"
+  licence: "U.S. federal public information, may be distributed or copied (BOEM disclaimer); simplified by Open Subsurface Data"
+  credit: "Leases: Bureau of Ocean Energy Management (BOEM), MarineCadastre.gov; simplified, not official"

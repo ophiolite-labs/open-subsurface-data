@@ -41,7 +41,7 @@ jobs:
         id: read
         run: |
           set +e
-          uv run osd areas read no --summary build/areas-read
+          uv run osd areas read no us --summary build/areas-read
           echo "refused=$?" >> "$GITHUB_OUTPUT"
       - name: the diff summary
         run: |
