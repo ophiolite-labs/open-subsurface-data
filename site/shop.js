@@ -19,11 +19,16 @@
   const files = (await fetch('data/files.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split('\n');
   const has = f => files.includes(f);
   const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
-  const tiles = has('outlines.pmtiles') && await new Promise(ok => {
+  // E50: a return visit can hold a stale byte range whose ETag the host no longer gives (GitHub
+  // Pages' ETag for one file differs between its servers); the range then comes back as the whole
+  // file, which the reader refuses. Asked once more past the browser's cache, the tiles stay on.
+  const archive = fresh => { const src = new pmtiles.FetchSource(base + 'data/outlines.pmtiles'); src.mustReload = fresh; return new pmtiles.PMTiles(src); };
+  let tiles = has('outlines.pmtiles') && await new Promise(ok => {
     const s = document.createElement('script'); s.src = PMTILES_JS;
     s.onload = () => ok(true); s.onerror = () => ok(false); document.head.appendChild(s);
-  }) && new pmtiles.PMTiles(base + 'data/outlines.pmtiles');
-  const pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
+  }) && archive(false);
+  let pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
+  if (tiles && !pmtilesMode) { tiles = archive(true); pmtilesMode = await tiles.getHeader().then(() => true, () => false); }
 
   const built = await (await fetch('data/records.json')).json();
   const records = built.records.map(r => ({ ...r, reason: (built.reasons || {})[r.id] || '' }));
