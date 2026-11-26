@@ -13,9 +13,9 @@
 <!-- E50 (R-S7): the first load's files asked for while maplibre-gl.js downloads, not after it runs -->
 <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
 <link rel="preload" href="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js" as="script">
-<link rel="preload" href="data/files.txt" as="fetch" crossorigin>
-<link rel="preload" href="data/records.json" as="fetch" crossorigin>
-<link rel="preload" href="data/areas.json" as="fetch" crossorigin>
+<!-- No preload of the data files: WebKit (Safari) does not hand a fetch preload to the page's fetch() and
+     downloads each twice (183 kB more at idle); in Chromium they bought nothing measurable (26 Nov,
+     docs/program/evidence/e50/measurements.md). shop.js asks for them on its first line. -->
 </head>
 <body>
 <header id="top">

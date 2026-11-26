@@ -103,6 +103,25 @@ test('measuring mode on a phone: the same ground as on a laptop, the box clear o
   await context.close();
 });
 
+test('measuring mode: the address stays the one opened, so a reload measures the same ground (ruling 13)', async () => {
+  // 26 Nov 2026: the page wrote the script's view into the hash (the phone's ground fit included), so
+  // every reload started one zoom level further out (Safari: address z5, then z4).
+  const { context, page, errors } = await open(NORTH_SEA, { query: '?measure=1', measure: true, phone: true });
+  const first = await page.evaluate(() => window.osdMeasure.done);
+  await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(() => location.hash), '#' + NORTH_SEA);
+  await page.reload();
+  await shopReady(page);
+  const again = await page.evaluate(() => window.osdMeasure.done);
+  assert.deepEqual(again.view, first.view, 'the reload measured the same view');
+  // After the script the page is the shop again: a move writes the hash as it always did.
+  await page.evaluate(() => new Promise(ok => { window.osdMap.once('idle', ok); window.osdMap.jumpTo({ zoom: 6 }); }));
+  await page.waitForTimeout(100);
+  assert.match(await page.evaluate(() => location.hash), /map=6\.00\//);
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
 test('measuring mode: the normal page asks for no measure.js', async () => {
   const { context, requested } = await open(NORTH_SEA);
   assert.ok(!requested.some(u => u.includes('measure.js')));
