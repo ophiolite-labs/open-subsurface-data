@@ -206,7 +206,7 @@ i.e. the file came from the cache after a `304`.
 | +11 min | 17:24 | **9514 ms** | 153 kB, **downloaded again** | header range **failed** | 10 req, 7.39 MB (the whole `outlines.geojson`) |
 | +1 min | 17:25 | 703 ms | from cache, 0 B | 6 ranges, 76 kB | 14 req, 82 kB |
 | +11 min | 17:37 | **11011 ms** | 153 kB, downloaded again | header range failed | 10 req, 7.40 MB |
-| next day | owed (26 Nov) | | | | |
+| next day | 26 Nov 09:37 | 5055 ms | 145 kB, downloaded (a new deploy at 09:28 changed it) | 17 ranges, 160 kB; the header 3.0 s (CDN cold after the deploy) | 23 req, 366 kB |
 
 The target is missed. What was recorded at 17:37: Chrome checked `records.json` with
 `If-None-Match: W/"6b0713bf-aa295"`, but Pages now gives `W/"6b0713c0-aa295"` for the same deploy
@@ -218,4 +218,82 @@ Reproduced on the Mac with `--serve`, a 5 s max-age and an ETag changed between 
 11,541 ms (GeoJSON), #105 1,347 ms (tiles). Downloading `records.json` again on every return remains.
 The charter's next step is the browser cache, proposed in the inbox for DECISIONS.
 
-Safari (the owner's own browser, read by the owner) and the phone: owed, see the inbox note.
+The next-day visit is not a clean return visit: four deploys came between, the last (E48, #104)
+nine minutes before, so `records.json`, `areas.json` and both archives were new files and came over
+the wire, and the header of the new `outlines.pmtiles` took 3.0 s at a cold CDN. With #105 on the
+page, the tiles stayed on (no GeoJSON). The profile was removed afterwards.
+
+### 26 Nov 2026: the owner's own visits (owner action 141) and four rulings
+
+Read off the owner's screenshots by the owner, relayed by the supervisor; the screenshots stay in
+the inbox (they show the owner's browser).
+
+| | MacBook, the owner's own Chrome profile (not Safari) | iPhone 15, Wi-Fi, **Low Power Mode on** |
+|---|---|---|
+| 1 usable · list | **2326 ms** · 1988 ms | **875 ms** · 540 ms |
+| 2 drag+zoom · longest frame | **60 fps** · 18 ms | 30.1 fps · 36 ms: **not a valid reading** (see below) |
+| 3 zoom back · out | **0 req, 0 kB** · 1 req, 120 kB | **0 req, 0 kB** · 3 req, 25 kB |
+| 4 since load · at idle | 32 req, 524 kB · 18 req, 305 kB | 19 req, 74 kB · 13 req, 37 kB |
+| records.json | 1 network | 1 no body |
+| outlines.pmtiles | 22 ranges, 316 kB (15 network, 7 no body) | 13 ranges, 73 kB |
+| screen | 1857×1173@2, 123 layers | 393×690@3, 123 layers |
+
+- **The phone's 30.1 fps** is a steady 30 Hz (longest frame 36 ms): iOS Low Power Mode halves
+  `requestAnimationFrame`. It counts as neither met nor missed; one more visit with Low Power Mode
+  off is asked of the owner. The measuring mode now measures the display's own rate at rest before
+  the script and prints it beside line 2 ("30 fps of 30" is a capped display, "30 fps of 60" a slow
+  page).
+- **The phone opened "zoomed far in"** (four single dots, no country visible), so it measured
+  another place. Not reproduced: the published page in an iPhone 15 Pro emulation opens the address
+  at z5 over 57°N 3°E and comes back there after the script. Single dots mean zoom 7 or more, so
+  the browser was not on the address's view; a remembered tab or a completed address is likely.
+  The measuring mode now (a) prints the view it measured under **More**, and (b) on a map smaller
+  than 900×600 zooms out before the first load to show the laptop's ground (z5 on the laptop is
+  z3.8 on a 393 px phone).
+- **The box covered the list rows on the phone.** On a narrow screen it now sits on the map's top
+  left, shows only the four lines (More shows the files, Hide folds it). It is checked in
+  `speed.test.mjs` ("measuring mode on a phone").
+- **Safari on the Mac is still owed** (the owner's screenshot was Chrome). Safari's return-visit
+  number stays open; it does not block the browser-cache slice.
+
+**Laptop "usable within 2 s": not yet met as an acceptance line (ruling 1).** The owner's own
+visit missed by 326 ms. The screenshot carries no clock, so whether it fell just after a deploy
+cannot be read from it; its 18 requests and 305 kB at idle (against 14 and 269 kB in the 1400-wide
+runs) come from the larger window (1857×1173): more base map and outline tiles. Five clean first
+visits at the owner's window size, on the published page after E48 (OSD-D41's compact JSON in;
+the area tiles new), 26 Nov 09:40–09:46 UTC:
+
+| run | 1 | 2 | 3 | 4 | 5 | median | worst |
+|---|---|---|---|---|---|---|---|
+| usable (ms) | 2020 | 2294 | 1671 | 1729 | 1517 | **1729** | **2294** |
+
+All five at 60 fps; 32 requests, 404 kB at first idle. The worst of five is over the line. Where
+the median run's time goes (ms from navigation start):
+
+| ms | what |
+|---|---|
+| 0–87 | `shop.html`, `shop.js` |
+| 0–247 | `maplibre-gl.js`; `shop.js` runs only after it |
+| 262–591 | **our serial chain**: `files.txt` → `pmtiles.js` → outlines header → areas header → `records.json` (191 ms) → `areas.json`, one after another |
+| 617–1284 | the base map: style, sprites, Natural Earth tiles, then fonts in three waves |
+| **1326–1720** | **our own tiles and the wells grid: asked for only at 1326**, after the base map's last font |
+| 1729 | the map idle |
+
+The three largest costs:
+1. **Our tiles wait for the base map: about 400 ms.** `shop.js` added its sources at the map's
+   `load` event, which fires only once every base map tile, sprite and font is in. Cut: add them at
+   `style.load` (the style is read), so our tiles load beside the base map's.
+2. **The base map's own requests: about 670 ms** (617–1284). Not ours to cut beyond a
+   `preconnect` to its host, which saves its first connection.
+3. **Our serial chain before the map is made: about 330 ms** (262–591), 460 ms in the worst run
+   (`records.json` 186 ms and `areas.json` 147 ms one after the other). Cut: `records.json` and
+   `areas.json` asked for at once beside `files.txt`, both tile headers read together, and
+   `shop.html` preloading `files.txt`, `records.json`, `areas.json` and `pmtiles.js` while
+   `maplibre-gl.js` downloads.
+
+`maplibre-gl.js` (about 250 ms here, 400 ms on 25 Nov) stays: it is the map.
+
+The after numbers (worst of five clean first visits, plus one visit in a used profile) are taken on
+the published page once the cuts are merged. The owner capped the Chrome windows opened on the
+MacBook at six a day, in one batch: the six of 26 Nov were the next-day return visit and the five
+runs above, so the after batch runs on a later day.

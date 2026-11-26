@@ -22,11 +22,11 @@ let server, browser;
 before(async () => { await mkdir(OUT, { recursive: true }); server = await serve(); browser = await launch(); });
 after(async () => { await browser.close(); server.close(); });
 
-const DESKTOP = { width: 1400, height: 900 };
+const DESKTOP = { width: 1400, height: 900 }, PHONE = { width: 393, height: 690 };
 const NORTH_SEA = 'map=5.00/57.0000/3.0000', GULF = 'map=5.00/27.0000/-91.0000', NORTH_SEA_7 = 'map=7.50/58.5000/2.0000';
 
-async function open(hash = NORTH_SEA, { query = '', measure = false, init, routes } = {}) {
-  const context = await browser.newContext({ viewport: DESKTOP });
+async function open(hash = NORTH_SEA, { query = '', measure = false, init, routes, phone = false } = {}) {
+  const context = await browser.newContext(phone ? { viewport: PHONE, deviceScaleFactor: 3, isMobile: true, hasTouch: true } : { viewport: DESKTOP });
   const unexpected = [];
   await shopOffline(context, unexpected);
   if (measure && !HOOKED) await context.addInitScript({ path: MEASURE_JS });
@@ -71,6 +71,7 @@ test('measuring mode: /shop.html?measure=1 shows the four numbers and keeps them
     `${r.site.requests} req ${r.site.bytes} B (at first idle ${r.atIdle.requests} req ${r.atIdle.bytes} B)` + tiles.map(([f, v]) => `; ${f} ${v.requests} ranges ${v.bytes} B`).join(''));
   assert.equal(r.done, true);
   assert.equal(r.late, false, 'the measuring mode saw the map before its first idle');
+  assert.equal(r.view.zoom, r.view.addressZoom, 'a laptop-wide map keeps the address\'s zoom');
   for (const k of ['idleMs', 'listMs']) assert.ok(Number.isFinite(r[k]) && r[k] > 0, k);
   assert.ok(r.script.frames > 10 && r.script.fps > 0, 'frames were counted over the scripted drag and zoom');
   assert.ok(r.site.requests > 0 && r.site.files['records.json'], 'the site\'s files are counted, records.json among them');
@@ -78,6 +79,27 @@ test('measuring mode: /shop.html?measure=1 shows the four numbers and keeps them
   const text = await page.locator('#osd-measure').innerText();
   for (const l of ['1 usable', '2 drag+zoom', '3 zoom back', '4 site since load']) assert.ok(text.includes(l), l);
   assert.deepEqual(errors, []); assert.deepEqual(unexpected, []);
+  await context.close();
+});
+
+test('measuring mode on a phone: the same ground as on a laptop, the box clear of the list, the display rate beside line 2', async () => {
+  // 26 Nov 2026, the owner's phone: the box covered the list rows, and 30.1 fps could not be told
+  // from a display capped at 30 Hz (Low Power Mode).
+  const { context, page, errors } = await open(NORTH_SEA, { query: '?measure=1', measure: true, phone: true });
+  const r = await page.evaluate(() => window.osdMeasure.done);
+  await page.screenshot({ path: join(OUT, 'measure-phone.png') });
+  console.log('phone view', r.view, 'display', r.refreshHz, 'Hz');
+  assert.equal(r.view.addressZoom, 5);
+  assert.ok(r.view.zoom < 4.5 && r.view.zoom > 3, `zoomed out to the laptop's ground: z${r.view.zoom}`);
+  const box = await page.locator('#osd-measure').boundingBox(), map = await page.locator('#map').boundingBox();
+  assert.ok(box.y >= map.y && box.y + box.height <= map.y + map.height + 1, `the box (${box.y}+${box.height}) lies on the map (${map.y}+${map.height}), off the list`);
+  assert.ok(Number.isInteger(r.refreshHz) && r.refreshHz > 0, String(r.refreshHz));
+  assert.match(await page.locator('#osd-measure').innerText(), /fps of \d+/);
+  await page.locator('#osd-measure [data-k=more]').click();
+  assert.match(await page.locator('#osd-measure').innerText(), /records\.json/, 'More shows the files');
+  await page.locator('#osd-measure [data-k=hide]').click();
+  assert.equal((await page.locator('#osd-measure').innerText()).split('\n').filter(Boolean).length, 2, 'hidden: the title and Show');
+  assert.deepEqual(errors, []);
   await context.close();
 });
 
@@ -175,6 +197,19 @@ test('practice 7: hovering rows lights features by feature state; no setFilter, 
 
 test('practice 8: names without the slow fade (fadeDuration 0)', async () => {
   assert.equal(await option(() => window.osdMap._fadeDuration)(), 0);
+});
+
+// ---- The first load's order (ruling 1 of 26 Nov: the laptop's 2 s) -------------------------------
+
+test('first load: records.json and areas.json are asked for before the tile headers come back; our sources go in at style.load', async () => {
+  const { context, page } = await open(NORTH_SEA);
+  const t = await page.evaluate(() => { const e = performance.getEntriesByType('resource'), at = f => e.filter(x => x.name.includes('/data/' + f));
+    return { records: at('records.json')[0].startTime, areas: (at('areas.json')[0] || {}).startTime, header: at('outlines.pmtiles')[0].responseEnd }; });
+  await context.close();
+  console.log('first load (ms):', t);
+  assert.ok(t.records < t.header, 'records.json beside the tile header, not after it');
+  if (t.areas !== undefined) assert.ok(t.areas < t.header, 'areas.json beside the tile header');
+  assert.ok(/once\('style\.load'/.test(SHOP_JS) && !/on\('load'/.test(SHOP_JS), 'shop.js adds its sources at style.load, not load');
 });
 
 // ---- Measurement 2, the return visit ------------------------------------------------------------
