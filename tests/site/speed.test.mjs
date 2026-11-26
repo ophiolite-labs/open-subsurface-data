@@ -199,6 +199,27 @@ test('practice 8: names without the slow fade (fadeDuration 0)', async () => {
   assert.equal(await option(() => window.osdMap._fadeDuration)(), 0);
 });
 
+// ---- Measurement 4, the globe with every well (controller numbers: a method check) ------------------
+
+// Each beside the same view flat, so the globe's own cost reads apart from the controller's.
+const GLOBE_VIEWS = { 'globe first view': 'p=globe', 'flat first view': '', 'globe z6 North Dakota': 'map=6.00/47.5000/-100.5000&p=globe',
+  'flat z6 North Dakota': 'map=6.00/47.5000/-100.5000' };
+for (const [name, hash] of Object.entries(GLOBE_VIEWS)) for (const phone of [false, true]) {
+  test(`measurement 4 (controller): ${name}, ${phone ? 'phone' : 'laptop'} width`, async () => {
+    const { context, page, errors } = await open(hash || null, { query: '?measure=1', measure: true, phone });
+    const r = await page.evaluate(() => window.osdMeasure.done);
+    const projection = await page.evaluate(() => (window.osdMap.getProjection() || {}).type || 'mercator');
+    const slug = `${name.replace(/ /g, '-').toLowerCase()}-${phone ? 'phone' : 'laptop'}`;
+    await writeFile(join(OUT, slug + '.json'), JSON.stringify(r, null, 2));
+    console.log(`${slug}: ${projection} z${r.view.zoom} usable ${r.idleMs} ms, drag+zoom ${r.script.fps} fps of ${r.refreshHz} (longest ${r.script.longestFrameMs} ms), ` +
+      `zoom back ${r.zoomOutBack.back.requests} req, at idle ${r.atIdle.requests} req ${r.atIdle.bytes} B, layers ${r.layers.length}`);
+    assert.equal(projection, name.startsWith('globe') ? 'globe' : 'mercator');
+    assert.ok(r.script.fps > 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+}
+
 // ---- The first load's order (ruling 1 of 26 Nov: the laptop's 2 s) -------------------------------
 
 test('first load: records.json and areas.json are asked for before the tile headers come back; our sources go in at style.load', async () => {
@@ -234,4 +255,74 @@ test('return visit: a header range answered with the whole file (a stale ETag at
   assert.ok(!requested.some(u => u.endsWith('outlines.geojson')), 'no fall back to the whole GeoJSON');
   assert.ok(await page.evaluate(() => !!window.osdMap.getLayer('wells-tiles')), 'the map draws from the tiles');
   await context.close();
+});
+
+// ---- The browser cache (OSD-D40): site/sw.js ---------------------------------------------------------
+
+// A first visit, then a return visit in the same profile; the server's own log of bodies sent.
+async function twoVisits({ routes, between } = {}) {
+  const log = [], own = await serve({ log });
+  const context = await browser.newContext({ viewport: DESKTOP });
+  await shopOffline(context, [], { serviceWorker: true });
+  if (routes) await routes(context);
+  const page = await context.newPage(), errors = errorsOf(page);
+  const url = own.url + 'shop.html#' + NORTH_SEA;
+  await page.goto(url); await shopReady(page);
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+  await page.waitForTimeout(1500); // the first load read once more through the worker
+  const first = log.splice(0);
+  if (between) await between();
+  await page.goto('about:blank'); await page.goto(url); await shopReady(page); await settle(page);
+  await page.waitForTimeout(500);
+  const second = log.splice(0);
+  return { context, page, errors, first, second, url, log, close: async () => { await context.close(); own.close(); } };
+}
+const dataBodies = xs => xs.filter(x => /^\/data\//.test(x.path) && x.method === 'GET' && x.bytes > 0);
+
+test('browser cache: a return visit takes no body of our data files from the server; the map draws from the tiles', async () => {
+  const v = await twoVisits();
+  const bodies = dataBodies(v.second), heads = v.second.filter(x => x.method === 'HEAD');
+  console.log(`first visit: ${dataBodies(v.first).length} data bodies; return visit: ${bodies.length} data bodies ` +
+    `(${bodies.reduce((a, x) => a + x.bytes, 0)} B), ${heads.length} HEAD, ${v.second.length} exchanges`);
+  assert.deepEqual(bodies.map(x => `${x.path} ${x.range || ''} ${x.bytes}`), [], 'no data body on the return visit');
+  assert.ok(await v.page.evaluate(() => !!window.osdMap.getLayer('wells-tiles')), 'the map draws from the tiles');
+  assert.ok(await v.page.evaluate(() => window.osdShop.listIds().length > 0), 'the list is there');
+  const kept = await v.page.evaluate(async () => (await Promise.all((await caches.keys()).map(async k => (await (await caches.open(k)).keys()).map(r => r.url)))).flat());
+  assert.ok(kept.length > 0 && kept.every(u => /\/data\/[^/]+\.(json|txt|pmtiles)(\?range=\d+-\d+)?$/.test(u)), 'only data files kept: never HTML, JS or CSS');
+  assert.deepEqual(v.errors, []);
+  await v.close();
+});
+
+test('browser cache: a file changed on the host is fetched again by the worker on the return visit', async () => {
+  // records.json is another file on the second visit: the host gives it another ETag (time and size).
+  let visit = 1;
+  const v = await twoVisits({ between: () => { visit = 2; }, routes: c => c.route(u => u.pathname.endsWith('/data/records.json'), async route => {
+    if (visit === 1) return route.continue();
+    const r = await route.fetch();
+    return route.fulfill({ response: r, headers: { ...r.headers(), etag: 'W/"7a000000-1"' } });
+  }) });
+  const got = v.second.filter(x => x.path === '/data/records.json' && x.method === 'GET');
+  console.log('return visit, records.json changed on the host:', v.second.filter(x => x.path === '/data/records.json').map(x => x.method));
+  assert.equal(got.length, 1, 'the changed records.json fetched once, for the next visit');
+  assert.deepEqual(v.errors, []);
+  await v.close();
+});
+
+test('browser cache: publishing site/sw-off.txt switches it off for a visitor who has it: caches deleted, the worker unregistered', async () => {
+  let off = false;
+  const v = await twoVisits({ routes: c => c.route(u => u.pathname.endsWith('/sw-off.txt'), r => off ? r.fulfill({ status: 200, body: 'off' }) : r.continue()) });
+  assert.equal(await v.page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length), 1, 'in place before');
+  off = true;
+  await v.page.goto('about:blank'); await v.page.goto(v.url); await shopReady(v.page);
+  await v.page.waitForFunction(async () => (await navigator.serviceWorker.getRegistrations()).length === 0, null, { timeout: 10000 });
+  assert.deepEqual(await v.page.evaluate(async () => (await caches.keys()).filter(k => k.startsWith('osd-data|'))), [], 'its caches deleted');
+  // And it stays off: the page registers it again (a registration being removed comes back when
+  // registered), and with the switch published it keeps nothing and gives nothing from a cache.
+  v.log.splice(0);
+  await v.page.goto('about:blank'); await v.page.goto(v.url); await shopReady(v.page); await v.page.waitForTimeout(1500);
+  assert.ok(dataBodies(v.log).length > 0, 'the data files come from the server again');
+  assert.deepEqual(await v.page.evaluate(async () => (await caches.keys()).filter(k => k.startsWith('osd-data|'))), [], 'nothing kept');
+  assert.deepEqual(v.errors, []);
+  await v.close();
 });

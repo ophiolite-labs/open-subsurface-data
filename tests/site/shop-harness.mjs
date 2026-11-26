@@ -23,8 +23,11 @@ function glyphRange(fontstack, range) {   // glyphs.proto: stacks { name, range,
 }
 const TYPES = { '.js': 'text/javascript', '.css': 'text/css', '.map': 'application/json' };
 
-export async function shopOffline(context, unexpected = []) {
+export async function shopOffline(context, unexpected = [], { serviceWorker = false } = {}) {
   await offline(context, unexpected);
+  // The browser cache (site/sw.js, E50) stays out of the way of tests that route the page's own data
+  // requests: an empty worker in its place. speed.test.mjs tests the real one (serviceWorker: true).
+  if (!serviceWorker) await context.route(u => u.pathname.endsWith('/sw.js'), r => r.fulfill({ body: '// off in this test', contentType: 'text/javascript' }));
   if (process.env.OSD_SITE_ONLINE === '1') return;
   await context.route(u => u.host === 'unpkg.com' && u.pathname.startsWith(`/maplibre-gl@${MAPLIBRE_5}/dist/`), async route => {
     const f = new URL(route.request().url()).pathname.split('/').pop();

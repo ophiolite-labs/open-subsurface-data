@@ -1,7 +1,7 @@
 // Shared by the site test and tools/shot.mjs: a static server over site/, Chromium with software
 // GL, and routes that keep the run offline (MapLibre from node_modules, a blank basemap style).
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -11,7 +11,8 @@ const SITE = join(ROOT, 'site');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
   '.geojson': 'application/geo+json', '.txt': 'text/plain', '.pmtiles': 'application/octet-stream', '.map': 'application/json' };
 
-export async function serve() {
+// log: an array that receives every exchange ({ method, path, range, status, bytes }: bytes of body sent).
+export async function serve({ log } = {}) {
   const server = createServer(async (req, res) => {
     let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     if (p.endsWith('/')) p += 'index.html';
@@ -20,14 +21,19 @@ export async function serve() {
     try {
       const body = await readFile(file);
       const type = TYPES[extname(file)] || 'application/octet-stream';
+      // Validators as GitHub Pages gives them: a weak ETag of mtime and size, and Last-Modified (E50).
+      const mtime = Math.floor((await stat(file)).mtimeMs / 1000);
+      const v = { etag: `W/"${mtime.toString(16)}-${body.length.toString(16)}"`, 'last-modified': new Date(mtime * 1000).toUTCString() };
+      const sent = (status, n) => log && log.push({ method: req.method, path: p, range: req.headers.range || null, status, bytes: req.method === 'HEAD' ? 0 : n });
       // Byte ranges, as GitHub Pages serves them: the PMTiles reader asks for nothing else (E15).
       const range = /^bytes=(\d+)-(\d*)$/.exec(req.headers.range || '');
       if (range) {
         const start = Number(range[1]), end = Math.min(range[2] ? Number(range[2]) : body.length - 1, body.length - 1);
+        sent(206, end - start + 1);
         res.writeHead(206, { 'content-type': type, 'content-range': `bytes ${start}-${end}/${body.length}`,
-          'accept-ranges': 'bytes', 'content-length': end - start + 1 }).end(body.subarray(start, end + 1));
-      } else res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes' }).end(body);
-    } catch { res.writeHead(404).end(); }
+          'accept-ranges': 'bytes', 'content-length': end - start + 1, ...v }).end(body.subarray(start, end + 1));
+      } else { sent(200, body.length); res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes', 'content-length': body.length, ...v }).end(body); }
+    } catch { if (log) log.push({ method: req.method, path: p, status: 404, bytes: 0 }); res.writeHead(404).end(); }
   });
   await new Promise(ok => server.listen(0, '127.0.0.1', ok));
   return { url: `http://127.0.0.1:${server.address().port}/`, close: () => server.close() };

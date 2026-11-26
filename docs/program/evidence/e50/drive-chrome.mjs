@@ -4,7 +4,7 @@
 //
 //   node docs/program/evidence/e50/drive-chrome.mjs [--host macbook] [--url URL] [--profile DIR]
 //        [--keep] [--inject site/measure.js] [--serve DIR] [--out FILE] [--label TEXT]
-//        [--window W,H] [--warm URL,URL,...]
+//        [--window W,H] [--warm URL,URL,...] [--then URL,URL,...]
 //
 // It opens a Chrome window on the Mac (the Mac's own GPU), opens URL (default the published
 // /shop.html?measure=1#map=5.00/57.0000/3.0000), waits for the measuring mode's numbers
@@ -17,6 +17,8 @@
 // --warm URL,... visits these pages first in the same profile, each to its load event, so the
 // measured visit meets a disk cache and connection pool of other sites (a used profile, ruling 1 of
 // 26 Nov); no extension is installed in the temporary profile.
+// --then URL,... measures these addresses after the first, in the same window (fps numbers; their
+// load numbers are not first visits).
 // --max-age N sets the served Cache-Control (default 600, as GitHub Pages).
 // --serve DIR serves a site directory from the controller (byte ranges as GitHub Pages serves them,
 // no compression) and reaches the Mac through a reverse tunnel, at http://127.0.0.1:8766/: the same
@@ -118,6 +120,17 @@ try {
     `${z.out.bytes} B); at idle ${result.atIdle.requests} req ${result.atIdle.bytes} B; since load ${s.requests} req ${s.bytes} B; ` +
     `records.json ${rj ? JSON.stringify(rj.how) + ' ' + JSON.stringify(rj.status) : '-'} -> ${OUT}`);
   await page.screenshot({ path: OUT.replace(/\.json$/, '.png') });
+  // --then: further addresses measured in the same window, one after another (measurement 4's two
+  // globe views ride on one opening; the owner caps the windows opened on the Mac, 26 Nov).
+  out.then = [];
+  for (const u of (arg('then') || '').split(',').filter(Boolean)) {
+    await page.goto('about:blank'); await page.goto(u);
+    const r = await page.evaluate(() => window.osdMeasure ? window.osdMeasure.done : null, null, { timeout: 120000 });
+    out.then.push({ url: u, ...r });
+    console.log(`  then ${u}: usable ${r.idleMs} ms; ${r.script.fps} fps of ${r.refreshHz} (longest ${r.script.longestFrameMs} ms); view z${r.view && r.view.zoom}`);
+    await page.screenshot({ path: OUT.replace(/\.json$/, `-then${out.then.length}.png`) });
+  }
+  writeFileSync(OUT, JSON.stringify(out, null, 2));
 } finally {
   if (browser) await browser.close().catch(() => {});
   tunnel.kill();

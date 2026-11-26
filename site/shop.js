@@ -28,7 +28,13 @@
   // Pages' ETag for one file differs between its servers); the range then comes back as the whole
   // file, which the reader refuses. Asked once more past the browser's cache, the tiles stay on.
   // E48: the same for the area tiles.
-  const archive = (f, fresh) => { const src = new pmtiles.FetchSource(base + 'data/' + f); src.mustReload = fresh; return new pmtiles.PMTiles(src); };
+  // E50 (OSD-D40): the byte ranges the first load reads, read again through the browser cache once
+  // it is in place, so a return visit finds them there (see warmCache below).
+  const ranges = new Set(), cached = 'serviceWorker' in navigator && !!navigator.serviceWorker.controller;
+  const archive = (f, fresh) => { const src = new pmtiles.FetchSource(base + 'data/' + f); src.mustReload = fresh;
+    const get = src.getBytes.bind(src);
+    src.getBytes = (offset, length, ...rest) => { if (!cached) ranges.add(`${src.url} ${offset}-${offset + length - 1}`); return get(offset, length, ...rest); };
+    return new pmtiles.PMTiles(src); };
   const pmtilesJs = (has('outlines.pmtiles') || has('areas.pmtiles')) && await new Promise(ok => {
     const s = document.createElement('script'); s.src = PMTILES_JS;
     s.onload = () => ok(true); s.onerror = () => ok(false); document.head.appendChild(s);
@@ -208,6 +214,18 @@
   map.touchZoomRotate.disableRotation();
   map.keyboard.disableRotation();
   window.osdMap = map; // for the site test and the console; not an API
+  // E50 (OSD-D40): the browser cache for data/ (site/sw.js), registered after the first idle so it never
+  // competes with the first load. site/sw-off.txt, once published, switches it off for every visitor.
+  // On the first visit the page is not yet under it: once it is, what the first load read is asked
+  // once more (from the browser's HTTP cache, cache: 'force-cache'), and the worker keeps it.
+  const warmCache = () => {
+    for (const e of performance.getEntriesByType('resource')) if (/\/data\/[^/]+\.(json|txt)$/.test(new URL(e.name).pathname)) fetch(e.name, { cache: 'force-cache' }).catch(() => {});
+    for (const r of ranges) { const [u, b] = r.split(' '); fetch(u, { cache: 'force-cache', headers: { range: 'bytes=' + b } }).catch(() => {}); }
+    ranges.clear();
+  };
+  if ('serviceWorker' in navigator) map.once('idle', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+    .then(() => cached || (navigator.serviceWorker.controller ? warmCache()
+      : navigator.serviceWorker.addEventListener('controllerchange', warmCache, { once: true }))).catch(() => {}));
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
   // The map's own switches (E48): the kind of area and Names bottom left, Flat | Globe bottom right.
