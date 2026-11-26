@@ -311,13 +311,19 @@
       : { type: 'geojson', data: outlines, promoteId: 'feature_id' });
     map.addSource('wells', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addSource('boxes', { type: 'geojson', data: boxes });
-    const line = (color, dash, w = 2) => ({ 'line-color': ['case', HL, NIGHT, color], 'line-width': ['case', HL, 3.5, w], 'line-opacity': w < 2 ? ['case', HL, 1, 0.55] : 1, ...(dash ? { 'line-dasharray': [2, 2] } : {}) });
+    const line = (color, dash) => ({ 'line-color': ['case', HL, NIGHT, color], 'line-width': ['case', HL, 3.5, 2], ...(dash ? { 'line-dasharray': [2, 2] } : {}) });
+    // Survey outlines step back below zoom 7 (a neutral ink, faint; dense grids would hide the areas)
+    // and take their orange where one survey can be read; a lit one is night blue at every zoom.
+    const SURVEY_INK = '#7b8592', SURVEY_ORANGE = '#d98a1c';
+    const surveyLine = dash => ({ 'line-color': ['step', ['zoom'], ['case', HL, NIGHT, SURVEY_INK], 7, ['case', HL, NIGHT, SURVEY_ORANGE]],
+      'line-width': ['case', HL, 3.5, 0.8], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 4, ['case', HL, 1, 0.3], 7, ['case', HL, 1, 0.75]],
+      ...(dash ? { 'line-dasharray': [2, 2] } : {}) });
     map.addLayer({ id: 'fields-fill', type: 'fill', ...src, filter: LAYER_BASE['fields-fill'], paint: { 'fill-color': '#e5484d', 'fill-opacity': ['case', HL, 0.4, 0.18] } });
     map.addLayer({ id: 'fields-line', type: 'line', ...src, filter: LAYER_BASE['fields-line'], paint: line('#e5484d') });
     map.addLayer({ id: 'fields-dash', type: 'line', ...src, filter: LAYER_BASE['fields-dash'], paint: line('#e5484d', true) });
-    map.addLayer({ id: 'surveys-fill', type: 'fill', ...src, filter: LAYER_BASE['surveys-fill'], paint: { 'fill-color': '#f2a93b', 'fill-opacity': ['case', HL, 0.45, 0.06] } });
-    map.addLayer({ id: 'surveys-line', type: 'line', ...src, filter: LAYER_BASE['surveys-line'], paint: line('#d98a1c', false, 0.8) });
-    map.addLayer({ id: 'surveys-dash', type: 'line', ...src, filter: LAYER_BASE['surveys-dash'], paint: line('#d98a1c', true, 0.8) });
+    map.addLayer({ id: 'surveys-fill', type: 'fill', ...src, filter: LAYER_BASE['surveys-fill'], paint: { 'fill-color': '#f2a93b', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 4, ['case', HL, 0.45, 0], 7, ['case', HL, 0.45, 0.06]] } });
+    map.addLayer({ id: 'surveys-line', type: 'line', ...src, filter: LAYER_BASE['surveys-line'], paint: surveyLine(false) });
+    map.addLayer({ id: 'surveys-dash', type: 'line', ...src, filter: LAYER_BASE['surveys-dash'], paint: surveyLine(true) });
     const glyphs = !!map.getStyle().glyphs;
     map.addLayer({ id: 'wells-cluster', type: 'circle', source: 'wells', filter: ['has', 'point_count'], maxzoom: CLUSTER_BELOW_ZOOM,
       paint: { 'circle-color': '#2f9e63', 'circle-opacity': 0.85, 'circle-stroke-color': ['case', HL, NIGHT, '#ffffff'], 'circle-stroke-width': ['case', HL, 3, 1],
@@ -332,16 +338,16 @@
     map.addLayer({ id: 'boxes', type: 'circle', source: 'boxes',
       paint: { 'circle-color': NIGHT, 'circle-radius': ['case', HL, 7, 4.5], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': ['case', HL, 2.5, 1.5] } });
     if (glyphs) map.addLayer({ id: 'boxes-name', type: 'symbol', source: 'boxes',
-      layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-font': ['Noto Sans Regular'], 'text-anchor': 'left', 'text-offset': [0.8, 0],
-        'text-optional': true, 'text-max-width': 12, visibility: state.names ? 'visible' : 'none' },
-      paint: { 'text-color': NIGHT, 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 } });
+      layout: { 'text-field': ['get', 'name'], 'text-size': 10.5, 'text-font': ['Noto Sans Regular'], 'text-anchor': 'left', 'text-offset': [0.8, 0],
+        'text-optional': true, 'text-max-width': 12, 'text-padding': 6, visibility: state.names ? 'visible' : 'none' },
+      paint: { 'text-color': '#3d4756', 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 } });
 
     if (KINDS.length) {
       map.addSource('area-labels', { type: 'geojson', data: labelsOf(state.kind) });
       if (glyphs) map.addLayer({ id: 'areas-name', type: 'symbol', source: 'area-labels',
-        layout: { 'text-field': ['get', 'name'], 'text-size': 12, 'text-font': ['Noto Sans Regular'], 'text-max-width': 9,
-          visibility: state.names ? 'visible' : 'none' },
-        paint: { 'text-color': AREA_TEXT, 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 } });
+        layout: { 'text-field': ['get', 'name'], 'text-size': 13, 'text-font': ['Noto Sans Bold'], 'text-max-width': 9,
+          'text-padding': 1, visibility: state.names ? 'visible' : 'none' },
+        paint: { 'text-color': AREA_TEXT, 'text-halo-color': '#ffffff', 'text-halo-width': 1.8 } });
       drawKind(state.kind);
       // A dataset feature under the pointer wins; otherwise the area is the filter (a second click clears it).
       map.on('click', 'areas-fill', e => {
@@ -374,7 +380,7 @@
 
   // ---- Areas on the map (E48): one kind at a time; its source added the first time it is chosen and
   // kept, its two layers the only area layers in the style; the same lilac for every area (R-S2).
-  const AREA = '#8a6fc7', AREA_TEXT = '#4b3a78';
+  const AREA = '#34465f', AREA_TEXT = '#1d2838';   // one neutral slate for every area (R-S2)
   const SEL = ['boolean', ['feature-state', 'sel'], false];
   const labelsOf = k => ({ type: 'FeatureCollection', features: areasOf(k).map(a => ({ type: 'Feature',
     properties: { area_id: a.area_id, name: a.name }, geometry: { type: 'Point', coordinates: a.label } })) });
@@ -387,8 +393,8 @@
       : { type: 'geojson', data: base + `data/areas-${k}.geojson`, promoteId: 'area_id', attribution: creditOf(k) });
     const src = { source: areaSource(k), ...(areaTiles ? { 'source-layer': `areas_${k}` } : {}) };
     const below = map.getLayer('fields-fill') ? 'fields-fill' : undefined;
-    map.addLayer({ id: 'areas-fill', type: 'fill', ...src, paint: { 'fill-color': AREA, 'fill-opacity': ['case', SEL, 0.24, 0.08] } }, below);
-    map.addLayer({ id: 'areas-line', type: 'line', ...src, paint: { 'line-color': AREA, 'line-opacity': 0.9, 'line-width': ['case', SEL, 2.5, 0.8] } }, below);
+    map.addLayer({ id: 'areas-fill', type: 'fill', ...src, paint: { 'fill-color': AREA, 'fill-opacity': ['case', SEL, 0.3, 0.14] } }, below);
+    map.addLayer({ id: 'areas-line', type: 'line', ...src, paint: { 'line-color': AREA, 'line-opacity': 0.85, 'line-width': ['case', SEL, 3, 1.4] } }, below);
     map.getSource('area-labels').setData(labelsOf(k));
   }
   function selectArea() {
