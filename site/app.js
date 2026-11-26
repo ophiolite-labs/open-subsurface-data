@@ -17,11 +17,15 @@
   // Tiles (E15) when the build wrote them and the server answers range requests (GitHub Pages does,
   // `python3 -m http.server` does not); otherwise the one GeoJSON, whole.
   const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
-  const tiles = has('outlines.pmtiles') && await new Promise(ok => {
+  // A return visit can get the whole file for the header range (the host's ETag moved; E50): the
+  // header is then asked for once more past the browser's cache before falling back to the GeoJSON.
+  const archive = fresh => { const src = new pmtiles.FetchSource(base + 'data/outlines.pmtiles'); src.mustReload = fresh; return new pmtiles.PMTiles(src); };
+  let tiles = has('outlines.pmtiles') && await new Promise(ok => {
     const s = document.createElement('script'); s.src = 'https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js';
     s.onload = () => ok(true); s.onerror = () => ok(false); document.head.appendChild(s);
-  }) && new pmtiles.PMTiles(base + 'data/outlines.pmtiles');
-  const pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
+  }) && archive(false);
+  let pmtilesMode = !!tiles && await tiles.getHeader().then(() => true, () => false);
+  if (tiles && !pmtilesMode) { tiles = archive(true); pmtilesMode = await tiles.getHeader().then(() => true, () => false); }
 
   const built = await (await fetch('data/records.json')).json();
   // Why each record is at its level (E27): `reasons` by id, the sentence `osd status` prints.
