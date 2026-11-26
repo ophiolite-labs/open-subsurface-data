@@ -5,18 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What changed · Open Subsurface Data</title>
 <meta name="description" content="What changed on Open Subsurface Data, newest first: what you can now do and where to click to see it.">
-<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500&display=swap">
 <style>
-  #changes h2 { font-size: 13px; color: var(--muted); margin: 28px 0 6px; text-transform: none; letter-spacing: 0; }
+  /* The shop's house look (site/shop.css, R-S9): light paper, Merriweather titles, Roboto text, ink and green. */
+  :root { --night: #101824; --green: #2f9e63; --green-dark: #23784b; --fg: #1b2330; --muted: #5d6877; --line: #e3e6ea; --bg: #ffffff;
+    --title: Merriweather, Georgia, "Times New Roman", serif; --text: Roboto, system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 var(--text); }
+  a { color: #1d5fa8; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; }
+  h1 { font: 400 28px/1.25 var(--title); margin: 0 0 10px; }
+  .muted { color: var(--muted); }
+  .back { margin: 0 0 24px; font-size: 14px; }
+  #changes h2 { font: 700 15px/1.4 var(--title); color: var(--night); margin: 32px 0 4px; }
   #changes ul { list-style: none; margin: 0; padding: 0; }
-  #changes li { padding: 10px 0; border-bottom: 1px solid var(--line); line-height: 1.5; }
-  #changes li a.open { margin-left: 6px; white-space: nowrap; }
+  #changes li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  #changes li a.open { margin-left: 6px; color: var(--green-dark); font-weight: 500; white-space: nowrap; }
   #changes li a.pr { margin-left: 8px; font-size: 12px; color: var(--muted); text-decoration: none; white-space: nowrap; }
+  #changes li a.pr:hover { text-decoration: underline; }
 </style>
 </head>
-<body class="page">
+<body>
 <main>
-<p><a href="./">← Back to the map</a></p>
+<p class="back"><a href="./">← Back to the map</a></p>
 <h1>What changed</h1>
 <p class="muted">The site is rebuilt and published each time a change is merged; there are no
 versions to wait for. Newest first: what you can now do, and where to click to see it. The foot of
