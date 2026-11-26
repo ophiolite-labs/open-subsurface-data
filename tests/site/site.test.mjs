@@ -228,6 +228,30 @@ test('tiles: a server without byte ranges (python3 -m http.server) falls back to
   await context.close();
 });
 
+test('tiles: a return visit whose header range comes back as the whole file (a moved ETag) keeps the tiles (E50)', { skip: noTiles }, async () => {
+  // As measured on shop.html on 25 Nov 2026 (docs/program/evidence/e50/measurements.md): after max-age
+  // Chrome asks for the cached range with If-Range and an ETag another GitHub Pages server no longer
+  // gives, and gets 200 with the whole file. Here the first header request gets a 200 with more than it asked.
+  const headers = [], requested = [];
+  const { context, page, errors } = await open('map=5/59/5', { routes: async c => {
+    c.on('request', r => requested.push(r.url()));
+    await c.route('**/data/outlines.pmtiles', async route => {
+      const range = route.request().headers().range || '';
+      if (range.startsWith('bytes=0-')) headers.push(range);
+      if (range.startsWith('bytes=0-') && headers.length === 1) {
+        const r = await route.fetch({ headers: { ...route.request().headers(), range: 'bytes=0-65535' } });
+        return route.fulfill({ status: 200, body: await r.body(), headers: { 'content-type': 'application/octet-stream' } });
+      }
+      return route.continue();
+    });
+  } });
+  assert.equal(headers.length, 2, 'the header was asked for twice');
+  assert.equal(await outlinesSource(page), 'vector');
+  assert.ok(!requested.some(u => u.endsWith('outlines.geojson')), 'no fall back to the whole GeoJSON');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
+
 test('tiles: phone width with tiles, Sodir wells clustered', { skip: noTiles }, async () => {
   const { context, page, errors } = await open('q=sodir&map=4.5/62/6', { viewport: { width: 390, height: 844 } });
   assert.equal(await outlinesSource(page), 'vector');
