@@ -4,6 +4,7 @@
 //
 //   node docs/program/evidence/e50/drive-chrome.mjs [--host macbook] [--url URL] [--profile DIR]
 //        [--keep] [--inject site/measure.js] [--serve DIR] [--out FILE] [--label TEXT]
+//        [--window W,H] [--warm URL,URL,...]
 //
 // It opens a Chrome window on the Mac (the Mac's own GPU), opens URL (default the published
 // /shop.html?measure=1#map=5.00/57.0000/3.0000), waits for the measuring mode's numbers
@@ -12,6 +13,10 @@
 // --profile after more than ten minutes and the next day); without it the profile is removed.
 // --inject loads a measure.js before any page script, for a page that has no hook line yet (a
 // method check, not one of the four measurements).
+// --window W,H sizes the Chrome window (default 1400,900; the owner's own visit was 1857x1173 inner).
+// --warm URL,... visits these pages first in the same profile, each to its load event, so the
+// measured visit meets a disk cache and connection pool of other sites (a used profile, ruling 1 of
+// 26 Nov); no extension is installed in the temporary profile.
 // --max-age N sets the served Cache-Control (default 600, as GitHub Pages).
 // --serve DIR serves a site directory from the controller (byte ranges as GitHub Pages serves them,
 // no compression) and reaches the Mac through a reverse tunnel, at http://127.0.0.1:8766/: the same
@@ -38,7 +43,7 @@ const quit = () => { try { ssh(`pkill -f -- '--user-data-dir=${PROFILE}' || true
 
 quit();
 ssh(`mkdir -p ${PROFILE} && open -na 'Google Chrome' --args --user-data-dir=${PROFILE} --remote-debugging-port=${PORT} ` +
-  `--no-first-run --no-default-browser-check --window-size=1400,900 about:blank`);
+  `--no-first-run --no-default-browser-check --window-size=${arg('window', '1400,900')} about:blank`);
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.txt': 'text/plain' };
 const server = SERVE && createServer(async (req, res) => {
   let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
@@ -92,6 +97,12 @@ try {
   page.on('requestfailed', async r => { if (!ours(r)) return; const h = await r.allHeaders();
     exchanges.push({ url: r.url().split('/').pop(), range: h.range || null, failed: r.failure() && r.failure().errorText }); });
   for (const p of context.pages()) if (p !== page) await p.close();
+  const warmed = [];
+  for (const u of (arg('warm') || '').split(',').filter(Boolean)) {
+    const w = await context.newPage(), t = Date.now();
+    await w.goto(u, { waitUntil: 'load', timeout: 60000 }).then(() => warmed.push({ url: u, ms: Date.now() - t }), e => warmed.push({ url: u, error: String(e).slice(0, 120) }));
+    await w.close();
+  }
   await page.goto(URL_);
   const result = await page.evaluate(() => window.osdMeasure ? window.osdMeasure.done : null, null, { timeout: 120000 });
   if (!result) throw new Error('no measuring mode on the page (no hook line? use --inject)');
@@ -99,7 +110,7 @@ try {
   const gpu = await page.evaluate(() => { const gl = document.createElement('canvas').getContext('webgl');
     const x = gl && gl.getExtension('WEBGL_debug_renderer_info'); return x ? gl.getParameter(x.UNMASKED_RENDERER_WEBGL) : null; });
   const out = { label: arg('label', ''), url: URL_, at: new Date().toISOString(), host: HOST, profile: PROFILE,
-    browser: browser.version(), gpu, injected: !!arg('inject'), console: consoleLines, exchanges, fetches, ...result };
+    browser: browser.version(), gpu, injected: !!arg('inject'), warmed, console: consoleLines, exchanges, fetches, ...result };
   writeFileSync(OUT, JSON.stringify(out, null, 2));
   const z = result.zoomOutBack, s = result.site, rj = s.files['records.json'];
   console.log(`${out.at} ${out.browser} ${gpu}: usable ${result.idleMs} ms, list ${result.listMs} ms; ${result.script.fps} fps ` +

@@ -16,6 +16,11 @@
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   // ---- Data ------------------------------------------------------------------------------------
+  // E50: records.json and areas.json are asked for at once, beside files.txt and the tile headers,
+  // not one after the other (shop.html preloads them while maplibre-gl.js downloads).
+  const builtP = fetch('data/records.json').then(r => r.json());
+  const indexP = fetch('data/areas.json').then(r => r.ok ? r.json() : null).catch(() => null);
+  builtP.catch(() => {}); // awaited below, where a failure still stops the page
   const files = (await fetch('data/files.txt').then(r => r.ok ? r.text() : '').catch(() => '')).split('\n');
   const has = f => files.includes(f);
   const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
@@ -31,10 +36,10 @@
   const tilesOf = async f => { if (!pmtilesJs || !has(f)) return null;
     for (const fresh of [false, true]) { const t = archive(f, fresh); if (await t.getHeader().then(() => true, () => false)) return t; }
     return null; };
-  const tiles = await tilesOf('outlines.pmtiles'), areaTiles = await tilesOf('areas.pmtiles');
+  const [tiles, areaTiles] = await Promise.all([tilesOf('outlines.pmtiles'), tilesOf('areas.pmtiles')]);
   const pmtilesMode = !!tiles;
 
-  const built = await (await fetch('data/records.json')).json();
+  const built = await builtP;
   const records = built.records.map(r => ({ ...r, reason: (built.reasons || {})[r.id] || '' }));
   const byId = Object.fromEntries(records.map(r => [r.id, r]));
   const LEVEL = s => Number((s || 'L0').slice(1));
@@ -57,7 +62,7 @@
 
   // ---- Areas (E46, E48): the build's index of the areas that hold a dataset, per kind ---------------
   // areas.json is the authority for which areas exist (R-S3); the page computes no containment.
-  const index = has('areas.json') ? await fetch('data/areas.json').then(r => r.ok ? r.json() : null).catch(() => null) : null;
+  const index = has('areas.json') ? await indexP : null;
   const KIND_LABEL = { country: 'Countries', province: 'Provinces', basin: 'Basins', licence: 'Licences' };
   const KINDS = Object.keys(KIND_LABEL).filter(k => index && index.kinds[k]);
   const areasOf = k => KINDS.includes(k) ? index.kinds[k].areas : [];
@@ -304,7 +309,9 @@
   };
   const CLICKABLE = ['surveys-fill', 'fields-fill', 'wells', 'boxes', ...(pmtilesMode ? ['wells-tiles'] : [])];
 
-  map.on('load', () => {
+  // E50: our sources and layers go in as soon as the base map's style is read ('style.load'), not
+  // at 'load', which waits for every base map tile, sprite and font: our tiles load beside them.
+  map.once('style.load', () => {
     const src = pmtilesMode ? { source: 'outlines', 'source-layer': 'outlines' } : { source: 'outlines' };
     map.addSource('outlines', pmtilesMode
       ? { type: 'vector', url: 'pmtiles://' + base + 'data/outlines.pmtiles', promoteId: { outlines: 'feature_id' } }
