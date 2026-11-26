@@ -14,6 +14,14 @@ and a GeoJSON fallback per kind; records carry `areas`. E47 will give `shop.html
 `shop.css` on MapLibre 5 and the journey file with J8–J10 as todo. The lane verifies both on main
 at open and corrects this paragraph in its PR if they differ.
 
+*Verified at lane open (25 Nov 2026, main b09078f).* As stated, with these differences: each kind
+in `areas.json` also carries `sources` (file, name, url, licence, `credit`, edition), and a
+province carries its `country`; the build wrote it pretty-printed (132 KB on the real build); since
+OSD-D41 it and records.json are compact. `areas.pmtiles` is one file whose every tile holds all three layers (z0–8), so on the
+tile path a kind is a source layer, not a file; the per-kind GeoJSON is written beside it and is the
+path when tiles are absent (the fixture build). Drawn features carry `area_id`, `name`, `n` and an
+integer id. E47 already uses `a=` in the hash for access, so the area is `area=<area_id>`.
+
 **The design the charter fixes.**
 
 1. *The switch (R-S4).* A three-part control on the map, bottom left: Countries, Provinces,

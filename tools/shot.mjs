@@ -1,5 +1,6 @@
 // Desktop and phone screenshots of the local site: node tools/shot.mjs <out-dir> [hash]
 // The shop's six (E47): node tools/shot.mjs <out-dir> shop
+// The outlines, names and globe (E48): node tools/shot.mjs docs/program/evidence/e48 e48
 // Serves site/ itself (run `make build` first). Uses the live basemap; OSD_SITE_OFFLINE=1 swaps
 // in a blank one. Prints list count, detail title and console errors for each shot.
 import { mkdir } from 'node:fs/promises';
@@ -8,13 +9,22 @@ if (process.env.OSD_SITE_OFFLINE !== '1') process.env.OSD_SITE_ONLINE = '1';
 const { serve, launch, offline, errorsOf, ready } = await import('../tests/site/harness.mjs');
 
 const out = process.argv[2] || 'build/shots';
-if (process.argv[3] === 'shop') {
+const E48_SHOTS = (() => {   // Countries, Provinces, Basins over Europe and North America with Names on; the North Sea
+  const D = { width: 1400, height: 900 }, P = { width: 390, height: 844 }, shots = [];   // basin clicked; the globe; the phone
+  for (const [where, map] of [['europe', '3.60/54.0000/6.0000'], ['north-america', '3.00/45.0000/-100.0000']])
+    for (const kind of ['country', 'province', 'basin']) shots.push([`${kind}-${where}-names`, D, `o=${kind}&n=1&map=${map}`, null]);
+  shots.push(['north-sea-basin-clicked', D, 'o=basin&area=usgs-4025&n=1', null]);
+  shots.push(['globe-first-view', D, 'p=globe', null]);
+  shots.push(['phone-switch', P, '', null]);
+  return shots;
+})();
+if (process.argv[3] === 'shop' || process.argv[3] === 'e48') {
   // Desktop first view (Europe), Filters open, a row opened, the bag with three datasets, phone list, phone bag.
   const { shopOffline, shopReady } = await import('../tests/site/shop-harness.mjs');
   await mkdir(out, { recursive: true });
   const server = await serve(), browser = await launch();
   const BAG = 'pick=nlog/nlog,opm/norne,equinor/volve';
-  const shots = [
+  const shots = process.argv[3] === 'e48' ? E48_SHOTS : [
     ['desktop-first-view', { width: 1400, height: 900 }, '', null],
     ['desktop-filters-open', { width: 1400, height: 900 }, 'k=seismic-3d&l=0', p => p.locator('#filters-btn').click()],
     ['desktop-row-opened', { width: 1400, height: 900 }, 'sel=nlog/nlog&map=5.80/53.2000/5.0000', null],
