@@ -82,6 +82,23 @@ test('foot line: stays in the shop\'s attribution when the map rewrites it (a ki
   await v.context.close();
 });
 
+test('foot line on a 393 px phone: the shop\'s attribution covers neither the outline switch nor Flat/Globe; (i) opens it with the line', async () => {
+  const v = await open('shop.html', { phone: true });
+  await v.page.locator('#osd-foot').waitFor({ state: 'attached', timeout: 30000 });
+  const overlaps = () => v.page.evaluate(() => {
+    const a = document.querySelector('.maplibregl-ctrl-attrib'), r = a.getBoundingClientRect();
+    return [...document.querySelectorAll('.maplibregl-ctrl')].filter(o => o !== a).map(o => [o.className, o.getBoundingClientRect()])
+      .filter(([, o]) => o.width && o.left < r.right && r.left < o.right && o.top < r.bottom && r.top < o.bottom).map(([c]) => c);
+  });
+  assert.deepEqual(await overlaps(), [], 'the attribution over no control at first view');
+  await v.page.screenshot({ path: join(OUT, 'shop-phone-first-view.png') });
+  await v.page.locator('.maplibregl-ctrl-attrib-button').click();
+  assert.ok(await v.page.locator('#osd-foot').isVisible(), 'the (i) shows the line');
+  await v.page.screenshot({ path: join(OUT, 'shop-phone-attribution-open.png') });
+  assert.deepEqual(v.errors, []);
+  await v.context.close();
+});
+
 // ---- Acceptance 4: /changes.html ----------------------------------------------------------------------
 
 test('changes.html lists the fixture\'s three entries newest first under their days, each with "Open it" and its pull request', async () => {
@@ -112,7 +129,7 @@ test('shop: foot.js, files.txt and build.json are asked for only after the map i
     const page = await context.newPage();
     await page.goto(server.url + 'shop.html#map=5.00/57.0000/3.0000');
     await shopReady(page);
-    await page.locator('#osd-foot').waitFor({ timeout: 30000 });
+    await page.locator('#osd-foot').waitFor({ state: 'attached', timeout: 30000 });   // on a phone inside the shut attribution
     const r = await page.evaluate(() => ({ usable: window.__usable, at: Object.fromEntries(performance.getEntriesByType('resource')
       .filter(e => /\/(foot\.js|data\/files\.txt|data\/build\.json)$/.test(e.name)).map(e => [e.name.split('/').slice(-1)[0], e.startTime])) }));
     console.log(`${phone ? 'phone' : 'desktop'}: usable at ${Math.round(r.usable)} ms; asked for at`, Object.fromEntries(Object.entries(r.at).map(([k, t]) => [k, Math.round(t)])));
