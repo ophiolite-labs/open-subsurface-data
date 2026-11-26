@@ -202,7 +202,7 @@ test('J2 pans or zooms and the list is exactly the datasets of the map window, e
 
 test('J2 the list does not come from the tiles: with every map source removed it still follows the window', async () => {
   // records.json and the build's index of areas (records without a bbox are placed by their countries' boxes)
-  const only = c => c.route('**/data/files.txt', route => route.fulfill({ body: 'records.json\nareas.json\ncollections.json\nmirror.json\n' }));
+  const only = c => c.route('**/data/files.txt', route => route.fulfill({ body: 'records.json\nareas-country.json\ncollections.json\nmirror.json\n' }));
   const { context, page, errors } = await open(NORTH_SEA, { routes: only });
   await page.evaluate(() => new Promise(ok => { window.osdMap.once('idle', ok);
     window.osdMap.setStyle({ version: 8, sources: {}, layers: [] }, { diff: false }); }));
@@ -430,7 +430,8 @@ test('J8 switches Countries / Provinces / Basins: one on, only its areas drawn, 
     assert.deepEqual(await pressed(page), [KINDS[k], 'Flat'], 'exactly one kind on (and Flat)');
     assert.deepEqual([...new Set(await rendered(page, 'areas-fill'))].sort(), index.kinds[k].areas.map(a => a.area_id).sort(), `${k}: the drawn ids are areas.json's`);
     assert.deepEqual(await areaLayers(page), [['areas-fill', `areas-${k}`, null], ['areas-line', `areas-${k}`, null]], `${k}: no other kind's layer in the style`);
-    assert.deepEqual(requested.filter(p => /areas/.test(p)).sort(), ['/data/areas.json', `/data/areas-${k}.geojson`].sort(), `${k}: only the chosen kind's file was requested`);
+    assert.deepEqual(requested.filter(p => /areas/.test(p)).sort(), [...new Set(['/data/areas-country.json', `/data/areas-${k}.json`, `/data/areas-${k}.geojson`])].sort(),
+      `${k}: only the chosen kind's files (and the countries' index, which places the records) were requested`);
     assert.match(await page.locator('.maplibregl-ctrl-attrib-inner').innerText(), new RegExp(index.kinds[k].sources[0].credit), 'the kind\'s credit in the attribution line');
     await assertOwnerRules(page);
     assert.deepEqual(errors, []);
@@ -445,7 +446,7 @@ test('J8 switches Countries / Provinces / Basins: one on, only its areas drawn, 
   assert.match(await page.evaluate(() => location.hash), /o=basin/);
   await page.getByRole('button', { name: 'Countries', exact: true }).click(); await idle(page);
   assert.deepEqual([...new Set(await rendered(page, 'areas-fill'))].sort(), index.kinds.country.areas.map(a => a.area_id).sort());
-  assert.deepEqual(requested.filter(p => /areas/.test(p)), ['/data/areas.json', '/data/areas-country.geojson', '/data/areas-basin.geojson'],
+  assert.deepEqual(requested.filter(p => /areas/.test(p)), ['/data/areas-country.json', '/data/areas-country.geojson', '/data/areas-basin.json', '/data/areas-basin.geojson'],
     'Basins fetched once on demand; Countries not again');
   assert.deepEqual(errors, []);
   await context.close();
@@ -678,7 +679,60 @@ test('J12 on the built catalogue: the page writes what osd script writes from si
   assert.deepEqual(errors, []);
   await context.close();
 });
-test.todo('J13 switches to Licences where a regulator is read: licences holding a dataset are drawn, the row names the block (E51)');
+// ---- J13: Licences (E51), over the E48 fixture areas and one licence file (tests/fixtures/areas/licence/xa.geojson:
+// P1 holds fixture/register, blocks 7/9 and 7/12; P2 holds nothing) -----------------------------------------
+const E51 = join(OUT, 'e51');
+const licencesBuilt = (async () => {
+  await py('import shutil, sys; from pathlib import Path; from osd.build import build\n' +
+    'out, fx, none = map(Path, sys.argv[1:4])\n' +
+    'shutil.rmtree(out.parent / "e51-areas", ignore_errors=True); shutil.copytree(fx / "areas", out.parent / "e51-areas")\n' +
+    '(out.parent / "e51-areas" / "licence").mkdir(); shutil.copy(fx / "licence" / "xa.geojson", out.parent / "e51-areas" / "licence")\n' +
+    'build(out, none, mirror_dir=none, records_dir=fx / "records", areas_dir=out.parent / "e51-areas", outlines_dir=fx / "outlines", starters_dir=none, source_commit="1" * 40, verification_commit="2" * 40)',
+    E51, AREAS_FX, join(OUT, 'e51-none'));
+  const names = (await readdir(E51)).filter(f => f !== 'files.txt');
+  await writeFile(join(E51, 'files.txt'), names.join('\n') + '\n');
+  const read = async f => JSON.parse(await readFile(join(E51, f), 'utf8'));
+  return { records: (await read('records.json')).records, licence: await read('areas-licence.json') };
+})();
+const withLicences = c => c.route('**/data/**', async route => {
+  await licencesBuilt;
+  const f = decodeURIComponent(new URL(route.request().url()).pathname.replace(/^\/data\//, ''));
+  return route.fulfill({ path: join(E51, f) }).catch(() => route.fulfill({ status: 404, body: '' }));
+});
+
+test('J13 switches to Licences: P1 drawn, a click on it lists its datasets, the row names its blocks, the attribution the regulator and the date "as of"', async () => {
+  const { records, licence } = await licencesBuilt;
+  assert.deepEqual(licence.areas.map(a => a.area_id), ['XA:P1'], 'P2 holds nothing: not in the index');
+  const requested = [];
+  const { context, page, errors } = await open(FX_VIEW, { routes: c => { c.on('request', r => requested.push(new URL(r.url()).pathname)); return withLicences(c); } });
+  await idle(page);
+  assert.deepEqual(await page.locator('.osd-ctrl .seg[aria-label="Areas drawn"] button').allInnerTexts(), ['Countries', 'Provinces', 'Basins', 'Licences']);
+  assert.deepEqual(requested.filter(p => /areas/.test(p)), ['/data/areas-country.json', '/data/areas-country.geojson'], 'no licence file at the first load');
+  assert.equal(await page.locator('#list li[data-id="fixture/register"] .blk:not([hidden])').count(), 0, 'no blocks named while Countries are drawn');
+
+  await page.getByRole('button', { name: 'Licences', exact: true }).click(); await idle(page);
+  assert.deepEqual(await pressed(page), ['Licences', 'Flat']);
+  assert.deepEqual(requested.filter(p => /areas-licence/.test(p)), ['/data/areas-licence.json', '/data/areas-licence.geojson'], 'fetched when chosen');
+  assert.deepEqual([...new Set(await rendered(page, 'areas-fill'))], ['XA:P1']);
+  const credit = await page.locator('.maplibregl-ctrl-attrib-inner').innerText();
+  assert.match(credit, /Licences: FXR, as of 2026-11-25\. Fixture regulator/, 'the regulator, the date as of, the credit');
+  assert.doesNotMatch(credit, /\bread\b/i, 'the date is not called "read"');
+
+  const at = await pointIn(page, 'XA:P1');
+  assert.ok(at, 'a point of P1 with no dataset feature on it');
+  await page.mouse.click(at.x, at.y);
+  await page.locator('#area-chip:not([hidden])').waitFor(); await idle(page);
+  const p1 = licence.areas[0];
+  assert.deepEqual((await listed(page)).ids, byTitleIds(records, p1.ids), 'the list is exactly P1\'s datasets');
+  assert.equal(await page.locator('#area-chip span').innerText(), 'P1');
+  assert.match(await page.evaluate(() => location.hash), /o=licence&area=XA%3AP1|o=licence.*area=XA(%3A|:)P1/);
+  assert.equal(await page.locator('#list li[data-id="fixture/register"] .blk:not([hidden])').innerText(), ' · blocks 7/9, 7/12', 'the row names its blocks');
+
+  await page.getByRole('button', { name: 'Countries', exact: true }).click(); await idle(page);
+  assert.equal(await page.locator('#list li[data-id="fixture/register"] .blk:not([hidden])').count(), 0, 'blocks named only while Licences are drawn');
+  assert.deepEqual(errors, []);
+  await context.close();
+});
 
 // ---- J14 ---------------------------------------------------------------------------------------
 test('J14 shares the address: a second browser shows the same window, filters, opened row and bag', async () => {
@@ -790,7 +844,8 @@ test('budget: the first load of /shop.html on the real catalogue stays under 1 M
     console.log(`# shop first load #${hash}: site ${sum(site)} bytes in ${site.length} requests; libraries ${sum(libs)} bytes (unpkg, uncompressed here);`,
       `fonts ${sum(fonts)} bytes (answered empty offline; Google Fonts online)`);
     assert.deepEqual(site.filter(r => /outlines\.geojson|collections\.json|mirror\.json/.test(r.url)), [], 'nothing the first view does not need');
-    assert.ok(site.some(r => /areas\.(json|pmtiles)/.test(r.url)), 'with Countries on');
+    assert.ok(site.some(r => /areas-country\.json/.test(r.url)) && site.some(r => /areas\.pmtiles/.test(r.url)), 'with Countries on');
+    assert.deepEqual(site.filter(r => /areas(-licence)?\.json/.test(r.url)), [], 'no licence index at the first load (J13)');
     // E48 acceptance 8: what switching to Provinces and then to Basins requests, stated in the PR
     for (const kind of ['Provinces', 'Basins']) {
       const from = log.length;
