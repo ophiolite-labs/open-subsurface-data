@@ -1,15 +1,24 @@
 # One target per station. CI runs exactly `make check`.
-.PHONY: check check-full test lint validate build verify site serve clean site-deps site-test shot
+.PHONY: check check-full test test-real-build test-rest lint validate build verify site serve clean site-deps site-test shot
 
 check:                                   ## the required CI check (offline, < 2 min)
 	$(MAKE) lint
-	$(MAKE) -j3 --output-sync=target test validate build   # side by side (E36): the build's tiling is the long one
+	$(MAKE) -j4 --output-sync=target test validate build   # side by side (E36): the build's tiling is the long one
 
 lint:
 	uv run ruff check src tests
 
-test:
-	uv run pytest -q
+# The test files that read the session's one real build (conftest `full_build`, found by name) and the rest,
+# side by side: one real build in the first process, none in the second (E46 slice 2).
+REAL_BUILD_TESTS = $(shell grep -rl --include='test_*.py' full_build tests | sort)
+
+test: test-real-build test-rest
+
+test-real-build:
+	uv run pytest -q --durations=10 $(REAL_BUILD_TESTS)   # slowest ten printed: the gate's time is measured (E46 slice 2)
+
+test-rest:
+	uv run pytest -q --durations=10 $(addprefix --ignore=,$(REAL_BUILD_TESTS))   # slowest ten printed: the gate's time is measured (E46 slice 2)
 
 validate:                                ## every record and outline against its schema
 	uv run osd validate

@@ -21,6 +21,20 @@ jobs:
           curl -fsSLo /tmp/tippecanoe.deb http://archive.ubuntu.com/ubuntu/pool/universe/t/tippecanoe/tippecanoe_2.79.0-1_amd64.deb
           echo "78261946e0ee8f6cb10c00c4aaf5e66858f0bfb9d870c530d6704fbcc67fb727  /tmp/tippecanoe.deb" | sha256sum -c
           sudo dpkg -i /tmp/tippecanoe.deb && tippecanoe --version
+      # E46 slice 2: regenerable build products, content-addressed inside (outlines-<digest>.pmtiles from the
+      # input, tippecanoe version and flags; areas-<digest>.json from the area files and each record's region
+      # and outline), so a restored older copy is ignored where it does not match. Tiling the outlines costs
+      # about 110 CPU-seconds of the runner's 4 cores; a PR that changes outlines pays it once.
+      - uses: actions/cache@v4
+        with:
+          path: build/tiles
+          key: tiles-${{ hashFiles('outlines/**', 'records/**', 'areas/**') }}
+          restore-keys: tiles-
+      - uses: actions/cache@v4   # the count's code is in the key: a change to areas.py never reads an older count
+        with:
+          path: build/areas-cache
+          key: areas-count-${{ hashFiles('src/osd/areas.py') }}-${{ hashFiles('areas/**', 'records/**', 'outlines/**') }}
+          restore-keys: areas-count-${{ hashFiles('src/osd/areas.py') }}-
       - run: make check
       - name: site smoke (every data file the page fetches exists and parses)
         run: |
@@ -33,7 +47,7 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           npx playwright install --only-shell chromium   # the runner image has Chromium's system libraries; --with-deps stalls on apt
-          make site-test
+          npm run --silent site-test   # site/data is the one make check staged; `make site-test` would build it again (E46 slice 2)
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main'
         with: { name: site, path: site, retention-days: 7 }
